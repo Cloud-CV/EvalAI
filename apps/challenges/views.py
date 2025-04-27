@@ -57,8 +57,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_team_model,
@@ -426,22 +429,33 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
-            name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
-            description="Challenge pk",
-            required=True,
-        )
-    ],
+@extend_schema(
+    methods=["GET"],
     operation_id="get_participant_teams_for_challenge",
+    parameters=[
+        OpenApiParameter(
+            name="challenge_pk",
+            location=OpenApiParameter.PATH,
+            type=int,
+            description="Challenge Primary Key (pk)",
+            required=True,
+        ),
+    ],
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_403_FORBIDDEN: openapi.Response(
-            "{'error': 'You are not authorized to make this request'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of participant teams for the specified challenge"
+        ),
+        status.HTTP_403_FORBIDDEN: OpenApiResponse(
+            description="Unauthorized request",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "description": "You are not authorized to make this request",
+                    },
+                },
+            },
         ),
     },
 )
@@ -1289,7 +1303,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         # To get the problem description
         if hasattr(exc, "problem"):
             error_description = exc.problem
-            # To capitalize the first alphabet of the problem description as default is in lowercase
+            # To capitalize the first alphabet of the problem description as
+            # default is in lowercase
             error_description = error_description[0:].capitalize()
         # To get the error line and column number
         if hasattr(exc, "problem_mark"):
@@ -1663,7 +1678,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data = serializer.errors
                 raise RuntimeError()
                 # transaction.set_rollback(True)
-                # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                # return Response(response_data,
+                # status.HTTP_406_NOT_ACCEPTABLE)
 
             # Add Tags
             add_tags_to_challenge(yaml_file_data, challenge)
@@ -1762,7 +1778,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         },
                     )
                 else:
-                    # This is when the host wants to upload the annotation file later through CLI
+                    # This is when the host wants to upload the annotation file
+                    # later through CLI
                     serializer = ChallengePhaseCreateSerializer(
                         data=data,
                         context={
@@ -1991,148 +2008,78 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_all_submissions_for_a_challenge",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    operation_id="get_all_submissions_for_a_challenge",
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "count": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Count of submissions",
-                    ),
-                    "next": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of next page of results",
-                    ),
-                    "previous": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of previous page of results",
-                    ),
-                    "results": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="Array of results object",
-                        items=openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            properties={
-                                "id": openapi.Schema(
-                                    type=openapi.TYPE_INTEGER,
-                                    description="Submission ID",
-                                ),
-                                "participant_team": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team Name",
-                                ),
-                                "challenge_phase": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Challenge Phase name",
-                                ),
-                                "created_by": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Username of user who created the submission",
-                                ),
-                                "status": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Status of the submission",
-                                ),
-                                "is_public": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Shows if the submission is public or not",
-                                ),
-                                "is_flagged": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Shows if the submission is flagged or not",
-                                ),
-                                "submission_number": openapi.Schema(
-                                    type=openapi.TYPE_INTEGER,
-                                    description="Count of submissions done by a team",
-                                ),
-                                "submitted_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Timestamp when submission was submitted",
-                                ),
-                                "execution_time": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Execution time of the submission in seconds",
-                                ),
-                                "input_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the file submitted by user",
-                                ),
-                                "stdout_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the stdout file generated after evaluating submission",
-                                ),
-                                "stderr_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the stderr file generated after evaluating submission only available when the submission fails",
-                                ),
-                                "environment_log_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the Environment Log File generated after evaluating submission (only available for code-upload challenge submissions)",
-                                ),
-                                "submission_result_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the result file generated after successfully evaluating submission",
-                                ),
-                                "submission_metadata_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the metadata file generated after successfully evaluating submission",
-                                ),
-                                "participant_team_members_email_ids": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of the participant team members email ID's",
-                                ),
-                                "participant_team_members_affiliations": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of the participant team members affiliations",
-                                ),
-                                "created_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Timestamp when the submission was created",
-                                ),
-                                "method_name": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Name of the method used by the participant team",
-                                ),
-                                "participant_team_members": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of participant team members name and email",
-                                ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of submissions for the challenge phase",
+            response={
+                "type": "object",
+                "properties": {
+                    "count": {"type": "string"},
+                    "next": {"type": "string"},
+                    "previous": {"type": "string"},
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "participant_team": {"type": "string"},
+                                "challenge_phase": {"type": "string"},
+                                "created_by": {"type": "string"},
+                                "status": {"type": "string"},
+                                "is_public": {"type": "boolean"},
+                                "is_flagged": {"type": "boolean"},
+                                "submission_number": {"type": "integer"},
+                                "submitted_at": {"type": "string"},
+                                "execution_time": {"type": "number"},
+                                "input_file": {"type": "string"},
+                                "stdout_file": {"type": "string"},
+                                "stderr_file": {"type": "string"},
+                                "environment_log_file": {"type": "string"},
+                                "submission_result_file": {"type": "string"},
+                                "submission_metadata_file": {"type": "string"},
+                                "participant_team_members_email_ids": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "participant_team_members_affiliations": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "created_at": {"type": "string"},
+                                "method_name": {"type": "string"},
+                                "participant_team_members": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
                             },
-                        ),
-                    ),
+                        },
+                    },
                 },
-            ),
-        )
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Invalid request parameters"
+        ),
     },
 )
 @api_view(["GET"])
@@ -2148,7 +2095,8 @@ def get_all_submissions_of_challenge(
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    # To check for the corresponding challenge phase from the
+    # challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_pk, challenge=challenge
@@ -2161,7 +2109,8 @@ def get_all_submissions_of_challenge(
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # To check for the user as a host of the challenge from the request and challenge_pk.
+    # To check for the user as a host of the challenge from the request and
+    # challenge_pk.
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
@@ -2183,7 +2132,8 @@ def get_all_submissions_of_challenge(
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
-    # To check for the user as a participant of the challenge from the request and challenge_pk.
+    # To check for the user as a participant of the challenge from the request
+    # and challenge_pk.
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
@@ -2213,75 +2163,79 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="download_all_submissions",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge phase pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="file_type",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="File type",
             required=True,
         ),
     ],
-    operation_id="download_all_submissions",
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'The file type requested is not valid!'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submissions successfully downloaded"
         ),
-        status.HTTP_404_NOT_FOUND: openapi.Response(
-            "{'error': 'Challenge Phase does not exist'}"
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="The file type requested is not valid!"
+        ),
+        status.HTTP_404_NOT_FOUND: OpenApiResponse(
+            description="Challenge Phase does not exist"
         ),
     },
 )
-@swagger_auto_schema(
-    methods=["post"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["POST"],
+    operation_id="download_all_submissions",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge phase pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="file_type",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="File type",
             required=True,
         ),
     ],
-    operation_id="download_all_submissions",
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'The file type requested is not valid!'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submissions successfully downloaded",
         ),
-        status.HTTP_401_UNAUTHORIZED: openapi.Response(
-            "{'error': 'Sorry, you do not belong to this Host Team!'}"
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="The file type requested is not valid!"
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            description="Sorry, you do not belong to this Host Team!"
         ),
     },
 )
@@ -2307,7 +2261,8 @@ def download_all_submissions(
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    # To check for the corresponding challenge phase from the
+    # challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_pk, challenge=challenge
@@ -2415,14 +2370,16 @@ def download_all_submissions(
                 user=request.user, challenge_id=challenge_pk
             ):
 
-                # get participant team object for the user for a particular challenge.
+                # get participant team object for the user for a particular
+                # challenge.
                 participant_team_pk = (
                     get_participant_team_id_of_user_for_a_challenge(
                         request.user, challenge_pk
                     )
                 )
 
-                # Filter submissions on the basis of challenge phase for a participant.
+                # Filter submissions on the basis of challenge phase for a
+                # participant.
                 submissions = Submission.objects.filter(
                     participant_team=participant_team_pk,
                     challenge_phase=challenge_phase,
@@ -3324,7 +3281,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    error_messages, yaml_file_data, files = validate_challenge_config_util(
+    error_messages, _yaml_file_data, _files = validate_challenge_config_util(
         request,
         challenge_host_team,
         BASE_LOCATION,
@@ -3362,7 +3319,8 @@ def get_worker_logs(request, challenge_pk):
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
-    # This is to specify the time window for fetching logs: 3 days before from current time.
+    # This is to specify the time window for fetching logs: 3 days before from
+    # current time.
     timeframe = 4320
     limit = 1000
     current_time = int(round(time.time() * 1000))
@@ -3801,7 +3759,8 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
         )
     else:
-        # This file shall be replaced with the one uploaded through the presigned url from the CLI
+        # This file shall be replaced with the one uploaded through the
+        # presigned url from the CLI
         test_annotation_file = SimpleUploadedFile(
             "{}{}".format(random_file_name, file_ext),
             b"Dummy file content",
@@ -4097,7 +4056,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 },
                             )
                         else:
-                            # This is when the host wants to upload the annotation file later
+                            # This is when the host wants to upload the
+                            # annotation file later
                             serializer = ChallengePhaseCreateSerializer(
                                 data=data,
                                 context={
@@ -4397,14 +4357,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     files["challenge_test_annotation_files"],
                 ):
 
-                    # Override the submission_meta_attributes when they are missing
+                    # Override the submission_meta_attributes when they are
+                    # missing
                     submission_meta_attributes = data.get(
                         "submission_meta_attributes"
                     )
                     if submission_meta_attributes is None:
                         data["submission_meta_attributes"] = None
 
-                    # Override the default_submission_meta_attributes when they are missing
+                    # Override the default_submission_meta_attributes when they
+                    # are missing
                     default_submission_meta_attributes = data.get(
                         "default_submission_meta_attributes"
                     )
@@ -4643,84 +4605,87 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_allowed_email_ids",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    operation_id="update_allowed_email_ids",
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "allowed_email_ids": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="List of allowed email ids",
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                    ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of allowed email IDs for the challenge phase",
+            response={
+                "type": "object",
+                "properties": {
+                    "allowed_email_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of allowed email IDs",
+                    }
                 },
-            ),
-        )
+            },
+        ),
     },
 )
-@swagger_auto_schema(
-    methods=["delete", "patch"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["DELETE", "PATCH"],
+    operation_id="update_allowed_email_ids",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "allowed_email_ids": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                description="List of allowed email ids",
-                items=openapi.Schema(type=openapi.TYPE_STRING),
-            ),
-        },
-    ),
-    operation_id="update_allowed_email_ids",
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "allowed_email_ids": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of allowed email ids",
+                }
+            },
+            "required": ["allowed_email_ids"],
+        }
+    },
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "allowed_email_ids": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="List of allowed email ids",
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                    ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Successfully updated allowed email ids",
+            response={
+                "type": "object",
+                "properties": {
+                    "allowed_email_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of allowed email ids",
+                    }
                 },
-            ),
-        )
+            },
+        ),
     },
 )
 @api_view(["GET", "PATCH", "DELETE"])

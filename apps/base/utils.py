@@ -316,8 +316,8 @@ def get_slug(param: str) -> str:
     """
     slug = param.replace(" ", "-").lower()
     slug = re.sub(r"\W+", "-", slug)
+    # The max-length for slug is 200, but 180 is used here so as to append pk
     slug = slug[:180]
-    # Max-length for slug is 200, but 180 is used to append pk
     return slug
 
 

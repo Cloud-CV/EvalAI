@@ -313,4 +313,84 @@ describe('Unit tests for profile controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
         });
     });
+
+    describe('Unit tests for isURLValid function', function () {
+        it('should allow empty URLs', function () {
+            var result = vm.isURLValid('');
+            expect(result).toBeTruthy();
+    
+            result = vm.isURLValid(null);
+            expect(result).toBeTruthy();
+    
+            result = vm.isURLValid(undefined);
+            expect(result).toBeTruthy();
+        });
+    
+        it('should return true for valid URLs within 200 characters', function () {
+            var result = vm.isURLValid('https://github.com');
+            expect(result).toBeTruthy();
+    
+            result = vm.isURLValid('http://example.com/path?query=param');
+            expect(result).toBeTruthy();
+    
+            result = vm.isURLValid('https://sub.domain.example.com/long-path/to/resource?query=1&more=2');
+            expect(result).toBeTruthy();
+        });
+    
+        it('should return false for invalid URLs or overly long ones', function () {
+            var result = vm.isURLValid('invalid-url');
+            expect(result).toBeFalsy();
+    
+            result = vm.isURLValid('htp://missing-schema.com');
+            expect(result).toBeFalsy();
+    
+            var longUrl = 'http://example.com/' + 'a'.repeat(201);
+            result = vm.isURLValid(longUrl);
+            expect(result).toBeFalsy();
+        });
+    });
+  
+    describe('Unit tests for showTokenExpiredDialog function', function () {
+        beforeEach(function () {
+            spyOn($mdDialog, 'show').and.callFake(function (options) {
+                var fakeScope = $rootScope.$new();
+
+                var controllerFn = Array.isArray(options.controller)
+                    ? options.controller[options.controller.length - 1]
+                    : options.controller;
+
+                controllerFn(fakeScope, $mdDialog);
+
+                expect(typeof fakeScope.refreshToken).toBe('function');
+                expect(typeof fakeScope.dismiss).toBe('function');
+
+                return {
+                    then: function (confirmCallback, cancelCallback) {
+                        if (confirmCallback) confirmCallback();
+                    }
+                };
+            });
+
+            spyOn(vm, 'refreshToken'); // Spy on refreshToken to ensure it gets called
+        });
+
+        it('should open token expired dialog with correct config and call refreshToken', function () {
+            vm.showTokenExpiredDialog();
+
+            expect($mdDialog.show).toHaveBeenCalled();
+
+            var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
+            expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
+
+            var testScope = $rootScope.$new();
+            var controllerFn = Array.isArray(dialogArgs.controller)
+                ? dialogArgs.controller[dialogArgs.controller.length - 1]
+                : dialogArgs.controller;
+
+            controllerFn(testScope, $mdDialog);
+            testScope.refreshToken();
+
+            expect(vm.refreshToken).toHaveBeenCalled();
+        });
+    });
 });
