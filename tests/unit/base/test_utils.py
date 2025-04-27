@@ -1,23 +1,20 @@
 import os
-import requests
-import responses
-
 from datetime import timedelta
 
+import requests
+import responses
+from allauth.account.models import EmailAddress
+from base.utils import RandomFileName, is_user_a_staff, send_slack_notification
+from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from base.utils import RandomFileName, send_slack_notification, is_user_a_staff
-from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 from scripts import seed
 

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0103_challenge_worker_image_url_alter'),
+        ("challenges", "0103_challenge_worker_image_url_alter"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='evaluation_module_error',
+            model_name="challenge",
+            name="evaluation_module_error",
             field=models.TextField(blank=True, null=True),
         ),
     ]
