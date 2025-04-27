@@ -143,7 +143,8 @@ def get_challenge_phase_submission_count_by_team(
     request, challenge_pk, challenge_phase_pk
 ):
     """
-    Returns number of submissions done by a participant team in a challenge phase
+    Returns number of submissions done by a participant 
+    team in a challenge phase
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -283,7 +284,8 @@ def get_challenge_phase_submission_analysis(
     Returns
     1. Total number of submissions in a challenge phase
     2. Number of teams which made submissions in a challenge phase
-    3. Number of submissions with status a)Submitting, b)Submitted, c)Running, d)Failed, e)Cancelled, f)Finished status
+    3. Number of submissions with status a)Submitting, b)Submitted, 
+       c)Running, d)Failed, e)Cancelled, f)Finished status
     4. Number of flagged & public submissions in challenge phase
     """
 
@@ -342,9 +344,7 @@ def download_all_participants(request, challenge_pk):
         )
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
-            "attachment; filename=participant_teams_{0}.csv".format(
-                challenge_pk
-            )
+            f"attachment; filename=participant_teams_{challenge_pk}.csv"
         )
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
