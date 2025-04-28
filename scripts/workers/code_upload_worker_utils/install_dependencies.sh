@@ -65,6 +65,6 @@ sleep 120s;
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
 
 # Running Code Upload Worker
-python -m scripts.workers.code_upload_worker
+python -m scripts.workers.code_upload_submission_worker
 echo "### Worker Started"
 
