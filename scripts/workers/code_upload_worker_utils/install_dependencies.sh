@@ -64,8 +64,7 @@ sleep 120s;
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
 
-# Running Submission Worker
-chmod +x scripts/workers/code_upload_submission_worker.py
-python scripts/workers/code_upload_submission_worker.py
+# Running Code Upload Worker
+python -m scripts.workers.code_upload_worker
 echo "### Worker Started"
 
