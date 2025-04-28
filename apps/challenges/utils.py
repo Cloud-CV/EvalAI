@@ -4,6 +4,7 @@ import os
 import random
 import string
 import uuid
+import requests
 
 from base.utils import (
     get_boto3_client,
@@ -635,3 +636,28 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
     else:
         challenge.has_sponsors = False
         challenge.save()
+
+
+def create_forum_for_challenge(challenge_pk):
+    """
+    Creates Forum for a challenge
+    Arguments:
+        challenge_pk {int} -- challenge pk for which forum is to be created
+    """
+    challenge = get_challenge_model(challenge_pk)
+    discourse_url = f"{settings.DISCOURSE_URL}/posts.json"
+    data = {
+        "title": challenge.title,
+        "raw": challenge.description,
+    }
+    json_payload = json.dumps(data)
+    response = requests.post(discourse_url, data=json_payload, headers={
+        "Api-Key": settings.DISCOURSE_API_KEY,
+        "Api-Username": settings.DISCOURSE_API_USERNAME,
+        "Content-Type": "application/json"
+    }, verify=False)
+    if response.status_code == 200:
+        challenge.forum_url = f"{settings.DISCOURSE_URL}/t/{response.json()['topic_slug']}/{response.json()['topic_id']}"
+        challenge.save()
+    else:
+        logger.exception(f"Failed to create forum for challenge {challenge_pk}")

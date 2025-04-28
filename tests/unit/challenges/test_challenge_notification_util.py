@@ -56,7 +56,7 @@ class BaseTestClass(APITestCase):
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
-            enable_forum=True,
+            enable_forum=False,
             queue="test_queue",
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
