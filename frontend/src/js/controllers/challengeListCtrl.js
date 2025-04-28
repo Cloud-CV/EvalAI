@@ -93,7 +93,7 @@
 
                     if (data.next !== null) {
                         var url = data.next;
-                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'));
+                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
                         vm.getAllResults(parameters, resultsArray, type);
                     } else {
