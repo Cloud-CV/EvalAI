@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import ChallengeHost, ChallengeHostTeam, ChallengeHostTeamInvitation
+from datetime import timedelta
+from django.utils import timezone
 
 
 class BaseTestCase(TestCase):
@@ -42,3 +44,75 @@ class ChallengeHostTeamTestCase(BaseTestCase):
             "{}: {}".format(team_name, created_by),
             self.challenge_host_team.__str__(),
         )
+
+class ChallengeHostTeamInvitationTestCase(BaseTestCase):
+    def setUp(self):
+        super(ChallengeHostTeamInvitationTestCase, self).setUp()
+        self.invitation = ChallengeHostTeamInvitation.objects.create(
+            email="invitee@example.com",
+            team=self.challenge_host_team,
+            invited_by=self.user,
+            status="pending"
+        )
+    
+    def test_invitation_key_generation(self):
+        self.assertIsNotNone(self.invitation.invitation_key)
+        self.assertEqual(len(self.invitation.invitation_key), 32) 
+    
+    def test_is_expired_method(self):
+        self.assertFalse(self.invitation.is_expired())
+        
+        self.invitation.created_at = timezone.now() - timedelta(
+            days=self.invitation.INVITATION_EXPIRY_DAYS + 1
+        )
+        self.invitation.save()
+        
+        self.assertTrue(self.invitation.is_expired())
+    
+    def test_is_usable_method(self):
+        """Test invitation usability check"""
+        self.assertTrue(self.invitation.is_usable())
+        
+        self.invitation.status = "accepted"
+        self.invitation.save()
+        self.assertFalse(self.invitation.is_usable())
+        
+        self.invitation.status = "pending"
+        self.invitation.created_at = timezone.now() - timedelta(
+            days=self.invitation.INVITATION_EXPIRY_DAYS + 1
+        )
+        self.invitation.save()
+        self.assertFalse(self.invitation.is_usable())
+    
+    def test_mark_as_expired(self):
+        """Test marking invitation as expired"""
+        self.invitation.created_at = timezone.now() - timedelta(
+            days=self.invitation.INVITATION_EXPIRY_DAYS + 1
+        )
+        self.invitation.save()
+        
+        self.assertEqual(self.invitation.status, "pending")
+        self.invitation.mark_as_expired()
+        self.assertEqual(self.invitation.status, "expired")
+
+    def test_expire_old_invitations_class_method(self):
+        """Test class method to expire old invitations"""
+        expired_invitation = ChallengeHostTeamInvitation.objects.create(
+            email="expired@example.com",
+            team=self.challenge_host_team,
+            invited_by=self.user,
+            status="pending"
+        )
+        expired_invitation.created_at = timezone.now() - timedelta(
+            days=ChallengeHostTeamInvitation.INVITATION_EXPIRY_DAYS + 1
+        )
+        expired_invitation.save()
+        
+        ChallengeHostTeamInvitation.expire_old_invitations()
+        
+        expired_invitation.refresh_from_db()
+        self.assertEqual(expired_invitation.status, "expired")
+    
+    def test__str__(self):
+        expected_str = "invitee@example.com invitation to Test Host Team"
+        self.assertEqual(str(self.invitation), expected_str)
