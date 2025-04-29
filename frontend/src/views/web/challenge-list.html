@@ -2,9 +2,9 @@
     <div class="ChallengeHeader">
         <p class="text-med-black fs-30 no-margin">All Challenges</p>
         
-        <!-- Search and Filter Bar -->
+        <!--Search and Filter Bar -->
         <div class="search-filter-bar">
-            <input type="text" ng-model="vm.searchQuery" placeholder="Search Challenges..." class="search-box" />
+            <input type="text" ng-model="vm.searchQuery" placeholder="Search Challenges..." class="borderless-search" style="border: none; border-bottom: 1px solid #ccc; outline: none; box-shadow: none; border-radius: 0;" />
             <button ng-click="vm.toggleFilterPanel()" class="filter-button">
                 <i class="fas fa-filter" style="display: none;"></i>
                 {{ vm.isFilterVisible ? 'Hide Filters' : 'Show Filters' }}
@@ -41,11 +41,11 @@
             <button class="close-btn" ng-click="vm.toggleFilterPanel()">&times;</button>
             
             <label>Organization:
-                <input type="text" ng-model="vm.filter.organization" placeholder="e.g. EvalAI Team" />
+                <input type="text" ng-model="vm.filter.organization" placeholder="e.g. EvalAI Team"  />
             </label>
             
             <label>Tags:
-                <input type="text" ng-model="vm.filter.tags" placeholder="e.g. AI, NLP (comma separated)" />
+                <input type="text" ng-model="vm.filter.tags" placeholder="e.g. AI, NLP (comma separated)"  />
             </label>
             
             <div class="sort-options">

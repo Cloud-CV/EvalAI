@@ -508,6 +508,14 @@ input[type="checkbox"] {
     min-width: 100px;
 }
   
+.filter-content label input{
+    border: none !important; 
+    border-bottom: 1px solid #ccc !important; 
+    outline: none ; 
+    box-shadow: none; 
+    border-radius: 0;
+}
+
 .apply-button {
     background-color: rgba(0, 0, 0, 0);
     font : 14px Roboto;
@@ -672,6 +680,10 @@ input[type="checkbox"] {
     cursor: pointer;
     color: #666;
     padding: 5px;
+}
+
+.close-btn:focus{
+    background-color: white !important;
 }
 
 * {
