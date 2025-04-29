@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0112_challenge_sqs_retention_period'),
+        ("challenges", "0112_challenge_sqs_retention_period"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='disable_private_submission',
+            model_name="challenge",
+            name="disable_private_submission",
             field=models.BooleanField(default=False),
         ),
     ]
