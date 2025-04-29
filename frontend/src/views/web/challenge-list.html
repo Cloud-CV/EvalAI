@@ -1,6 +1,30 @@
 <section class="ev-sm-container ev-view challenge-container">
+    <p class="text-med-black fs-30 no-margin">All Challenges</p>
+    <!-- tabs for challenges -->
+    <div class="row">
+        <div class="col s12">
+            <ul class="nav nav-underline" ng-init="tab = 1">
+                <li class="nav-item">
+                    <a href="#" ng-click="tab = 1" class="nav-link" ng-class="{'active': tab === 1}">
+                        <strong class="text-med-black">Ongoing ({{challengeList.currentList.length}})</strong>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" ng-click="tab = 2" class="nav-link" ng-class="{'active': tab === 2}">
+                        <strong class="text-med-black">Upcoming ({{challengeList.upcomingList.length}})</strong>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" ng-click="tab = 3" class="nav-link" ng-class="{'active': tab === 3}">
+                        <strong class="text-med-black">Past ({{challengeList.pastList.length}})</strong>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <!-- ongoing challenges -->
-    <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
+    <div ng-show="tab === 1" class="ongoing-challenges">
     <div ng-if="challengeList.noneCurrentChallenge">None</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
@@ -10,18 +34,21 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
+            </div>
         </div>
     </div>
 
@@ -43,7 +70,7 @@
     </div>
 
     <!-- upcoming challenges -->
-    <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
+    <div ng-show="tab === 2" class="ongoing-challenges">
     <div ng-if="challengeList.noneUpcomingChallenge">None</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
@@ -53,22 +80,26 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
         </div>
     </div>
+    </div>
+
     <!-- past challenges -->
-    <div class="challenge-page-title"><strong class="text-med-black fs-18">Past Challenges</strong></div>
+    <div ng-show="tab === 3" class="ongoing-challenges">
     <div ng-if="challengeList.nonePastChallenge">None</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList">
@@ -79,19 +110,32 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
+            </div>
         </div>
     </div>
+    
+    <!-- Cookie Consent Injector -->
+    <div ng-controller="CookieConsentController as cookieConsent">
+        <div 
+          ng-if="!cookieConsent.cookieConsentResponded"
+          ng-include="'dist/views/web/cookie-consent.html'">
+        </div>
+    </div>
+
 </section>
 <!-- <ui-view></ui-view> -->
+ 

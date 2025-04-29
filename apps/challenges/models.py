@@ -1,20 +1,17 @@
 from __future__ import unicode_literals
 
+from base.models import TimeStampedModel, model_field_name
+from base.utils import RandomFileName, get_slug, is_model_field_changed
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
+from django.db import models
+from django.db.models import signals
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.db import models
-from django.db.models import signals
-
-from base.models import TimeStampedModel, model_field_name
-from base.utils import RandomFileName, get_slug, is_model_field_changed
-
-
-from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+from participants.models import ParticipantTeam
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -28,7 +25,6 @@ def get_default_eval_metric():
 
 
 class Challenge(TimeStampedModel):
-
     """Model representing a hosted Challenge"""
 
     def __init__(self, *args, **kwargs):
@@ -68,8 +64,12 @@ class Challenge(TimeStampedModel):
         ("AUD", "Audio"),
         ("TAB", "Tabular"),
     )
-    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
-    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
+    domain = models.CharField(
+        max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+    )
+    list_tags = ArrayField(
+        models.TextField(null=True, blank=True), default=list, blank=True
+    )
     has_prize = models.BooleanField(default=False)
     has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
@@ -83,7 +83,11 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
-    approved_participant_teams = models.ManyToManyField(ParticipantTeam, blank=True, related_name="approved_challenge_participant_teams")
+    approved_participant_teams = models.ManyToManyField(
+        ParticipantTeam,
+        blank=True,
+        related_name="approved_challenge_participant_teams",
+    )
     is_disabled = models.BooleanField(default=False, db_index=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
@@ -128,8 +132,7 @@ class Challenge(TimeStampedModel):
         db_index=True,
     )
     sqs_retention_period = models.PositiveIntegerField(
-        default=345600,
-        verbose_name="SQS Retention Period"
+        default=345600, verbose_name="SQS Retention Period"
     )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
@@ -172,18 +175,22 @@ class Challenge(TimeStampedModel):
     )
     # The number of active workers on Fargate of the challenge.
     workers = models.IntegerField(null=True, blank=True, default=None)
-    # The task definition ARN for the challenge, used for updating and creating service.
+    # The task definition ARN for the challenge, used for updating and
+    # creating service.
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
-    # Identifier for the github repository of a challenge in format: account_name/repository_name
+    # Identifier for the github repository of a challenge in format:
+    # account_name/repository_name
     github_repository = models.CharField(
         max_length=1000, null=True, blank=True, default=""
     )
-    # The number of vCPU for a Fargate worker for the challenge. Default value is 0.25 vCPU.
+    # The number of vCPU for a Fargate worker for the challenge. Default value
+    # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
-    # Memory size of a Fargate worker for the challenge. Default value is 0.5 GB memory.
+    # Memory size of a Fargate worker for the challenge. Default value is 0.5
+    # GB memory.
     worker_memory = models.IntegerField(null=True, blank=True, default=1024)
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
@@ -213,14 +220,17 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, default=1
     )
     cpu_only_jobs = models.BooleanField(default=False)
-    # The number of vCPU for a code upload submission kubernetes job. Default value is 2 vCPU.
+    # The number of vCPU for a code upload submission kubernetes job. Default
+    # value is 2 vCPU.
     job_cpu_cores = models.CharField(
         max_length=256, null=True, blank=True, default="2000m"
     )
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
-    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
+    worker_image_url = models.CharField(
+        max_length=200, blank=True, null=True, default=""
+    )
     evaluation_module_error = models.TextField(null=True, blank=True)
     disable_private_submission = models.BooleanField(default=False)
 
@@ -262,7 +272,9 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -284,7 +296,9 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
+def update_sqs_retention_period_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "sqs_retention_period"
     import challenges.aws_utils as aws
 
@@ -301,7 +315,8 @@ def update_sqs_retention_period_for_challenge(sender, instance, created, **kwarg
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
@@ -313,7 +328,6 @@ class DatasetSplit(TimeStampedModel):
 
 
 class ChallengePhase(TimeStampedModel):
-
     """Model representing a Challenge Phase"""
 
     def __init__(self, *args, **kwargs):
@@ -365,15 +379,18 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
-    # Store the schema for the submission meta attributes of this challenge phase.
+    # Store the schema for the submission meta attributes of this challenge
+    # phase.
     submission_meta_attributes = JSONField(default=None, blank=True, null=True)
     # Flag to allow reporting partial metrics for submission evaluation
     is_partial_submission_evaluation_enabled = models.BooleanField(
         default=False
     )
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
-    # Store the default metadata for a submission meta attributes of a challenge phase.
+    # Store the default metadata for a submission meta attributes of a
+    # challenge phase.
     default_submission_meta_attributes = JSONField(
         default=None, blank=True, null=True
     )
@@ -405,7 +422,8 @@ class ChallengePhase(TimeStampedModel):
 
     def save(self, *args, **kwargs):
 
-        # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
+        # If the max_submissions_per_day is less than the
+        # max_concurrent_submissions_allowed.
         if (
             self.max_submissions_per_day
             < self.max_concurrent_submissions_allowed
@@ -439,7 +457,8 @@ post_save_connect("test_annotation", ChallengePhase)
 class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
