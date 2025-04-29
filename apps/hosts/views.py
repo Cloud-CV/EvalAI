@@ -356,7 +356,7 @@ def invite_user_to_team(request):
         user=invited_user, team_name=team
     ).exists():
         return Response(
-            {"error": "User is already a member of this team"},
+            {"error": f"{email} is already a member of this team"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
