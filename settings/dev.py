@@ -63,6 +63,7 @@ CACHES = {
 }
 
 MEDIA_URL = "/media/"
+FRONTEND_URL = "http://127.0.0.1:8888"
 
 MIDDLEWARE += [  # noqa: ignore=F405
     "debug_toolbar.middleware.DebugToolbarMiddleware",

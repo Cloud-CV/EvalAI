@@ -93,9 +93,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "evalai.urls"
-BACKEND_URL = "http://127.0.0.1:8000"
-FRONTEND_URL = "http://127.0.0.1:8888"
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",

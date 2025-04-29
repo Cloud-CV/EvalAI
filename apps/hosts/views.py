@@ -13,6 +13,7 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
+from rest_framework.exceptions import NotFound
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
@@ -34,7 +35,7 @@ from .serializers import (
 from .utils import is_user_part_of_host_team
 
 get_challenge_host_model = get_model_object(ChallengeHost)
-
+get_challenge_host_team = get_model_object(ChallengeHostTeam)
 
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
@@ -332,20 +333,14 @@ def invite_user_to_team(request):
             {"error": "Email and team_id are required fields"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
     try:
-        team = ChallengeHostTeam.objects.get(pk=team_id)
-    except ChallengeHostTeam.DoesNotExist:
+        team = get_challenge_host_team(team_id)
+    except NotFound as e:
         return Response(
-            {"error": "Host team does not exist"},
+            {"error": str(e)},
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    if not is_user_part_of_host_team(request.user, team):
-        return Response(
-            {"error": "You are not authorized to invite users to this team"},
-            status=status.HTTP_403_FORBIDDEN,
-        )
 
     # Check if the invited user exists on EvalAI
     if not User.objects.filter(email=email).exists():

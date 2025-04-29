@@ -99,7 +99,7 @@ class ChallengeHostTeamInvitation(TimeStampedModel):
             ("pending", "Pending"),
             ("accepted", "Accepted"),
             ("declined", "Declined"),
-            ("expired", "Expired"),  # Added expired status
+            ("expired", "Expired"),
         ),
         default="pending",
     )
