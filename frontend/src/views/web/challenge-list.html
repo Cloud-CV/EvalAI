@@ -34,14 +34,16 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
@@ -78,14 +80,16 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
@@ -106,14 +110,16 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                            {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                        </li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
