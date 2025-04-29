@@ -509,13 +509,35 @@ input[type="checkbox"] {
 }
   
 .apply-button {
-    background-color: #4CAF50;
-    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    font : 14px Roboto;
+    color: #3c3e49;
+    border-radius: 20px;
+    border: 1px solid #3c3e49;
+    box-shadow: 0 4px 8px transparent;
+    transition: background-color 0.3s ease;
 }
-  
+
+.apply-button:hover{
+    box-shadow: 0 0 8px #9d9d9d;
+    background: #3c3e49;
+    color: #fff;
+}
+
+.reset-button:hover{
+    box-shadow: 0 0 8px #9d9d9d;
+    background: #3c3e49;
+    color: #fff;
+}
+
 .reset-button {
-    background-color: #f44336;
-    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    font : 14px Roboto;
+    transition: background-color 0.3s ease;
+    color: #3c3e49;
+    border-radius: 20px;
+    border: 1px solid #3c3e49;
+    box-shadow: 0 4px 8px transparent;
 }
   
 .search-filter-bar {
@@ -610,6 +632,11 @@ input[type="checkbox"] {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+}
+
+.filter-content input[type="text"]:focus{
+    border-bottom: 1px solid #fbbc05 !important;
+    box-shadow: none !important;
 }
 
 .sort-options {
@@ -816,10 +843,11 @@ body {
 }
 
 .btn-card-detail {
-    padding: 10px;
+    padding: 10px 20px;
     text-align: center;
     background-color: #e3e3e3;
     border-top: 1px solid #eee;
+    transition: background-color 0.3s ease;
 }
 
 .w-300 {
