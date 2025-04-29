@@ -37,6 +37,7 @@ from .utils import is_user_part_of_host_team
 get_challenge_host_model = get_model_object(ChallengeHost)
 get_challenge_host_team = get_model_object(ChallengeHostTeam)
 
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -340,7 +341,6 @@ def invite_user_to_team(request):
             {"error": str(e)},
             status=status.HTTP_404_NOT_FOUND,
         )
-
 
     # Check if the invited user exists on EvalAI
     if not User.objects.filter(email=email).exists():
