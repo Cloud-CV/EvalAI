@@ -1,3 +1,4 @@
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from hosts.models import ChallengeHost, ChallengeHostTeam
