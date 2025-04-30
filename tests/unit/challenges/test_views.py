@@ -86,7 +86,7 @@ class BaseAPITestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
-            github_repository="challenge/github_repo"
+            github_repository="challenge/github_repo",
         )
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
@@ -204,7 +204,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
-                "github_repository": self.challenge.github_repository
+                "github_repository": self.challenge.github_repository,
             }
         ]
 
@@ -577,7 +577,6 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
-            
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1351,7 +1350,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            github_repository = "challenge2/github_repo",
+            github_repository="challenge2/github_repo",
         )
 
         # Past Challenge challenge
@@ -1373,7 +1372,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
-            github_repository = "challenge3/github_repo",
+            github_repository="challenge3/github_repo",
         )
 
         # Future challenge
@@ -1394,8 +1393,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            github_repository = "challenge4/github_repo",
-            
+            github_repository="challenge4/github_repo",
         )
 
         # Disabled challenge
