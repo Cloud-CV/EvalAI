@@ -382,7 +382,7 @@ md-select .md-select-value span:first-child:after {
     li {
         margin-bottom: -0.5%;
     }
-    
+
     .nav-item {
         flex: 1;
         text-align: center;
@@ -445,7 +445,6 @@ md-select .md-select-value span:first-child:after {
     display: block;
     margin-bottom: 10px;
     font-weight: 500;
-
 }
   
 .filter-content input[type="text"] {
@@ -508,7 +507,7 @@ input[type="checkbox"] {
     min-width: 100px;
 }
   
-.filter-content label input{
+.filter-content label input {
     border: none !important; 
     border-bottom: 1px solid #ccc !important; 
     outline: none ; 
@@ -518,7 +517,7 @@ input[type="checkbox"] {
 
 .apply-button {
     background-color: rgba(0, 0, 0, 0);
-    font : 14px Roboto;
+    font: 14px Roboto;
     color: #3c3e49;
     border-radius: 20px;
     border: 1px solid #3c3e49;
@@ -526,13 +525,13 @@ input[type="checkbox"] {
     transition: background-color 0.3s ease;
 }
 
-.apply-button:hover{
+.apply-button:hover {
     box-shadow: 0 0 8px #9d9d9d;
     background: #3c3e49;
     color: #fff;
 }
 
-.reset-button:hover{
+.reset-button:hover {
     box-shadow: 0 0 8px #9d9d9d;
     background: #3c3e49;
     color: #fff;
@@ -540,7 +539,7 @@ input[type="checkbox"] {
 
 .reset-button {
     background-color: rgba(0, 0, 0, 0);
-    font : 14px Roboto;
+    font: 14px Roboto;
     transition: background-color 0.3s ease;
     color: #3c3e49;
     border-radius: 20px;
@@ -567,7 +566,7 @@ input[type="checkbox"] {
   
 .filter-button {
     width: 130px;
-    font : 14px Roboto;
+    font: 14px Roboto;
     border-radius: 50px;
     background: #3c3e49;
     font-weight: 600;
@@ -577,11 +576,11 @@ input[type="checkbox"] {
     padding: 7px;
 }
 
-.filter-button:hover{
+.filter-button:hover {
     background-color: #000;
 }
   
-.filter-button:focus{
+.filter-button:focus {
     background-color: #000 !important;
 }
   
@@ -642,7 +641,7 @@ input[type="checkbox"] {
     font-size: 14px;
 }
 
-.filter-content input[type="text"]:focus{
+.filter-content input[type="text"]:focus {
     border-bottom: 1px solid #fbbc05 !important;
     box-shadow: none !important;
 }
@@ -682,7 +681,7 @@ input[type="checkbox"] {
     padding: 5px;
 }
 
-.close-btn:focus{
+.close-btn:focus {
     background-color: white !important;
 }
 
@@ -773,9 +772,11 @@ body {
 .col.s12 {
     width: 100%;
 }
-.col.s12.m3{
+
+.col.s12.m3 {
     display: contents;
 }
+
 .col.m3 {
     width: calc(25% - 20px);
 }
@@ -977,6 +978,7 @@ body {
         width: 100%;
     }
 }
+
 .card-transition {
     transition: all 0.3s ease-out;
 }
@@ -989,6 +991,7 @@ body {
     margin: 20px auto;
     max-width: 600px;
 }
+
 /* Challenge Card Improvements for Search Results */
 
 /* Enhance card transitions and hover effects */
@@ -1010,7 +1013,6 @@ body {
     border-radius: 8px;
     border: 1px solid #f0f0f0;
 }
-
 
 /* Special styling for search results */
 .searchActive .ev-challenge-card {
@@ -1123,7 +1125,7 @@ body {
 .search-box:focus {
     outline: none;
     border-color: #ffaf4b !important;  
-    box-shadow:none !important;
+    box-shadow: none !important;
 }
 
 /* Add special class for search active state */
