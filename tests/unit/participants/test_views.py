@@ -780,6 +780,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge1/github_repo",
         )
         self.challenge1.slug = "{}-{}".format(
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
@@ -882,6 +883,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_image_url": self.challenge1.worker_image_url,
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
+                        "github_repository": self.challenge1.github_repository,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -978,6 +980,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_image_url": self.challenge1.worker_image_url,
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
+                "github_repository": self.challenge1.github_repository,
             }
         ]
 

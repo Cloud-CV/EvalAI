@@ -396,6 +396,7 @@
                 vm.has_sponsors = details.has_sponsors;
                 vm.queueName = details.queue;
                 vm.evaluation_module_error = details.evaluation_module_error;
+                vm.githubRepository = details.github_repository;
                 vm.getTeamName(vm.challengeId);
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
