@@ -86,6 +86,7 @@ class BaseAPITestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge/github_repo",
         )
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
@@ -203,6 +204,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -575,6 +577,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.get(self.url, {})
@@ -678,6 +681,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.put(
@@ -807,6 +811,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -885,6 +890,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.put(self.url, self.data)
@@ -1349,6 +1355,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge2/github_repo",
         )
 
         # Past Challenge challenge
@@ -1370,6 +1377,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
+            github_repository="challenge3/github_repo",
         )
 
         # Future challenge
@@ -1390,6 +1398,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge4/github_repo",
         )
 
         # Disabled challenge
@@ -1479,6 +1488,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -1558,6 +1568,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "ec2_storage": self.challenge.ec2_storage,
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
@@ -1647,6 +1663,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
                 "disable_private_submission": self.challenge4.disable_private_submission,
             }
         ]
@@ -1721,6 +1738,17 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+                "job_cpu_cores": self.challenge4.job_cpu_cores,
+                "job_memory": self.challenge4.job_memory,
+                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "ec2_storage": self.challenge4.ec2_storage,
+                "ephemeral_storage": self.challenge4.ephemeral_storage,
+                "worker_image_url": self.challenge4.worker_image_url,
+                "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
@@ -1799,6 +1827,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             },
             {
@@ -1867,6 +1896,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "disable_private_submission": self.challenge2.disable_private_submission,
             },
         ]
@@ -1936,6 +1966,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
             featured=True,
+            github_repository="challenge3/github_repo",
         )
 
     def test_get_featured_challenges(self):
@@ -2006,6 +2037,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -2048,6 +2080,7 @@ class GetChallengeByPk(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge3/github_repo",
         )
 
         self.challenge4 = Challenge.objects.create(
@@ -2069,6 +2102,7 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=False,
             approved_by_admin=True,
+            github_repository="challenge4/github_repo",
         )
 
         self.challenge5 = Challenge.objects.create(
@@ -2169,6 +2203,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
+            "github_repository": self.challenge3.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
 
@@ -2261,6 +2296,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
+            "github_repository": self.challenge4.github_repository,
             "disable_private_submission": self.challenge.disable_private_submission,
         }
 
@@ -2311,6 +2347,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge/github_repo",
         )
 
         self.challenge2 = Challenge.objects.create(
@@ -2329,6 +2366,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge2/github_repo",
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -2413,6 +2451,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -2493,6 +2532,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -2573,6 +2613,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
@@ -2651,6 +2692,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             },
             {
@@ -2719,6 +2761,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
                 "disable_private_submission": self.challenge.disable_private_submission,
             },
         ]

@@ -105,12 +105,12 @@
                 </div>
             </div>
             <div class="col m2 l2 fs-16 w-300 center">
-                <a ng-if="(challenge.isChallengeHost ) && challenge.page.github_repository"
-                ng-href="{{ 'https://github.com/' + challenge.page.github_repository }}"
+                <a ng-if="(challenge.isChallengeHost) && challenge.githubRepository"
+                ng-href="{{ 'https://github.com/' + challenge.githubRepository }}"
                 target="_blank"
                 class="github-icon-link">
                 <i class="fa fa-github fa-2x black-text" aria-hidden="true"></i>
-             </a>   
+   </a>   
                 <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit"
                     ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i>
                     {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
