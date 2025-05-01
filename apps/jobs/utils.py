@@ -82,7 +82,7 @@ def get_remaining_submission_for_a_phase(
         return response_data, status.HTTP_200_OK
 
     # Check for monthy submission limit
-    elif submissions_done_this_month_count >= max_submissions_per_month_count:
+    if submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
         next_month_start_date_time = date_time_now + datetime.timedelta(
             days=+30
@@ -94,7 +94,9 @@ def get_remaining_submission_for_a_phase(
 
         if submissions_done_today_count >= max_submissions_per_day_count:
             response_data = {
-                "message": "Both daily and monthly submission limits are exhausted!",
+                 "message": (
+            "Both daily and monthly submission limits are exhausted!"
+        ),
                 "remaining_time": remaining_time,
             }
         else:
@@ -115,51 +117,53 @@ def get_remaining_submission_for_a_phase(
 
         response_data = {
             "message": "You have exhausted today's submission limit!",
-            "remaining_time": remaining_time,
-        }
-        return response_data, status.HTTP_200_OK
+            "remaining_time": remaining_time,}
+        return response_data, status.HTTP_200_OK    
+    # calculate the remaining submissions from total submissions.
+    remaining_submission_count = (
+        max_submissions_count - submissions_done_count
+    )
+    # Calculate the remaining submissions for current month.
+    remaining_submissions_this_month_count = (
+        max_submissions_per_month_count - submissions_done_this_month_count
+    )
+    # Calculate the remaining submissions for today.
+    remaining_submissions_today_count = (
+        max_submissions_per_day_count - submissions_done_today_count
+    )
 
-    else:
-        # calculate the remaining submissions from total submissions.
-        remaining_submission_count = (
-            max_submissions_count - submissions_done_count
-        )
-        # Calculate the remaining submissions for current month.
-        remaining_submissions_this_month_count = (
-            max_submissions_per_month_count - submissions_done_this_month_count
-        )
-        # Calculate the remaining submissions for today.
-        remaining_submissions_today_count = (
-            max_submissions_per_day_count - submissions_done_today_count
-        )
+    remaining_submissions_this_month_count = min(
+        remaining_submission_count, remaining_submissions_this_month_count
+    )
+    remaining_submissions_today_count = min(
+        remaining_submissions_this_month_count,
+        remaining_submissions_today_count,
+    )
 
-        remaining_submissions_this_month_count = min(
-            remaining_submission_count, remaining_submissions_this_month_count
-        )
-        remaining_submissions_today_count = min(
-            remaining_submissions_this_month_count,
-            remaining_submissions_today_count,
-        )
-
-        response_data = {
-            "remaining_submissions_this_month_count": remaining_submissions_this_month_count,
-            "remaining_submissions_today_count": remaining_submissions_today_count,
-            "remaining_submissions_count": remaining_submission_count,
-        }
-        return response_data, status.HTTP_200_OK
+    response_data = {
+        "remaining_submissions_this_month_count"
+        : remaining_submissions_this_month_count,
+        "remaining_submissions_today_count": 
+        remaining_submissions_today_count,
+        "remaining_submissions_count": remaining_submission_count,
+    }
+    return response_data,status.HTTP_200_OK
 
 
 def is_url_valid(url):
     """
     Checks that a given URL is reachable.
+
     :param url: A URL
-    :return type: bool
+    :type url: str
+    :return: Whether the URL is reachable
+    :rtype: bool
     """
     request = urllib.request.Request(url)
     request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
-        return True
+        with urllib.request.urlopen(request):
+            return True
     except urllib.request.HTTPError:
         return False
 
@@ -172,7 +176,7 @@ def get_file_from_url(url):
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     headers = {"user-agent": "Wget/1.16 (linux-gnu)"}
-    response = requests.get(url, stream=True, headers=headers)
+    response = requests.get(url, stream=True, headers=headers, timeout=10)
     with open(file_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=1024):
             if chunk:
@@ -184,7 +188,8 @@ def get_file_from_url(url):
 
 def handle_submission_rerun(submission, updated_status):
     """
-    Function to handle the submission re-running. It is handled in the following way -
+    Function to handle the submission re-running. 
+    It is handled in the following way -
     1. Invalidate the old submission
     2. Create a new submission object for the re-running submission
 
@@ -219,18 +224,18 @@ def handle_submission_rerun(submission, updated_status):
 
     if submission.challenge_phase.challenge.is_docker_based:
         try:
-            response = requests.get(submission.input_file.url)
-        except Exception:
+            response = requests.get(submission.input_file.url, timeout=10)
+        except requests.exceptions.RequestException:
             logger.exception("Failed to get input_file")
-            return
+            return {}
 
         if response and response.status_code == 200:
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
             if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
-            ):
+                submission.challenge_phase.challenge
+                .is_static_dataset_code_upload):
                 message["is_static_dataset_code_upload_submission"] = True
 
     return message
@@ -238,7 +243,8 @@ def handle_submission_rerun(submission, updated_status):
 
 def handle_submission_resume(submission, updated_status):
     """
-    Function to handle the submission resuming. It is handled in the following way -
+    Function to handle the submission resuming.
+     It is handled in the following way -
     1. Change the submissions status to resumed
 
     Arguments:
@@ -261,17 +267,18 @@ def handle_submission_resume(submission, updated_status):
 
     if submission.challenge_phase.challenge.is_docker_based:
         try:
-            response = requests.get(submission.input_file.url)
-        except Exception:
+            response = requests.get(submission.input_file.url, timeout=10)
+        except requests.exceptions.RequestException:
             logger.exception("Failed to get input_file")
-            return
+            return {}
 
         if response and response.status_code == 200:
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
             if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
+                submission.challenge_phase.challenge.
+                is_static_dataset_code_upload
             ):
                 message["is_static_dataset_code_upload_submission"] = True
 
@@ -287,8 +294,12 @@ def calculate_distinct_sorted_leaderboard_data(
     Arguments:
         user {[Class object]} -- User model object
         challenge_obj {[Class object]} -- Challenge model object
-        challenge_phase_split {[Class object]} -- Challenge phase split model object
-        only_public_entries {[Boolean]} -- Boolean value to determine if the user wants to include private entries or not
+        challenge_phase_split {[Class object]} -- 
+        Challenge phase split model object
+
+        only_public_entries {[Boolean]} --
+        Boolean value to determine if the
+        user wants to include private entries or not
 
     Returns:
         [list] -- Ranked list of participant teams to be shown on leaderboard
@@ -306,7 +317,8 @@ def calculate_distinct_sorted_leaderboard_data(
         default_order_by = leaderboard.schema["default_order_by"]
     except KeyError:
         response_data = {
-            "error": "Sorry, default_order_by key is missing in leaderboard schema!"
+            "error": "Sorry, default_order_by key\
+            is missing in leaderboard schema!"
         }
         return response_data, status.HTTP_400_BAD_REQUEST
     # Use order by field from request only if it is valid
@@ -367,7 +379,8 @@ def calculate_distinct_sorted_leaderboard_data(
 
     # Handle the case for challenges with partial submission evaluation feature
     if (
-        challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+        challenge_phase_split.challenge_phase.
+        is_partial_submission_evaluation_enabled
     ):
         all_valid_submission_status.append(Submission.PARTIALLY_EVALUATED)
 
@@ -394,7 +407,7 @@ def calculate_distinct_sorted_leaderboard_data(
             ),
             filtering_error=RawSQL(
                 "error->>%s",
-                ("error_{0}".format(default_order_by),),
+                (f"error_{default_order_by}",),
                 output_field=FloatField(),
             ),
             submission__execution_time=time_diff_expression,
@@ -425,7 +438,7 @@ def calculate_distinct_sorted_leaderboard_data(
             ),
             filtering_error=RawSQL(
                 "error->>%s",
-                ("error_{0}".format(default_order_by),),
+                (f"error_{default_order_by}",),
                 output_field=FloatField(),
             ),
         ).values(
@@ -472,7 +485,7 @@ def calculate_distinct_sorted_leaderboard_data(
                 float(k["filtering_score"]),
                 float(-k["filtering_error"]),
             ),
-            reverse=True if is_leaderboard_order_descending else False,
+            reverse=bool(is_leaderboard_order_descending),
         )
     distinct_sorted_leaderboard_data = []
     team_list = []
@@ -483,7 +496,7 @@ def calculate_distinct_sorted_leaderboard_data(
             in all_banned_participant_team
         ):
             continue
-        elif data["submission__is_baseline"] is True:
+        if data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
@@ -502,7 +515,7 @@ def calculate_distinct_sorted_leaderboard_data(
 
         if item["error"] is not None:
             item["error"] = [
-                item["error"]["error_{0}".format(index)]
+                item["error"][f"error_{index}"]
                 for index in leaderboard_labels
             ]
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
