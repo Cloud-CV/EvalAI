@@ -757,18 +757,25 @@ describe('Unit tests for challenge controller', function () {
             vm.isParticipated = true;
             vm.eligible_to_submit = true;
             vm.disable_private_submission = true;
-    
+            vm.phaseId = 1;
+            vm.input_file = new Blob(['dummy content'], { type: 'application/zip' });
             vm.isSubmissionUsingUrl = false;
-            vm.input_file = new Blob(['dummy'], { type: 'text/plain' });
-    
-            // Stub validation to pass
-            vm.metaAttributesforCurrentSubmission = {};
+        
+            
+            vm.fileVal = 'submission.zip';
+        
+            vm.methodName = 'My Method';
+            vm.methodDesc = 'Description';
+            vm.projectUrl = 'http://example.com/project';
+            vm.publicationUrl = 'http://example.com/publication';
+        
             spyOn(vm, 'isCurrentSubmissionMetaAttributeValid').and.returnValue(true);
-    
+        
             vm.makeSubmission();
-    
+        
             expect(vm.isPublicSubmission).toBe(true);
         });
+        
 
         it('404 backend error', function () {
             success = false;
