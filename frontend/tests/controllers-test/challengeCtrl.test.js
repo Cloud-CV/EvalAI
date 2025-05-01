@@ -1145,6 +1145,101 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('vm.toggleDisablePrivateSubmission(ev)', function () {
+        var ev, confirmDeferred;
+
+        beforeEach(inject(function ($q) {
+            // fake click event
+            ev = { stopPropagation: jasmine.createSpy('stopPropagation') };
+
+            // stub out the confirm dialog
+            confirmDeferred = $q.defer();
+            spyOn($mdDialog, 'confirm').and.callThrough();
+            spyOn($mdDialog, 'show').and.returnValue(confirmDeferred.promise);
+
+            spyOn($mdDialog, 'hide');
+            spyOn($rootScope, 'notify');
+
+            // set up page IDs for URL building
+            vm.page = {
+                creator: { id: 321 },
+                id: 654
+            };
+        }));
+
+        it('on cancel (reject) should just stopPropagation and set toggleSubmissionState', function () {
+            vm.disable_private_submission = false;
+            vm.toggleDisablePrivateSubmission(ev);
+
+            expect(ev.stopPropagation).toHaveBeenCalled();
+            expect(vm.toggleSubmissionState).toBe('disabled');
+
+            // simulate user clicking “No”
+            confirmDeferred.reject();
+            // flush $q
+            $rootScope.$apply();
+
+            // confirm dialog was shown, but no request, no notify
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect(utilities.sendRequest).toBeUndefined();
+            expect($rootScope.notify).not.toHaveBeenCalled();
+        });
+
+        it('on OK + success should PATCH, toggle flag, hide dialog and notify success', function () {
+            vm.disable_private_submission = false;
+            vm.toggleDisablePrivateSubmission(ev);
+
+            expect(vm.toggleSubmissionState).toBe('disabled');
+
+            // spy and capture parameters
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                // should have flipped the flag
+                expect(vm.disable_private_submission).toBe(true);
+                // correct URL
+                expect(params.url)
+                    .toBe('challenges/challenge_host_team/321/challenge/654');
+                expect(params.method).toBe('PATCH');
+                expect(params.data)
+                    .toEqual({ disable_private_submission: true });
+
+                // invoke success callback
+                params.callback.onSuccess({ status: 200, data: {} });
+            });
+
+            // simulate user clicking “Yes”
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify)
+                .toHaveBeenCalledWith('success',
+                    'Private submissions were successfully made disabled');
+        });
+
+        it('on OK + error should hide dialog and notify error', function () {
+            vm.disable_private_submission = true;
+            vm.toggleDisablePrivateSubmission(ev);
+
+            expect(vm.toggleSubmissionState).toBe('allowed');
+
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                // flip back
+                expect(vm.disable_private_submission).toBe(false);
+                // simulate error response
+                params.callback.onError({ data: 'oops!' });
+            });
+
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify)
+                .toHaveBeenCalledWith('error', 'oops!');
+        });
+    });
+
     describe('Unit tests for refreshSubmissionData function \
         `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/?page=`', function () {
         var success, successResponse;
