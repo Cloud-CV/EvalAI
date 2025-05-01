@@ -33,20 +33,22 @@
             <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.ongoingChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
                             <div class="card-content">
-                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                                    {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                                </li>
                                 <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                                 <p><strong class="text-light-black fs-12">Organized by</strong>
                                     <strong>{{challenge.creator.team_name}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Starts on</strong>
-                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Ends on</strong>
-                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <div class="margin-top-btm">
                                     <span ng-if="challenge.approved_by_admin">
                                         <div class="chip green white-text">Approved</div>
@@ -77,20 +79,22 @@
             <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.upcomingChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
                             <div class="card-content">
-                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                                    {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                                </li>
                                 <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                                 <p><strong class="text-light-black fs-12">Organized by</strong>
                                     <strong>{{challenge.creator.team_name}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Starts on</strong>
-                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Ends on</strong>
-                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <div class="margin-top-btm">
                                     <span ng-if="challenge.approved_by_admin">
                                         <div class="chip green white-text">Approved</div>
@@ -121,20 +125,22 @@
             <div class="row" ng-if="hostedChallenges.pastChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.pastChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
                             <div class="card-content">
-                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
+                                    {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
+                                </li>
                                 <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                                 <p><strong class="text-light-black fs-12">Organized by</strong>
                                     <strong>{{challenge.creator.team_name}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Starts on</strong>
-                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <p><strong class="text-light-black fs-12">Ends on</strong>
-                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}}</strong></p>
                                 <div class="margin-top-btm">
                                     <span ng-if="challenge.approved_by_admin">
                                         <div class="chip green white-text">Approved</div>
