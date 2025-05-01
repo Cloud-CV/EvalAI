@@ -752,6 +752,24 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
+        it('should set isPublicSubmission to true when disable_private_submission is true', function () {
+            success = true;
+            vm.isParticipated = true;
+            vm.eligible_to_submit = true;
+            vm.disable_private_submission = true;
+    
+            vm.isSubmissionUsingUrl = false;
+            vm.input_file = new Blob(['dummy'], { type: 'text/plain' });
+    
+            // Stub validation to pass
+            vm.metaAttributesforCurrentSubmission = {};
+            spyOn(vm, 'isCurrentSubmissionMetaAttributeValid').and.returnValue(true);
+    
+            vm.makeSubmission();
+    
+            expect(vm.isPublicSubmission).toBe(true);
+        });
+
         it('404 backend error', function () {
             success = false;
             status = 404;
