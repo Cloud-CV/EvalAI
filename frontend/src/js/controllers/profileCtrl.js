@@ -177,11 +177,10 @@
         };
 
         vm.isURLValid = function(url) {
-            if (!url) {
-                return true; // Allow empty URLs
+            if (url === undefined || url === null) {
+                return true;
             }
-            var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
-            return url.length <= 200 && urlPattern.test(url);
+            return (url.length <= 200);
         };
 
         vm.editprofileDialog = function(ev) {
