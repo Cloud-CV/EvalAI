@@ -94,6 +94,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "worker_image_url",
             "worker_instance_type",
             "sqs_retention_period",
+            "github_repository",
         )
 
 
