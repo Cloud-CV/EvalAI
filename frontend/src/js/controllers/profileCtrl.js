@@ -177,10 +177,11 @@
         };
 
         vm.isURLValid = function(url) {
-            if (url === undefined || url === null) {
-                return true;
+            if (!url) {
+                return true; // Allow empty URLs
             }
-            return (url.length <= 200);
+            var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+            return url.length <= 200 && urlPattern.test(url);
         };
 
         vm.editprofileDialog = function(ev) {
@@ -227,12 +228,14 @@
                 vm.user.google_scholar_url = vm.user.google_scholar_url === null ? "" : vm.user.google_scholar_url;
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
 
-                if (!vm.isURLValid(vm.user[editid])) {
-                    vm.isFormError = true;
-                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
-                    return;
+                if (editid === "github_url" || editid === "google_scholar_url" || editid === "linkedin_url") {
+                    if (!vm.isURLValid(vm.user[editid])) {
+                        vm.isFormError = true;
+                        $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
+                        return;
+                    }
                 }
-
+                
                 var parameters = {};
                 parameters.url = 'auth/user/';
                 parameters.method = 'PUT';
