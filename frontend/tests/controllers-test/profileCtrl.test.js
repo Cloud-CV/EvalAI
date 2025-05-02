@@ -380,7 +380,7 @@ describe('Unit tests for profile controller', function () {
             expect($mdDialog.show).toHaveBeenCalled();
 
             var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
-            expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
+            expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/auth-token-expired-dialog.html');
 
             var testScope = $rootScope.$new();
             var controllerFn = Array.isArray(dialogArgs.controller)
