@@ -191,7 +191,7 @@
         
         vm.showTokenExpiredDialog = function() {
             $mdDialog.show({
-                templateUrl: 'dist/views/web/auth/token-expired-dialog.html', 
+                templateUrl: 'dist/views/web/auth/auth-token-expired-dialog.html', 
                 controller: ['$scope', '$mdDialog', function($scope, $mdDialog) {
                     $scope.refreshToken = function() {
                         $mdDialog.hide();
