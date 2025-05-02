@@ -371,7 +371,7 @@ describe('Unit tests for profile controller', function () {
                 };
             });
 
-            spyOn(vm, 'refreshToken'); // Spy on refreshToken to ensure it gets called
+            spyOn(vm, 'refreshToken');
         });
 
         it('should open token expired dialog with correct config and call refreshToken', function () {
