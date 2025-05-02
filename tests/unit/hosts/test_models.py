@@ -44,8 +44,12 @@ class ChallengeHostTeamTestCase(BaseTestCase):
         )
 
     def test_get_all_challenge_host_email(self):
-        first_user = User.objects.create(username="user1", email="user1@test.com", password="password")
-        second_user = User.objects.create(username="user2", email="user2@test.com", password="password")
+        first_user = User.objects.create(
+            username="user1", email="user1@test.com", password="password"
+        )
+        second_user = User.objects.create(
+            username="user2", email="user2@test.com", password="password"
+        )
         ChallengeHost.objects.create(
             user=first_user,
             team_name=self.challenge_host_team,
@@ -59,8 +63,12 @@ class ChallengeHostTeamTestCase(BaseTestCase):
             permissions=ChallengeHost.WRITE,
         )
 
-        other_team = ChallengeHostTeam.objects.create(team_name="Other Team", created_by=self.user)
-        other_user = User.objects.create(username="other", email="other@test.com", password="password")
+        other_team = ChallengeHostTeam.objects.create(
+            team_name="Other Team", created_by=self.user
+        )
+        other_user = User.objects.create(
+            username="other", email="other@test.com", password="password"
+        )
         ChallengeHost.objects.create(
             user=other_user,
             team_name=other_team,
