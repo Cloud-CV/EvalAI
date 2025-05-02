@@ -6,13 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0023_submission_code_upload_environment_log_file'),
+        ("jobs", "0023_submission_code_upload_environment_log_file"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='status',
-            field=models.CharField(choices=[('submitted', 'submitted'), ('running', 'running'), ('failed', 'failed'), ('cancelled', 'cancelled'), ('resuming', 'resuming'), ('finished', 'finished'), ('submitting', 'submitting'), ('archived', 'archived'), ('partially_evaluated', 'partially_evaluated')], db_index=True, max_length=30),
+            model_name="submission",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("submitted", "submitted"),
+                    ("running", "running"),
+                    ("failed", "failed"),
+                    ("cancelled", "cancelled"),
+                    ("resuming", "resuming"),
+                    ("finished", "finished"),
+                    ("submitting", "submitting"),
+                    ("archived", "archived"),
+                    ("partially_evaluated", "partially_evaluated"),
+                ],
+                db_index=True,
+                max_length=30,
+            ),
         ),
     ]

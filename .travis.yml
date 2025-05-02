@@ -11,6 +11,12 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+
+env:
+  global:
+    - COMPOSE_BAKE=true
+    - COMPOSE_BAKE_ARGS="--build-arg PIP_NO_CACHE_DIR=1"
+
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
@@ -23,34 +29,44 @@ before_install:
   - ulimit -n 4096 # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 coveralls
+  - pip install awscli==1.18.66
 
 jobs:
   fast_finish: true
   include:
-    - stage: Code Quality Check
-      name: Lint Code With Flake8
-      script: flake8 ./
-
-    - stage: Build & Package
-      name: Build Docker Images
+    - stage: Build, Test & Check Code Quality
+      name: Build, Test & Check Code Quality
       script:
+        # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
-        - docker-compose --profile worker --profile statsd build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1;
+        - docker-compose --profile worker --profile statsd build || travis_terminate 1;
 
-    - stage: Test & Validate
-      name: Frontend Tests
-      script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-    - stage: Test & Validate
-      name: Backend Tests
-      script:
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+        # Frontend Tests
+        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
+
+        # Backend Tests
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
+
+        # Check Code Quality
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, pylint and isort...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+          echo 'Running black check...' &&
+          black --check --diff ./ || { echo 'Black check failed!'; travis_terminate 1; } &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; travis_terminate 1; } &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; travis_terminate 1; } &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; travis_terminate 1; } &&
+          echo 'All code quality checks passed!'" || travis_terminate 1;
+
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
 
-    - stage: Deployment
+    - stage: Package & Deployment
       name: Push & Deploy Services
       script:
         - eval "$(ssh-agent -s)"
