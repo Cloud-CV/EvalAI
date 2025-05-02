@@ -26,17 +26,8 @@ RUN apt-get update && apt-get install -yq google-chrome-stable libxss1
 
 # ARM64-specific stage
 FROM base AS arm64
-# Using newer keyring method for better compatibility
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
-# Add a message for users on ARM64
-RUN echo "Chrome installation skipped on ARM64 architecture" && \
-    # Create a placeholder chrome executable that exits gracefully
-    echo '#!/bin/bash' > /usr/bin/google-chrome && \
-    echo 'echo "Warning: Running on ARM64 architecture. Chrome is not available."' >> /usr/bin/google-chrome && \
-    echo 'echo "For full Chrome functionality, rebuild with: docker build --platform=linux/amd64 ."' >> /usr/bin/google-chrome && \
-    echo 'exit 0' >> /usr/bin/google-chrome && \
-    chmod +x /usr/bin/google-chrome && \
-    apt-get update && apt-get install -yq libxss1
+RUN apt-get update && apt-get install -yq chromium libxss1
+RUN ln -sf /usr/bin/chromium /usr/bin/google-chrome
 
 # Final stage - automatically selects the right architecture
 FROM ${TARGETARCH:-amd64}

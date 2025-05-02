@@ -1,27 +1,26 @@
-import mock
 import os
-import responses
 import shutil
 import tempfile
-
 from os.path import join
-
 from unittest import TestCase
+
+import mock
+import responses
 
 from scripts.workers.remote_submission_worker import (
     create_dir_as_python_package,
-    make_request,
-    get_message_from_sqs_queue,
     delete_message_from_sqs_queue,
     download_and_extract_file,
-    get_submission_by_pk,
-    get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
     get_challenge_phase_by_pk,
+    get_challenge_phases_by_challenge_pk,
+    get_message_from_sqs_queue,
+    get_submission_by_pk,
+    make_request,
     process_submission_callback,
+    return_url_per_environment,
     update_submission_data,
     update_submission_status,
-    return_url_per_environment,
 )
 
 

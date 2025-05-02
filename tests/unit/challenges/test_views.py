@@ -11,10 +11,18 @@ import mock
 import requests
 import responses
 from allauth.account.models import EmailAddress
-from challenges.models import (Challenge, ChallengeConfiguration,
-                               ChallengePhase, ChallengePhaseSplit,
-                               DatasetSplit, Leaderboard, StarChallenge,
-                               LeaderboardData, ChallengePrize, ChallengeSponsor)
+from challenges.models import (
+    Challenge,
+    ChallengeConfiguration,
+    ChallengePhase,
+    ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
+    DatasetSplit,
+    Leaderboard,
+    LeaderboardData,
+    StarChallenge,
+)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -78,6 +86,7 @@ class BaseAPITestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge/github_repo",
         )
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
@@ -151,7 +160,7 @@ class GetChallengeTest(BaseAPITestClass):
                     "team_url": self.challenge.creator.team_url,
                 },
                 "domain": self.challenge.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge.list_tags,
                 "has_prize": self.challenge.has_prize,
                 "has_sponsors": self.challenge.has_sponsors,
@@ -195,6 +204,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
             }
         ]
 
@@ -234,7 +244,9 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         expected = "Participant Team for Challenge"
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["participant_team"]["team_name"], expected)
+        self.assertEqual(
+            response.data["participant_team"]["team_name"], expected
+        )
 
     def test_team_name_for_challenge_with_participant_team_does_not_exist(
         self,
@@ -259,22 +271,30 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
             team=self.participant_team,
         )
 
-    def test_add_participant_team_to_approved_list_when_not_in_participant_team(self):
+    def test_add_participant_team_to_approved_list_when_not_in_participant_team(
+        self,
+    ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "participant_team_pk": self.participant_team.pk},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk,
+            },
         )
         expected = {"error": "Participant isn't interested in challenge"}
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_add_participant_team_to_approved_list_when_team_doesnt_exist(self):
+    def test_add_participant_team_to_approved_list_when_team_doesnt_exist(
+        self,
+    ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "participant_team_pk": self.participant_team.pk + 1},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk + 1,
+            },
         )
         expected = {"error": "Participant Team does not exist"}
         response = self.client.post(self.url, {})
@@ -295,8 +315,10 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.challenge.approved_participant_teams.add(self.participant_team)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "participant_team_pk": self.participant_team.pk},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk,
+            },
         )
         expected = {"error": "Participant Team already approved"}
         response = self.client.post(self.url, {})
@@ -306,8 +328,10 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
     def test_remove_participant_team_doesnt_exist(self):
         self.url = reverse_lazy(
             "challenges:remove_participant_team_from_approved_list",
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "participant_team_pk": self.participant_team.pk + 1},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk + 1,
+            },
         )
         expected = {"error": "Participant Team does not exist"}
         response = self.client.post(self.url, {})
@@ -318,8 +342,10 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.challenge.approved_participant_teams.add(self.participant_team)
         self.url = reverse_lazy(
             "challenges:remove_participant_team_from_approved_list",
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "participant_team_pk": self.participant_team.pk},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk,
+            },
         )
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -405,7 +431,9 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
 
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["success"], "Successfully deregistered!")
+        self.assertEqual(
+            response.data["success"], "Successfully deregistered!"
+        )
 
     def test_deregister_participant_team_with_challenge_does_not_exist(
         self,
@@ -417,9 +445,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_deregister_participant_team_with_submission_exist(
-        self
-    ):
+    def test_deregister_participant_team_with_submission_exist(self):
         self.url = reverse_lazy(
             "challenges:deregister_participant_team_from_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -506,7 +532,7 @@ class GetParticularChallenge(BaseAPITestClass):
                 "team_url": self.challenge.creator.team_url,
             },
             "domain": self.challenge.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -550,6 +576,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -606,7 +633,7 @@ class GetParticularChallenge(BaseAPITestClass):
                 "team_url": self.challenge.creator.team_url,
             },
             "domain": self.challenge.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -652,6 +679,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -727,7 +755,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "team_url": self.challenge.creator.team_url,
             },
             "domain": self.challenge.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -780,6 +808,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -804,7 +833,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "team_url": self.challenge.creator.team_url,
             },
             "domain": self.challenge.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -857,6 +886,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1320,6 +1350,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge2/github_repo",
         )
 
         # Past Challenge challenge
@@ -1341,6 +1372,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
+            github_repository="challenge3/github_repo",
         )
 
         # Future challenge
@@ -1361,6 +1393,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge4/github_repo",
         )
 
         # Disabled challenge
@@ -1406,7 +1439,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "team_url": self.challenge3.creator.team_url,
                 },
                 "domain": self.challenge3.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge3.list_tags,
                 "has_prize": self.challenge3.has_prize,
                 "has_sponsors": self.challenge3.has_sponsors,
@@ -1450,6 +1483,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1489,307 +1523,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "team_url": self.challenge2.creator.team_url,
                 },
                 "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
-                "list_tags": self.challenge2.list_tags,
-                "has_prize": self.challenge2.has_prize,
-                "has_sponsors": self.challenge2.has_sponsors,
-                "published": self.challenge2.published,
-                "submission_time_limit": self.challenge2.submission_time_limit,
-                "is_registration_open": self.challenge2.is_registration_open,
-                "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
-                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
-                "is_active": True,
-                "allowed_email_domains": [],
-                "blocked_email_domains": [],
-                "banned_email_ids": [],
-                "approved_by_admin": True,
-                "forum_url": self.challenge2.forum_url,
-                "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
-                "slug": self.challenge2.slug,
-                "max_docker_image_size": self.challenge2.max_docker_image_size,
-                "cli_version": self.challenge2.cli_version,
-                "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
-                "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "queue": self.challenge2.queue,
-                "worker_cpu_cores": 512,
-                "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
-                "job_cpu_cores": self.challenge2.job_cpu_cores,
-                "job_memory": self.challenge2.job_memory,
-                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
-                "ec2_storage": self.challenge.ec2_storage,
-                "ephemeral_storage": self.challenge.ephemeral_storage,
-                "worker_image_url": self.challenge.worker_image_url,
-                "worker_instance_type": self.challenge.worker_instance_type,
-                "sqs_retention_period": self.challenge.sqs_retention_period,
-            }
-        ]
-        response = self.client.get(self.url, {}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
-
-    def test_get_future_challenges(self):
-        self.url = reverse_lazy(
-            "challenges:get_all_challenges",
-            kwargs={
-                "challenge_time": "FUTURE",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
-            },
-        )
-
-        expected = [
-            {
-                "id": self.challenge4.pk,
-                "title": self.challenge4.title,
-                "short_description": self.challenge4.short_description,
-                "description": self.challenge4.description,
-                "terms_and_conditions": self.challenge4.terms_and_conditions,
-                "submission_guidelines": self.challenge4.submission_guidelines,
-                "evaluation_details": self.challenge4.evaluation_details,
-                "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge4.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge4.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "creator": {
-                    "id": self.challenge4.creator.pk,
-                    "team_name": self.challenge4.creator.team_name,
-                    "created_by": self.challenge4.creator.created_by.username,
-                    "team_url": self.challenge4.creator.team_url,
-                },
-                "domain": self.challenge4.domain,
-                "domain_name": 'Computer Vision',
-                "list_tags": self.challenge4.list_tags,
-                "has_prize": self.challenge4.has_prize,
-                "has_sponsors": self.challenge4.has_sponsors,
-                "published": self.challenge4.published,
-                "submission_time_limit": self.challenge4.submission_time_limit,
-                "is_registration_open": self.challenge4.is_registration_open,
-                "enable_forum": self.challenge4.enable_forum,
-                "leaderboard_description": self.challenge4.leaderboard_description,
-                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge4.manual_participant_approval,
-                "is_active": False,
-                "allowed_email_domains": [],
-                "blocked_email_domains": [],
-                "banned_email_ids": [],
-                "approved_by_admin": True,
-                "forum_url": self.challenge4.forum_url,
-                "is_docker_based": self.challenge4.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
-                "slug": self.challenge4.slug,
-                "max_docker_image_size": self.challenge4.max_docker_image_size,
-                "cli_version": self.challenge4.cli_version,
-                "remote_evaluation": self.challenge4.remote_evaluation,
-                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
-                "workers": self.challenge4.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge4.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "queue": self.challenge4.queue,
-                "worker_cpu_cores": 512,
-                "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
-                "job_cpu_cores": self.challenge4.job_cpu_cores,
-                "job_memory": self.challenge4.job_memory,
-                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
-                "evaluation_module_error": self.challenge4.evaluation_module_error,
-                "ec2_storage": self.challenge4.ec2_storage,
-                "ephemeral_storage": self.challenge4.ephemeral_storage,
-                "worker_image_url": self.challenge4.worker_image_url,
-                "worker_instance_type": self.challenge4.worker_instance_type,
-                "sqs_retention_period": self.challenge4.sqs_retention_period,
-            }
-        ]
-        response = self.client.get(self.url, {}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
-
-    def test_get_all_challenges(self):
-        self.url = reverse_lazy(
-            "challenges:get_all_challenges",
-            kwargs={
-                "challenge_time": "ALL",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
-            },
-        )
-
-        expected = [
-            {
-                "id": self.challenge4.pk,
-                "title": self.challenge4.title,
-                "short_description": self.challenge4.short_description,
-                "description": self.challenge4.description,
-                "terms_and_conditions": self.challenge4.terms_and_conditions,
-                "submission_guidelines": self.challenge4.submission_guidelines,
-                "evaluation_details": self.challenge4.evaluation_details,
-                "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge4.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge4.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "creator": {
-                    "id": self.challenge4.creator.pk,
-                    "team_name": self.challenge4.creator.team_name,
-                    "created_by": self.challenge4.creator.created_by.username,
-                    "team_url": self.challenge4.creator.team_url,
-                },
-                "domain": self.challenge4.domain,
-                "domain_name": 'Computer Vision',
-                "list_tags": self.challenge4.list_tags,
-                "has_prize": self.challenge4.has_prize,
-                "has_sponsors": self.challenge4.has_sponsors,
-                "published": self.challenge4.published,
-                "submission_time_limit": self.challenge4.submission_time_limit,
-                "is_registration_open": self.challenge4.is_registration_open,
-                "enable_forum": self.challenge4.enable_forum,
-                "leaderboard_description": self.challenge4.leaderboard_description,
-                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge4.manual_participant_approval,
-                "is_active": False,
-                "allowed_email_domains": [],
-                "blocked_email_domains": [],
-                "banned_email_ids": [],
-                "approved_by_admin": True,
-                "forum_url": self.challenge4.forum_url,
-                "is_docker_based": self.challenge4.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
-                "slug": self.challenge4.slug,
-                "max_docker_image_size": self.challenge4.max_docker_image_size,
-                "cli_version": self.challenge4.cli_version,
-                "remote_evaluation": self.challenge4.remote_evaluation,
-                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
-                "workers": self.challenge4.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge4.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "queue": self.challenge4.queue,
-                "worker_cpu_cores": 512,
-                "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
-                "job_cpu_cores": self.challenge3.job_cpu_cores,
-                "job_memory": self.challenge3.job_memory,
-                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
-                "ec2_storage": self.challenge3.ec2_storage,
-                "ephemeral_storage": self.challenge3.ephemeral_storage,
-                "worker_image_url": self.challenge3.worker_image_url,
-                "worker_instance_type": self.challenge3.worker_instance_type,
-                "sqs_retention_period": self.challenge3.sqs_retention_period,
-            },
-            {
-                "id": self.challenge3.pk,
-                "title": self.challenge3.title,
-                "short_description": self.challenge3.short_description,
-                "description": self.challenge3.description,
-                "terms_and_conditions": self.challenge3.terms_and_conditions,
-                "submission_guidelines": self.challenge3.submission_guidelines,
-                "evaluation_details": self.challenge3.evaluation_details,
-                "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge3.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge3.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "creator": {
-                    "id": self.challenge3.creator.pk,
-                    "team_name": self.challenge3.creator.team_name,
-                    "created_by": self.challenge3.creator.created_by.username,
-                    "team_url": self.challenge3.creator.team_url,
-                },
-                "domain": self.challenge3.domain,
-                "domain_name": 'Computer Vision',
-                "list_tags": self.challenge3.list_tags,
-                "has_prize": self.challenge3.has_prize,
-                "has_sponsors": self.challenge3.has_sponsors,
-                "published": self.challenge3.published,
-                "submission_time_limit": self.challenge3.submission_time_limit,
-                "is_registration_open": self.challenge3.is_registration_open,
-                "enable_forum": self.challenge3.enable_forum,
-                "leaderboard_description": self.challenge3.leaderboard_description,
-                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge3.manual_participant_approval,
-                "is_active": False,
-                "allowed_email_domains": [],
-                "blocked_email_domains": [],
-                "banned_email_ids": [],
-                "approved_by_admin": True,
-                "forum_url": self.challenge3.forum_url,
-                "is_docker_based": self.challenge3.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
-                "slug": self.challenge3.slug,
-                "max_docker_image_size": self.challenge3.max_docker_image_size,
-                "cli_version": self.challenge3.cli_version,
-                "remote_evaluation": self.challenge3.remote_evaluation,
-                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
-                "workers": self.challenge3.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge3.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "queue": self.challenge3.queue,
-                "worker_cpu_cores": 512,
-                "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
-                "job_cpu_cores": self.challenge3.job_cpu_cores,
-                "job_memory": self.challenge3.job_memory,
-                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
-                "ec2_storage": self.challenge3.ec2_storage,
-                "ephemeral_storage": self.challenge3.ephemeral_storage,
-                "worker_image_url": self.challenge3.worker_image_url,
-                "worker_instance_type": self.challenge3.worker_instance_type,
-                "sqs_retention_period": self.challenge3.sqs_retention_period,
-            },
-            {
-                "id": self.challenge2.pk,
-                "title": self.challenge2.title,
-                "short_description": self.challenge2.short_description,
-                "description": self.challenge2.description,
-                "terms_and_conditions": self.challenge2.terms_and_conditions,
-                "submission_guidelines": self.challenge2.submission_guidelines,
-                "evaluation_details": self.challenge2.evaluation_details,
-                "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "creator": {
-                    "id": self.challenge2.creator.pk,
-                    "team_name": self.challenge2.creator.team_name,
-                    "created_by": self.challenge2.creator.created_by.username,
-                    "team_url": self.challenge2.creator.team_url,
-                },
-                "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -1833,6 +1567,311 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+            }
+        ]
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], expected)
+
+    def test_get_future_challenges(self):
+        self.url = reverse_lazy(
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "FUTURE",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
+        )
+
+        expected = [
+            {
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "short_description": self.challenge4.short_description,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(
+                    self.challenge4.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge4.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.username,
+                    "team_url": self.challenge4.creator.team_url,
+                },
+                "domain": self.challenge4.domain,
+                "domain_name": "Computer Vision",
+                "list_tags": self.challenge4.list_tags,
+                "has_prize": self.challenge4.has_prize,
+                "has_sponsors": self.challenge4.has_sponsors,
+                "published": self.challenge4.published,
+                "submission_time_limit": self.challenge4.submission_time_limit,
+                "is_registration_open": self.challenge4.is_registration_open,
+                "enable_forum": self.challenge4.enable_forum,
+                "leaderboard_description": self.challenge4.leaderboard_description,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,
+                "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "banned_email_ids": [],
+                "approved_by_admin": True,
+                "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
+                "remote_evaluation": self.challenge4.remote_evaluation,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
+                "workers": self.challenge4.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge4.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "queue": self.challenge4.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+                "job_cpu_cores": self.challenge4.job_cpu_cores,
+                "job_memory": self.challenge4.job_memory,
+                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "ec2_storage": self.challenge4.ec2_storage,
+                "ephemeral_storage": self.challenge4.ephemeral_storage,
+                "worker_image_url": self.challenge4.worker_image_url,
+                "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
+            }
+        ]
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], expected)
+
+    def test_get_all_challenges(self):
+        self.url = reverse_lazy(
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
+        )
+
+        expected = [
+            {
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "short_description": self.challenge4.short_description,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(
+                    self.challenge4.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge4.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.username,
+                    "team_url": self.challenge4.creator.team_url,
+                },
+                "domain": self.challenge4.domain,
+                "domain_name": "Computer Vision",
+                "list_tags": self.challenge4.list_tags,
+                "has_prize": self.challenge4.has_prize,
+                "has_sponsors": self.challenge4.has_sponsors,
+                "published": self.challenge4.published,
+                "submission_time_limit": self.challenge4.submission_time_limit,
+                "is_registration_open": self.challenge4.is_registration_open,
+                "enable_forum": self.challenge4.enable_forum,
+                "leaderboard_description": self.challenge4.leaderboard_description,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,
+                "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "banned_email_ids": [],
+                "approved_by_admin": True,
+                "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
+                "remote_evaluation": self.challenge4.remote_evaluation,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
+                "workers": self.challenge4.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge4.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "queue": self.challenge4.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+                "job_cpu_cores": self.challenge4.job_cpu_cores,
+                "job_memory": self.challenge4.job_memory,
+                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "ec2_storage": self.challenge4.ec2_storage,
+                "ephemeral_storage": self.challenge4.ephemeral_storage,
+                "worker_image_url": self.challenge4.worker_image_url,
+                "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
+            },
+            {
+                "id": self.challenge3.pk,
+                "title": self.challenge3.title,
+                "short_description": self.challenge3.short_description,
+                "description": self.challenge3.description,
+                "terms_and_conditions": self.challenge3.terms_and_conditions,
+                "submission_guidelines": self.challenge3.submission_guidelines,
+                "evaluation_details": self.challenge3.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(
+                    self.challenge3.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge3.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge3.creator.pk,
+                    "team_name": self.challenge3.creator.team_name,
+                    "created_by": self.challenge3.creator.created_by.username,
+                    "team_url": self.challenge3.creator.team_url,
+                },
+                "domain": self.challenge3.domain,
+                "domain_name": "Computer Vision",
+                "list_tags": self.challenge3.list_tags,
+                "has_prize": self.challenge3.has_prize,
+                "has_sponsors": self.challenge3.has_sponsors,
+                "published": self.challenge3.published,
+                "submission_time_limit": self.challenge3.submission_time_limit,
+                "is_registration_open": self.challenge3.is_registration_open,
+                "enable_forum": self.challenge3.enable_forum,
+                "leaderboard_description": self.challenge3.leaderboard_description,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,
+                "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "banned_email_ids": [],
+                "approved_by_admin": True,
+                "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
+                "remote_evaluation": self.challenge3.remote_evaluation,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
+                "workers": self.challenge3.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge3.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "queue": self.challenge3.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+                "job_cpu_cores": self.challenge3.job_cpu_cores,
+                "job_memory": self.challenge3.job_memory,
+                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
+                "ec2_storage": self.challenge3.ec2_storage,
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
+                "worker_image_url": self.challenge3.worker_image_url,
+                "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
+            },
+            {
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(
+                    self.challenge2.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge2.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.username,
+                    "team_url": self.challenge2.creator.team_url,
+                },
+                "domain": self.challenge2.domain,
+                "domain_name": "Computer Vision",
+                "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
+                "published": self.challenge2.published,
+                "submission_time_limit": self.challenge2.submission_time_limit,
+                "is_registration_open": self.challenge2.is_registration_open,
+                "enable_forum": self.challenge2.enable_forum,
+                "leaderboard_description": self.challenge2.leaderboard_description,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "banned_email_ids": [],
+                "approved_by_admin": True,
+                "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
+                "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "workers": self.challenge2.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1901,6 +1940,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
             featured=True,
+            github_repository="challenge3/github_repo",
         )
 
     def test_get_featured_challenges(self):
@@ -1927,7 +1967,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "team_url": self.challenge3.creator.team_url,
                 },
                 "domain": self.challenge3.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge3.list_tags,
                 "has_prize": self.challenge3.has_prize,
                 "has_sponsors": self.challenge3.has_sponsors,
@@ -1971,6 +2011,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2012,6 +2053,7 @@ class GetChallengeByPk(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge3/github_repo",
         )
 
         self.challenge4 = Challenge.objects.create(
@@ -2033,6 +2075,7 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=False,
             approved_by_admin=True,
+            github_repository="challenge4/github_repo",
         )
 
         self.challenge5 = Challenge.objects.create(
@@ -2089,7 +2132,7 @@ class GetChallengeByPk(BaseAPITestClass):
                 "team_url": self.challenge3.creator.team_url,
             },
             "domain": self.challenge3.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge3.list_tags,
             "has_prize": self.challenge3.has_prize,
             "has_sponsors": self.challenge3.has_sponsors,
@@ -2133,6 +2176,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
+            "github_repository": self.challenge3.github_repository,
         }
 
         response = self.client.get(self.url, {})
@@ -2180,7 +2224,7 @@ class GetChallengeByPk(BaseAPITestClass):
                 "team_url": self.challenge4.creator.team_url,
             },
             "domain": self.challenge4.domain,
-            "domain_name": 'Computer Vision',
+            "domain_name": "Computer Vision",
             "list_tags": self.challenge4.list_tags,
             "has_prize": self.challenge4.has_prize,
             "has_sponsors": self.challenge4.has_sponsors,
@@ -2224,6 +2268,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
+            "github_repository": self.challenge4.github_repository,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2273,6 +2318,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge/github_repo",
         )
 
         self.challenge2 = Challenge.objects.create(
@@ -2291,6 +2337,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge2/github_repo",
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -2331,7 +2378,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "team_url": self.challenge2.creator.team_url,
                 },
                 "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2375,6 +2422,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
             }
         ]
 
@@ -2410,7 +2458,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "team_url": self.challenge2.creator.team_url,
                 },
                 "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2454,6 +2502,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
             }
         ]
 
@@ -2489,7 +2538,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "team_url": self.challenge2.creator.team_url,
                 },
                 "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2533,6 +2582,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
             }
         ]
 
@@ -2566,7 +2616,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "team_url": self.challenge.creator.team_url,
                 },
                 "domain": self.challenge.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge.list_tags,
                 "has_prize": self.challenge.has_prize,
                 "has_sponsors": self.challenge.has_sponsors,
@@ -2610,6 +2660,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
             },
             {
                 "id": self.challenge2.pk,
@@ -2633,7 +2684,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "team_url": self.challenge2.creator.team_url,
                 },
                 "domain": self.challenge2.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2677,6 +2728,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
             },
         ]
 
@@ -4552,29 +4604,29 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
         expected_response = {
             self.challenge.pk: {
-                'archived': 0,
-                'cancelled': 0,
-                'failed': 0,
-                'finished': 0,
-                'partially_evaluated': 0,
-                'resuming': 0,
-                'running': 0,
-                'queued': 0,
-                'submitted': 0,
-                'submitting': 0
+                "archived": 0,
+                "cancelled": 0,
+                "failed": 0,
+                "finished": 0,
+                "partially_evaluated": 0,
+                "resuming": 0,
+                "running": 0,
+                "queued": 0,
+                "submitted": 0,
+                "submitting": 0,
             },
             self.challenge5.pk: {
-                'archived': 0,
-                'cancelled': 0,
-                'failed': 0,
-                'finished': 0,
-                'partially_evaluated': 0,
-                'resuming': 0,
-                'running': 0,
-                'queued': 0,
-                'submitted': 3,
-                'submitting': 0
-            }
+                "archived": 0,
+                "cancelled": 0,
+                "failed": 0,
+                "finished": 0,
+                "partially_evaluated": 0,
+                "resuming": 0,
+                "running": 0,
+                "queued": 0,
+                "submitted": 3,
+                "submitting": 0,
+            },
         }
 
         self.client.force_authenticate(user=self.user8)
@@ -5371,7 +5423,9 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
             },
         ]
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        actual_sorted = sorted(response.data, key=lambda x: x["id"])
+        expected_sorted = sorted(expected, key=lambda x: x["id"])
+        self.assertEqual(actual_sorted, expected_sorted)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(
@@ -5729,8 +5783,16 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         super(ChallengeSendApprovalRequestTest, self).setUp()
 
     @responses.activate
-    def test_request_challenge_approval_when_challenge_has_finished_submissions(self):
-        responses.add(responses.POST, settings.APPROVAL_WEBHOOK_URL, body=b'ok', status=200, content_type='text/plain')
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(
+        self,
+    ):
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
 
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
@@ -5931,7 +5993,12 @@ class ValidateChallengeTest(APITestCase):
             content_type="application/zip",
         )
         self.zip_incorect_file = open(
-            join(settings.BASE_DIR, "examples", "example3", "incorrect_zip_file.zip"),
+            join(
+                settings.BASE_DIR,
+                "examples",
+                "example3",
+                "incorrect_zip_file.zip",
+            ),
             "rb",
         )
         self.test_zip_incorrect_file = SimpleUploadedFile(
@@ -5997,23 +6064,23 @@ class ValidateChallengeTest(APITestCase):
             )
             expected = {
                 "error": "Please add the challenge title\n"
-                         "Please add the challenge description\n"
-                         "Please add the evaluation details\n"
-                         "Please add the terms and conditions.\n"
-                         "Please add the submission guidelines.\n"
-                         "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
-                         "ERROR: Please add the start_date and end_date.\n"
-                         "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
-                         "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
-                         " ERROR: There is no key for description in phase Dev Phase.\n"
-                         "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
-                         "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
-                         "ERROR: Challenge phase 1 has the following schema errors:\n"
-                         " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
-                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
-                         "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
-                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"
-                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."
+                "Please add the challenge description\n"
+                "Please add the evaluation details\n"
+                "Please add the terms and conditions.\n"
+                "Please add the submission guidelines.\n"
+                "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
+                "ERROR: Please add the start_date and end_date.\n"
+                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
+                "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
+                " ERROR: There is no key for description in phase Dev Phase.\n"
+                "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
+                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                "ERROR: Challenge phase 1 has the following schema errors:\n"
+                " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
+                "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."
             }
 
             self.assertEqual(response.status_code, 400)
@@ -6123,28 +6190,22 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_modify_leaderboard_data_success(self):
-        self.url = reverse_lazy(
-            "challenges:modify_leaderboard_data")
-        data = {"leaderboard_data": self.leaderboard_data.pk,
-                "is_disabled": 0
-                }
-        expected = {
-            "message": "Leaderboard data updated successfully!"
-        }
+        self.url = reverse_lazy("challenges:modify_leaderboard_data")
+        data = {"leaderboard_data": self.leaderboard_data.pk, "is_disabled": 0}
+        expected = {"message": "Leaderboard data updated successfully!"}
         response = self.client.put(self.url, data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_modify_leaderboard_data_with_other_parameters(self):
         self.url = reverse_lazy("challenges:modify_leaderboard_data")
-        data = {"leaderboard": self.leaderboard.pk,
-                "challenge_phase_split": self.challenge_phase_split.pk,
-                "submission": self.submission.pk,
-                "is_disabled": 0
-                }
-        expected = {
-            "message": "Leaderboard data updated successfully!"
+        data = {
+            "leaderboard": self.leaderboard.pk,
+            "challenge_phase_split": self.challenge_phase_split.pk,
+            "submission": self.submission.pk,
+            "is_disabled": 0,
         }
+        expected = {"message": "Leaderboard data updated successfully!"}
         response = self.client.put(self.url, data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -6160,13 +6221,11 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         self.user.is_staff = True
         self.user.save()
         self.url = reverse_lazy("challenges:update_challenge_approval")
-        expected = {
-            "message": "Challenge updated successfully!"
-        }
-        response = self.client.post(self.url, {
-            "challenge_pk": self.challenge.pk,
-            "approved_by_admin": True
-        })
+        expected = {"message": "Challenge updated successfully!"}
+        response = self.client.post(
+            self.url,
+            {"challenge_pk": self.challenge.pk, "approved_by_admin": True},
+        )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -6177,10 +6236,10 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         expected = {
             "error": "Sorry, you are not authorized to access this resource!"
         }
-        response = self.client.post(self.url, {
-            "challenge_pk": self.challenge.pk,
-            "approved_by_admin": True
-        })
+        response = self.client.post(
+            self.url,
+            {"challenge_pk": self.challenge.pk, "approved_by_admin": True},
+        )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -6200,13 +6259,16 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
             "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
         }
 
-        response = self.client.post(self.url, {
-            "challenge_pk": self.challenge.pk,
-            "title": "Updated Title",
-            "description": "Updated Description",
-            "approved_by_admin": True,
-            "ephemeral_storage": 25,
-        })
+        response = self.client.post(
+            self.url,
+            {
+                "challenge_pk": self.challenge.pk,
+                "title": "Updated Title",
+                "description": "Updated Description",
+                "approved_by_admin": True,
+                "ephemeral_storage": 25,
+            },
+        )
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -6219,13 +6281,16 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
             "error": "Sorry, you are not authorized to access this resource!"
         }
 
-        response = self.client.post(self.url, {
-            "challenge_pk": self.challenge.pk,
-            "title": "Updated Title",
-            "description": "Updated Description",
-            "approved_by_admin": True,
-            "ephemeral_storage": 25,
-        })
+        response = self.client.post(
+            self.url,
+            {
+                "challenge_pk": self.challenge.pk,
+                "title": "Updated Title",
+                "description": "Updated Description",
+                "approved_by_admin": True,
+                "ephemeral_storage": 25,
+            },
+        )
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

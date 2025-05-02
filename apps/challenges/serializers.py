@@ -1,7 +1,6 @@
-from rest_framework import serializers
-
 from accounts.serializers import UserDetailsSerializer
 from hosts.serializers import ChallengeHostTeamSerializer
+from rest_framework import serializers
 
 from .models import (
     Challenge,
@@ -9,6 +8,8 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
@@ -16,8 +17,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 
 
@@ -94,7 +93,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "evaluation_module_error",
             "worker_image_url",
             "worker_instance_type",
-            "sqs_retention_period"
+            "sqs_retention_period",
+            "github_repository",
         )
 
 
@@ -311,7 +311,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
-            "sqs_retention_period"
+            "sqs_retention_period",
         )
 
 
@@ -541,7 +541,8 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         default_order_by = leaderboard_schema["default_order_by"]
         labels = leaderboard_schema["labels"]
         default_order_by_index = labels.index(default_order_by)
-        # PWC requires the default sorted by metric at the index "0" of the array
+        # PWC requires the default sorted by metric at the index "0" of the
+        # array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
 
@@ -557,7 +558,9 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
         if context:
             challenge_phase_split = context.get("challenge_phase_split")
             if challenge_phase_split:
-                kwargs["data"]["challenge_phase_split"] = challenge_phase_split.pk
+                kwargs["data"][
+                    "challenge_phase_split"
+                ] = challenge_phase_split.pk
             submission = context.get("submission")
             if submission:
                 kwargs["data"]["submission"] = submission.pk
@@ -589,12 +592,7 @@ class ChallengePrizeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePrize
-        fields = (
-            "challenge",
-            "amount",
-            "rank",
-            "description"
-        )
+        fields = ("challenge", "amount", "rank", "description")
 
 
 class ChallengeSponsorSerializer(serializers.ModelSerializer):
@@ -612,8 +610,4 @@ class ChallengeSponsorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengeSponsor
-        fields = (
-            "challenge",
-            "name",
-            "website"
-        )
+        fields = ("challenge", "name", "website")

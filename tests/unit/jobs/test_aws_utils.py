@@ -29,7 +29,6 @@ class TestGenerateAWSEksBearerToken(TestCase):
         self, MockRequestSigner, MockSession, MockGetAwsCredentials
     ):
         MockGetAwsCredentials.return_value = self.aws_credentials
-
         mock_session = MagicMock()
         mock_client = MagicMock()
         mock_session.client.return_value = mock_client
@@ -44,6 +43,7 @@ class TestGenerateAWSEksBearerToken(TestCase):
 
         expected_base64_url = base64.urlsafe_b64encode(
             self.mock_signed_url.encode("utf-8")
+
         ).decode("utf-8")
         expected_bearer_token = "k8s-aws-v1." + re.sub(
             r"=*", "", expected_base64_url

@@ -1,8 +1,10 @@
 services:
   db:
-    image: postgres:10.4
+    image: postgres:16.8
     ports:
       - "5432:5432"
+    env_file:
+      - docker/dev/docker.env
 
   sqs:
     image: softwaremill/elasticmq
@@ -28,11 +30,9 @@ services:
   worker:
     env_file:
       - docker/dev/docker.env
-    image: my_custom_worker_image # Default image used if not built
     build:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
-      x-enabled: ${BUILD_WORKER:-false} # Only build if BUILD_WORKER=true
     depends_on:
       - django
     volumes:
@@ -43,17 +43,15 @@ services:
   worker_py3_8:
     env_file:
       - docker/dev/docker.env
-    image: my_custom_worker_py3_8_image # Default image used if not built
     build:
       context: ./
       dockerfile: docker/dev/worker_py3.8/Dockerfile
-      x-enabled: ${BUILD_WORKER:-false}
     depends_on:
       - django
     volumes:
       - .:/code
     profiles:
-      - worker
+      - worker # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
