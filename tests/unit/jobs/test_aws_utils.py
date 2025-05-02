@@ -1,10 +1,10 @@
 import base64
 import re
-from django.test import TestCase
 from unittest.mock import MagicMock, patch
 
-from jobs.aws_utils import generate_aws_eks_bearer_token
 from challenges.models import Challenge
+from django.test import TestCase
+from jobs.aws_utils import generate_aws_eks_bearer_token
 
 
 class TestGenerateAWSEksBearerToken(TestCase):
@@ -13,13 +13,13 @@ class TestGenerateAWSEksBearerToken(TestCase):
         self.cluster_name = "test-cluster"
         self.challenge = MagicMock(spec=Challenge)
         self.challenge.id = "challenge-id"
-        
+
         self.aws_credentials = {
             "AWS_ACCESS_KEY_ID": "fake_access_key",
             "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
             "AWS_REGION": "us-west-2",
         }
-        
+
         self.mock_signed_url = "https://sts.us-west-2.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test"
 
     @patch("jobs.aws_utils.get_aws_credentials_for_challenge")
@@ -39,11 +39,12 @@ class TestGenerateAWSEksBearerToken(TestCase):
         mock_signer.generate_presigned_url.return_value = self.mock_signed_url
         MockRequestSigner.return_value = mock_signer
 
-        token = generate_aws_eks_bearer_token(self.cluster_name, self.challenge)
+        token = generate_aws_eks_bearer_token(
+            self.cluster_name, self.challenge
+        )
 
         expected_base64_url = base64.urlsafe_b64encode(
             self.mock_signed_url.encode("utf-8")
-
         ).decode("utf-8")
         expected_bearer_token = "k8s-aws-v1." + re.sub(
             r"=*", "", expected_base64_url
@@ -52,7 +53,9 @@ class TestGenerateAWSEksBearerToken(TestCase):
         MockGetAwsCredentials.assert_called_once_with(self.challenge.id)
         MockSession.assert_called_once_with(
             aws_access_key_id=self.aws_credentials["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=self.aws_credentials["AWS_SECRET_ACCESS_KEY"],
+            aws_secret_access_key=self.aws_credentials[
+                "AWS_SECRET_ACCESS_KEY"
+            ],
         )
         mock_session.client.assert_called_once_with(
             "sts", region_name=self.aws_credentials["AWS_REGION"]
@@ -65,7 +68,7 @@ class TestGenerateAWSEksBearerToken(TestCase):
             mock_session.get_credentials(),
             mock_session.events,
         )
-        
+
         expected_params = {
             "method": "GET",
             "url": f"https://sts.{self.aws_credentials['AWS_REGION']}.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15",
@@ -73,22 +76,24 @@ class TestGenerateAWSEksBearerToken(TestCase):
             "headers": {"x-k8s-aws-id": self.cluster_name},
             "context": {},
         }
-        
+
         mock_signer.generate_presigned_url.assert_called_once_with(
             expected_params,
             region_name=self.aws_credentials["AWS_REGION"],
             expires_in=60,
             operation_name="",
         )
-        
+
         self.assertEqual(token, expected_bearer_token)
 
     @patch("jobs.aws_utils.get_aws_credentials_for_challenge")
     @patch("jobs.aws_utils.boto3.Session")
-    def test_generate_aws_eks_bearer_token_with_context_manager(self, MockSession, MockGetAwsCredentials):
+    def test_generate_aws_eks_bearer_token_with_context_manager(
+        self, MockSession, MockGetAwsCredentials
+    ):
         """Test using context manager approach from test-jobs-aws-utils branch"""
         MockGetAwsCredentials.return_value = self.aws_credentials
-        
+
         mock_session_instance = MagicMock()
         MockSession.return_value = mock_session_instance
 
@@ -99,10 +104,14 @@ class TestGenerateAWSEksBearerToken(TestCase):
         mock_signer = MagicMock()
         mock_signer.generate_presigned_url.return_value = self.mock_signed_url
 
-        with patch('jobs.aws_utils.RequestSigner', return_value=mock_signer):
-            result = generate_aws_eks_bearer_token(self.cluster_name, self.challenge)
-            
-            expected_base64 = base64.urlsafe_b64encode(self.mock_signed_url.encode("utf-8")).decode("utf-8")
+        with patch("jobs.aws_utils.RequestSigner", return_value=mock_signer):
+            result = generate_aws_eks_bearer_token(
+                self.cluster_name, self.challenge
+            )
+
+            expected_base64 = base64.urlsafe_b64encode(
+                self.mock_signed_url.encode("utf-8")
+            ).decode("utf-8")
             expected_token = "k8s-aws-v1." + re.sub(r"=*", "", expected_base64)
-            
+
             self.assertEqual(result, expected_token)
