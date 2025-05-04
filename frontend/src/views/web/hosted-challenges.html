@@ -27,7 +27,7 @@
         
         <!-- Ongoing challenges tab content -->
         <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'ongoing'">
-            <div ng-if="!hostedChallenges.ongoingChallenges.length" class="card-content">
+            <div ng-if="!hostedChallenges.ongoingChallenges.length" class="hosted-challenge-card-content">
                 <p>You haven't hosted any ongoing challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
             </div>
             <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
@@ -38,7 +38,7 @@
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
-                            <div class="card-content">
+                            <div class="hosted-challenge-card-content">
                                 <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
                                     {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
                                 </li>
@@ -73,7 +73,7 @@
         
         <!-- Upcoming challenges tab content -->
         <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'upcoming'">
-            <div ng-if="!hostedChallenges.upcomingChallenges.length" class="card-content">
+            <div ng-if="!hostedChallenges.upcomingChallenges.length" class="hosted-challenge-card-content">
                 <p>You haven't hosted any upcoming challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
             </div>
             <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
@@ -84,7 +84,7 @@
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
-                            <div class="card-content">
+                            <div class="hosted-challenge-card-content">
                                 <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
                                     {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
                                 </li>
@@ -119,7 +119,7 @@
         
         <!-- Past challenges tab content -->
         <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'past'">
-            <div ng-if="!hostedChallenges.pastChallenges.length" class="card-content">
+            <div ng-if="!hostedChallenges.pastChallenges.length" class="hosted-challenge-card-content">
                 <p>You haven't hosted any past challenge.</p>
             </div>
             <div class="row" ng-if="hostedChallenges.pastChallenges.length">
@@ -130,7 +130,7 @@
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                             </div>
-                            <div class="card-content">
+                            <div class="hosted-challenge-card-content">
                                 <li ng-repeat="tags in challenge.list_tags | limitTo: 1" class="list-inline-item chip orange white-text tag-size">
                                     {{tags | limitTo: 12}}{{tags.length > 12 ? '...' : ''}}
                                 </li>
