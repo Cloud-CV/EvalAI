@@ -1,4 +1,3 @@
-// Invoking IIFE for challenge page
 (function () {
     'use strict';
 
@@ -93,7 +92,7 @@
 
                     if (data.next !== null) {
                         var url = data.next;
-                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
+                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'));
                         parameters.url = slicedUrl;
                         vm.getAllResults(parameters, resultsArray, type);
                     } else {
