@@ -2857,6 +2857,10 @@
                           .cancel('No');
         
             $mdDialog.show(confirm).then(function() {
+                if (!vm.page || !vm.page.id || !vm.page.creator || !vm.page.creator.id) {
+                    $rootScope.notify("error", "Challenge information is missing.");
+                    return;
+                }
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
                 parameters.method = 'PATCH';
                 parameters.data = {
@@ -2882,7 +2886,7 @@
                 // Nope
             });
         };
-        
+
         vm.publishChallenge = function(ev) {
             ev.stopPropagation();
             vm.toggleChallengeState = null;
