@@ -10,7 +10,6 @@ describe("Unit tests for challenge controller", function () {
     $scope,
     $state,
     $stateParams;
-    $scope,
     utilities,
     $http,
     $interval,
@@ -1316,7 +1315,7 @@ describe("Unit tests for challenge controller", function () {
 
   
   describe('vm.toggleDisablePrivateSubmission(ev)', function () {
-    var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities;
+    var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities, $scope;
     var vm, ev, confirmDeferred;
 
     beforeEach(inject(function (
