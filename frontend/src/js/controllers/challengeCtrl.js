@@ -2857,10 +2857,18 @@
                           .cancel('No');
         
             $mdDialog.show(confirm).then(function() {
-                if (!vm.page || !vm.page.id || !vm.page.creator || !vm.page.creator.id) {
-                    $rootScope.notify("error", "Challenge information is missing.");
-                    return;
+                if (vm.page && vm.page.id) {
+                    $http.get('/api/challenges/challenge/' + vm.page.id + '/')
+                        .then(function (response) {
+                            vm.challengeDetails = response.data;
+                        })
+                        .catch(function (error) {
+                            $rootScope.notify("error", "Failed to fetch challenge data.");
+                        });
+                } else {
+                    $rootScope.notify("error", "Challenge ID is missing.");
                 }
+                
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
                 parameters.method = 'PATCH';
                 parameters.data = {
