@@ -38,7 +38,7 @@ services:
         awslogs-create-group: "true"
 
   worker_py3_7:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3_7:${COMMIT_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.7:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker_py3_7/Dockerfile
@@ -46,7 +46,7 @@ services:
       - docker/prod/docker_production.env
 
   worker_py3_8:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3_8:${COMMIT_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.8:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker_py3_8/Dockerfile
@@ -54,7 +54,7 @@ services:
       - docker/prod/docker_production.env
 
   worker_py3_12:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3_12:${COMMIT_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.12:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker_py3_12/Dockerfile

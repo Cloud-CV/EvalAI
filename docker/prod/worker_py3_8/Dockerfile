@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /code
 WORKDIR /code
 ADD requirements/* /code/
+RUN pip install -r django.txt
 RUN pip install -r prod.txt
 
 ADD . /code
