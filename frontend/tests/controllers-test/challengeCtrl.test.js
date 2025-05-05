@@ -7,6 +7,7 @@ describe("Unit tests for challenge controller", function () {
     createController,
     $injector,
     $rootScope,
+    $scope,
     $state,
     $stateParams;
     $scope,
@@ -1345,7 +1346,7 @@ describe("Unit tests for challenge controller", function () {
             utilities.sendRequest.and.callFake(function () {});
         }
     
-        var $scope = $rootScope.$new();
+        $scope = $rootScope.$new();
         $scope.page = { creator: { id: 321 }, id: 654 };
         vm = $controller('ChallengeCtrl', { $scope: $scope });
     
