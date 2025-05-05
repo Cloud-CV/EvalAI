@@ -1149,7 +1149,7 @@ describe('Unit tests for challenge controller', function () {
         var ev, confirmDeferred;
       
         beforeEach(inject(function ($q) {
-          // prevent any real HTTP/get_auth_token calls
+          // Prevent ANY real HTTP from utilities.sendRequest during controller init
           spyOn(utilities, 'sendRequest').and.callFake(function () {});
       
           // fake click event
@@ -1159,20 +1159,15 @@ describe('Unit tests for challenge controller', function () {
           confirmDeferred = $q.defer();
           spyOn($mdDialog, 'confirm').and.callThrough();
           spyOn($mdDialog, 'show').and.returnValue(confirmDeferred.promise);
-      
           spyOn($mdDialog, 'hide');
           spyOn($rootScope, 'notify');
       
           // set up page IDs for URL building
-          vm.page = {
-            creator: { id: 321 },
-            id: 654
-          };
+          vm.page = { creator: { id: 321 }, id: 654 };
         }));
       
         it('on cancel (reject) should just stopPropagation and set toggleSubmissionState', function () {
-          // allow us to assert no request is sent
-          spyOn(utilities, 'sendRequest');
+          utilities.sendRequest.calls.reset();         // start fresh for this test
       
           vm.disable_private_submission = false;
           vm.toggleDisablePrivateSubmission(ev);
@@ -1185,25 +1180,27 @@ describe('Unit tests for challenge controller', function () {
           confirmDeferred.reject();
           $rootScope.$apply();
       
-          // no PATCH should be sent, no notification
-          expect(utilities.sendRequest).not.toHaveBeenCalled();
+          expect(utilities.sendRequest).not.toHaveBeenCalled(); // no PATCH
           expect($rootScope.notify).not.toHaveBeenCalled();
         });
       
         it('on OK + success should PATCH, toggle flag, hide dialog and notify success', function () {
-          vm.disable_private_submission = false;
-      
-          // capture & verify the PATCH parameters
-          spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+          // fresh spy state
+          utilities.sendRequest.calls.reset();
+          utilities.sendRequest.and.callFake(function (params) {
             // flag flips before callback
             expect(vm.disable_private_submission).toBe(true);
-            expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
+            expect(params.url)
+              .toBe('challenges/challenge_host_team/321/challenge/654');
             expect(params.method).toBe('PATCH');
-            expect(params.data).toEqual({ disable_private_submission: true });
+            expect(params.data)
+              .toEqual({ disable_private_submission: true });
+      
             // simulate success
             params.callback.onSuccess({ status: 200, data: {} });
           });
       
+          vm.disable_private_submission = false;
           vm.toggleDisablePrivateSubmission(ev);
           expect(vm.toggleSubmissionState).toBe('disabled');
       
@@ -1219,14 +1216,15 @@ describe('Unit tests for challenge controller', function () {
         });
       
         it('on OK + error should hide dialog and notify error', function () {
-          vm.disable_private_submission = true;
-      
-          spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+          // fresh spy state
+          utilities.sendRequest.calls.reset();
+          utilities.sendRequest.and.callFake(function (params) {
             // flag flips before error callback
             expect(vm.disable_private_submission).toBe(false);
             params.callback.onError({ data: 'oops!' });
           });
       
+          vm.disable_private_submission = true;
           vm.toggleDisablePrivateSubmission(ev);
           expect(vm.toggleSubmissionState).toBe('allowed');
       
