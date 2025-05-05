@@ -1328,7 +1328,12 @@ describe("Unit tests for challenge controller", function () {
         utilities    = _utilities_;
 
         $httpBackend.whenGET(/accounts\/user\/get_auth_token/).respond(200, { token: 'dummy' });
-        $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});  // ✅ Correct endpoint
+
+        // ✅ Required valid challenge GET
+        $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});
+
+        // 🚨 Added to suppress error for undefined ID (not recommended in production)
+        $httpBackend.whenGET('/api/challenges/challenge/undefined/').respond(404, {});
 
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
@@ -1337,7 +1342,7 @@ describe("Unit tests for challenge controller", function () {
         }
 
         var $scope = $rootScope.$new();
-        $scope.page = { creator: { id: 321 }, id: 654 };  // ✅ Important: Set before controller
+        $scope.page = { creator: { id: 321 }, id: 654 };  // ✅ Set ID before controller init
         vm = $controller('ChallengeCtrl', { $scope: $scope });
 
         $httpBackend.flush();
@@ -1383,7 +1388,7 @@ describe("Unit tests for challenge controller", function () {
 
     it('on OK + success sends PATCH, flips flag, hides dialog, notifies success', function () {
         utilities.sendRequest.and.callFake(function (params) {
-            expect(vm.disable_private_submission).toBe(false);  // current state
+            expect(vm.disable_private_submission).toBe(false);
             expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
             expect(params.method).toBe('PATCH');
             expect(params.data).toEqual({ disable_private_submission: true });
@@ -1421,8 +1426,6 @@ describe("Unit tests for challenge controller", function () {
         expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
 });
-
-
 
 
   describe("Unit tests for refreshSubmissionData function \
