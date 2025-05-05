@@ -1313,132 +1313,115 @@ describe("Unit tests for challenge controller", function () {
   });
 
   
-describe('vm.toggleDisablePrivateSubmission(ev)', function () {
-    /*  Angular helpers  */
+  describe('vm.toggleDisablePrivateSubmission(ev)', function () {
     var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities;
-  
-    /*  Things we re-init every spec  */
     var vm, ev, confirmDeferred;
-  
-    /*  ✅  DO NOT register the module again – it was done at file-top            */
+
     beforeEach(inject(function (
         _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_
     ) {
-      $rootScope   = _$rootScope_;
-      $controller  = _$controller_;
-      $q           = _$q_;
-      $httpBackend = _$httpBackend_;
-      $mdDialog    = _$mdDialog_;
-      utilities    = _utilities_;
-  
-      /* ── swallow the GET /accounts/user/get_auth_token fired at ctrl init ── */
-      $httpBackend
-        .whenGET(/accounts\/user\/get_auth_token/)
-        .respond(200, { token: 'dummy' });
-  
-      /* ── spy on utilities.sendRequest only if not already spied ──────────── */
-      if (!utilities.sendRequest.calls) {
-        spyOn(utilities, 'sendRequest').and.callFake(function () {});
-      } else {
-        /* it’s already a spy from some other suite; just change behaviour   */
-        utilities.sendRequest.and.callFake(function () {});
-      }
-  
-      /* ── instantiate controller ─────────────────────────────────────────── */
-      var $scope = $rootScope.$new();
-      /* static IDs used for PATCH URL */
-      vm.page = { creator: { id: 321 }, id: 654 };
-      vm = $controller('ChallengeCtrl', { $scope: $scope });
-  
-      /* flush startup HTTP */
-      $httpBackend.flush();
-  
-      /* ── shared stubs ───────────────────────────────────────────────────── */
-      spyOn($mdDialog, 'confirm').and.callThrough();
-      spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
-      spyOn($mdDialog, 'hide');
-      spyOn($rootScope, 'notify');
-  
+        $rootScope   = _$rootScope_;
+        $controller  = _$controller_;
+        $q           = _$q_;
+        $httpBackend = _$httpBackend_;
+        $mdDialog    = _$mdDialog_;
+        utilities    = _utilities_;
+
+        $httpBackend
+            .whenGET(/accounts\/user\/get_auth_token/)
+            .respond(200, { token: 'dummy' });
+
+        if (!utilities.sendRequest.calls) {
+            spyOn(utilities, 'sendRequest').and.callFake(function () {});
+        } else {
+            utilities.sendRequest.and.callFake(function () {});
+        }
+
+        var $scope = $rootScope.$new();
+        vm = $controller('ChallengeCtrl', { $scope: $scope });
+
+        $httpBackend.flush();
+
+        spyOn($mdDialog, 'confirm').and.callThrough();
+        spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
+        spyOn($mdDialog, 'hide');
+        spyOn($rootScope, 'notify');
+
+        vm.page = { creator: { id: 321 }, id: 654 };
     }));
-  
-    /*  fresh promise / spy-reset each spec  */
+
     beforeEach(function () {
-      confirmDeferred = $q.defer();
-      $mdDialog.show.and.returnValue(confirmDeferred.promise);
-  
-      utilities.sendRequest.calls.reset();
-      $mdDialog.hide.calls.reset();
-      $rootScope.notify.calls.reset();
-  
-      ev = { stopPropagation: jasmine.createSpy('stopPropagation') };
+        confirmDeferred = $q.defer();
+        $mdDialog.show.and.returnValue(confirmDeferred.promise);
+
+        utilities.sendRequest.calls.reset();
+        $mdDialog.hide.calls.reset();
+        $rootScope.notify.calls.reset();
+
+        ev = { stopPropagation: jasmine.createSpy('stopPropagation') };
     });
-  
+
     afterEach(function () {
-      $httpBackend.verifyNoOutstandingExpectation();
-      $httpBackend.verifyNoOutstandingRequest();
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
     });
-  
-    /* --------------------------------------------------------------------- */
+
     it('on cancel (reject) only stops propagation and sets toggleSubmissionState', function () {
-      vm.disable_private_submission = false;
-      vm.toggleDisablePrivateSubmission(ev);
-  
-      expect(ev.stopPropagation).toHaveBeenCalled();
-      expect(vm.toggleSubmissionState).toBe('disabled');
-      expect($mdDialog.show).toHaveBeenCalled();
-  
-      /* user clicks “No” */
-      confirmDeferred.reject();
-      $rootScope.$apply();
-  
-      expect(utilities.sendRequest).not.toHaveBeenCalled();
-      expect($rootScope.notify).not.toHaveBeenCalled();
+        vm.disable_private_submission = false;
+        vm.toggleDisablePrivateSubmission(ev);
+
+        expect(ev.stopPropagation).toHaveBeenCalled();
+        expect(vm.toggleSubmissionState).toBe('disabled');
+        expect($mdDialog.show).toHaveBeenCalled();
+
+        confirmDeferred.reject();
+        $rootScope.$apply();
+
+        expect(utilities.sendRequest).not.toHaveBeenCalled();
+        expect($rootScope.notify).not.toHaveBeenCalled();
     });
-  
-    /* --------------------------------------------------------------------- */
+
     it('on OK + success sends PATCH, flips flag, hides dialog, notifies success', function () {
-      utilities.sendRequest.and.callFake(function (params) {
-        expect(vm.disable_private_submission).toBe(true);   // flag already flipped
-        expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
-        expect(params.method).toBe('PATCH');
-        expect(params.data).toEqual({ disable_private_submission: true });
-  
-        params.callback.onSuccess({ status: 200, data: {} });
-      });
-  
-      vm.disable_private_submission = false;
-      vm.toggleDisablePrivateSubmission(ev);
-      expect(vm.toggleSubmissionState).toBe('disabled');
-  
-      confirmDeferred.resolve();   // “Yes”
-      $rootScope.$apply();
-  
-      expect(utilities.sendRequest).toHaveBeenCalled();
-      expect($mdDialog.hide).toHaveBeenCalled();
-      expect($rootScope.notify)
-        .toHaveBeenCalledWith('success',
-          'Private submissions were successfully made disabled');
+        utilities.sendRequest.and.callFake(function (params) {
+            expect(vm.disable_private_submission).toBe(true);
+            expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
+            expect(params.method).toBe('PATCH');
+            expect(params.data).toEqual({ disable_private_submission: true });
+
+            params.callback.onSuccess({ status: 200, data: {} });
+        });
+
+        vm.disable_private_submission = false;
+        vm.toggleDisablePrivateSubmission(ev);
+        expect(vm.toggleSubmissionState).toBe('disabled');
+
+        confirmDeferred.resolve();
+        $rootScope.$apply();
+
+        expect(utilities.sendRequest).toHaveBeenCalled();
+        expect($mdDialog.hide).toHaveBeenCalled();
+        expect($rootScope.notify).toHaveBeenCalledWith('success', 'Private submissions were successfully made disabled');
     });
-  
-    /* --------------------------------------------------------------------- */
+
     it('on OK + error hides dialog and notifies error', function () {
-      utilities.sendRequest.and.callFake(function (params) {
-        expect(vm.disable_private_submission).toBe(false);  // flipped before error
-        params.callback.onError({ data: 'oops!' });
-      });
-  
-      vm.disable_private_submission = true;
-      vm.toggleDisablePrivateSubmission(ev);
-      expect(vm.toggleSubmissionState).toBe('allowed');
-  
-      confirmDeferred.resolve();   // “Yes”
-      $rootScope.$apply();
-  
-      expect(utilities.sendRequest).toHaveBeenCalled();
-      expect($mdDialog.hide).toHaveBeenCalled();
-      expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
+        utilities.sendRequest.and.callFake(function (params) {
+            expect(vm.disable_private_submission).toBe(false);
+            params.callback.onError({ data: 'oops!' });
+        });
+
+        vm.disable_private_submission = true;
+        vm.toggleDisablePrivateSubmission(ev);
+        expect(vm.toggleSubmissionState).toBe('allowed');
+
+        confirmDeferred.resolve();
+        $rootScope.$apply();
+
+        expect(utilities.sendRequest).toHaveBeenCalled();
+        expect($mdDialog.hide).toHaveBeenCalled();
+        expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
-  });
+});
+
 
   describe("Unit tests for refreshSubmissionData function \
         `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/?page=`", function () {
