@@ -1312,150 +1312,131 @@ describe("Unit tests for challenge controller", function () {
     });
   });
 
-  describe("vm.toggleDisablePrivateSubmission(ev)", function () {
-    var $rootScope,
-      $controller,
-      $q,
-      $httpBackend,
-      $mdDialog,
-      utilities,
-      vm,
-      ev,
-      confirmDeferred;
-
-    beforeEach(angular.mock.module("evalai"));
-
-    /* ---- suite-level beforeEach: create ctrl, stub HTTP, basic spies ---- */
+  
+describe('vm.toggleDisablePrivateSubmission(ev)', function () {
+    /*  Angular helpers  */
+    var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities;
+  
+    /*  Things we re-init every spec  */
+    var vm, ev, confirmDeferred;
+  
+    /*  ✅  DO NOT register the module again – it was done at file-top            */
     beforeEach(inject(function (
-      _$rootScope_,
-      _$controller_,
-      _$q_,
-      _$httpBackend_,
-      _$mdDialog_,
-      _utilities_
+        _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_
     ) {
-      $rootScope = _$rootScope_;
-      $controller = _$controller_;
-      $q = _$q_;
+      $rootScope   = _$rootScope_;
+      $controller  = _$controller_;
+      $q           = _$q_;
       $httpBackend = _$httpBackend_;
-      $mdDialog = _$mdDialog_;
-      utilities = _utilities_;
-
-      /* 1️⃣  swallow the GET /accounts/user/get_auth_token fired at ctrl init */
+      $mdDialog    = _$mdDialog_;
+      utilities    = _utilities_;
+  
+      /* ── swallow the GET /accounts/user/get_auth_token fired at ctrl init ── */
       $httpBackend
         .whenGET(/accounts\/user\/get_auth_token/)
-        .respond(200, { token: "dummy" });
-
-      /* 2️⃣ spy on sendRequest ONCE for the whole suite */
-      spyOn(utilities, "sendRequest").and.callFake(function () {
-        /* noop by default */
-      });
-
-      /* instantiate controller */
+        .respond(200, { token: 'dummy' });
+  
+      /* ── spy on utilities.sendRequest only if not already spied ──────────── */
+      if (!utilities.sendRequest.calls) {
+        spyOn(utilities, 'sendRequest').and.callFake(function () {});
+      } else {
+        /* it’s already a spy from some other suite; just change behaviour   */
+        utilities.sendRequest.and.callFake(function () {});
+      }
+  
+      /* ── instantiate controller ─────────────────────────────────────────── */
       var $scope = $rootScope.$new();
-      vm = $controller("ChallengeCtrl", { $scope: $scope });
-
-      /* flush that initial GET */
+      vm = $controller('ChallengeCtrl', { $scope: $scope });
+  
+      /* flush startup HTTP */
       $httpBackend.flush();
-
-      /* generic stubs for $mdDialog */
-      spyOn($mdDialog, "confirm").and.callThrough(); // keep original, only spy
-      spyOn($mdDialog, "show").and.callFake(function () {
-        return confirmDeferred.promise;
-      });
-      spyOn($mdDialog, "hide");
-      spyOn($rootScope, "notify");
-
-      /* fake click-event for every spec */
-      ev = { stopPropagation: jasmine.createSpy("stopPropagation") };
-
-      /* static page IDs used in URL-building */
+  
+      /* ── shared stubs ───────────────────────────────────────────────────── */
+      spyOn($mdDialog, 'confirm').and.callThrough();
+      spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
+      spyOn($mdDialog, 'hide');
+      spyOn($rootScope, 'notify');
+  
+      /* static IDs used for PATCH URL */
       vm.page = { creator: { id: 321 }, id: 654 };
     }));
-
-    /* ---- reset spy-call history and build fresh deferred before every spec ---- */
+  
+    /*  fresh promise / spy-reset each spec  */
     beforeEach(function () {
-      utilities.sendRequest.calls.reset();
       confirmDeferred = $q.defer();
-      /* make $mdDialog.show return the NEW promise */
       $mdDialog.show.and.returnValue(confirmDeferred.promise);
-      ev.stopPropagation.calls.reset();
+  
+      utilities.sendRequest.calls.reset();
       $mdDialog.hide.calls.reset();
       $rootScope.notify.calls.reset();
+  
+      ev = { stopPropagation: jasmine.createSpy('stopPropagation') };
     });
-
-    /* ---- afterEach: make sure we didn’t leave pending requests ---- */
+  
     afterEach(function () {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
     });
-
+  
     /* --------------------------------------------------------------------- */
-    it("on cancel (reject) only stops propagation and sets toggleSubmissionState", function () {
+    it('on cancel (reject) only stops propagation and sets toggleSubmissionState', function () {
       vm.disable_private_submission = false;
       vm.toggleDisablePrivateSubmission(ev);
-
+  
       expect(ev.stopPropagation).toHaveBeenCalled();
-      expect(vm.toggleSubmissionState).toBe("disabled");
+      expect(vm.toggleSubmissionState).toBe('disabled');
       expect($mdDialog.show).toHaveBeenCalled();
-
-      /* simulate “No” click */
+  
+      /* user clicks “No” */
       confirmDeferred.reject();
       $rootScope.$apply();
-
+  
       expect(utilities.sendRequest).not.toHaveBeenCalled();
       expect($rootScope.notify).not.toHaveBeenCalled();
     });
-
+  
     /* --------------------------------------------------------------------- */
-    it("on OK + success sends PATCH, flips flag, hides dialog, notifies success", function () {
-      /* override sendRequest for this spec */
+    it('on OK + success sends PATCH, flips flag, hides dialog, notifies success', function () {
       utilities.sendRequest.and.callFake(function (params) {
-        /* flag should already be toggled */
-        expect(vm.disable_private_submission).toBe(true);
-        expect(params.url).toBe(
-          "challenges/challenge_host_team/321/challenge/654"
-        );
-        expect(params.method).toBe("PATCH");
+        expect(vm.disable_private_submission).toBe(true);   // flag already flipped
+        expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
+        expect(params.method).toBe('PATCH');
         expect(params.data).toEqual({ disable_private_submission: true });
-
-        /* pretend backend success */
+  
         params.callback.onSuccess({ status: 200, data: {} });
       });
-
+  
       vm.disable_private_submission = false;
       vm.toggleDisablePrivateSubmission(ev);
-      expect(vm.toggleSubmissionState).toBe("disabled");
-
-      confirmDeferred.resolve(); // user clicks “Yes”
+      expect(vm.toggleSubmissionState).toBe('disabled');
+  
+      confirmDeferred.resolve();   // “Yes”
       $rootScope.$apply();
-
+  
       expect(utilities.sendRequest).toHaveBeenCalled();
       expect($mdDialog.hide).toHaveBeenCalled();
-      expect($rootScope.notify).toHaveBeenCalledWith(
-        "success",
-        "Private submissions were successfully made disabled"
-      );
+      expect($rootScope.notify)
+        .toHaveBeenCalledWith('success',
+          'Private submissions were successfully made disabled');
     });
-
+  
     /* --------------------------------------------------------------------- */
-    it("on OK + error hides dialog and notifies error", function () {
+    it('on OK + error hides dialog and notifies error', function () {
       utilities.sendRequest.and.callFake(function (params) {
-        /* flag flipped back before error */
-        expect(vm.disable_private_submission).toBe(false);
-        params.callback.onError({ data: "oops!" });
+        expect(vm.disable_private_submission).toBe(false);  // flipped before error
+        params.callback.onError({ data: 'oops!' });
       });
-
+  
       vm.disable_private_submission = true;
       vm.toggleDisablePrivateSubmission(ev);
-      expect(vm.toggleSubmissionState).toBe("allowed");
-
-      confirmDeferred.resolve(); // user clicks “Yes”
+      expect(vm.toggleSubmissionState).toBe('allowed');
+  
+      confirmDeferred.resolve();   // “Yes”
       $rootScope.$apply();
-
+  
       expect(utilities.sendRequest).toHaveBeenCalled();
       expect($mdDialog.hide).toHaveBeenCalled();
-      expect($rootScope.notify).toHaveBeenCalledWith("error", "oops!");
+      expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
   });
 
