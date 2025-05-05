@@ -8,6 +8,7 @@ describe("Unit tests for challenge controller", function () {
     $injector,
     $rootScope,
     $state,
+    $stateParams;
     $scope,
     utilities,
     $http,
@@ -1318,7 +1319,7 @@ describe("Unit tests for challenge controller", function () {
     var vm, ev, confirmDeferred;
 
     beforeEach(inject(function (
-        _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_
+        _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_, _$stateParams_
     ) {
         $rootScope   = _$rootScope_;
         $controller  = _$controller_;
@@ -1326,31 +1327,38 @@ describe("Unit tests for challenge controller", function () {
         $httpBackend = _$httpBackend_;
         $mdDialog    = _$mdDialog_;
         utilities    = _utilities_;
-
+        $stateParams = _$stateParams_;
+    
         confirmDeferred = $q.defer();
-
+    
+        // ✅ Set required state param BEFORE controller init
+        $stateParams.challengeId = 654;
+        $stateParams.phaseSplitId = null;
+    
         $httpBackend.whenGET(/accounts\/user\/get_auth_token/).respond(200, { token: 'dummy' });
         $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});
-
+        $httpBackend.whenGET('/api/challenges/654/challenge_phase_split').respond(200, []);
+    
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
         } else {
             utilities.sendRequest.and.callFake(function () {});
         }
-
+    
         var $scope = $rootScope.$new();
         $scope.page = { creator: { id: 321 }, id: 654 };
-
-        // ✅ Controller will now correctly preserve $scope.page
         vm = $controller('ChallengeCtrl', { $scope: $scope });
-
+    
         $httpBackend.flush();
-
+    
         spyOn($mdDialog, 'confirm').and.callThrough();
         spyOn($mdDialog, 'show').and.returnValue(confirmDeferred.promise);
         spyOn($mdDialog, 'hide');
         spyOn($rootScope, 'notify');
+    
+        vm.page = $scope.page;
     }));
+    
 
     beforeEach(function () {
         confirmDeferred = $q.defer();
