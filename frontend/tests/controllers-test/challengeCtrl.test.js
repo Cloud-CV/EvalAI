@@ -1331,6 +1331,10 @@ describe("Unit tests for challenge controller", function () {
             .whenGET(/accounts\/user\/get_auth_token/)
             .respond(200, { token: 'dummy' });
 
+        $httpBackend
+            .whenGET(/challenges\/challenge\/\d+\//)
+            .respond(200, {});
+
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
         } else {
@@ -1340,7 +1344,7 @@ describe("Unit tests for challenge controller", function () {
         var $scope = $rootScope.$new();
         vm = $controller('ChallengeCtrl', { $scope: $scope });
 
-        $httpBackend.flush();
+        $httpBackend.flush();  // Flush all above GETs
 
         spyOn($mdDialog, 'confirm').and.callThrough();
         spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
@@ -1421,6 +1425,7 @@ describe("Unit tests for challenge controller", function () {
         expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
 });
+
 
 
   describe("Unit tests for refreshSubmissionData function \
