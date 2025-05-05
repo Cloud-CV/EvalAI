@@ -2862,7 +2862,7 @@
                         .then(function (response) {
                             vm.challengeDetails = response.data;
                         })
-                        .catch(function (error) {
+                        .catch(function () {
                             $rootScope.notify("error", "Failed to fetch challenge data.");
                         });
                 } else {
