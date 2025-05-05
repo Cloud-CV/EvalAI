@@ -2882,6 +2882,7 @@
                 // Nope
             });
         };
+        
         vm.publishChallenge = function(ev) {
             ev.stopPropagation();
             vm.toggleChallengeState = null;

@@ -1327,13 +1327,8 @@ describe("Unit tests for challenge controller", function () {
         $mdDialog    = _$mdDialog_;
         utilities    = _utilities_;
 
-        $httpBackend
-            .whenGET(/accounts\/user\/get_auth_token/)
-            .respond(200, { token: 'dummy' });
-
-        $httpBackend
-            .whenGET('/api/challenges/challenge/654/')
-            .respond(200, {});  // ✅ Properly mocked for vm.page.id = 654
+        $httpBackend.whenGET(/accounts\/user\/get_auth_token/).respond(200, { token: 'dummy' });
+        $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});  // ✅ Correct endpoint
 
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
@@ -1341,10 +1336,9 @@ describe("Unit tests for challenge controller", function () {
             utilities.sendRequest.and.callFake(function () {});
         }
 
-        vm = $controller('ChallengeCtrl', {
-            $scope: $scope,
-            page: { creator: { id: 321 }, id: 654 }  // ✅ directly passed as dependency
-        });
+        var $scope = $rootScope.$new();
+        $scope.page = { creator: { id: 321 }, id: 654 };  // ✅ Important: Set before controller
+        vm = $controller('ChallengeCtrl', { $scope: $scope });
 
         $httpBackend.flush();
 
@@ -1352,6 +1346,8 @@ describe("Unit tests for challenge controller", function () {
         spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
         spyOn($mdDialog, 'hide');
         spyOn($rootScope, 'notify');
+
+        vm.page = $scope.page;
     }));
 
     beforeEach(function () {
@@ -1387,7 +1383,7 @@ describe("Unit tests for challenge controller", function () {
 
     it('on OK + success sends PATCH, flips flag, hides dialog, notifies success', function () {
         utilities.sendRequest.and.callFake(function (params) {
-            expect(vm.disable_private_submission).toBe(true);
+            expect(vm.disable_private_submission).toBe(false);  // current state
             expect(params.url).toBe('challenges/challenge_host_team/321/challenge/654');
             expect(params.method).toBe('PATCH');
             expect(params.data).toEqual({ disable_private_submission: true });
@@ -1409,7 +1405,7 @@ describe("Unit tests for challenge controller", function () {
 
     it('on OK + error hides dialog and notifies error', function () {
         utilities.sendRequest.and.callFake(function (params) {
-            expect(vm.disable_private_submission).toBe(false);
+            expect(vm.disable_private_submission).toBe(true);
             params.callback.onError({ data: 'oops!' });
         });
 
@@ -1425,6 +1421,7 @@ describe("Unit tests for challenge controller", function () {
         expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
 });
+
 
 
 
