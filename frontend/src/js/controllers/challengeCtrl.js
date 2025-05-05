@@ -26,7 +26,7 @@
         vm.isPublicSubmission = null;
         vm.isMultiMetricLeaderboardEnabled = {};
         vm.wrnMsg = {};
-        vm.page = {};
+        vm.page = $scope.page || {};
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
