@@ -16,6 +16,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install -U cffi service_identity cython==0.29 numpy==1.18.1
-RUN pip install -r worker.txt
+RUN pip install -r worker_py3_8.txt
 
 CMD ["python", "-m", "scripts.workers.submission_worker"]
