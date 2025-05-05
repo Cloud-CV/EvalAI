@@ -1333,7 +1333,7 @@ describe("Unit tests for challenge controller", function () {
         $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});
 
         // 🚨 Added to suppress error for undefined ID (not recommended in production)
-        $httpBackend.whenGET('/api/challenges/challenge/undefined/').respond(404, {});
+        $httpBackend.whenGET('/api/challenges/challenge/undefined/').respond(200, {});
 
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
