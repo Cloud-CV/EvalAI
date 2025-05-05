@@ -1341,9 +1341,10 @@ describe("Unit tests for challenge controller", function () {
             utilities.sendRequest.and.callFake(function () {});
         }
 
-        var $scope = $rootScope.$new();
-        $scope.page = { creator: { id: 321 }, id: 654 };  // ✅ Set before controller instantiation
-        vm = $controller('ChallengeCtrl', { $scope: $scope });
+        vm = $controller('ChallengeCtrl', {
+            $scope: $scope,
+            page: { creator: { id: 321 }, id: 654 }  // ✅ directly passed as dependency
+        });
 
         $httpBackend.flush();
 
