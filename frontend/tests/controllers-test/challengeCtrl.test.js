@@ -1332,8 +1332,8 @@ describe("Unit tests for challenge controller", function () {
             .respond(200, { token: 'dummy' });
 
         $httpBackend
-            .whenGET(/challenges\/challenge\/\d+\//)
-            .respond(200, {});
+            .whenGET('challenges/challenge/654/')
+            .respond(200, {});  // ✅ Properly mocked for vm.page.id = 654
 
         if (!utilities.sendRequest.calls) {
             spyOn(utilities, 'sendRequest').and.callFake(function () {});
@@ -1342,16 +1342,15 @@ describe("Unit tests for challenge controller", function () {
         }
 
         var $scope = $rootScope.$new();
+        $scope.page = { creator: { id: 321 }, id: 654 };  // ✅ Set before controller instantiation
         vm = $controller('ChallengeCtrl', { $scope: $scope });
 
-        $httpBackend.flush();  // Flush all above GETs
+        $httpBackend.flush();
 
         spyOn($mdDialog, 'confirm').and.callThrough();
         spyOn($mdDialog, 'show').and.callFake(function () { return confirmDeferred.promise; });
         spyOn($mdDialog, 'hide');
         spyOn($rootScope, 'notify');
-
-        vm.page = { creator: { id: 321 }, id: 654 };
     }));
 
     beforeEach(function () {
