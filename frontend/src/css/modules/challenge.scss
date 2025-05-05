@@ -62,6 +62,9 @@ a.active-challenge {
 .ev-challenge-card {
     height: 425px;
 }
+.ev-hosted-challenge-card {
+    height: 475px;
+}
 
 .ev-dashboard-card {
     min-height: 190px;
@@ -431,6 +434,17 @@ md-select .md-select-value span:first-child:after {
     text-align: center;
   }
 }
+.challenges-container {
+    margin-top: 20px;
+    min-height: 200px;
+
+  .hosted-challenge-card-content {
+    padding: 20px;
+    text-align: left;
+  }
+}
+
+
 
 .github-icon-link {
     margin-right: 10px;
