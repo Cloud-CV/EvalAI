@@ -1332,7 +1332,7 @@ describe("Unit tests for challenge controller", function () {
             .respond(200, { token: 'dummy' });
 
         $httpBackend
-            .whenGET('challenges/challenge/654/')
+            .whenGET('/api/challenges/challenge/654/')
             .respond(200, {});  // ✅ Properly mocked for vm.page.id = 654
 
         if (!utilities.sendRequest.calls) {
