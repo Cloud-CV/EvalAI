@@ -1331,33 +1331,36 @@ describe("Unit tests for challenge controller", function () {
     
         confirmDeferred = $q.defer();
     
-        // ✅ Set required state param BEFORE controller init
+        // Set state params early
         $stateParams.challengeId = 654;
         $stateParams.phaseSplitId = null;
     
+        // Mock HTTP responses
         $httpBackend.whenGET(/accounts\/user\/get_auth_token/).respond(200, { token: 'dummy' });
         $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});
         $httpBackend.whenGET('/api/challenges/654/challenge_phase_split').respond(200, []);
     
-        if (!utilities.sendRequest.calls) {
-            spyOn(utilities, 'sendRequest').and.callFake(function () {});
-        } else {
-            utilities.sendRequest.and.callFake(function () {});
-        }
+        // Now safely spy
+        spyOn(utilities, 'sendRequest').and.callFake(function () {});
     
+        // Setup scope
         $scope = $rootScope.$new();
         $scope.page = { creator: { id: 321 }, id: 654 };
-        vm = $controller('ChallengeCtrl', { $scope: $scope });
     
+        // Init controller
+        vm = $controller('ChallengeCtrl', { $scope: $scope });
+        vm.page = $scope.page;
+    
+        // Finalize HTTP init
         $httpBackend.flush();
     
+        // Dialog and notify mocks
         spyOn($mdDialog, 'confirm').and.callThrough();
         spyOn($mdDialog, 'show').and.returnValue(confirmDeferred.promise);
         spyOn($mdDialog, 'hide');
         spyOn($rootScope, 'notify');
-    
-        vm.page = $scope.page;
     }));
+    
     
 
     beforeEach(function () {
