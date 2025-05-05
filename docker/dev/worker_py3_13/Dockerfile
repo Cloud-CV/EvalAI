@@ -1,0 +1,19 @@
+FROM python:3.13.3
+
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update && \
+    apt-get install -q -y default-jre default-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /code
+WORKDIR /code
+
+ADD requirements/* /code/
+
+RUN pip install -r dev.txt
+RUN pip install -r worker.txt
+
+ADD . /code
+
+CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.submission_worker"]
