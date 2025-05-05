@@ -1346,6 +1346,8 @@ describe('vm.toggleDisablePrivateSubmission(ev)', function () {
   
       /* ── instantiate controller ─────────────────────────────────────────── */
       var $scope = $rootScope.$new();
+      /* static IDs used for PATCH URL */
+      vm.page = { creator: { id: 321 }, id: 654 };
       vm = $controller('ChallengeCtrl', { $scope: $scope });
   
       /* flush startup HTTP */
@@ -1357,8 +1359,6 @@ describe('vm.toggleDisablePrivateSubmission(ev)', function () {
       spyOn($mdDialog, 'hide');
       spyOn($rootScope, 'notify');
   
-      /* static IDs used for PATCH URL */
-      vm.page = { creator: { id: 321 }, id: 654 };
     }));
   
     /*  fresh promise / spy-reset each spec  */
