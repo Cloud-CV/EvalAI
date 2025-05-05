@@ -3,8 +3,16 @@ FROM python:3.12.3
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && \
-    apt-get install -q -y default-jre default-jdk && \
+    apt-get install -q -y \
+    default-jre \
+    default-jdk \
+    libpq-dev \
+    libcurl4-openssl-dev \
+    build-essential \
+    python3-dev \
+    curl && \
     rm -rf /var/lib/apt/lists/*
+
 
 RUN mkdir /code
 WORKDIR /code

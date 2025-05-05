@@ -6,6 +6,7 @@ RUN mkdir /code
 WORKDIR /code
 
 ADD requirements/* /code/
+RUN pip install -r django.txt
 RUN pip install -r dev.txt
 
 RUN apt-get update && \

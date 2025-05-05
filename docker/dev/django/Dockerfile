@@ -9,6 +9,7 @@ WORKDIR /code
 
 ADD requirements/* /code/ 
 RUN pip install --no-cache-dir --no-compile --progress-bar off -r dev.txt
+RUN pip install --no-cache-dir --no-compile --progress-bar off -r django.txt
 
 ADD . /code/
 
