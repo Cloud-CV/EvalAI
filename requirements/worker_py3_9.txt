@@ -1,0 +1,9 @@
+matplotlib==3.8.4
+cfn-lint==0.79.5
+networkx==3.2.1
+numpy==1.26.4
+pandas==2.2.3
+pycocotools==2.0.7
+scikit-learn==1.4.2
+scipy==1.11.4
+tqdm==4.67.1

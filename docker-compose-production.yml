@@ -53,11 +53,11 @@ services:
     env_file:
       - docker/prod/docker_production.env
 
-  worker_py3_12:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.12:${COMMIT_ID}
+  worker_py3_9:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker_py3_12/Dockerfile
+      dockerfile: docker/prod/worker_py3_9/Dockerfile
     env_file:
       - docker/prod/docker_production.env
 
