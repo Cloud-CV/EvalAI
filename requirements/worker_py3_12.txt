@@ -4,6 +4,8 @@ matplotlib==3.10.1
 networkx==3.2
 numpy==1.26.0
 pandas==2.2.3
+psycopg2==2.9.9
+pycurl==7.45.2
 pycocotools==2.0.8
 python-memcached==1.59
 raven==6.10.0
