@@ -309,8 +309,10 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
             }
     else:
-        message = "Please ensure that the \
-                TASK_EXECUTION_ROLE_ARN is appropriately passed as an environment varible."
+        message = (
+            "Please ensure that the "
+            "TASK_EXECUTION_ROLE_ARN is appropriately passed as an environment varible."
+        )
         return {
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
@@ -362,9 +364,9 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             logger.exception(e)
             return e.response
     else:
-        message = "Worker service for challenge {} already exists. \
-            Please scale, stop or delete.".format(
-            challenge.pk
+        message = (
+            f"Worker service for challenge {challenge.pk} already exists. "
+            "Please scale, stop or delete."
         )
         return {
             "Error": message,
@@ -532,20 +534,26 @@ def stop_ec2_instance(challenge):
                         "error": e.response,
                     }
             else:
-                message = f"Instance for challenge {challenge.pk} is not running. \
-                    Please ensure the instance is running."
+                message = (
+                    f"Instance for challenge {challenge.pk} is not running. "
+                    "Please ensure the instance is running."
+                )
                 return {
                     "error": message,
                 }
         else:
-            message = f"Instance status checks are not ready for challenge {challenge.pk}. \
-                Please wait for the status checks to pass."
+            message = (
+                f"Instance status checks are not ready for challenge {challenge.pk}. "
+                "Please wait for the status checks to pass."
+            )
             return {
                 "error": message,
             }
     else:
-        message = f"Instance for challenge {challenge.pk} not found. \
-            Please ensure the instance exists."
+        message = (
+            f"Instance for challenge {challenge.pk} not found. "
+            "Please ensure the instance exists."
+        )
         return {
             "error": message,
         }
@@ -619,14 +627,18 @@ def start_ec2_instance(challenge):
                     "error": e.response,
                 }
         else:
-            message = f"Instance for challenge {challenge.pk} is running. \
-                Please ensure the instance is stopped."
+            message = (
+                f"Instance for challenge {challenge.pk} is running. "
+                "Please ensure the instance is stopped."
+            )
             return {
                 "error": message,
             }
     else:
-        message = f"Instance for challenge {challenge.pk} not found. \
-            Please ensure the instance exists."
+        message = (
+            f"Instance for challenge {challenge.pk} not found. "
+            "Please ensure the instance exists."
+        )
         return {
             "error": message,
         }
@@ -715,8 +727,8 @@ def create_ec2_instance(
     target_instance_id = challenge.ec2_instance_id
     if target_instance_id:
         return {
-            "error": f"Challenge {challenge.pk} has existing EC2 instance ID. \
-            Please ensure there is no existing associated instance before trying to create one."
+            "error": f"Challenge {challenge.pk} has existing EC2 instance ID. "
+            "Please ensure there is no existing associated instance before trying to create one."
         }
 
     ec2 = get_boto3_client("ec2", aws_keys)
@@ -1219,14 +1231,14 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         count, failures = response["count"], response["failures"]
 
         logger.info(
-            f"The worker service for challenge {challenge.pk} was restarted, \
-            as {field_name} was changed."
+            f"The worker service for challenge {challenge.pk} was restarted, "
+            f"as {field_name} was changed."
         )
 
         if count != 1:
             logger.warning(
-                f"Worker(s) for challenge {challenge.id} couldn't restart! \
-                Error: {failures[0]['message']}"
+                f"Worker(s) for challenge {challenge.id} couldn't restart! "
+                f"Error: {failures[0]['message']}"
             )
         else:
             challenge_url = "{}/web/challenges/challenge-page/{}".format(
