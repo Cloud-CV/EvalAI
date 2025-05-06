@@ -37,19 +37,27 @@ services:
         awslogs-group: celery_staging
         awslogs-create-group: 'true'
 
-  worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}
+  worker_py3_7:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.7:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker/Dockerfile
+      dockerfile: docker/prod/worker_py3_7/Dockerfile
     env_file:
       - docker/prod/docker_staging.env
 
-  worker_py3.8:
+  worker_py3_8:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.8:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker_py3.8/Dockerfile
+      dockerfile: docker/prod/worker_py3_8/Dockerfile
+    env_file:
+      - docker/prod/docker_staging.env
+
+  worker_py3_12:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.12:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker_py3_12/Dockerfile
     env_file:
       - docker/prod/docker_staging.env
 
@@ -78,7 +86,7 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
-    command: ['python', '-m', 'scripts.workers.remote_submission_worker']
+    command: [ 'python', '-m', 'scripts.workers.remote_submission_worker' ]
     env_file:
       - docker/prod/docker_remote_worker.env
 
@@ -105,7 +113,7 @@ services:
       - '--web.external-url=http://localhost:9090/prometheus'
     ports:
       - '9090:9090'
-  
+
   grafana:
     hostname: grafana
     image: grafana/grafana:latest
@@ -129,13 +137,13 @@ services:
       - '9125:9125/udp'
       - '9125:9125/tcp'
       - '9102:9102'
-  
+
   node_exporter:
     hostname: node_exporter
     image: prom/node-exporter
     ports:
       - '9100:9100'
-  
+
   nginx-ingress:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nginx-ingress:${COMMIT_ID}
     build:
@@ -143,7 +151,7 @@ services:
       dockerfile: docker/prod/nginx-ingress/Dockerfile
       args:
         MONITORING_ENV: staging
-    depends_on: 
+    depends_on:
       - prometheus
       - grafana
       - statsd-exporter
@@ -151,7 +159,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
-    
+
   alert-manager:
     hostname: alert_manager
     image: prom/alertmanager:v0.24.0
