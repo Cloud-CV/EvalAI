@@ -9,7 +9,7 @@ describe("Unit tests for challenge controller", function () {
     $rootScope,
     $scope,
     $state,
-    $stateParams;
+    $stateParams,
     utilities,
     $http,
     $interval,
