@@ -1,4 +1,4 @@
-FROM python:3.12.3
+FROM python:3.9.21
 
 ENV PYTHONUNBUFFERED 1
 
@@ -20,7 +20,7 @@ WORKDIR /code
 ADD requirements/* /code/
 
 RUN pip install -r dev.txt
-RUN pip install -r worker_py3_12.txt
+RUN pip install -r worker_py3_9.txt
 
 ADD . /code
 
