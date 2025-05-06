@@ -1318,7 +1318,6 @@ describe("Unit tests for challenge controller", function () {
     var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities, $scope, $stateParams;
     var vm, ev, confirmDeferred;
 
-    beforeEach(angular.mock.module('evalai'));
 
     beforeEach(inject(function (
         _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_, _$stateParams_
