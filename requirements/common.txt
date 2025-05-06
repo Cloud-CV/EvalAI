@@ -26,7 +26,7 @@ pika==1.1.0
 pickleshare==0.7.5
 Pillow==7.1.0
 PyJWT==2.1.0
-PyYaml==5.1
+PyYaml==5.4
 proc==1.0
 rstr==2.2.6
 sendgrid==6.4.8
