@@ -1,3 +1,2 @@
-django-autofixture==0.12.1
 psycopg2==2.8.4
 pycurl==7.43.0.6
