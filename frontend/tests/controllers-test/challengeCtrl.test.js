@@ -1315,58 +1315,56 @@ describe("Unit tests for challenge controller", function () {
 
   
   describe('vm.toggleDisablePrivateSubmission(ev)', function () {
-    var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities, $scope;
+    var $rootScope, $controller, $q, $httpBackend, $mdDialog, utilities, $scope, $stateParams;
     var vm, ev, confirmDeferred;
+
+    beforeEach(angular.mock.module('evalai'));
 
     beforeEach(inject(function (
         _$rootScope_, _$controller_, _$q_, _$httpBackend_, _$mdDialog_, _utilities_, _$stateParams_
     ) {
-        $rootScope   = _$rootScope_;
-        $controller  = _$controller_;
-        $q           = _$q_;
+        $rootScope = _$rootScope_;
+        $controller = _$controller_;
+        $q = _$q_;
         $httpBackend = _$httpBackend_;
-        $mdDialog    = _$mdDialog_;
-        utilities    = _utilities_;
+        $mdDialog = _$mdDialog_;
+        utilities = _utilities_;
         $stateParams = _$stateParams_;
-    
-        confirmDeferred = $q.defer();
-    
-        // Set state params early
+
+        // Set challenge ID early
         $stateParams.challengeId = 654;
         $stateParams.phaseSplitId = null;
-    
-        // Mock HTTP responses
+
+        confirmDeferred = $q.defer();
+
+        // Mock API responses for controller initialization
         $httpBackend.whenGET(/accounts\/user\/get_auth_token/).respond(200, { token: 'dummy' });
         $httpBackend.whenGET('/api/challenges/challenge/654/').respond(200, {});
         $httpBackend.whenGET('/api/challenges/654/challenge_phase_split').respond(200, []);
-    
-        // Now safely spy
-        spyOn(utilities, 'sendRequest').and.callFake(function () {});
-    
-        // Setup scope
+
+        // Set up controller scope
         $scope = $rootScope.$new();
         $scope.page = { creator: { id: 321 }, id: 654 };
-    
-        // Init controller
+
+        // Initialize controller
         vm = $controller('ChallengeCtrl', { $scope: $scope });
         vm.page = $scope.page;
-    
-        // Finalize HTTP init
-        $httpBackend.flush();
-    
-        // Dialog and notify mocks
+
+        $httpBackend.flush(); // finalize initialization
+
+        // Spy setup
         spyOn($mdDialog, 'confirm').and.callThrough();
         spyOn($mdDialog, 'show').and.returnValue(confirmDeferred.promise);
         spyOn($mdDialog, 'hide');
         spyOn($rootScope, 'notify');
+        spyOn(utilities, 'sendRequest').and.callFake(function () {});
     }));
-    
-    
 
     beforeEach(function () {
         confirmDeferred = $q.defer();
         $mdDialog.show.and.returnValue(confirmDeferred.promise);
 
+        // Reset spies before each test
         utilities.sendRequest.calls.reset();
         $mdDialog.hide.calls.reset();
         $rootScope.notify.calls.reset();
@@ -1381,6 +1379,7 @@ describe("Unit tests for challenge controller", function () {
 
     it('on cancel (reject) only stops propagation and sets toggleSubmissionState', function () {
         vm.disable_private_submission = false;
+
         vm.toggleDisablePrivateSubmission(ev);
 
         expect(ev.stopPropagation).toHaveBeenCalled();
@@ -1405,7 +1404,9 @@ describe("Unit tests for challenge controller", function () {
         });
 
         vm.disable_private_submission = false;
+
         vm.toggleDisablePrivateSubmission(ev);
+
         expect(vm.toggleSubmissionState).toBe('disabled');
 
         confirmDeferred.resolve();
@@ -1413,7 +1414,10 @@ describe("Unit tests for challenge controller", function () {
 
         expect(utilities.sendRequest).toHaveBeenCalled();
         expect($mdDialog.hide).toHaveBeenCalled();
-        expect($rootScope.notify).toHaveBeenCalledWith('success', 'Private submissions were successfully made disabled');
+        expect($rootScope.notify).toHaveBeenCalledWith(
+            'success',
+            'Private submissions were successfully made disabled'
+        );
     });
 
     it('on OK + error hides dialog and notifies error', function () {
@@ -1423,7 +1427,9 @@ describe("Unit tests for challenge controller", function () {
         });
 
         vm.disable_private_submission = true;
+
         vm.toggleDisablePrivateSubmission(ev);
+
         expect(vm.toggleSubmissionState).toBe('allowed');
 
         confirmDeferred.resolve();
@@ -1434,7 +1440,6 @@ describe("Unit tests for challenge controller", function () {
         expect($rootScope.notify).toHaveBeenCalledWith('error', 'oops!');
     });
 });
-
 
 
   describe("Unit tests for refreshSubmissionData function \
