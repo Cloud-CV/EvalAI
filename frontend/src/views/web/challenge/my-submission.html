@@ -66,7 +66,7 @@
                             <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
                                     !challenge.isStaticCodeUploadChallenge" data-field="file">Environment Logs</th>
                             <th class="align-center fs-18 w-300" data-field="file">Submitted at</th>
-                            <th class="align-center fs-18 w-300" ng-if="!challenge.disable_private_submission && challenge.currentPhaseLeaderboardPublic"
+                            <th class="align-center fs-18 w-300" ng-if="challenge.currentPhaseLeaderboardPublic"
                                 data-field="file">
                                 Show on leaderboard</th>
                             <th class="fs-18 w-300" data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline
@@ -121,7 +121,7 @@
 
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 
-                                <td ng-if="!challenge.disable_private_submission && challenge.currentPhaseLeaderboardPublic" class="center">
+                                <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
                                     <input ng-checked="key.is_public" ng-if="!challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                         ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                         id="isPublic{{ key.id }}"
