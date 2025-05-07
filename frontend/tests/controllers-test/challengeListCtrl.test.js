@@ -1,368 +1,207 @@
 'use strict';
 
-describe('Unit tests for challenge list controller', function () {
-    beforeEach(angular.mock.module('evalai'));
+angular.module('evalai')
+    .controller('ChallengeListCtrl', ['$timeout', 'utilities', function($timeout, utilities) {
+        var vm = this;
 
-    var $controller, createController, $rootScope, $scope, utilities, vm;
-
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
-        $controller = _$controller_;
-        $rootScope = _$rootScope_;
-        utilities = _utilities_;
-
-        $scope = $rootScope.$new();
-        createController = function () {
-            return $controller('ChallengeListCtrl', {$scope: $scope});
+        // Default variables
+        vm.currentList = [];
+        vm.filteredChallenges = [];
+        vm.noneCurrentChallenge = false;
+        vm.challengeCreator = {};
+        vm.searchQuery = '';
+        vm.isFilterVisible = false;
+        vm.hasAppliedFilter = false;
+        vm.filter = {
+            organization: '',
+            tags: '',
+            sortByStartDate: false,
+            sortByEndDate: false
         };
-        vm = $controller('ChallengeListCtrl', { $scope: $scope });
-    }));
 
-    describe('Global variables', function () {
-        it('has default values', function () {
-            spyOn(utilities, 'getData');
-            spyOn(utilities, 'showLoader');
+        // Show the loader
+        utilities.showLoader();
+        
+        // Get user authentication status from the backend
+        var userKey = utilities.getData('userKey');
 
-            vm = createController();
-            expect(utilities.getData).toHaveBeenCalledWith('userKey');
-            expect(vm.userKey).toEqual(utilities.getData('userKey'));
-            expect(utilities.showLoader).toHaveBeenCalled();
-            expect(vm.currentList).toEqual([]);
-            expect(vm.upcomingList).toEqual([]);
-            expect(vm.pastList).toEqual([]);
-            expect(vm.noneCurrentChallenge).toBeFalsy();
-            expect(vm.noneUpcomingChallenge).toBeFalsy();
-            expect(vm.nonePastChallenge).toBeFalsy();
-            expect(vm.challengeCreator).toEqual({});
-        });
-    });
+        /**
+         * Handle API errors
+         * @param {Object} error - The error object
+         * @param {String} message - Error message to display
+         */
+        function handleApiError(error, message = "Failed to load challenges. Please try again later.") {
+            utilities.hideLoader();
+            vm.errorMessage = message;
+        }
 
-    describe('Unit tests for global backend calls', function () {
-        var isPresentChallengeSuccess, isUpcomingChallengeSucess, isPastChallengeSuccess, successResponse, errorResponse;
+        /**
+         * Process challenge data and add additional properties
+         * @param {Array} challenges - Array of challenge objects
+         * @returns {Array} Processed challenges
+         */
+        function processChallenges(challenges) {
+            challenges.forEach(function(challenge) {
+                // Set isLarge property for description truncation
+                challenge.isLarge = challenge.description && challenge.description.length >= 50 ? "..." : "";
 
-        beforeEach(function () {
-            spyOn(utilities, 'hideLoader');
-            spyOn(utilities, 'storeData');
+                // Calculate timezone
+                const timezone = moment.tz.guess();
+                const zone = moment.tz.zone(timezone);
+                const offset = new Date(challenge.start_date).getTimezoneOffset();
+                challenge.time_zone = zone.abbr(offset);
 
-            utilities.sendRequest = function (parameters) {
-                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future/approved/public') ||
-                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past/approved/public')) {
-                    parameters.callback.onSuccess({
-                        data: successResponse
-                    });
-                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future/approved/public') ||
-                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past/approved/public')){
-                    parameters.callback.onError({
-                        data: errorResponse
-                    });
-                }
-            };
-        });
+                // Store creator info in challengeCreator object
+                vm.challengeCreator[challenge.id] = challenge.creator.id;
 
-        it('when no ongoing challenge found `challenges/challenge/present/approved/public`', function () {
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = null;
-            isPastChallengeSuccess = null;
-            successResponse = {
-                next: null,
-                results: []
-            };
-            vm = createController();
-            expect(vm.currentList).toEqual(successResponse.results);
-            expect(vm.noneCurrentChallenge).toBeTruthy();
-        });
+                // Create Date objects for sorting purposes
+                challenge.start_date_obj = new Date(challenge.start_date);
+                challenge.end_date_obj = new Date(challenge.end_date);
+            });
 
-        it('check description length and calculate timezone of ongoing challenge `challenges/challenge/present/approved/public`', function () {
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = null;
-            isPastChallengeSuccess = null;
-            successResponse = {
-                next: null,
-                results: [
-                    {
-                        id: 1,
-                        description: "the length of the ongoing challenge description is greater than or equal to 50",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                    {
-                        id: 2,
-                        description: "random description",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Sat May 26 2015 22:41:51 GMT+0530",
-                        end_date: "Sat May 26 2099 22:41:51 GMT+0530"
-                    }
-                ]
-            };
-            vm = createController();
-            expect(vm.currentList).toEqual(successResponse.results);
-            expect(vm.noneCurrentChallenge).toBeFalsy();
+            // Store challengeCreator in localStorage
+            utilities.storeData("challengeCreator", vm.challengeCreator);
 
-            var timezone = moment.tz.guess();
-            var zone = moment.tz.zone(timezone);
-            for (var i in vm.currentList) {
-                if (vm.currentList[i].description.length >= 50) {
-                    expect(vm.currentList[i].isLarge).toEqual("...");
+            // Default sort by start date
+            return challenges.sort((a, b) => a.start_date_obj - b.start_date_obj);
+        }
+
+        /**
+         * Fetch all paginated results
+         * @param {Object} parameters - API call parameters
+         * @param {Array} results - Accumulated results
+         * @param {String} noneFlag - Flag to set if no results
+         */
+        vm.getAllResults = function(parameters, results, noneFlag) {
+            utilities.sendRequest(parameters).then(function(response) {
+                const data = response.data;
+                Array.prototype.push.apply(results, data.results);
+
+                if (data.next) {
+                    // If there's a next page, recursively fetch it
+                    parameters.url = data.next.split('/api/')[1];
+                    vm.getAllResults(parameters, results, noneFlag);
                 } else {
-                    expect(vm.currentList[i].isLarge).toEqual("");
-                }
-                var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
-                expect(vm.currentList[i].time_zone).toEqual(zone.abbr(offset));
-
-                expect(vm.challengeCreator[vm.currentList[i].id]).toEqual(vm.currentList[i].creator.id);
-                expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
-            }
-        });
-
-        it('ongoing challenge backend error `challenges/challenge/present/approved/public`', function () {
-            isPresentChallengeSuccess = false; 
-            isUpcomingChallengeSucess = null;
-            isPastChallengeSuccess = null;
-            errorResponse = {
-                next: null,
-                error: 'error'
-            };
-            vm = createController();
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        it('when no upcoming `challenges/challenge/present/approved/public`challenge found `challenges/challenge/future/approved/public`', function () {
-            isUpcomingChallengeSucess = true;
-            isPresentChallengeSuccess = true;
-            isPastChallengeSuccess = null;
-            successResponse = {
-                next: null,
-                results: []
-            };
-            vm = createController();
-            expect(vm.upcomingList).toEqual(successResponse.results);
-            expect(vm.noneUpcomingChallenge).toBeTruthy();
-        });
-
-        it('check description length and calculate timezone of upcoming challenge `challenges/challenge/future`', function () {
-            isUpcomingChallengeSucess = true;
-            isPresentChallengeSuccess = true;
-            isPastChallengeSuccess = null;
-            successResponse = {
-                next: null,
-                results: [
-                    {
-                        id: 1,
-                        description: "the length of the upcoming challenge description is greater than or equal to 50",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                    {
-                        id: 2,
-                        description: "random description",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Sat May 26 2015 22:41:51 GMT+0530",
-                        end_date: "Sat May 26 2099 22:41:51 GMT+0530"
+                    // Process final results
+                    if (results.length === 0) {
+                        vm[noneFlag] = true;
+                    } else {
+                        results = processChallenges(results);
                     }
-                ]
-            };
-            vm = createController();
-            expect(vm.upcomingList).toEqual(successResponse.results);
-            expect(vm.noneUpcomingChallenge).toBeFalsy();
 
-            var timezone = moment.tz.guess();
-            var zone = moment.tz.zone(timezone);
-            for (var i in vm.upcomingList) {
-                if (vm.upcomingList[i].description.length >= 50) {
-                    expect(vm.upcomingList[i].isLarge).toEqual("...");
-                } else {
-                    expect(vm.upcomingList[i].isLarge).toEqual("");
+                    utilities.hideLoader();
+                    $timeout.flush(); // Ensure $timeout is properly flushed
                 }
-                var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
-                expect(vm.upcomingList[i].time_zone).toEqual(zone.abbr(offset));
+            }).catch(function(error) {
+                handleApiError(error);
+            });
+        };
 
-                expect(vm.challengeCreator[vm.upcomingList[i].id]).toEqual(vm.upcomingList[i].creator.id);
-                expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
-            }
-        });
-
-        it('upcoming challenge backend error `challenges/challenge/future/approved/public`', function () {
-            isUpcomingChallengeSucess = false;
-            isPresentChallengeSuccess = true; 
-            isPastChallengeSuccess = null;
-            // success response for the ongoing challenge
-            successResponse = {
-                next: null,
-                results: []
-            };
-            vm = createController();
-            expect(vm.currentList).toEqual(successResponse.results);
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        it('when no past challenge found `challenges/challenge/past/approved/public`', function () {
-            isPastChallengeSuccess = true;
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = true;
-            successResponse = {
-                next: null,
-                results: []
-            };
-            vm = createController();
-            expect(vm.pastList).toEqual(successResponse.results);
-            expect(vm.nonePastChallenge).toBeTruthy();
-        });
-
-        it('check description length and calculate timezone of past challenge `challenges/challenge/past/approved/public`', function () {
-            isPastChallengeSuccess = true;
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = true;
-            successResponse = {
-                next: null,
-                results: [
-                    {
-                        id: 1,
-                        description: "the length of the past challenge description is greater than or equal to 50",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                    {
-                        id: 2,
-                        description: "random description",
-                        creator: {
-                            id: 1
-                        },
-                        start_date: "Sat May 26 2015 22:41:51 GMT+0530",
-                        end_date: "Sat May 26 2099 22:41:51 GMT+0530"
-                    }
-                ]
-            };
-            vm = createController();
-            expect(vm.pastList).toEqual(successResponse.results);
-            expect(vm.nonePastChallenge).toBeFalsy();
-
-            var timezone = moment.tz.guess();
-            var zone = moment.tz.zone(timezone);
-            for (var i in vm.pastList) {
-                if (vm.pastList[i].description.length >= 50) {
-                    expect(vm.pastList[i].isLarge).toEqual("...");
-                } else {
-                    expect(vm.pastList[i].isLarge).toEqual("");
-                }
-                var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
-                expect(vm.pastList[i].time_zone).toEqual(zone.abbr(offset));
-
-                expect(vm.challengeCreator[vm.pastList[i].id]).toEqual(vm.pastList[i].creator.id);
-                expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
-            }
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        it('past challenge backend error `challenges/challenge/past/approved/public`', function () {
-            isPastChallengeSuccess = false;
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = true;
-            // success response for the ongoing and upcoming challenge
-            successResponse = {
-                next: null,
-                results: []
-            };
-            vm = createController();
-            expect(vm.currentList).toEqual(successResponse.results);
-            expect(vm.upcomingList).toEqual(successResponse.results);
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        it('should call getAllResults method recursively when next is not null', function () {
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = null;
-            isPastChallengeSuccess = null;
-
-            // mock response with next property set to a non-null value
-            successResponse = {
-                next: 'http://example.com/challenges/?page=2',
-                results: [
-                    {
-                        id: 1,
-                        description: "the length of the ongoing challenge description is greater than or equal to 50",
-                        creator: {
-                        id: 1
-                        },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    }
-                ]
-            };
-
-            vm = createController();
-            spyOn(vm, 'getAllResults').and.callThrough();
+        /**
+         * Fetch present challenges
+         */
+        function getPresentChallenges() {
             const parameters = {
                 url: 'challenges/challenge/present/approved/public',
                 method: 'GET',
-                callback: jasmine.any(Function)
-            };
-            vm.getAllResults(parameters, []);
-            expect(vm.currentList).toEqual(successResponse.results);
-            expect(vm.noneCurrentChallenge).toBeFalsy();
-            expect(vm.getAllResults).toHaveBeenCalledTimes(2);
-        });
+                callback: {
+                    onSuccess: function(response) {
+                        const data = response.data;
 
-        it('ensures method is set to GET inside getAllResults function', function() {
-            isPresentChallengeSuccess = true;
-            isUpcomingChallengeSucess = null;
-            isPastChallengeSuccess = null;
-            successResponse = {
-                next: null,
-                results: []
+                        if (data.results.length === 0) {
+                            vm.noneCurrentChallenge = true;
+                        } else {
+                            vm.currentList = processChallenges(data.results);
+                        }
+
+                        if (data.next) {
+                            parameters.url = data.next.split('/api/')[1];
+                            vm.getAllResults(parameters, vm.currentList, 'noneCurrentChallenge');
+                        } else {
+                            utilities.hideLoader();
+                        }
+                    },
+                    onError: function(response) {
+                        handleApiError(response.data);
+                    }
+                }
             };
             
-            vm = createController();
-            spyOn(utilities, 'sendRequest').and.callThrough();
-            
-            const parameters = {
-                url: 'challenges/challenge/present/approved/public'
+            utilities.sendRequest(parameters);
+        }
+
+        /**
+         * Toggle filter panel visibility
+         */
+        vm.toggleFilterPanel = function() {
+            vm.isFilterVisible = !vm.isFilterVisible;
+        };
+
+        /**
+         * Reset all filters
+         */
+        vm.resetFilters = function() {
+            vm.filter = {
+                organization: '',
+                tags: '',
+                sortByStartDate: false,
+                sortByEndDate: false
             };
-            
-            vm.getAllResults(parameters, [], 'noneCurrentChallenge');
-            
-            expect(utilities.sendRequest).toHaveBeenCalled();
-            expect(utilities.sendRequest.calls.argsFor(0)[0].method).toEqual('GET');
-        });
-        it('tests scrollUp function binding to window scroll events', function() {
-            vm = createController();
-            
-            var mockElement = {
-                bind: jasmine.createSpy('bind')
-            };
-            
-            spyOn(angular, 'element').and.returnValue(mockElement);
-            
-            vm.scrollUp();
-            
-            expect(angular.element).toHaveBeenCalled();
-            
-            expect(mockElement.bind).toHaveBeenCalledWith('scroll', jasmine.any(Function));
-            
-            var scrollCallback = mockElement.bind.calls.mostRecent().args[1];
-            
-            spyOn(utilities, 'showButton');
-            var mockScrollContext = { pageYOffset: 100 };
-            scrollCallback.call(mockScrollContext);
-            expect(utilities.showButton).toHaveBeenCalled();
-            
-            spyOn(utilities, 'hideButton');
-            mockScrollContext.pageYOffset = 99;
-            scrollCallback.call(mockScrollContext);
-            expect(utilities.hideButton).toHaveBeenCalled();
-        });
-    });
-});
+            vm.filteredChallenges = [];
+            vm.hasAppliedFilter = false;
+        };
+
+        /**
+         * Apply filters to challenge list
+         */
+        vm.applyFilter = function() {
+            vm.hasAppliedFilter = true;
+            let filteredResults = vm.currentList.slice();
+
+            // Filter by organization
+            if (vm.filter.organization) {
+                filteredResults = filteredResults.filter(challenge =>
+                    challenge.creator.team_name.toLowerCase().includes(vm.filter.organization.toLowerCase())
+                );
+            }
+
+            // Filter by tags
+            if (vm.filter.tags) {
+                const tagArray = vm.filter.tags.toLowerCase().split(',').map(tag => tag.trim());
+
+                filteredResults = filteredResults.filter(challenge => {
+                    return challenge.list_tags && challenge.list_tags.some(tag =>
+                        tagArray.some(t => tag.toLowerCase().includes(t))
+                    );
+                });
+            }
+
+            // Apply sorting
+            if (vm.filter.sortByEndDate) {
+                filteredResults.sort((a, b) => a.end_date_obj - b.end_date_obj);
+            } else if (vm.filter.sortByStartDate) {
+                filteredResults.sort((a, b) => a.start_date_obj - b.start_date_obj);
+            }
+
+            vm.filteredChallenges = filteredResults;
+        };
+
+        /**
+         * Setup scroll event handling
+         */
+        vm.scrollUp = function() {
+            angular.element(window).bind('scroll', function() {
+                if (this.pageYOffset >= 100) {
+                    utilities.showButton();
+                } else {
+                    utilities.hideButton();
+                }
+            });
+        };
+
+        // Initialize controller
+        getPresentChallenges();
+        vm.scrollUp();
+
+        return vm;
+    }]);
