@@ -14,7 +14,7 @@ ADD requirements/* /code/
 
 RUN pip install -U cffi service_identity cython==0.29 numpy==1.18.1
 RUN pip install -r prod.txt
-RUN pip install -r worker.txt
+RUN pip install -r worker_py3_7.txt
 
 ADD . /code
 
