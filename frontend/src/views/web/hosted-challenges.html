@@ -33,7 +33,7 @@
             <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.ongoingChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
+                        <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
@@ -79,7 +79,7 @@
             <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.upcomingChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
+                        <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
@@ -125,7 +125,7 @@
             <div class="row" ng-if="hostedChallenges.pastChallenges.length">
                 <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.pastChallenges">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
-                        <div class="card ev-card-panel ev-challenge-card1 ev-card-hover">
+                        <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">
                                 <img class="bg-img" ng-src="{{challenge.image}}">
                                 <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
