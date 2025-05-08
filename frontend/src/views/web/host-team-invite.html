@@ -1,0 +1,44 @@
+<section class="ev-sm-container ev-view">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title">
+                    <strong>Host Team Invitation</strong>
+                </div>
+                <div class="ev-md-container ev-card-body">
+                    <div class="loader-container" ng-show="host_invitation.isProcessing">
+                        <div class="loader">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <h5 class="text-center">Processing your invitation...</h5>
+                    </div>
+                    
+                    <div ng-show="!host_invitation.isProcessing">
+                        <div class="success-container" ng-if="host_invitation.invitationStatus === 'success'">
+                            <div class="text-center">
+                                <i class="fa fa-check-circle green-text text-darken-1" style="font-size: 48px;"></i>
+                            </div>
+                            <h5 class="text-center green-text text-darken-1">{{host_invitation.invitationMessage}}</h5>
+                        </div>
+                        
+                        <div class="error-container" ng-if="host_invitation.invitationStatus === 'error'">
+                            <div class="text-center">
+                                <i class="fa fa-times-circle red-text" style="font-size: 48px;"></i>
+                            </div>
+                            <h5 class="text-center red-text">{{host_invitation.invitationMessage}}</h5>
+                        </div>
+                        
+                        <div class="align-left reg-control">
+                            <a class="waves-effect waves-dark btn grad-btn ev-btn-dark w-300 fs-14" 
+                               ui-sref="web.challenge-host-teams">Return to Host Teams</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
