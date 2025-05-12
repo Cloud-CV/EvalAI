@@ -17,13 +17,14 @@ class ParticipantTeamSerializer(serializers.ModelSerializer):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ParticipantTeamSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             request = context.get("request")
             kwargs["data"]["created_by"] = request.user.username
 
     class Meta:
+        """Meta class for ParticipantTeamSerializer."""
         model = ParticipantTeam
         fields = ("id", "team_name", "created_by", "team_url")
 
@@ -34,26 +35,26 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
-        super(InviteParticipantToTeamSerializer, self).__init__(
-            *args, **kwargs
-        )
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             self.participant_team = context.get("participant_team")
             self.user = context.get("request").user
 
     def validate_email(self, value):
+        """Validate email for participant invitation."""
         if value == self.user.email:
             raise serializers.ValidationError(
                 "A participant cannot invite himself"
             )
         try:
             User.objects.get(email=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User does not exist")
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError("User does not exist") from exc
         return value
 
-    def save(self):
+    def save(self, **kwargs):
+        """Save method for creating participant."""
         email = self.validated_data.get("email")
         return Participant.objects.get_or_create(
             user=User.objects.get(email=email),
@@ -72,6 +73,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for ParticipantSerializer."""
         model = Participant
         fields = (
             "member_name",
@@ -82,19 +84,29 @@ class ParticipantSerializer(serializers.ModelSerializer):
             "profile",
         )
 
-    def get_member_name(self, obj):
+    @staticmethod
+    def get_member_name(obj):
+        """Get username of participant."""
         return obj.user.username
 
-    def get_first_name(self, obj):
+    @staticmethod
+    def get_first_name(obj):
+        """Get first name of participant."""
         return obj.user.first_name
 
-    def get_last_name(self, obj):
+    @staticmethod
+    def get_last_name(obj):
+        """Get last name of participant."""
         return obj.user.last_name
 
-    def get_email(self, obj):
+    @staticmethod
+    def get_email(obj):
+        """Get email of participant."""
         return obj.user.email
 
-    def get_profile(self, obj):
+    @staticmethod
+    def get_profile(obj):
+        """Get profile of participant."""
         user_profile = Profile.objects.get(user=obj.user)
         serializer = UserProfileSerializer(user_profile)
         return serializer.data
@@ -109,34 +121,39 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Meta class for ParticipantTeamDetailSerializer."""
         model = ParticipantTeam
         fields = ("id", "team_name", "created_by", "members", "team_url")
 
-    def get_members(self, obj):
+    @staticmethod
+    def get_members(obj):
+        """Get all members of a team."""
         participants = Participant.objects.filter(team__pk=obj.id)
         serializer = ParticipantSerializer(participants, many=True)
         return serializer.data
 
 
-class ChallengeParticipantTeam(object):
+class ChallengeParticipantTeam:
     """Serializer to map Challenge and Participant Teams."""
 
     def __init__(self, challenge, participant_team):
+        """Initialize with challenge and participant team."""
         self.challenge = challenge
         self.participant_team = participant_team
 
 
 class ChallengeParticipantTeamSerializer(serializers.Serializer):
-    """Serializer to initialize Challenge and Participant's Team"""
+    """Serializer to initialize Challenge and Participant's Team."""
 
     challenge = ChallengeSerializer()
     participant_team = ParticipantTeamSerializer()
 
 
-class ChallengeParticipantTeamList(object):
+class ChallengeParticipantTeamList:
     """Class to create a list of Challenge and Participant Teams."""
 
     def __init__(self, challenge_participant_team_list):
+        """Initialize with challenge participant team list."""
         self.challenge_participant_team_list = challenge_participant_team_list
 
 
@@ -148,41 +165,57 @@ class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     )
     datetime_now = serializers.SerializerMethodField()
 
-    def get_datetime_now(self, obj):
+    @staticmethod
+    def get_datetime_now(obj):
+        """Get current datetime."""
         return timezone.now()
 
 
-class ParticipantTeamCount(object):
+class ParticipantTeamCount:
+    """Class to hold participant team count."""
+
     def __init__(self, participant_team_count):
+        """Initialize with participant team count."""
         self.participant_team_count = participant_team_count
 
 
 class ParticipantTeamCountSerializer(serializers.Serializer):
+    """Serializer for participant team count."""
     participant_team_count = serializers.IntegerField()
 
 
-class ParticipantCount(object):
+class ParticipantCount:
+    """Class to hold participant count."""
+
     def __init__(self, participant_count):
+        """Initialize with participant count."""
         self.participant_count = participant_count
 
 
 class ParticipantCountSerializer(serializers.Serializer):
+    """Serializer for participant count."""
     participant_count = serializers.IntegerField()
 
 
 class ChallengeParticipantSerializer(serializers.Serializer):
+    """Serializer for challenge participants."""
     team_name = serializers.SerializerMethodField()
     team_members = serializers.SerializerMethodField()
     team_members_email_ids = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for ChallengeParticipantSerializer."""
         model = Challenge
         fields = ("team_name", "team_members", "team_members_email_ids")
 
-    def get_team_name(self, obj):
+    @staticmethod
+    def get_team_name(obj):
+        """Get team name."""
         return obj.team_name
 
-    def get_team_members(self, obj):
+    @staticmethod
+    def get_team_members(obj):
+        """Get team members' usernames."""
         try:
             participant_team = ParticipantTeam.objects.get(
                 team_name=obj.team_name
@@ -199,7 +232,9 @@ class ChallengeParticipantSerializer(serializers.Serializer):
             )
         )
 
-    def get_team_members_email_ids(self, obj):
+    @staticmethod
+    def get_team_members_email_ids(obj):
+        """Get team members' email ids."""
         try:
             participant_team = ParticipantTeam.objects.get(
                 team_name=obj.team_name
