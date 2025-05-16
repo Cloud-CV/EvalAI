@@ -39,7 +39,7 @@ jobs:
       script:
         # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
-        - docker-compose --profile worker --profile statsd build || travis_terminate 1;
+        - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
 
         # Frontend Tests
         - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
