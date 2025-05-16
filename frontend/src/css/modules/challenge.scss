@@ -33,10 +33,10 @@ a.active-challenge {
 }
 
 .ev-challenge-approval-view {
-    margin-top: 0px;
-    padding-top: 30px;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+  margin-top: 0px;
+  padding-top: 30px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .challenge-container {
@@ -61,6 +61,9 @@ a.active-challenge {
 
 .ev-challenge-card {
     height: 425px;
+}
+.ev-hosted-challenge-card {
+    height: 480px;
 }
 
 .ev-dashboard-card {
@@ -264,6 +267,7 @@ md-select .md-select-value span:first-child:after {
 .btn-switch--on {
     background-color: #ffaf4b;
     border: 2px solid #ffaf4b;
+    ;
     .btn-switch-circle--on {
         left: auto;
         right: 0;
@@ -370,11 +374,9 @@ md-select .md-select-value span:first-child:after {
 .filter-icon {
     padding: 10px;
 }
-
 .no-margin {
     margin: 0px;
 }
-
 .nav-underline {
     display: flex;
     justify-content: space-around;
@@ -384,26 +386,26 @@ md-select .md-select-value span:first-child:after {
     }
 
     .nav-item {
-        flex: 1;
-        text-align: center;
+      flex: 1;
+      text-align: center;
+      color: #4d4d4d;
+
+      .nav-link {
+        display: block;
+        padding: 10px 0;
         color: #4d4d4d;
-    
-        .nav-link {
-            display: block;
-            padding: 10px 0;
-            color: #4d4d4d;
-            text-decoration: none;
-            border: none;
-            background-color: transparent;
-            font-weight: 500;
-            transition: border-bottom 0.3s ease;
-            cursor: pointer;
-    
-            &.active {
-                border-bottom: 2px solid #000;
-                color: #4d4d4d;
-            }
+        text-decoration: none;
+        border: none;
+        background-color: transparent;
+        font-weight: 500;
+        transition: border-bottom 0.3s ease;
+        cursor: pointer;
+
+        &.active {
+          border-bottom: 2px solid #000;
+          color: #4d4d4d;
         }
+      }
     }
 }
 
@@ -411,28 +413,46 @@ md-select .md-select-value span:first-child:after {
     margin-bottom: 20px;
 
     .tab {
-        a {
-            color: #4d4d4d;
-            font-weight: 400;
-    
-            &.active {
-                color: #3f51b5;
-                font-weight: 600;
-            }
+      a {
+        color: #4d4d4d;
+        font-weight: 400;
+
+        &.active {
+          color: #3f51b5;
+          font-weight: 600;
         }
+      }
     }
 }
 
 .challenges-container {
     margin-top: 20px;
     min-height: 200px;
-  
-    .card-content {
-        padding: 20px;
-        text-align: center;
-    }
+
+  .card-content {
+    padding: 20px;
+    text-align: center;
+  }
+}
+.challenges-container {
+    margin-top: 20px;
+    min-height: 200px;
+
+  .hosted-challenge-card-content {
+    padding: 20px;
+    text-align: left;
+  }
 }
 
+
+
+.github-icon-link {
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    color: #000; // Ensure the icon is visible
+    font-size: 15px; // Adjust size if needed
+}
 .filter-content {
     padding: 15px;
     border: 1px solid #ddd;
@@ -537,6 +557,15 @@ input[type="checkbox"] {
     color: #fff;
 }
 
+.apply-button:focus{
+    background-color: #3c3e49 !important;
+    color: white;
+}
+.reset-button:focus{
+    background-color: #3c3e49 !important;
+    color: white;
+}
+
 .reset-button {
     background-color: rgba(0, 0, 0, 0);
     font: 14px Roboto;
@@ -577,11 +606,11 @@ input[type="checkbox"] {
 }
 
 .filter-button:hover {
-    background-color: #000;
+    background-color: #3c3e49;
 }
   
 .filter-button:focus {
-    background-color: #000 !important;
+    background-color: #3c3e49 !important;
 }
   
 .no-results {

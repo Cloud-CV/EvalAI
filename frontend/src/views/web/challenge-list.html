@@ -4,7 +4,7 @@
         
         <!--Search and Filter Bar -->
         <div class="search-filter-bar">
-            <input type="text" ng-model="vm.searchQuery" placeholder="Search Challenges..." class="borderless-search" style="border: none; border-bottom: 1px solid #ccc; outline: none; box-shadow: none; border-radius: 0;" />
+            <input type="text" ng-model="vm.searchQuery" placeholder="Search Challenges..." class="search-box" />
             <button ng-click="vm.toggleFilterPanel()" class="filter-button">
                 <i class="fas fa-filter" style="display: none;"></i>
                 {{ vm.isFilterVisible ? 'Hide Filters' : 'Show Filters' }}
@@ -69,9 +69,9 @@
     <!-- Ongoing Challenges -->
     <div ng-show="tab === 1" class="ongoing-challenges" style="display: flex;">
         <div ng-if="vm.noneCurrentChallenge">None</div>
-        <div ng-if="vm.hasAppliedFilter && vm.filteredChallenges.length === 0">No challenges match your filter</div>
+        <div ng-if="vm.hasAppliedFilter && vm.filteredCurrentList.length === 0">No challenges match your filter</div>
         <div class="row">
-            <div class="col s12 m3" ng-repeat="challenge in (vm.hasAppliedFilter ? vm.filteredChallenges : vm.currentList) | filter:vm.searchQuery">
+            <div class="col s12 m3" ng-repeat="challenge in (vm.hasAppliedFilter ? vm.filteredCurrentList : vm.currentList) | filter:vm.searchQuery">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
@@ -102,8 +102,9 @@
     <!-- Upcoming Challenges -->
     <div ng-show="tab === 2" class="ongoing-challenges" style="display: flex;">
         <div ng-if="vm.noneUpcomingChallenge">None</div>
+        <div ng-if="vm.hasAppliedFilter && vm.filteredUpcomingList.length === 0">No challenges match your filter</div>
         <div class="row">
-            <div class="col s12 m3" ng-repeat="challenge in vm.upcomingList | filter:vm.searchQuery">
+            <div class="col s12 m3" ng-repeat="challenge in (vm.hasAppliedFilter ? vm.filteredUpcomingList : vm.upcomingList) | filter:vm.searchQuery">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
@@ -134,8 +135,9 @@
     <!-- Past Challenges -->
     <div ng-show="tab === 3" class="ongoing-challenges" style="display: flex;">
         <div ng-if="vm.nonePastChallenge">None</div>
+        <div ng-if="vm.hasAppliedFilter && vm.filteredPastList.length === 0">No challenges match your filter</div>
         <div class="row">
-            <div class="col s12 m3" ng-repeat="challenge in vm.pastList | filter:vm.searchQuery">
+            <div class="col s12 m3" ng-repeat="challenge in (vm.hasAppliedFilter ? vm.filteredPastList : vm.pastList) | filter:vm.searchQuery">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
@@ -177,8 +179,8 @@
             <div></div><div></div><div></div><div></div><div></div>
         </div>
     </div>
-  </section>
-    <!-- Cookie Consent -->
-    <div ng-controller="CookieConsentController as cookieConsent">
-      <div ng-if="!cookieConsent.cookieConsentResponded" ng-include="'dist/views/web/cookie-consent.html'"></div>
-    </div>
+</section>
+<!-- Cookie Consent -->
+<div ng-controller="CookieConsentController as cookieConsent">
+    <div ng-if="!cookieConsent.cookieConsentResponded" ng-include="'dist/views/web/cookie-consent.html'"></div>
+</div>
