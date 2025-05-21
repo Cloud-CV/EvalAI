@@ -24,7 +24,9 @@ class TimeStampedModel(models.Model):
 
 def model_field_name(field_name, *args, **kwargs):
     """
-    The decorator is used to pass model field names to create_post_model_field function for logging change.
+    The decorator is used to pass model 
+    field names to create_post_model_field 
+    function for logging change.
     """
 
     def model_field_name_decorator(f, *args, **kwargs):
