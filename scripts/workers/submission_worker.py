@@ -44,7 +44,10 @@ from django.utils import timezone  # noqa:E402
 from jobs.models import Submission  # noqa:E402
 from jobs.serializers import SubmissionSerializer  # noqa:E402
 
-from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT  # noqa:E402
+from settings.common import (  # noqa:E402
+    SQS_RETENTION_PERIOD,
+    SQS_VISIBILITY_TIMEOUT,
+)
 
 from .statsd_utils import increment_and_push_metrics_to_statsd  # noqa:E402
 
