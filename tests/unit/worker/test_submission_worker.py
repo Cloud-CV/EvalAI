@@ -39,7 +39,7 @@ from scripts.workers.submission_worker import (
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
 )
-from settings.common import SQS_RETENTION_PERIOD
+from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT
 
 
 class BaseAPITestClass(APITestCase):
@@ -287,7 +287,10 @@ class BaseAPITestClass(APITestCase):
     def test_get_or_create_sqs_queue_for_existing_queue(self):
         self.sqs_client.create_queue(
             QueueName="test_queue",
-            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            Attributes={
+                "MessageRetentionPeriod": SQS_RETENTION_PERIOD,
+                "VisibilityTimeout": SQS_VISIBILITY_TIMEOUT,
+            },
         )
         get_or_create_sqs_queue("test_queue")
         queue_url = self.sqs_client.get_queue_url(QueueName="test_queue")[

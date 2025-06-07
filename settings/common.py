@@ -415,3 +415,5 @@ EKS_CLUSTER_TRUST_RELATION = {
 
 # SQS Queue Message Retention Period
 SQS_RETENTION_PERIOD = "345600"
+# SQS Queue Message Visibility Timeout
+SQS_VISIBILITY_TIMEOUT = "300"

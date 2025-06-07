@@ -44,7 +44,7 @@ from django.utils import timezone  # noqa:E402
 from jobs.models import Submission  # noqa:E402
 from jobs.serializers import SubmissionSerializer  # noqa:E402
 
-from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
+from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT  # noqa:E402
 
 from .statsd_utils import increment_and_push_metrics_to_statsd  # noqa:E402
 
@@ -849,9 +849,17 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             if challenge is None
             else str(challenge.sqs_retention_period)
         )
+        sqs_visibility_timeout = (
+            SQS_VISIBILITY_TIMEOUT
+            if challenge is None
+            else str(challenge.sqs_visibility_timeout)
+        )
         queue = sqs.create_queue(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": sqs_retention_period},
+            Attributes={
+                "MessageRetentionPeriod": sqs_retention_period,
+                "VisibilityTimeout": sqs_visibility_timeout,
+            },
         )
     return queue
 

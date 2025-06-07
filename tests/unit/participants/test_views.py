@@ -883,6 +883,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_image_url": self.challenge1.worker_image_url,
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
+                        "sqs_visibility_timeout": self.challenge1.sqs_visibility_timeout,
                         "github_repository": self.challenge1.github_repository,
                     },
                     "participant_team": {
@@ -980,6 +981,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_image_url": self.challenge1.worker_image_url,
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge1.sqs_visibility_timeout,
                 "github_repository": self.challenge1.github_repository,
             }
         ]
