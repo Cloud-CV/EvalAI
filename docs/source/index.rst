@@ -19,8 +19,10 @@ Contents:
    intro
    installation
    host_challenge
+   github_based_challenge_setup
    configuration
    evaluation_scripts
+   edit_evaluation_script
    approve_challenge
    participate
    make_submission_public_private_baseline
