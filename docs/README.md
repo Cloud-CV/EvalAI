@@ -5,30 +5,31 @@ Building and running the documentation locally will help you to ensure accuracy,
 
 ### Prerequisites & Setup
 
-#### 1. Set up the Project locally
+1. Set up the Project locally
 
-Before building the `docs/` project, make sure you have cloned and set up EvalAI project locally.
+    Before building the `docs/` project, make sure you have cloned and set up EvalAI project locally.
 
-To set up the development environment first, follow the [installation instructions](https://github.com/Cloud-CV/EvalAI/blob/master/README.md#installation-instructions) in README.
+    To set up the development environment first, follow the [installation instructions](https://github.com/Cloud-CV/EvalAI/blob/master/README.md#installation-instructions) in README.
 
-#### 2. Create a Virtual Environment (Recommended)
-EvalAI and its documentation tools require Python 3. We recommend using Python 3.10 or newer.
-It's a best practice to work within a Python virtual environment to avoid conflicts with your system's Python packages.
+2. Create a Virtual Environment (Recommended)
 
-From the root directory of EvalAI project (where `requirements/` folder is located), create and activate a virtual environment:
+    EvalAI and its documentation tools require Python 3. We recommend using Python 3.10 or newer.
+    Also, it's a best practice to work within a Python virtual environment to avoid conflicts with your system's Python packages.
+
+    From the root directory of EvalAI project (where `requirements/` folder is located), create and activate a virtual environment:
 
 
-```
-# Create a virtual environment with python 3.10
-python3.10 -m venv docs-env
+    ```
+    # Create a virtual environment with python 3.10
+    python3.10 -m venv docs-env
 
-# Activate the virtual environment
-# On macOS/Linux:
-source docs-env/bin/activate
+    # Activate the virtual environment
+    # On macOS/Linux:
+    source docs-env/bin/activate
 
-# On Windows (Command Prompt):
-docs-env\Scripts\activate.bat
-```
+    # On Windows (Command Prompt):
+    docs-env\Scripts\activate.bat
+    ```
 
 ### Install Documentation Dependencies
 
@@ -80,9 +81,7 @@ To start the live preview server, run the following command from the root of the
 ```
 sphinx-autobuild docs/source docs/build/html
 ```
-It will start a local web server, typically at `http://127.0.0.1:8000/`.
-
-To stop the live preview server, press `Ctrl+C` in your terminal.
+It will start a local web server, typically at `http://127.0.0.1:8000/`. To stop the live preview server, press `Ctrl+C` in your terminal.
 
 With this, you're ready to start contributing to the docs!
 
@@ -98,7 +97,7 @@ Encountering issues? Don't worry, here are some common problems and their fixes:
 
     ```
     Sphinx version error:
-    The sphinxcontrib.applehelp extension used by this project needs at least Sphinx v5.0; it therefore cannot be built with this version.
+    The sphinxcontrib.applehelp extension used by this project needs at least Sphinx vX.0; it therefore cannot be built with this version.
     make: *** [html] Error 2
     ```
 
@@ -121,7 +120,7 @@ Encountering issues? Don't worry, here are some common problems and their fixes:
 
     This error usually occurs when Sphinx has found a documentation source file (like a .rst or .md file) that exists, but it hasn't been explicitly listed in any `toctree` directive (e.g., `index.rst`).
 
-    It can happen when you've likely created a new `.rst` or `.md` file, or moved an existing one, but forgot to add its entry to `index.rst` toctree.
+    It can happen when you've likely created a new `.rst` or `.md` file, but forgot to add its entry to `index.rst` toctree.
     To fix this, mention the filename in `index.rst` file at a appropriate place and build again.
 
 - ### Document not displayed in Live Preview:
