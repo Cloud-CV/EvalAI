@@ -1,7 +1,12 @@
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.urls import reverse_lazy
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import (
+    ChallengeHost,
+    ChallengeHostTeam,
+    ChallengeHostTeamInvitation,
+)
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -513,6 +518,7 @@ class InviteHostToTeamTest(BaseAPITestClass):
             kwargs={"pk": self.challenge_host_team.pk},
         )
 
+    @override_settings(FRONTEND_URL="http://127.0.0.1:8888")
     def test_invite_host_to_team_with_all_data(self):
         expected = {
             "message": "User has been added successfully to the host team"
@@ -553,9 +559,6 @@ class InviteHostToTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_when_requesting_user_is_not_part_of_team(self):
-
-        # Create a new user and make a request using this user which doesn't
-        # belong to any team and still trying to invite other people
         temp_user = User.objects.create(
             username="username", password="password", email="temp@example.com"
         )
@@ -577,3 +580,220 @@ class InviteHostToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class InviteUserToTeamTest(BaseAPITestClass):
+    def setUp(self):
+        super(InviteUserToTeamTest, self).setUp()
+        self.url = reverse_lazy("hosts:invite_user_to_team")
+        self.data = {
+            "email": self.invite_user.email,
+            "team_id": self.challenge_host_team.id,
+        }
+
+    def test_invite_user_with_all_data(self):
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        expected_message = f"Invitation sent to {self.invite_user.email}"
+        self.assertEqual(response.data["message"], expected_message)
+        self.assertIn("invitation", response.data)
+
+    def test_invite_user_with_missing_email(self):
+        data = {"team_id": self.challenge_host_team.id}
+        response = self.client.post(self.url, data)
+        expected = {"error": "Email and team_id are required fields"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_user_with_missing_team_id(self):
+        data = {"email": self.invite_user.email}
+        response = self.client.post(self.url, data)
+        expected = {"error": "Email and team_id are required fields"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_user_with_invalid_team(self):
+        data = {
+            "email": self.invite_user.email,
+            "team_id": self.challenge_host_team.id + 100,  # Non-existent ID
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_invite_unregistered_user(self):
+        data = {
+            "email": "unregistered@example.com",
+            "team_id": self.challenge_host_team.id,
+        }
+        response = self.client.post(self.url, data)
+        expected = {
+            "error": "User with this email is not registered on EvalAI"
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_existing_team_member(self):
+        data = {
+            "email": self.user.email,
+            "team_id": self.challenge_host_team.id,
+        }
+        response = self.client.post(self.url, data)
+        expected = {
+            "error": f"{self.user.email} is already a member of this team"
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @override_settings(FRONTEND_URL="http://127.0.0.1:8888")
+    def test_resend_invitation(self):
+        first_response = self.client.post(self.url, self.data)
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+
+        second_response = self.client.post(self.url, self.data)
+        self.assertEqual(second_response.status_code, status.HTTP_201_CREATED)
+        expected_message = f"Invitation sent to {self.invite_user.email}"
+        self.assertEqual(second_response.data["message"], expected_message)
+
+        # Check if both invitations use the same invitation_key
+        self.assertEqual(
+            first_response.data["invitation"]["invitation_key"],
+            second_response.data["invitation"]["invitation_key"],
+        )
+
+
+class AcceptHostInvitationTest(BaseAPITestClass):
+    def setUp(self):
+        super(AcceptHostInvitationTest, self).setUp()
+
+        self.invitation = ChallengeHostTeamInvitation.objects.create(
+            email=self.invite_user.email,
+            team=self.challenge_host_team,
+            invited_by=self.user,
+            status="pending",
+        )
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        self.expired_invitation = ChallengeHostTeamInvitation.objects.create(
+            email=self.invite_user.email,
+            team=self.challenge_host_team,
+            invited_by=self.user,
+            status="pending",
+        )
+        expiry_days = self.expired_invitation.INVITATION_EXPIRY_DAYS
+        self.expired_invitation.created_at = timezone.now() - timedelta(
+            days=expiry_days + 1
+        )
+        self.expired_invitation.save()
+
+        self.accepted_invitation = ChallengeHostTeamInvitation.objects.create(
+            email=self.invite_user.email,
+            team=self.challenge_host_team,
+            invited_by=self.user,
+            status="accepted",
+        )
+
+    def test_get_invitation_details(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": self.invitation.invitation_key},
+        )
+
+        self.client.force_authenticate(user=self.invite_user)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], self.invitation.email)
+        self.assertEqual(
+            response.data["team_detail"]["id"], self.invitation.team.id
+        )
+
+    def test_accept_invitation(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": self.invitation.invitation_key},
+        )
+        self.client.force_authenticate(user=self.invite_user)
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        expected_message = f"You have successfully joined {self.challenge_host_team.team_name}"
+        self.assertEqual(response.data["message"], expected_message)
+        self.assertIn("invitation", response.data)
+
+        invitation = ChallengeHostTeamInvitation.objects.get(
+            pk=self.invitation.pk
+        )
+        self.assertEqual(invitation.status, "accepted")
+
+        challenge_host = ChallengeHost.objects.get(
+            user=self.invite_user, team_name=self.challenge_host_team
+        )
+        self.assertEqual(challenge_host.status, ChallengeHost.ACCEPTED)
+        self.assertEqual(challenge_host.permissions, ChallengeHost.ADMIN)
+
+    def test_invalid_invitation_key(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": "invalid-key"},
+        )
+
+        # Authenticate as the invited user
+        self.client.force_authenticate(user=self.invite_user)
+
+        response = self.client.get(url)
+        expected = {"error": "Invalid invitation key"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_expired_invitation(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": self.expired_invitation.invitation_key},
+        )
+
+        self.client.force_authenticate(user=self.invite_user)
+
+        response = self.client.get(url)
+        expected = {
+            "error": "This invitation has expired. Please request a new invitation."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_410_GONE)
+
+        invitation = ChallengeHostTeamInvitation.objects.get(
+            pk=self.expired_invitation.pk
+        )
+        self.assertEqual(invitation.status, "expired")
+
+    def test_already_used_invitation(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": self.accepted_invitation.invitation_key},
+        )
+
+        self.client.force_authenticate(user=self.invite_user)
+
+        response = self.client.get(url)
+        expected = {
+            "error": "This invitation has already been used or expired"
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_email_mismatch(self):
+        url = reverse_lazy(
+            "hosts:accept_host_invitation",
+            kwargs={"invitation_key": self.invitation.invitation_key},
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(url)
+        expected = {
+            "error": "This invitation was sent to a different email address"
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
