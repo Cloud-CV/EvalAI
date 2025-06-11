@@ -82,6 +82,10 @@ The steps are:
 
 If you are facing any issue during installation, please see our [common errors during installation](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation) page.
 
+## Setup Instructions for EvalAI Documentation
+
+If you're looking to contribute to EvalAI Documentation, refer to the docs specific setup instructions in `docs/README.md` to set up the docs builder locally.
+
 ## Citing EvalAI
 If you are using EvalAI for hosting challenges, please cite the following technical report:
 
