@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Team Invitation Accepted</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333333;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      font-size: 20px;
+      font-weight: bold;
+      color:rgb(31, 43, 56);
+    }
+    .content {
+      margin-top: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #888888;
+      line-height: 1.4
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      🎉 Team Update!
+    </div>
+    <div class="content">
+      Great news — <strong>{{ user_name }}</strong> has accepted your invitation and is now part of your team "<strong>{{ team_name }}</strong>"!<br><br>
+      We're excited to see what you accomplish together.
+    </div>
+    <div class="footer">
+      Thanks for using EvalAI,<br>
+      <strong>The EvalAI Team</strong>
+    </div>
+  </div>
+</body>
+</html>
