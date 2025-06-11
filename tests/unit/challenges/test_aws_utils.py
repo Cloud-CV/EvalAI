@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 from http import HTTPStatus
 from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
@@ -6,6 +7,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
+    calculate_retention_days,
     create_ec2_instance,
     create_eks_nodegroup,
     create_service_by_challenge_pk,
@@ -21,6 +23,7 @@ from challenges.aws_utils import (
     scale_resources,
     scale_workers,
     service_manager,
+    set_log_retention_for_challenge,
     setup_ec2,
     setup_eks_cluster,
     start_ec2_instance,
@@ -35,6 +38,7 @@ from challenges.aws_utils import (
 from challenges.models import Challenge
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
 
@@ -3042,3 +3046,215 @@ class TestSetupEC2(TestCase):
         mock_update_sqs_retention_period.assert_called_once_with(
             mock_challenge_obj
         )
+
+
+class TestCalculateRetentionDays(unittest.TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+
+    def test_no_challenge_end_date(self):
+        result = calculate_retention_days(None)
+        self.assertEqual(result, 90)
+
+    def test_challenge_already_ended(self):
+        end_date = self.now - timedelta(days=60)
+        result = calculate_retention_days(end_date)
+        self.assertEqual(result, 90)
+
+    def test_challenge_ending_soon(self):
+        end_date = self.now + timedelta(days=10)
+        result = calculate_retention_days(end_date)
+        self.assertEqual(result, 60)
+
+    def test_challenge_ending_far_future(self):
+        end_date = self.now + timedelta(days=200)
+        result = calculate_retention_days(end_date)
+        self.assertEqual(result, 365)
+
+    def test_rounding_to_allowed_values(self):
+        test_cases = [
+            (0, 30),
+            (4, 60),
+            (31, 60),
+            (100, 150),
+            (500, 545),
+        ]
+
+        for days_from_now, expected_retention in test_cases:
+            end_date = self.now + timedelta(days=days_from_now)
+            result = calculate_retention_days(end_date)
+            self.assertEqual(
+                result,
+                expected_retention,
+                f"End date {days_from_now} days from now should round to {expected_retention} days retention",
+            )
+
+    def test_extremely_long_retention(self):
+        end_date = self.now + timedelta(days=4000)
+        result = calculate_retention_days(end_date)
+        self.assertEqual(result, 3653)
+
+
+class TestSetLogRetentionForChallenge(unittest.TestCase):
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.logger")
+    def test_debug_mode(
+        self, mock_logger, mock_get_log_group_name, mock_settings
+    ):
+        mock_settings.DEBUG = True
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.end_date = timezone.now() + timedelta(days=30)
+        mock_get_log_group_name.return_value = "test-log-group"
+
+        result = set_log_retention_for_challenge(mock_challenge)
+        self.assertIn("DEBUG MODE", result["message"])
+        mock_logger.info.assert_called_once()
+
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.calculate_retention_days")
+    @patch("challenges.aws_utils.logger")
+    def test_log_group_not_found(
+        self,
+        mock_logger,
+        mock_calculate_retention_days,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_get_log_group_name,
+        mock_settings,
+    ):
+        mock_settings.DEBUG = False
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.end_date = timezone.now() + timedelta(days=30)
+        mock_get_log_group_name.return_value = "test-log-group"
+        mock_calculate_retention_days.return_value = 60
+
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.describe_log_groups.return_value = {"logGroups": []}
+
+        result = set_log_retention_for_challenge(mock_challenge)
+
+        self.assertEqual(
+            result["message"], "Log group test-log-group does not exist"
+        )
+        mock_client.put_retention_policy.assert_not_called()
+        mock_logger.info.assert_called_once()
+
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.calculate_retention_days")
+    @patch("challenges.aws_utils.logger")
+    def test_set_retention_success(
+        self,
+        mock_logger,
+        mock_calculate_retention_days,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_get_log_group_name,
+        mock_settings,
+    ):
+        mock_settings.DEBUG = False
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.end_date = timezone.now() + timedelta(days=30)
+        mock_get_log_group_name.return_value = "test-log-group"
+        mock_calculate_retention_days.return_value = 60
+
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.describe_log_groups.return_value = {
+            "logGroups": [{"logGroupName": "test-log-group"}]
+        }
+        mock_client.put_retention_policy.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": 200}
+        }
+
+        result = set_log_retention_for_challenge(mock_challenge)
+
+        self.assertIn("Set retention policy of 60 days", result["message"])
+        mock_client.put_retention_policy.assert_called_once_with(
+            logGroupName="test-log-group", retentionInDays=60
+        )
+        mock_logger.info.assert_called_once()
+
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.calculate_retention_days")
+    @patch("challenges.aws_utils.logger")
+    def test_resource_not_found_exception(
+        self,
+        mock_logger,
+        mock_calculate_retention_days,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_get_log_group_name,
+        mock_settings,
+    ):
+        mock_settings.DEBUG = False
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.end_date = timezone.now() + timedelta(days=30)
+        mock_get_log_group_name.return_value = "test-log-group"
+        mock_calculate_retention_days.return_value = 60
+
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+
+        mock_client.describe_log_groups.return_value = {"logGroups": []}
+
+        result = set_log_retention_for_challenge(mock_challenge)
+
+        self.assertEqual(
+            result["message"], "Log group test-log-group does not exist"
+        )
+        mock_client.put_retention_policy.assert_not_called()
+        mock_logger.info.assert_called_once()
+
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.calculate_retention_days")
+    @patch("challenges.aws_utils.logger")
+    def test_other_exception(
+        self,
+        mock_logger,
+        mock_calculate_retention_days,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_get_log_group_name,
+        mock_settings,
+    ):
+        mock_settings.DEBUG = False
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.end_date = timezone.now() + timedelta(days=30)
+        mock_get_log_group_name.return_value = "test-log-group"
+        mock_calculate_retention_days.return_value = 60
+
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.describe_log_groups.return_value = {
+            "logGroups": [{"logGroupName": "test-log-group"}]
+        }
+
+        mock_client.put_retention_policy.side_effect = Exception(
+            "General error"
+        )
+
+        result = set_log_retention_for_challenge(mock_challenge)
+
+        self.assertIn("Error setting retention policy", result["message"])
+        self.assertEqual(result["error"], "General error")
+        mock_client.put_retention_policy.assert_called_once()
+        mock_logger.exception.assert_called_once()
