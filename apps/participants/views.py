@@ -245,8 +245,10 @@ def invite_participant_to_team(request, pk):
                     participant_email
                 ) in participant_team.get_all_participants_email():
                     if participant_email in challenge.banned_email_ids:
-                        message = "You cannot invite as you're a part of {} team and it has been banned "
-                        "from this challenge. Please contact the challenge host."
+                        message = ("You cannot invite as you're a part of {} "
+                                   "team and it has been banned ")
+                        ("from this challenge. "
+                         "Please contact the challenge host.")
                         response_data = {
                             "error": message.format(participant_team.team_name)
                         }
@@ -257,7 +259,8 @@ def invite_participant_to_team(request, pk):
 
                 # Check if invited user is banned
                 if email in challenge.banned_email_ids:
-                    message = "You cannot invite as the invited user has been banned "
+                    message = ("You cannot invite as the invited user "
+                               "has been banned ")
                     "from this challenge. Please contact the challenge host."
                     response_data = {"error": message}
                     return Response(
@@ -267,7 +270,9 @@ def invite_participant_to_team(request, pk):
             # Check if user is in allowed list.
             if len(challenge.allowed_email_domains) > 0:
                 if not is_user_in_allowed_email_domains(email, challenge_pk):
-                    message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                    message = ("Sorry, users with {} email domain(s) are "
+                               "only allowed to participate "
+                               "in this challenge.")
                     domains = ""
                     for domain in challenge.allowed_email_domains:
                         domains = "{}{}{}".format(domains, "/", domain)
@@ -279,7 +284,8 @@ def invite_participant_to_team(request, pk):
 
             # Check if user is in blocked list.
             if is_user_in_blocked_email_domains(email, challenge_pk):
-                message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+                message = ("Sorry, users with {} email domain(s) are "
+                           "not allowed to participate in this challenge.")
                 domains = ""
                 for domain in challenge.blocked_email_domains:
                     domains = "{}{}{}".format(domains, "/", domain)
@@ -329,7 +335,9 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
             participant.user == request.user
         ):  # when the user tries to remove himself
             response_data = {
-                "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
+                "error": "You are not allowed to remove yourself since you "
+                         "are admin. Please delete the team if "
+                         "you want to do so!"
             }  # noqa: ignore=E501
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -339,7 +347,8 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
             return Response(status=status.HTTP_204_NO_CONTENT)
     else:
         response_data = {
-            "error": "Sorry, you do not have permissions to remove this participant"
+            "error": "Sorry, you do not have permissions "
+                     "to remove this participant"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -415,7 +424,8 @@ def remove_self_from_participant_team(request, participant_team_pk):
         [participant_team]
     ).exists():
         response_data = {
-            "error": "Sorry, you cannot delete this team since it has taken part in challenge(s)!"
+            "error": "Sorry, you cannot delete this team since "
+                     "it has taken part in challenge(s)!"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
@@ -439,7 +449,8 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
         challenge_pk {[int]} -- Challenge primary key
 
     Returns:
-        {dict} -- Participant team detail that has participated in the challenge
+        {dict} -- Participant team detail that has
+        participated in the challenge
     """
 
     challenge = get_challenge_model(challenge_pk)
@@ -451,7 +462,8 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
         return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         response_data = {
-            "error": f"The user {request.user.username} has not participanted in {challenge.title}"
+            "error": f"The user {request.user.username} "
+                     f"has not participanted in {challenge.title}"
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -478,10 +490,12 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
     responses={
         status.HTTP_200_OK: OpenApiResponse(description=""),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-            description="{'error': 'Team has not participated in the challenge'}"
+            description="{'error': 'Team has not participated "
+                        "in the challenge'}"
         ),
         status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
-            description="{'error': 'Sorry, you do not have permissions to remove this participant team'}"
+            description="{'error': 'Sorry, you do not have permissions "
+                        "to remove this participant team'}"
         ),
     },
 )
@@ -519,7 +533,8 @@ def remove_participant_team_from_challenge(
                 )
                 if submissions.count() > 0:
                     response_data = {
-                        "error": "Unable to remove team as you have already made submission to the challenge"
+                        "error": "Unable to remove team as you have already "
+                                 "made submission to the challenge"
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -534,6 +549,7 @@ def remove_participant_team_from_challenge(
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {
-            "error": "Sorry, you do not have permissions to remove this participant team"
+            "error": "Sorry, you do not have permissions to "
+                     "remove this participant team"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
