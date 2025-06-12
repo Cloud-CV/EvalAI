@@ -1,4 +1,4 @@
-# For Participants
+# Development
 
 ```{toctree}
 :maxdepth: 2

@@ -60,13 +60,13 @@ We have created a sample challenge configuration that we recommend you to use to
 
 Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc.
 
-Edit this file based on your requirement. For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
+Edit this file based on your requirement. For reference to the fields, refer to the <a href="../configuration/challenge-config.html">challenge configuration reference section</a>.
 
 ### Step 3: Edit evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
 
-Please refer to the [writing evaluation script](evaluation_scripts.html) to complete this step.
+Please refer to the <a href="../evaluation/evaluation-scripts.html#writing-an-evaluation-script">writing evaluation script</a> to complete this step.
 
 ### Step 4: Edit challenge HTML templates
 
@@ -86,13 +86,13 @@ If you have issues in creating a challenge on EvalAI, please feel free to contac
 
 ### Step 1: Set up the challenge
 
-Follow [host challenge using github section](host_challenge.html#host-challenge-using-github) to set up a challenge on EvalAI.
+Follow <a href="host-challenge.html#host-challenge-using-github">host challenge using github section</a> to set up a challenge on EvalAI.
 
 ### Step 2: Edit challenge configuration
 
 Set the `remote_evaluation` parameter to `True` in [`challenge_config.yaml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/challenge_config.yaml#L12). This challenge config file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc.
 
-Edit this file based on your requirement. For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
+Edit this file based on your requirement. For reference to the fields, refer to the <a href="../configuration/challenge-config.html">challenge configuration reference section</a>.
 
 Please ensure the following fields are set to the following values:
 
@@ -103,7 +103,7 @@ Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/c
 ### Step 3: Edit remote evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
-Please refer to [Writing Remote Evaluation Script](evaluation_scripts.html#writing-a-remote-evaluation-script) section to complete this step.
+Please refer to <a href="../evaluation/remote-evaluation.html#writing-an-remote-evaluation-script">Writing Remote Evaluation Script</a> section to complete this step.
 
 ### Step 4: Set up remote evaluation worker
 
