@@ -1,4 +1,4 @@
-# Phases Setup
+# Challenge Phases Setup
 
 There can be multiple [challenge phases](https://evalai.readthedocs.io/en/latest/glossary.html#challenge-phase) in a challenge. A challenge phase in a challenge contains the following subfields:
 
@@ -63,3 +63,35 @@ There can be multiple [challenge phases](https://evalai.readthedocs.io/en/latest
   - **is_restricted_to_select_one_submission**: True/False (indicates whether to restrict a user to select only one submission for the leaderboard. Default is `False`)
   - **is_partial_submission_evaluation_enabled**: True/False (indicates whether partial submission evaluation is enabled. Default is `False`)
   - **allowed_submission_file_types**: This is a list of file types that are allowed for submission (Optional Default is `.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy`)
+
+
+## Participation Email Settings
+
+- **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
+
+- **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
+
+## Challenge Phase Splits
+
+- **challenge_phase_splits**:
+
+  A challenge phase split is a relation between a challenge phase and dataset splits for a challenge (many to many relation). This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
+
+  - **challenge_phase_id**: Id of `challenge_phase` to map with
+
+  - **leaderboard_id**: Id of `leaderboard`
+
+  - **dataset_split_id**: Id of `dataset_split`
+
+  - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want: (Optional, Default is `3`)
+
+
+  | Visibility | Description                                                             |
+  | ---------- | ----------------------------------------------------------------------- |
+  | 1          | Only visible to challenge host                                          |
+  | 2          | Only visible to challenge host and participant who made that submission |
+  | 3          | Visible to everyone on leaderboard                                      |
+
+  - **leaderboard_decimal_precision**: A positive integer field used for varying the leaderboard decimal precision. Default value is `2`.
+
+  - **is_leaderboard_order_descending**: True/False (a Boolean field that gives the flexibility to challenge host to change the default leaderboard sorting order. It is useful in cases where you have error as a metric and want to sort the leaderboard in increasing order of error value. Default is `True`)
