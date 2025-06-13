@@ -25,7 +25,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
   short_description: "Detect lane boundaries from images in real-time."
   ```
 - ### `description` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Path to the full challenge description in HTML file format.
 
@@ -35,7 +35,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
   ```
 
 - ### `evaluation_details` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Path to a detailed explanation of the evaluation process in HTML file format.
 
@@ -45,7 +45,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
   ```
 
 - ### `terms_and_conditions` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Path to HTML file with challenge rules, licenses, restrictions, etc.
 
@@ -55,7 +55,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
   ```
 
 - ### `image` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Path to the challenge logo. Must be `.jpg`, `.jpeg`, or `.png`.
 
@@ -65,7 +65,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
   ```
 
 - ### `submission_guidelines` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Path to HTML file with "how-to-submit" instructions.
 
@@ -153,7 +153,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 ## Evaluation Script
 
 - ### `evaluation_script` (required)
-  **Type**: `string` (file path)
+  **Type**: `string` (relative file path)
 
   **Description**: Folder containing the Python scripts that will be used to evaluate submissions.
 
