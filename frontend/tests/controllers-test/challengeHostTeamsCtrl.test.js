@@ -466,4 +466,338 @@ describe('Unit tests for challenge host team controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.challenge-create');
         });
     });
+
+    describe('activateCollapsible function', function() {
+        it('should call angular.element with .collapsible selector', function() {
+            var mockElement = {
+                collapsible: jasmine.createSpy('collapsible')
+            };
+            spyOn(angular, 'element').and.returnValue(mockElement);
+            
+            vm.activateCollapsible();
+            
+            expect(angular.element).toHaveBeenCalledWith('.collapsible');
+            expect(mockElement.collapsible).toHaveBeenCalled();
+        });
+    });
+
+    describe('Initial team loading with activateCollapsible call', function() {
+        it('should call activateCollapsible when existTeam count > 0', function() {
+            spyOn(vm, 'activateCollapsible');
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 200,
+                    data: {
+                        count: 5,
+                        next: null,
+                        previous: null,
+                        results: []
+                    }
+                });
+            });
+            
+            // Reinitialize controller to trigger the callback
+            vm = $controller('ChallengeHostTeamsCtrl', {
+                $scope: $scope,
+                utilities: utilities,
+                loaderService: loaderService,
+                $state: $state,
+                $http: $http,
+                $rootScope: $rootScope,
+                $mdDialog: $mdDialog
+            });
+            
+            expect(vm.activateCollapsible).toHaveBeenCalled();
+        });
+    });
+
+    describe('openInvitationDialog function', function() {
+        var mockEvent, mockDeferred;
+        
+        beforeEach(function() {
+            mockEvent = {
+                stopPropagation: jasmine.createSpy('stopPropagation')
+            };
+            mockDeferred = {
+                promise: {},
+                resolve: jasmine.createSpy('resolve'),
+                reject: jasmine.createSpy('reject')
+            };
+            
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should open invitation dialog and handle valid email', function() {
+            var mockPrompt = {
+                title: jasmine.createSpy('title').and.returnValue({
+                    textContent: jasmine.createSpy('textContent').and.returnValue({
+                        placeholder: jasmine.createSpy('placeholder').and.returnValue({
+                            ariaLabel: jasmine.createSpy('ariaLabel').and.returnValue({
+                                targetEvent: jasmine.createSpy('targetEvent').and.returnValue({
+                                    ok: jasmine.createSpy('ok').and.returnValue({
+                                        cancel: jasmine.createSpy('cancel').and.returnValue({})
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            };
+            
+            spyOn($mdDialog, 'prompt').and.returnValue(mockPrompt);
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve('test@example.com'));
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onSuccess();
+            });
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+            expect($mdDialog.prompt).toHaveBeenCalled();
+            expect($mdDialog.show).toHaveBeenCalled();
+        });
+
+        it('should handle invalid email in openInvitationDialog', function() {
+            spyOn($mdDialog, 'prompt').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                placeholder: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve('invalid-email'));
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            // Wait for promise resolution
+            setTimeout(function() {
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Please enter a valid email address");
+            }, 0);
+        });
+
+        it('should handle empty email in openInvitationDialog', function() {
+            spyOn($mdDialog, 'prompt').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                placeholder: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve(''));
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            setTimeout(function() {
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Please enter a valid email address");
+            }, 0);
+        });
+
+        it('should handle successful invitation generation', function() {
+            spyOn($mdDialog, 'prompt').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                placeholder: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve('valid@example.com'));
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                expect(parameters.url).toBe('hosts/team/invite/');
+                expect(parameters.method).toBe('POST');
+                expect(parameters.data).toEqual({
+                    email: 'valid@example.com',
+                    team_id: 123
+                });
+                parameters.callback.onSuccess();
+            });
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            setTimeout(function() {
+                expect($rootScope.notify).toHaveBeenCalledWith("success", "Invitation link sent to valid@example.com");
+            }, 0);
+        });
+
+        it('should handle invitation API error', function() {
+            spyOn($mdDialog, 'prompt').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                placeholder: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve('valid@example.com'));
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onError({
+                    data: { error: 'Team is full' }
+                });
+            });
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            setTimeout(function() {
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Team is full");
+            }, 0);
+        });
+
+        it('should handle invitation API error without specific error message', function() {
+            spyOn($mdDialog, 'prompt').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                placeholder: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve('valid@example.com'));
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onError({
+                    data: {}
+                });
+            });
+            
+            vm.openInvitationDialog(mockEvent, 123);
+            
+            setTimeout(function() {
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "An error occurred while sending the invitation.");
+            }, 0);
+        });
+    });
+
+    describe('createNewTeam error handling for teams list fetch', function() {
+        it('should handle error when fetching updated teams list after successful creation', function() {
+            vm.team.name = 'Test Team';
+            vm.team.url = 'http://test.com';
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($rootScope, 'notify');
+            
+            var callCount = 0;
+            utilities.sendRequest.and.callFake(function(parameters) {
+                callCount++;
+                if (callCount === 1) {
+                    // First call - successful team creation
+                    parameters.callback.onSuccess({
+                        data: { id: 123 }
+                    });
+                } else {
+                    // Second call - error fetching teams list
+                    parameters.callback.onError();
+                }
+            });
+            
+            vm.createNewTeam();
+            
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
+
+    describe('load function error handling', function() {
+        it('should handle HTTP error in load function', function() {
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($http, 'get').and.returnValue(Promise.reject({ status: 500 }));
+            
+            vm.load('http://test-url.com');
+            
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+            // The error would be handled by the promise rejection
+        });
+    });
+
+    describe('Initial load with zero teams and activateCollapsible not called', function() {
+        it('should not call activateCollapsible when existTeam count is 0', function() {
+            spyOn(vm, 'activateCollapsible');
+            
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 200,
+                    data: {
+                        count: 0,
+                        next: null,
+                        previous: null,
+                        results: []
+                    }
+                });
+            });
+            
+            // Reinitialize controller
+            vm = $controller('ChallengeHostTeamsCtrl', {
+                $scope: $scope,
+                utilities: utilities,
+                loaderService: loaderService,
+                $state: $state,
+                $http: $http,
+                $rootScope: $rootScope,
+                $mdDialog: $mdDialog
+            });
+            
+            expect(vm.activateCollapsible).not.toHaveBeenCalled();
+            expect(vm.showPagination).toBe(false);
+            expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
+        });
+    });
+
+    describe('confirmDelete with different pagination scenarios', function() {
+        beforeEach(function() {
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve());
+            spyOn($mdDialog, 'confirm').and.returnValue({
+                title: function() { return this; },
+                textContent: function() { return this; },
+                ariaLabel: function() { return this; },
+                targetEvent: function() { return this; },
+                ok: function() { return this; },
+                cancel: function() { return this; }
+            });
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should handle pagination calculation when next exists in confirmDelete', function() {
+            var mockEvent = { stopPropagation: jasmine.createSpy() };
+            
+            var callCount = 0;
+            utilities.sendRequest.and.callFake(function(parameters) {
+                callCount++;
+                if (callCount === 1) {
+                    // Delete success
+                    parameters.callback.onSuccess();
+                } else {
+                    // Get teams success with pagination
+                    parameters.callback.onSuccess({
+                        status: 200,
+                        data: {
+                            count: 15,
+                            next: 'http://test.com?page=3',
+                            previous: 'http://test.com?page=1',
+                            results: []
+                        }
+                    });
+                }
+            });
+            
+            vm.confirmDelete(mockEvent, 123);
+            
+            setTimeout(function() {
+                expect(vm.currentPage).toBe(2); // page=3 - 1
+                expect(vm.isNext).toBe('');
+                expect(vm.isPrev).toBe('');
+            }, 0);
+        });
+    });
 });
