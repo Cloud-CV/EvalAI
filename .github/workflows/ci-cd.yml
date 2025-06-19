@@ -1,0 +1,207 @@
+name: EvalAI CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  COMPOSE_BAKE: true
+  COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
+
+jobs:
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      
+      - name: Run code quality checks in Docker
+        run: |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, pylint and isort...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+          echo 'Running black check...' &&
+          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; exit 1; } &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
+          echo 'All code quality checks passed!'"
+
+  migration-check:
+    name: Django Migration Check
+    runs-on: ubuntu-latest
+    needs: lint
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      
+      - name: Django Migration Checker
+        run: |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
+
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: System configuration
+        run: |
+          sudo rm -f /etc/boto.cfg
+          mkdir -p $HOME/.config/pip
+          echo "[build_ext]" > $HOME/.config/pip/pip.conf
+          echo "parallel = 1" >> $HOME/.config/pip/pip.conf
+          ulimit -u 16384 # Increase process/thread limit
+          ulimit -n 4096 # Increase open file limit
+      
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      
+      - name: Docker login
+        if: github.event_name == 'push'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker-compose --profile worker --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
+      
+      - name: Cache Docker images
+        uses: actions/cache@v3
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      
+      - name: Setup Chrome
+        run: |
+          export CHROME_BIN=chromium-browser
+      
+      - name: Setup display for browser tests
+        run: |
+          export DISPLAY=:99
+          sudo apt-get install -y xvfb
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          
+      - name: Run frontend tests
+        run: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: evalai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9.21
+
+      - name: Install dependencies
+        run: pip install awscli==1.18.66 coveralls
+
+      - name: Run backend tests
+        run: |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+
+      - name: Coveralls
+        continue-on-error: true
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          echo "Attempting to submit coverage to Coveralls..."
+          coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, but continuing workflow"
+                   
+  deploy:
+    name: Package & Deploy
+    runs-on: ubuntu-latest
+    needs: [frontend-test, backend-test]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9.21
+
+      - name: Install dependencies
+        run: pip install awscli==1.18.66
+
+      - name: Setup SSH key for deployment
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          
+      - name: Run deployment scripts
+        run: |
+          export SSH_AUTH_SOCK=/tmp/ssh_agent.sock
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add ~/.ssh/deploy_key
+          ./scripts/deployment/push.sh
+          ./scripts/deployment/deploy.sh auto_deploy
