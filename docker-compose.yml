@@ -53,18 +53,18 @@ services:
     profiles:
       - worker_py3_8 # Only built when this profile is specified
 
-  worker_py3_12:
+  worker_py3_9:
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/worker_py3_12/Dockerfile
+      dockerfile: docker/dev/worker_py3_9/Dockerfile
     depends_on:
       - django
     volumes:
       - .:/code
     profiles:
-      - worker_py3_12 # Only built when this profile is specified
+      - worker_py3_9 # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
