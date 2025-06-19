@@ -1,13 +1,12 @@
 from __future__ import unicode_literals
 
-from django.db import models
-from django.contrib.auth.models import User
-
 from base.models import TimeStampedModel
+from django.contrib.auth.models import User
+from django.db import models
 
 
 class Participant(TimeStampedModel):
-    """Model representing the Participant of the competition. """
+    """Model representing the Participant of the competition."""
 
     UNKNOWN = "Unknown"
     SELF = "Self"
