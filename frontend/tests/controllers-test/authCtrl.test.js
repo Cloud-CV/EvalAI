@@ -387,4 +387,326 @@ describe('Unit tests for auth controller', function () {
             expect($rootScope.isLoader).toEqual(false);
         });
     });
+
+
+        describe('togglePasswordVisibility function', function() {
+        it('should toggle password visibility to true when false', function() {
+            $rootScope.canShowPassword = false;
+            vm.togglePasswordVisibility();
+            expect($rootScope.canShowPassword).toEqual(true);
+        });
+
+        it('should toggle password visibility to false when true', function() {
+            $rootScope.canShowPassword = true;
+            vm.togglePasswordVisibility();
+            expect($rootScope.canShowPassword).toEqual(false);
+        });
+    });
+
+    // Test 2: Missing toggleConfirmPasswordVisibility function
+    describe('toggleConfirmPasswordVisibility function', function() {
+        it('should toggle confirm password visibility to true when false', function() {
+            $rootScope.canShowConfirmPassword = false;
+            vm.toggleConfirmPasswordVisibility();
+            expect($rootScope.canShowConfirmPassword).toEqual(true);
+        });
+
+        it('should toggle confirm password visibility to false when true', function() {
+            $rootScope.canShowConfirmPassword = true;
+            vm.toggleConfirmPasswordVisibility();
+            expect($rootScope.canShowConfirmPassword).toEqual(false);
+        });
+    });
+
+    describe('checkPendingInvitation function', function() {
+        beforeEach(function() {
+            spyOn($state, 'go');
+        });
+
+        it('should handle pending invitation redirect successfully', function() {
+            $window.sessionStorage.getItem.and.callFake(function(key) {
+                if (key === 'pendingInvitationKey') return 'test-invitation-key';
+                if (key === 'redirectAfterLogin') return 'web.challenge-host-team-invitation-accept';
+                return null;
+            });
+
+            var result = vm.checkPendingInvitation();
+
+            expect($window.sessionStorage.removeItem).toHaveBeenCalledWith('redirectAfterLogin');
+            expect($window.sessionStorage.setItem).toHaveBeenCalledWith('justCompletedLogin', 'true');
+            expect($state.go).toHaveBeenCalledWith('web.challenge-host-team-invitation-accept', {
+                invitation_key: 'test-invitation-key',
+                justLoggedIn: true
+            });
+            expect(result).toEqual(true);
+        });
+
+        it('should return false when no pending invitation exists', function() {
+            $window.sessionStorage.getItem.and.returnValue(null);
+
+            var result = vm.checkPendingInvitation();
+
+            expect(result).toEqual(false);
+            expect($state.go).not.toHaveBeenCalled();
+        });
+
+        it('should return false when only invitation key exists without redirect flag', function() {
+            $window.sessionStorage.getItem.and.callFake(function(key) {
+                if (key === 'pendingInvitationKey') return 'test-invitation-key';
+                return null;
+            });
+
+            var result = vm.checkPendingInvitation();
+
+            expect(result).toEqual(false);
+        });
+    });
+
+    describe('setRefreshJWT function', function() {
+        beforeEach(function() {
+            spyOn(utilities, 'getData').and.returnValue('mock-user-key');
+            spyOn(utilities, 'storeData');
+            spyOn(utilities, 'sendRequest');
+        });
+
+        it('should successfully fetch and store refresh JWT', function() {
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 200,
+                    data: { token: 'mock-refresh-token' }
+                });
+            });
+
+            vm.setRefreshJWT();
+
+            expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
+                url: 'accounts/user/get_auth_token',
+                method: 'GET',
+                token: 'mock-user-key'
+            }), "header");
+            expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'mock-refresh-token');
+        });
+
+        it('should handle non-200 response with alert', function() {
+            spyOn(window, 'alert');
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 400,
+                    data: { token: 'mock-refresh-token' }
+                });
+            });
+
+            vm.setRefreshJWT();
+
+            expect(window.alert).toHaveBeenCalledWith("Could not fetch Auth Token");
+            expect(utilities.storeData).not.toHaveBeenCalled();
+        });
+
+        it('should handle error response with non_field_errors', function() {
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { non_field_errors: ['Token fetch failed'] }
+                });
+            });
+
+            vm.setRefreshJWT();
+
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual('Token fetch failed');
+        });
+
+        it('should handle error response without non_field_errors', function() {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { other_error: 'Some other error' }
+                });
+            });
+
+            vm.setRefreshJWT();
+
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual({});
+        });
+
+        it('should handle exception in error callback', function() {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest.and.callFake(function(parameters) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: null
+                });
+            });
+
+            vm.setRefreshJWT();
+
+            expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
+        });
+    });
+
+    describe('checkStrength function', function() {
+        beforeEach(function() {
+            spyOn(utilities, 'passwordStrength').and.returnValue(['Strong', 'green']);
+        });
+
+        it('should show password strength when password provided', function() {
+            vm.checkStrength('testpassword123');
+
+            expect(vm.showPasswordStrength).toEqual(true);
+            expect(utilities.passwordStrength).toHaveBeenCalledWith('testpassword123');
+            expect(vm.message).toEqual('Strong');
+            expect(vm.color).toEqual('green');
+        });
+
+        it('should hide password strength when no password provided', function() {
+            vm.checkStrength('');
+
+            expect(vm.showPasswordStrength).toEqual(false);
+            expect(utilities.passwordStrength).toHaveBeenCalledWith('');
+        });
+
+        it('should hide password strength when null password provided', function() {
+            vm.checkStrength(null);
+
+            expect(vm.showPasswordStrength).toEqual(false);
+        });
+
+        it('should hide password strength when undefined password provided', function() {
+            vm.checkStrength(undefined);
+
+            expect(vm.showPasswordStrength).toEqual(false);
+        });
+    });
+
+    // Test 6: Missing $stateChangeStart event handler
+    describe('$stateChangeStart event handler', function() {
+        it('should call resetForm on state change', function() {
+            spyOn(vm, 'resetForm');
+
+            $rootScope.$broadcast('$stateChangeStart');
+
+            expect(vm.resetForm).toHaveBeenCalled();
+        });
+    });
+
+    // Test 7: Missing coverage in userSignUp function
+    describe('Additional userSignUp coverage', function() {
+        beforeEach(function() {
+            vm.regUser = {
+                name: 'ford',
+                email: 'fordprefect@hitchhikers.guide',
+                password: 'dontpanic',
+                confirm_password: 'dontpanic'
+            };
+        });
+
+        it('should handle successful signup but non-200 login response', function() {
+            spyOn(window, 'alert');
+            utilities.sendRequest = function(parameters) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onSuccess({ status: 400 });
+                }
+            };
+
+            vm.userSignUp(true);
+
+            expect(window.alert).toHaveBeenCalledWith("Something went wrong");
+        });
+
+        it('should handle login error after successful signup', function() {
+            utilities.sendRequest = function(parameters) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onError({
+                        status: 400,
+                        data: { non_field_errors: ['Login failed'] }
+                    });
+                }
+            };
+
+            vm.userSignUp(true);
+
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual('Login failed');
+        });
+
+        it('should handle login exception after successful signup', function() {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function(parameters) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onError({
+                        status: 400,
+                        data: null
+                    });
+                }
+            };
+
+            vm.userSignUp(true);
+
+            expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
+        });
+    });
+
+    // Test 8: Missing coverage in userLogin function  
+    describe('Additional userLogin coverage', function() {
+        beforeEach(function() {
+            vm.getUser = {
+                name: 'ford',
+                password: 'dontpanic'
+            };
+            spyOn(vm, 'setRefreshJWT');
+            spyOn(vm, 'checkPendingInvitation').and.returnValue(false);
+            spyOn($state, 'go');
+        });
+
+        it('should handle successful login with previous state redirect', function() {
+            $rootScope.previousState = 'web.previous-page';
+            utilities.sendRequest = function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 200,
+                    data: { token: 'user-token' }
+                });
+            };
+
+            vm.userLogin(true);
+
+            expect($state.go).toHaveBeenCalledWith('web.previous-page');
+        });
+
+        it('should handle successful login with pending invitation', function() {
+            vm.checkPendingInvitation.and.returnValue(true);
+            utilities.sendRequest = function(parameters) {
+                parameters.callback.onSuccess({
+                    status: 200,
+                    data: { token: 'user-token' }
+                });
+            };
+
+            vm.userLogin(true);
+
+            expect(vm.checkPendingInvitation).toHaveBeenCalled();
+            expect($state.go).not.toHaveBeenCalledWith('web.dashboard');
+        });
+
+        it('should handle login exception in error callback', function() {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function(parameters) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: null
+                });
+            };
+
+            vm.userLogin(true);
+
+            expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
+        });
+    });
 });
