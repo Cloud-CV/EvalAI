@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from apps.base.management.commands.seed import Command
 
+
 @patch("apps.base.management.commands.seed.call_command")
 def test_handle_default_nc(mock_call_command):
     command = Command()
