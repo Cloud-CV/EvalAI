@@ -37,19 +37,27 @@ services:
         awslogs-group: celery_production
         awslogs-create-group: "true"
 
-  worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker:${COMMIT_ID}
+  worker_py3_7:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.7:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker/Dockerfile
+      dockerfile: docker/prod/worker_py3_7/Dockerfile
     env_file:
       - docker/prod/docker_production.env
 
-  worker_py3.8:
+  worker_py3_8:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.8:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker_py3.8/Dockerfile
+      dockerfile: docker/prod/worker_py3_8/Dockerfile
+    env_file:
+      - docker/prod/docker_production.env
+
+  worker_py3_9:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker_py3_9/Dockerfile
     env_file:
       - docker/prod/docker_production.env
 
@@ -77,8 +85,8 @@ services:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-remote-worker:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker/Dockerfile
-    command: ["python", "-m", "scripts.workers.remote_submission_worker"]
+      dockerfile: docker/prod/worker_py3_7/Dockerfile
+    command: [ "python", "-m", "scripts.workers.remote_submission_worker" ]
     env_file:
       - docker/prod/docker_remote_worker.env
 
@@ -166,4 +174,3 @@ services:
       - '--web.external-url=http://localhost:9093/alert_manager'
     ports:
       - '9093:9093'
-

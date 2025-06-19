@@ -1,6 +1,6 @@
-from .common import *  # noqa: ignore=F405
-
 import warnings
+
+from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -36,7 +36,6 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
 INSTALLED_APPS += [  # noqa: ignore=F405
     "django_spaghetti",
-    "autofixture",
     "debug_toolbar",
     "django_extensions",
     "silk",

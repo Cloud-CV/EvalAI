@@ -1,15 +1,12 @@
 import logging
 import traceback
+from smtplib import SMTPException
+
 from base.utils import send_slack_notification
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.shortcuts import render
-
-from smtplib import SMTPException
-from .models import Subscribers, Team
-from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -18,6 +15,9 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+
+from .models import Subscribers, Team
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +185,8 @@ def our_team(request):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == "POST":
-        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
+        # team_type is set to Team.CONTRIBUTOR by default and can be overridden
+        # by the requester
         request.data["team_type"] = request.data.get(
             "team_type", Team.CONTRIBUTOR
         )

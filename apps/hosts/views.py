@@ -1,5 +1,6 @@
+from accounts.permissions import HasVerifiedEmail
+from base.utils import get_model_object, team_paginated_queryset
 from django.contrib.auth.models import User
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -8,21 +9,19 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
-from rest_framework.throttling import UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from accounts.permissions import HasVerifiedEmail
-from base.utils import get_model_object, team_paginated_queryset
 from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
     ChallengeHostTeamSerializer,
-    InviteHostToTeamSerializer,
     HostTeamDetailSerializer,
+    InviteHostToTeamSerializer,
 )
 from .utils import is_user_part_of_host_team
 

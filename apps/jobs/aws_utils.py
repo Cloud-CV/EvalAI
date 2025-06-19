@@ -1,8 +1,8 @@
 import base64
-import boto3
 import re
-from botocore.signers import RequestSigner
 
+import boto3
+from botocore.signers import RequestSigner
 from challenges.utils import get_aws_credentials_for_challenge
 
 
