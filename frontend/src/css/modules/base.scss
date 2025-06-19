@@ -69,26 +69,25 @@ p.no-top-para {
 /*scrollbar customization*/
 
 ::-webkit-scrollbar {
-    width: 12px !important; 
-    height: 10px; 
+    width: 4px;
+    border-radius: 10px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: $dark-gray;
     border-radius: 10px;
 }
 
-::-webkit-scrollbar-track {
-    background-color: $dark-gray; 
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb:horizontal {
     background-color: $light-gray;
     border-radius: 10px;
-    border: 3px solid $dark-gray; 
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background-color: darken($light-gray, 10%);
+::-webkit-scrollbar-thumb:vertical {
+    background-color: $light-gray;
+    border-radius: 10px;
 }
-
 .fs-10 {
     font-size: 12px;
 }
