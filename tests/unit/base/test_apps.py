@@ -1,5 +1,5 @@
-from django.test import TestCase
 from base.apps import BaseConfig
+from django.test import TestCase
 
 
 class BaseConfigTest(TestCase):
