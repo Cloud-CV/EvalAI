@@ -194,7 +194,9 @@ class TestGetUrlFromHostname(TestCase):
 
 
 class TestAwsReturnFunc(BaseAPITestClass):
-    def test_mock_if_non_prod_aws_returns_original_func_when_not_debug_or_test(self):
+    def test_mock_if_non_prod_aws_returns_original_func_when_not_debug_or_test(
+            self
+    ):
         with patch('django.conf.settings.DEBUG', False):
             with patch('django.conf.settings.TEST', False):
                 aws_mocker = MagicMock()
@@ -223,7 +225,9 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
             aws_secret_access_key="x",
             aws_access_key_id="x"
         )
-        mock_sqs.get_queue_by_name.assert_called_with(QueueName="evalai_submission_queue")
+        mock_sqs.get_queue_by_name.assert_called_with(
+            QueueName="evalai_submission_queue"
+        )
 
     @patch('base.utils.boto3.resource')
     @patch('base.utils.settings.DEBUG', False)
@@ -274,34 +278,50 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
     @patch('base.utils.boto3.resource')
     @patch('base.utils.logger')
     @patch('base.utils.settings')
-    def test_get_or_create_sqs_queue_exception_logging(self, mock_settings, mock_logger, mock_boto3_resource):
+    def test_get_or_create_sqs_queue_exception_logging(
+        self, mock_settings, mock_logger, mock_boto3_resource
+    ):
         mock_settings.DEBUG = False
         mock_settings.TEST = False
         mock_sqs = MagicMock()
         mock_boto3_resource.return_value = mock_sqs
 
-        error_response = {'Error': {'Code': 'SomeOtherError', 'Message': 'An error occurred'}}
-        client_error = botocore.exceptions.ClientError(error_response, 'GetQueueUrl')
+        error_response = {
+            'Error': {'Code': 'SomeOtherError', 'Message': 'An error occurred'
+            }
+        }
+        client_error = botocore.exceptions.ClientError(
+            error_response,
+            'GetQueueUrl'
+        )
 
         mock_sqs.get_queue_by_name.side_effect = client_error
 
         queue_name = "test_queue"
         get_or_create_sqs_queue(queue_name)
 
-        mock_logger.exception.assert_called_once_with("Cannot get queue: {}".format(queue_name))
+        mock_logger.exception.assert_called_once_with(
+            "Cannot get queue: {}".format(queue_name)
+        )
 
     @patch('base.utils.boto3.resource')
     @patch('base.utils.settings.DEBUG', False)
     @patch('base.utils.settings.TEST', False)
     @patch('base.utils.logger')
-    def test_queue_creation_on_non_existent_queue(self, mock_logger, mock_boto3):
+    def test_queue_creation_on_non_existent_queue(
+        self, mock_logger, mock_boto3
+    ):
         mock_sqs = MagicMock()
         mock_boto3.return_value = mock_sqs
         queue_name = "test_queue"
         challenge = None
-        mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
-            {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}}, "GetQueueUrl"
+        mock_sqs.get_queue_by_name.side_effect = (
+            botocore.exceptions.ClientError(
+        {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+        "GetQueueUrl"
+          )
         )
+
 
         get_or_create_sqs_queue(queue_name, challenge)
 
@@ -317,7 +337,9 @@ class TestSendEmail(unittest.TestCase):
     @patch('base.utils.sendgrid.SendGridAPIClient')
     @patch('base.utils.os.environ.get')
     @patch('base.utils.logger')
-    def test_send_email_success(self, mock_logger, mock_get_env, mock_sendgrid_client):
+    def test_send_email_success(
+        self, mock_logger, mock_get_env, mock_sendgrid_client
+    ):
         mock_get_env.return_value = 'fake_api_key'
         mock_sg_instance = MagicMock()
         mock_sendgrid_client.return_value = mock_sg_instance
@@ -336,7 +358,9 @@ class TestSendEmail(unittest.TestCase):
     @patch('base.utils.sendgrid.SendGridAPIClient')
     @patch('base.utils.os.environ.get')
     @patch('base.utils.logger')
-    def test_send_email_exception(self, mock_logger, mock_get_env, mock_sendgrid_client):
+    def test_send_email_exception(
+        self, mock_logger, mock_get_env, mock_sendgrid_client
+    ):
         # Mock environment variable
         mock_get_env.return_value = 'fake_api_key'
         mock_sendgrid_client.side_effect = Exception('SendGrid error')
@@ -349,7 +373,8 @@ class TestSendEmail(unittest.TestCase):
         )
 
         mock_logger.warning.assert_called_once_with(
-            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+            "Cannot make sendgrid call. " \
+            "Please check if SENDGRID_API_KEY is present."
         )
 
 
