@@ -2,7 +2,7 @@ from django.core.management import BaseCommand, call_command
 
 
 class Command(BaseCommand):
-    
+
     help = "Seeds the database with random but sensible values."
 
     def add_arguments(self, parser):
