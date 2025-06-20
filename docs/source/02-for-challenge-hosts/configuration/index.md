@@ -10,6 +10,7 @@ challenge-config
 challenge-phases-setup
 dataset-splits
 yaml-reference
+edit-challenge-configuration
 ```
 
 For evaluation setup and configuration, checkout the Evaluation section:
