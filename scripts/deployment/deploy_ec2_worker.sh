@@ -33,7 +33,7 @@ aws configure set default.region ${AWS_REGION}
 export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 export COMMIT_ID="latest"
 export AWS_DEFAULT_REGION=${AWS_REGION}
-export TRAVIS_BRANCH=${ENVIRONMENT}
+export GITHUB_REF_NAME=${ENVIRONMENT}
 eval $(aws ecr get-login --no-include-email)
 
 # Step 7: Copying Docker environment file
