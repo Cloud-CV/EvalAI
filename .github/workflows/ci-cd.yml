@@ -9,19 +9,44 @@ on:
 env:
   COMPOSE_BAKE: true
   COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
+  DOCKER_COMPOSE_VERSION: "v2.23.0"
 
 jobs:
+  # Shared setup job to avoid duplication
+  setup:
+    name: Setup Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      compose-cache-key: ${{ steps.compose-cache.outputs.cache-hit }}
+    steps:
+      - name: Cache Docker Compose binary
+        id: compose-cache
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
+      
+      - name: Install Docker Compose
+        if: steps.compose-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/${{ env.DOCKER_COMPOSE_VERSION }}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      
+      - name: Verify Docker Compose
+        run: docker-compose --version
+
   lint:
     name: Code Linting
     runs-on: ubuntu-latest
+    needs: setup
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
+      - name: Restore Docker Compose
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
       
       - name: Run code quality checks in Docker
         run: |
@@ -41,17 +66,18 @@ jobs:
   migration-check:
     name: Django Migration Check
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [setup, lint]
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+      - name: Restore Docker Compose
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
       
       - name: Django Migration Checker
         run: |
@@ -60,9 +86,9 @@ jobs:
   build:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [setup, lint]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: System configuration
         run: |
@@ -73,72 +99,86 @@ jobs:
           ulimit -u 16384 # Increase process/thread limit
           ulimit -n 4096 # Increase open file limit
       
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
+      - name: Restore Docker Compose
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       
       - name: Docker login
         if: github.event_name == 'push'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
         run: docker-compose --profile worker --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
-      
-      - name: Cache Docker images
-        uses: actions/cache@v3
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
 
   frontend-test:
     name: Frontend Tests
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
-      - name: Setup Chrome
-        run: |
-          export CHROME_BIN=chromium-browser
+      - name: Restore Docker Compose
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
       
       - name: Setup display for browser tests
         run: |
-          export DISPLAY=:99
+          sudo apt-get update
           sudo apt-get install -y xvfb
+          export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          export CHROME_BIN=chromium-browser
           
       - name: Run frontend tests
+        env:
+          DISPLAY: :99
+          CHROME_BIN: chromium-browser
         run: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-
 
   backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest
     needs: build
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: evalai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
+      - name: Restore Docker Compose
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ env.DOCKER_COMPOSE_VERSION }}
       
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9.21
 
@@ -146,12 +186,14 @@ jobs:
         run: pip install awscli==1.18.66 coveralls
 
       - name: Run backend tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/evalai_test
         run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+          docker-compose run --no-deps -e DJANGO_SETTINGS_MODULE=settings.test -e DATABASE_URL=$DATABASE_URL django python manage.py flush --noinput
+          docker-compose run --no-deps -e DJANGO_SETTINGS_MODULE=settings.test -e DATABASE_URL=$DATABASE_URL django pytest --cov . --cov-config .coveragerc
           
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
 
       - name: Coveralls
         continue-on-error: true
@@ -160,6 +202,44 @@ jobs:
         run: |
           echo "Attempting to submit coverage to Coveralls..."
           coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, but continuing workflow"
+
+  pr-deploy:
+    name: Deploy PR Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [frontend-test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Build frontend
+        run: |
+          npm install
+          npm run build
+        
+      - name: Deploy PR Preview
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+          GITHUB_PR_NUMBER: ${{ github.event.number }}
+        run: |
+          chmod +x ./scripts/pr_deploy.sh
+          ./scripts/pr_deploy.sh
+          
+      - name: Comment PR with preview link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Preview deployed to: https://pr-${{ github.event.number }}-evalai.surge.sh'
+            })
                    
   deploy:
     name: Package & Deploy
@@ -167,10 +247,10 @@ jobs:
     needs: [frontend-test, backend-test]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9.21
 
@@ -186,6 +266,16 @@ jobs:
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
           
       - name: Run deployment scripts
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          JUMPBOX_INSTANCE: ${{ secrets.JUMPBOX_INSTANCE }}
+          PRODUCTION_INSTANCE: ${{ secrets.PRODUCTION_INSTANCE }}
+          STAGING_INSTANCE: ${{ secrets.STAGING_INSTANCE }}
+          PRODUCTION_MONITORING_INSTANCE: ${{ secrets.PRODUCTION_MONITORING_INSTANCE }}
+          STAGING_MONITORING_INSTANCE: ${{ secrets.STAGING_MONITORING_INSTANCE }}
         run: |
           export SSH_AUTH_SOCK=/tmp/ssh_agent.sock
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
