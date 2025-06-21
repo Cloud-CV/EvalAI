@@ -45,6 +45,10 @@ docker compose up --build
 
 Upgrade your Docker engine to the latest version compatible with Compose file version 3.
 
+### Q. Nothing happens after clicking Login on EvalAI dashboard
+
+This usually happens due to cache. Clean your browser cache & cookies completely and try accessing the website again, if still doesn't work, then try on a new browser profile.
+
 ### Q. While building EvalAI via Docker, I get:
 ```
 ERROR: Service 'celery' failed to build: pull access denied for evalai_django, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
