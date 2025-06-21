@@ -133,7 +133,7 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Type**: `boolean`
 
-  **Description**: Specifies whether this challenge phase is currently active. Only one phase should be active at a time during a challenge, and EvalAI uses this field to determine which phase should accept submissions.
+  **Description**: Specifies whether this challenge phase is currently active. EvalAI uses this field to determine which phase(s) is/are available to accept submissions.
 
   **Value**:
   - `True`: This phase is currently active.
@@ -150,7 +150,7 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Default**: `False`
 
-  **Description**: Defines whether the submissions are by default public or private. 
+  **Description**: Defines whether the submissions are by default public or private. In case of public option, the participants won't be able to make it private. 
   
   _Note: This will only work when the `leaderboard_public` property is set to `True`._
 
@@ -161,21 +161,6 @@ Each challenge phase in a challenge contains the following subfields:
   **Example**:
   ```yaml
   is_submission_public: True
-  ```
-
-- **`disable_logs` (optional)**
-
-  **Type**: `boolean`
-
-  **Description**: Defines whether the logs from this phase will be shown to participants.
-  
-  **Value**:
-  - `True`: Logs of this phase are NOT shown to participants.
-  - `False`: Logs of this phase are shown to participants.
-
-  **Example**:
-  ```yaml
-  disable_logs: True
   ```
 
 - **`allowed_email_ids` (required)**
@@ -331,11 +316,11 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Type**: `boolean`
 
-  **Description**: Defines whether partial submission evaluation is enabled.
+  **Description**: Defines whether the challenge workers should update Leaderboard Data for a specific Submission incrementally or all at once.
 
   **Value**: 
-  - `True`: Evaluation of partial submission is enabled.
-  - `False`: Evaluation of partial submission is not enabled.
+  - `True`: Worker updates the leaderboard data incrementally to show the evaluation metric(s) as soon as they get computed.
+  - `False`: Worker waits for all the metrics to get computed and show all of them at once.
 
   **Example**:
   ```yaml
