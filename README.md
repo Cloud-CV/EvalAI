@@ -3,6 +3,7 @@
 ------------------------------------------------------------------------------------------
 
 [![Join the chat on Slack](https://img.shields.io/badge/Join%20Slack-Chat-blue?logo=slack)](https://join.slack.com/t/cloudcv-community/shared_invite/zt-3252n6or8-e0QuZKIZFLB0zXtQ6XgxfA)
+[![CI/CD](https://github.com/Cloud-CV/EvalAI/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/Cloud-CV/EvalAI/actions/workflows/ci-cd.yml)
 [![codecov](https://codecov.io/gh/Cloud-CV/EvalAI/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-CV/EvalAI)
 [![Coverage Status](https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
