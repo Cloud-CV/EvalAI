@@ -1,9 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 from hosts.models import ChallengeHostTeam
-from hosts.serializers import (
-    InviteHostToTeamSerializer,
-)
+from hosts.serializers import InviteHostToTeamSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
