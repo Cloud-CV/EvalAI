@@ -1,40 +1,185 @@
 # Challenge Configuration
 
+This section explains how to configure the main details of your EvalAI challenge in the `challenge_config.yaml` file. It includes challenge metadata, display settings, timeline, tags, and top-level files (evaluation scripts, images, HTML templates).
+
 Following fields are required (and can be customized) in the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml).
 
-- **title**: Title of the challenge
+## Challenge Metadata
 
-- **short_description**: Short description of the challenge (preferably 140 characters max)
+- ### `title` (required)
+  **Type**: `string`
 
-- **description**: Long description of the challenge (use a relative path for the HTML file, e.g. `templates/description.html`)
+  **Description**: The full name of the challenge displayed to users.
 
-- **evaluation_details**: Evaluation details and details of the challenge (use a relative path for the HTML file, e.g. `templates/evaluation_details.html`)
+  **Example**:
+  ```yaml
+  title: "Autonomous Driving Lane Detection Challenge"
+  ```
+- ### `short_description` (required)
+  **Type**: `string`
 
-- **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the HTML file, e.g. `templates/terms_and_conditions.html`)
+  **Description**: A short summary (~140 characters) of the challenge.
 
-- **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `images/logo/challenge_logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
+  **Example**:
+  ```yaml
+  short_description: "Detect lane boundaries from images in real-time."
+  ```
+- ### `description` (required)
+  **Type**: `string` (relative file path)
 
-- **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `templates/submission_guidelines.html`)
+  **Description**: Path to the full challenge description in HTML file format.
 
-- **evaluation_script**: Python script which will decide how to evaluate submissions in different phases (path of the evaluation script file or folder relative to this YAML file. For e.g. `evaluation_script/`)
+  **Example**:
+  ```yaml
+  description: "templates/description.html"
+  ```
 
-- **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
+- ### `evaluation_details` (required)
+  **Type**: `string` (relative file path)
 
-- **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
+  **Description**: Path to a detailed explanation of the evaluation process in HTML file format.
 
-- **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
+  **Example**:
+  ```yaml
+  evaluation_details: "templates/evaluation_details.html"
+  ```
 
-- **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
+- ### `terms_and_conditions` (required)
+  **Type**: `string` (relative file path)
 
-- **tags**: A list of tags to display the relevant areas of challenge. 
+  **Description**: Path to HTML file with challenge rules, licenses, restrictions, etc.
 
-- **domain**: Please choose the relevant domain for your challenge: (CV, NLP, RL, MM, AL, TAB).
+  **Example**:
+  ```yaml
+  terms_and_conditions: "templates/terms_and_conditions.html"
+  ```
 
-- **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
+- ### `image` (required)
+  **Type**: `string` (relative file path)
 
-- **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
+  **Description**: Path to the challenge logo. Must be `.jpg`, `.jpeg`, or `.png`.
 
-- **leaderboard**:
+  **Example**:
+  ```yaml
+  image: "images/logo/lane_detection_logo.png"
+  ```
+
+- ### `submission_guidelines` (required)
+  **Type**: `string` (relative file path)
+
+  **Description**: Path to HTML file with "how-to-submit" instructions.
+
+  **Example**:
+  ```yaml
+  submission_guidelines: "templates/submission_guidelines.html"
+  ```
+
+## Challenge Timeline
+
+- ### `start_date` (required)
+  **Type**: `datetime (UTC)`
+  
+  **Format**: `YYYY-MM-DD HH:MM:SS`
+
+  **Description**: When the challenge opens.
+
+  **Example**:
+  ```yaml
+  start_date: "2025-09-01 00:00:00"
+  ```
+
+- ### `end_date` (required)
+  **Type**: `datetime (UTC)`
+  
+  **Format**: `YYYY-MM-DD HH:MM:SS`
+
+  **Description**: When the challenge closes.
+
+  **Example**:
+  ```yaml
+  end_date: "2025-12-01 23:59:59"
+  ```
+
+## Challenge Settings
+
+- ### `published` (optional)
+  **Type**: `boolean`
+
+  **Default**: `False`
+
+  **Description**: Whether the challenge should become publicly visible after EvalAI admin approval.
+
+  **Value**:
+  - `True`: Visible to all participants.
+  - `False`: Hidden until you’re ready to go live.
+
+  **Example**:
+  ```yaml
+  published: False
+  ```
+
+- ### `remote_evaluation` (optional)
+  **Type**: `boolean`
+
+  **Default**: `False`
+
+  **Description**: Whether submissions will be evaluated on a remote machine.
+
+  **Value**:
+  - `True`: Evaluation will happen on external infrastructure you control.
+  - `False`: EvalAI will handle evaluation in one of the paid plan tiers.
+
+  **Example**:
+  ```yaml
+  remote_evaluation: False
+  ```
+
+## Tags
+
+- ### `tags` (optional)
+  **Type**: `list of strings`
+
+  **Description**: Keywords used for displaying relevant areas of the challenge on the platform.
+
+  **Example**:
+  ```yaml
+  tags: 
+    - autonomous-driving
+    - lane-detection
+    - computer-vision
+    - real-time-processing
+  ```
+
+## Evaluation Script
+
+- ### `evaluation_script` (required)
+  **Type**: `string` (relative file path)
+
+  **Description**: Folder containing the python scripts that will be used to evaluate submissions.
+
+  **Example**:
+  ```yaml
+  evaluation_script: "evaluation_script/"
+  ```
+
+To read more about evaluation scripts <a href="../evaluation/evaluation-scripts.html">click here</a>. 
+
+## Leaderboard Configuration
+
+- ### `leaderboard_description` (optional)
+  **Type**: `string`
+
+  **Description**: This is the description that appears above the leaderboard table on the challenge’s leaderboard page. It can explain what the leaderboard metrics mean, how the ranking works, or provide any other context you want participants to know when viewing the leaderboard.
+
+  **Example**:
+  ```yaml
+  leaderboard_description: "The leaderboard shows the evaluation results of your submissions based on accuracy and F1 score. The higher the score, the better your model performs."
+  ```
+
+- ### `leaderboard` (required)
+  **Type**: `list of objects`
+  **Description**: Defines leaderboard structure and metrics used for ranking.
+
   A leaderboard for a challenge on EvalAI consists of following subfields:
 
   - **id**: Unique positive integer field for each leaderboard entry
@@ -47,23 +192,76 @@ Following fields are required (and can be customized) in the [`challenge_config.
     
     3. `metadata`: This field defines additional information about the metrics that are used to evaluate the challenge submissions.
 
-  The leaderboard schema for the [sample challenge configuration](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
+  **Example**:
 
   ```yaml
   leaderboard:
-    - id: 1
-      schema:
-        {
-          "labels": ["Metric1", "Metric2", "Metric3", "Total"],
-          "default_order_by": "Total",
-          "metadata": {
-          "Metric1": {
-            "sort_ascending": True,
-            "description": "Metric Description",
+  - id: 1
+    schema: 
+      {
+        "labels": ["Accuracy", "F1 Score", "Total"],
+        "default_order_by": "Total",
+        "metadata": {
+          "Accuracy": {
+            "sort_ascending": false,
+            "description": "Overall accuracy of the model"
+          },
+          "F1 Score": {
+            "sort_ascending": false,
+            "description": "Weighted F1 score over all classes"
+          },
+          "Total": {
+            "sort_ascending": false,
+            "description": "Combined performance metric"
           }
         }
+      }
   ```
 
-  The above leaderboard schema will look something like this on leaderboard UI:
+  The leaderboard schema will look something like this on leaderboard UI:
 
   ![](../../_static/img/leaderboard.png "Random Number Generator Challenge - Leaderboard")
+
+#### Example:
+This is how the challenge configuration (excluding phases and splits configuration) of a sample challenge with all the above fields look like:
+
+```yaml
+title: "Autonomous Driving Lane Detection Challenge"
+short_description: "Detect lane boundaries from images in real-time."
+description: "templates/description.html"
+evaluation_details: "templates/evaluation_details.html"
+terms_and_conditions: "templates/terms_and_conditions.html"
+image: "images/logo/lane_detection_logo.png"
+submission_guidelines: "templates/submission_guidelines.html"
+leaderboard_description: "The leaderboard shows the evaluation results of your submissions based on accuracy and F1 score. The higher the score, the better your model performs."
+evaluation_script: "evaluation_script/"
+remote_evaluation: false
+start_date: "2025-09-01 00:00:00"
+end_date: "2025-12-01 23:59:59"
+published: false
+tags: 
+  - autonomous-driving
+  - lane-detection
+  - computer-vision
+  - real-time-processing
+leaderboard:
+  - id: 1
+    schema: {
+      "labels": ["Accuracy", "F1 Score", "Total"],
+      "default_order_by": "Total",
+      "metadata": {
+        "Accuracy": {
+          "sort_ascending": false,
+          "description": "Overall accuracy of the model"
+        },
+        "F1 Score": {
+          "sort_ascending": false,
+          "description": "Weighted F1 score over all classes"
+        },
+        "Total": {
+          "sort_ascending": false,
+          "description": "Combined performance metric"
+        }
+      }
+    }
+```
