@@ -1,19 +1,23 @@
 import pytest
 from django.contrib.auth.models import User
-from hosts.serializers import ChallengeHostSerializer, ChallengeHostTeamSerializer, HostTeamDetailSerializer, InviteHostToTeamSerializer
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import ChallengeHostTeam
+from hosts.serializers import (
+    InviteHostToTeamSerializer,
+)
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
 
 @pytest.mark.django_db
 class TestInviteHostToTeamSerializer:
-
     @pytest.fixture
     def setup_data(self):
-       
-        host_user = User.objects.create_user(username="hostuser", email="host@example.com", password="testpass")
-        team = ChallengeHostTeam.objects.create(team_name="Test Team", created_by=host_user)
+        host_user = User.objects.create_user(
+            username="hostuser", email="host@example.com", password="testpass"
+        )
+        team = ChallengeHostTeam.objects.create(
+            team_name="Test Team", created_by=host_user
+        )
         request = APIRequestFactory().get("/")
         request.user = host_user
 
@@ -43,7 +47,9 @@ class TestInviteHostToTeamSerializer:
 
     def test_valid_invite(self, setup_data):
         host_user, team, request = setup_data
-        invited_user = User.objects.create_user(username="guest", email="guest@example.com", password="guestpass")
+        invited_user = User.objects.create_user(
+            username="guest", email="guest@example.com", password="guestpass"
+        )
         data = {"email": invited_user.email}
         context = {"request": request, "challenge_host_team": team}
         serializer = InviteHostToTeamSerializer(data=data, context=context)
@@ -52,5 +58,3 @@ class TestInviteHostToTeamSerializer:
         host_obj, created = serializer.save()
         assert host_obj.user == invited_user
         assert host_obj.team_name == team
-
-
