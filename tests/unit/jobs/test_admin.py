@@ -152,18 +152,15 @@ class SubmissionAdminTest(BaseAPITestClass):
         self.assertEqual(Submission.objects.filter(is_public=False).count(), 1)
 
     def test_change_submission_status_to_cancel(self):
-        # Set up: ensure all submissions are not cancelled
         Submission.objects.all().update(status="submitted")
         queryset = Submission.objects.filter(status="submitted")
         self.app_admin.change_submission_status_to_cancel(request, queryset)
-        # Assert all submissions are now cancelled
         self.assertEqual(
             Submission.objects.filter(status=Submission.CANCELLED).count(),
             queryset.count(),
         )
 
     def test_change_submission_status_to_cancel_only_selected(self):
-        # Create another submission with a different status
         other_submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
@@ -176,13 +173,10 @@ class SubmissionAdminTest(BaseAPITestClass):
             publication_url="http://testserver/",
             is_public=False,
         )
-        # Ensure the status is set correctly
         other_submission.status = "finished"
         other_submission.save()
-        # Only select the original submission
         queryset = Submission.objects.filter(id=self.submission.id)
         self.app_admin.change_submission_status_to_cancel(request, queryset)
-        # Assert only the selected submission is cancelled
         self.assertEqual(
             Submission.objects.get(id=self.submission.id).status,
             Submission.CANCELLED,
@@ -193,7 +187,6 @@ class SubmissionAdminTest(BaseAPITestClass):
         )
 
     def test_get_challenge_name_and_id(self):
-        # This will cover the return "%s - %s" % (...) line
         result = self.app_admin.get_challenge_name_and_id(self.submission)
         expected = f"{self.challenge.title} - {self.challenge.id}"
         self.assertEqual(result, expected)

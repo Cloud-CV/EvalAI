@@ -277,7 +277,6 @@ def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
     mock_sqs = MagicMock()
     mock_boto3_resource.return_value = mock_sqs
 
-    # Simulate a ClientError with a different error code
     mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
         {"Error": {"Code": "SomeOtherError"}}, "GetQueueUrl"
     )

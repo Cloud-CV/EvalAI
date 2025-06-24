@@ -74,7 +74,6 @@ class TestUtils(unittest.TestCase):
         mock_get_team_id,
         mock_Submission,
     ):
-        # Setup mocks
         mock_user = MagicMock()
         mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
@@ -84,13 +83,12 @@ class TestUtils(unittest.TestCase):
         mock_get_challenge_phase_model.return_value = mock_challenge_phase
         mock_get_team_id.return_value = 123
 
-        # Mock the queryset and its count
         mock_qs = MagicMock()
-        mock_qs.count.return_value = 1  # Equal to max_submissions
+        mock_qs.count.return_value = 1
         mock_Submission.objects.filter.return_value.exclude.return_value = (
             mock_qs
         )
-        mock_qs.filter.return_value = mock_qs  # For .filter() chaining
+        mock_qs.filter.return_value = mock_qs
 
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
@@ -126,10 +124,9 @@ class TestUtils(unittest.TestCase):
         mock_Submission.objects.filter.return_value.exclude.return_value = (
             mock_qs
         )
-        mock_qs.filter.return_value = mock_qs  # For .filter() chaining
+        mock_qs.filter.return_value = mock_qs
 
-        # Case 1: Only monthly limit hit
-        mock_qs.count.side_effect = [1, 2, 0]  # total, this_month, today
+        mock_qs.count.side_effect = [1, 2, 0]
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
         )
@@ -140,8 +137,7 @@ class TestUtils(unittest.TestCase):
         )
         self.assertIn("remaining_time", response)
 
-        # Case 2: Both monthly and daily limit hit
-        mock_qs.count.side_effect = [1, 2, 1]  # total, this_month, today
+        mock_qs.count.side_effect = [1, 2, 1]
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
         )
@@ -163,7 +159,6 @@ class TestUtils(unittest.TestCase):
         mock_get_team_id,
         mock_Submission,
     ):
-        # Setup mocks
         mock_user = MagicMock()
         mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
@@ -173,25 +168,20 @@ class TestUtils(unittest.TestCase):
         mock_get_challenge_phase_model.return_value = mock_challenge_phase
         mock_get_team_id.return_value = 123
 
-        # Mock the queryset and its count
         mock_qs = MagicMock()
-        # submissions_done.count() < max_submissions, so monthly check triggers
-        # submissions_done_this_month.count() == max_submissions_per_month
-        # submissions_done_today.count() == max_submissions_per_day
-        mock_qs.count.side_effect = [1, 2, 1]  # total, this_month, today
+
+        mock_qs.count.side_effect = [1, 2, 1]
         mock_Submission.objects.filter.return_value.exclude.return_value = (
             mock_qs
         )
-        mock_qs.filter.return_value = mock_qs  # For .filter() chaining
+        mock_qs.filter.return_value = mock_qs
 
-        # Patch so that submissions_done_today_count >= max_submissions_per_day_count
-        # (already set above)
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
         )
         self.assertEqual(status_code, 200)
-        # Now, patch so that today count also triggers the "both" message
-        mock_qs.count.side_effect = [1, 2, 2]  # total, this_month, today
+
+        mock_qs.count.side_effect = [1, 2, 2]
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
         )
@@ -206,19 +196,18 @@ class TestUtils(unittest.TestCase):
     def test_calculate_distinct_sorted_leaderboard_data_missing_labels_key(
         self, mock_LeaderboardData
     ):
-        # Arrange
         mock_user = MagicMock()
         mock_challenge_obj = MagicMock()
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard = MagicMock()
-        # Missing "labels" key in schema
+
         mock_leaderboard.schema = {"default_order_by": "score"}
         mock_challenge_phase_split.leaderboard = mock_leaderboard
         mock_challenge_phase_split.is_leaderboard_order_descending = False
         mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = (
             False
         )
-        mock_challenge_phase_split.visibility = 1  # Assume public
+        mock_challenge_phase_split.visibility = 1
         mock_challenge_phase_split.show_execution_time = False
         mock_challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
@@ -228,7 +217,6 @@ class TestUtils(unittest.TestCase):
         )
         mock_challenge_obj.banned_email_ids = []
 
-        # Act
         response, status_code = calculate_distinct_sorted_leaderboard_data(
             mock_user,
             mock_challenge_obj,
@@ -237,7 +225,6 @@ class TestUtils(unittest.TestCase):
             "score",
         )
 
-        # Assert
         self.assertEqual(status_code, 400)
         self.assertIn("labels key is missing", response["error"])
 
@@ -253,7 +240,6 @@ class TestUtils(unittest.TestCase):
         mock_filter.return_value = mock_leaderboard_data
         mock_exclude.return_value = mock_leaderboard_data
 
-        # Set up leaderboard schema with "order_by" in labels
         mock_leaderboard = MagicMock()
         mock_leaderboard.schema = {
             "default_order_by": "score",
@@ -265,7 +251,7 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = (
             False
         )
-        mock_challenge_phase_split.visibility = 1  # Assume public
+        mock_challenge_phase_split.visibility = 1
         mock_challenge_phase_split.show_execution_time = False
         mock_challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
@@ -546,11 +532,11 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertFalse(key1 != key2)
         self.assertTrue(key1 != key3)
 
-        # __lt__ 
-        self.assertTrue(key1 < key2)  
-        self.assertFalse(key1 < key3)  
+        # __lt__
+        self.assertTrue(key1 < key2)
+        self.assertFalse(key1 < key3)
 
-        # __le__ 
+        # __le__
         self.assertTrue(key1 <= key2)
         self.assertFalse(key1 <= key3)
 

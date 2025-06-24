@@ -25,7 +25,6 @@ def test_download_file_and_publish_submission_message_success(
     mock_participant_team_get,
     mock_get_participant_team_id,
 ):
-    # Setup mocks
     mock_user = MagicMock()
     mock_user_get.return_value = mock_user
 
@@ -96,7 +95,6 @@ def test_download_file_and_publish_submission_message_exception(
     mock_participant_team = MagicMock()
     mock_participant_team_get.return_value = mock_participant_team
 
-    # Simulate an exception in get_file_from_url
     mock_get_file_from_url.side_effect = Exception("Download failed")
 
     request_data = {
@@ -133,7 +131,6 @@ def test_download_file_and_publish_submission_message_exception_with_temp_dir(
     mock_participant_team_get,
     mock_get_participant_team_id,
 ):
-    # Setup mocks
     mock_user = MagicMock()
     mock_user_get.return_value = mock_user
 
