@@ -4,6 +4,7 @@ import pytest
 from jobs.serializers import (
     ChallengeSubmissionManagementSerializer,
     LeaderboardDataSerializer,
+    SubmissionSerializer,
 )
 
 
@@ -53,3 +54,22 @@ def test_challenge_submission_management_serializer_get_participant_team_members
     serializer = ChallengeSubmissionManagementSerializer()
     affiliations = serializer.get_participant_team_members_affiliations(obj)
     assert affiliations == "Participant team does not exist"
+
+
+def test_submission_serializer_delete_sets_ignore_submission():
+    # Mock request with DELETE method
+    mock_request = MagicMock()
+    mock_request.method = "DELETE"
+    mock_user = MagicMock()
+    mock_request.user = mock_user
+
+    context = {
+        "request": mock_request,
+        "ignore_submission": True,
+    }
+
+    data = {}
+
+    serializer = SubmissionSerializer(context=context, data=data)
+    assert isinstance(serializer, SubmissionSerializer)  # Access serializer
+    assert data["ignore_submission"] is True
