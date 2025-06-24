@@ -4829,6 +4829,36 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
+    # Send subscription plan details email to all challenge hosts
+    try:
+        plan_template_id = (
+            settings.SENDGRID_SETTINGS.get("TEMPLATES", {}).get(
+                "SUBSCRIPTION_PLANS_EMAIL"
+            )
+        )
+        if plan_template_id:
+            emails = challenge.creator.get_all_challenge_host_email()
+            if emails:
+                template_data = {
+                    "CHALLENGE_NAME": challenge.title,
+                    "SUPPORT_EMAIL": settings.CLOUDCV_TEAM_EMAIL,
+                }
+                send_emails(emails, plan_template_id, template_data)
+                logger.info(
+                    "Subscription plan email sent to hosts for challenge %s",
+                    challenge.pk,
+                )
+        else:
+            logger.warning(
+                "SUBSCRIPTION_PLANS_EMAIL template id not configured. Skipping plan email dispatch."
+            )
+    except Exception as e:
+        logger.exception(
+            "Failed to send subscription plan email for challenge %s: %s",
+            challenge.pk,
+            str(e),
+        )
+
     if not settings.DEBUG:
         try:
             evalai_api_server = settings.EVALAI_API_SERVER
