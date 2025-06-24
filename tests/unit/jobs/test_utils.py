@@ -547,8 +547,8 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertTrue(key1 != key3)
 
         # __lt__ 
-        self.assertTrue(key1 < key2)  # 5 == 5
-        self.assertFalse(key1 < key3)  # 5 != 4
+        self.assertTrue(key1 < key2)  
+        self.assertFalse(key1 < key3)  
 
         # __le__ 
         self.assertTrue(key1 <= key2)
