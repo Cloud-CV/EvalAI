@@ -546,11 +546,11 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertFalse(key1 != key2)
         self.assertTrue(key1 != key3)
 
-        # __lt__ (note: your implementation returns True if equal, which is non-standard)
+        # __lt__ 
         self.assertTrue(key1 < key2)  # 5 == 5
         self.assertFalse(key1 < key3)  # 5 != 4
 
-        # __le__ (same as __lt__ in your code)
+        # __le__ 
         self.assertTrue(key1 <= key2)
         self.assertFalse(key1 <= key3)
 
