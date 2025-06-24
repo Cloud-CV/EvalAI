@@ -57,7 +57,6 @@ def test_challenge_submission_management_serializer_get_participant_team_members
 
 
 def test_submission_serializer_delete_sets_ignore_submission():
-    # Mock request with DELETE method
     mock_request = MagicMock()
     mock_request.method = "DELETE"
     mock_user = MagicMock()
@@ -71,5 +70,5 @@ def test_submission_serializer_delete_sets_ignore_submission():
     data = {}
 
     serializer = SubmissionSerializer(context=context, data=data)
-    assert isinstance(serializer, SubmissionSerializer)  # Access serializer
+    assert isinstance(serializer, SubmissionSerializer)
     assert data["ignore_submission"] is True
