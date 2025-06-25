@@ -127,7 +127,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   **Value**:
   - `True`: Evaluation will happen on external infrastructure you control.
-  - `False`: EvalAI will handle evaluation locally.
+  - `False`: EvalAI will handle evaluation in one of the paid plan tiers.
 
   **Example**:
   ```yaml
@@ -155,7 +155,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 - ### `evaluation_script` (required)
   **Type**: `string` (relative file path)
 
-  **Description**: Folder containing the Python scripts that will be used to evaluate submissions.
+  **Description**: Folder containing the python scripts that will be used to evaluate submissions.
 
   **Example**:
   ```yaml
