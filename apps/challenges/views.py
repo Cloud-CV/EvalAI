@@ -156,6 +156,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     send_emails,
+    send_subscription_plans_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -4829,35 +4830,21 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
-    # Send subscription plan details email to all challenge hosts
+    # Send subscription plans email to challenge hosts
     try:
-        plan_template_id = (
-            settings.SENDGRID_SETTINGS.get("TEMPLATES", {}).get(
-                "SUBSCRIPTION_PLANS_EMAIL"
+        send_subscription_plans_email(challenge)
+        logger.info(
+            "Subscription plans email sent successfully for challenge {}".format(
+                challenge_pk
             )
         )
-        if plan_template_id:
-            emails = challenge.creator.get_all_challenge_host_email()
-            if emails:
-                template_data = {
-                    "CHALLENGE_NAME": challenge.title,
-                    "SUPPORT_EMAIL": settings.CLOUDCV_TEAM_EMAIL,
-                }
-                send_emails(emails, plan_template_id, template_data)
-                logger.info(
-                    "Subscription plan email sent to hosts for challenge %s",
-                    challenge.pk,
-                )
-        else:
-            logger.warning(
-                "SUBSCRIPTION_PLANS_EMAIL template id not configured. Skipping plan email dispatch."
-            )
     except Exception as e:
-        logger.exception(
-            "Failed to send subscription plan email for challenge %s: %s",
-            challenge.pk,
-            str(e),
+        logger.error(
+            "Failed to send subscription plans email for challenge {}: {}".format(
+                challenge_pk, str(e)
+            )
         )
+        # Continue with the approval process even if email fails
 
     if not settings.DEBUG:
         try:
@@ -4900,7 +4887,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         if webhook_response:
             if webhook_response.content.decode("utf-8") == "ok":
                 response_data = {
-                    "message": "Approval request sent!",
+                    "message": "Approval request sent! You should also receive an email with subscription plan details.",
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
