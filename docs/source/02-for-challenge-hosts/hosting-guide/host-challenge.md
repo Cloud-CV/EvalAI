@@ -1,4 +1,25 @@
 # Host Challenge
+EvalAI supports hosting challenges with different configurations. Challenge organizers can choose to customize most aspects of the challenge but not limited to:
+
+- Evaluation metrics
+- Language/Framework to implement the metric
+- Number of phases and data-splits
+- Daily / monthly / overall submission limit
+- Number of workers evaluating submissions
+- Evaluation on remote machines
+- Show / hide error bars on leaderboard
+- Public / private leaderboards
+- Allow / block certain email addresses to participate in the challenge or phase
+- Choose which fields to export while downloading challenge submissions
+
+We have hosted challenges from different domains such as:
+
+- Machine learning ([2019 SIOP Machine Learning Competition](https://eval.ai/web/challenges/challenge-page/160/leaderboard/481))
+- Deep learning ([Visual Dialog Challenge 2019 ](https://eval.ai/web/challenges/challenge-page/161/leaderboard/483))
+- Computer vision ([Vision and Language Navigation](https://eval.ai/web/challenges/challenge-page/97/leaderboard/270))
+- Natural language processing ([VQA Challenge 2019](https://eval.ai/web/challenges/challenge-page/163/leaderboard/498))
+- Healthcare ([fastMRI Image Reconstruction ](https://eval.ai/web/challenges/challenge-page/153/leaderboard/447))
+- Self-driving cars ([CARLA Autonomous Driving Challenge](https://eval.ai/web/challenges/challenge-page/246/leaderboard/817))
 
 ## Host challenge using github
 
