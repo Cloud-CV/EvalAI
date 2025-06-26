@@ -153,7 +153,7 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Type**: `boolean`
 
-  **Description**: Specifies whether this challenge phase is currently active. Only one phase should be active at a time during a challenge, and EvalAI uses this field to determine which phase should accept submissions.
+  **Description**: Specifies whether this challenge phase is currently active. EvalAI uses this field to determine which phase(s) is/are available to accept submissions.
 
   **Value**:
   - `True`: This phase is currently active.
@@ -170,7 +170,7 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Default**: `False`
 
-  **Description**: Defines whether the submissions are by default public or private. 
+  **Description**: Defines whether the submissions are by default public or private. In case of public option, the participants won't be able to make it private. 
   
   _Note: This will only work when the `leaderboard_public` property is set to `True`._
 
@@ -183,42 +183,16 @@ Each challenge phase in a challenge contains the following subfields:
   is_submission_public: True
   ```
 
-- **`disable_logs` (optional)**
-
-  **Type**: `boolean`
-
-  **Description**: Defines whether the logs from this phase will be shown to participants.
-  
-  **Value**:
-  - `True`: Logs of this phase are NOT shown to participants.
-  - `False`: Logs of this phase are shown to participants.
-
-  **Example**:
-  ```yaml
-  disable_logs: True
-  ```
-
-- **`allowed_email_domains` (required)**
+- **`allowed_email_ids` (required)**
 
   **Type**: `list of strings`
 
-  **Description**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate.
-  (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Only the participants with these email domains will be allowed to participate.) 
+  **Description**: A list of email IDs allowed to participate in the challenge. Leave blank if everyone is allowed to participate.
+  (e.g. `["example1@domain1.com", "example2@domain2.org", "example3@domain3.com"]` Only the participants with these email ids will be allowed to participate.) 
 
   **Example**:
   ```yaml
-  allowed_email_domains: []
-  ```
-
-- **`blocked_email_domains` (optional)**
-
-  **Type**: `list of strings`
-
-  **Description**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
-
-  **Example**:
-  ```yaml
-  blocked_emails_domains: [domain1.com]
+  allowed_email_ids: []
   ```
 
 ### Submission Rules
@@ -362,11 +336,11 @@ Each challenge phase in a challenge contains the following subfields:
 
   **Type**: `boolean`
 
-  **Description**: Defines whether partial submission evaluation is enabled.
+  **Description**: Defines whether the challenge workers should update Leaderboard Data for a specific Submission incrementally or all at once.
 
   **Value**: 
-  - `True`: Evaluation of partial submission is enabled.
-  - `False`: Evaluation of partial submission is not enabled.
+  - `True`: Worker updates the leaderboard data incrementally to show the evaluation metric(s) as soon as they get computed.
+  - `False`: Worker waits for all the metrics to get computed and show all of them at once.
 
   **Example**:
   ```yaml
@@ -472,6 +446,36 @@ This mapping allows the challenge hosts to control visibility, sorting, and pres
   **Example**:
   ```yaml
   is_leaderboard_order_descending: True
+  ```
+
+- **`show_execution_time`**
+
+  **Type**: `boolean`
+
+  **Description**: Defines whether the submission’s execution time is displayed on the leaderboard for this split.
+
+  **Value**:
+  - `True`: Display execution time of submissions on leaderboard.
+  - `False`: Hide execution time from leaderboard.
+
+  **Example**:
+  ```yaml
+  show_execution_time: True
+  ```
+
+- **`show_leaderboard_by_latest_submission`**
+
+  **Type**: `boolean`
+
+  **Description**: Determines whether the leaderboard should be sorted by the latest submission for this split.
+
+  **Value**:
+  - `True`: Leaderboard displays scores based on latest submission.
+  - `False`: Leaderboard displays scores based on the best submission by default.
+
+  **Example**:
+  ```yaml
+  show_leaderboard_by_latest_submission: True
   ```
 
 #### Example:
