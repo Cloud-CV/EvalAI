@@ -156,6 +156,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     send_emails,
+    send_subscription_plans_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -4829,6 +4830,22 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
+    # Send subscription plans email to challenge hosts
+    try:
+        send_subscription_plans_email(challenge)
+        logger.info(
+            "Subscription plans email sent successfully for challenge {}".format(
+                challenge_pk
+            )
+        )
+    except Exception as e:
+        logger.error(
+            "Failed to send subscription plans email for challenge {}: {}".format(
+                challenge_pk, str(e)
+            )
+        )
+        # Continue with the approval process even if email fails
+
     if not settings.DEBUG:
         try:
             evalai_api_server = settings.EVALAI_API_SERVER
@@ -4870,7 +4887,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         if webhook_response:
             if webhook_response.content.decode("utf-8") == "ok":
                 response_data = {
-                    "message": "Approval request sent!",
+                    "message": "Approval request sent! You should also receive an email with subscription plan details.",
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
