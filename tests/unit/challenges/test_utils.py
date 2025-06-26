@@ -17,6 +17,7 @@ from challenges.utils import (
     get_file_content,
     parse_submission_meta_attributes,
     send_emails,
+    send_subscription_plans_email,
 )
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -377,4 +378,318 @@ class SendEmailsTests(unittest.TestCase):
             recipient="user2@example.com",
             template_id=template_id,
             template_data=template_data,
+        )
+
+
+class SendSubscriptionPlansEmailTests(unittest.TestCase):
+    """Test cases for send_subscription_plans_email function"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.mock_challenge = MagicMock()
+        self.mock_challenge.pk = 123
+        self.mock_challenge.title = "Test Challenge"
+        self.mock_challenge.creator.team_name = "Test Host Team"
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host1@example.com",
+            "host2@example.com"
+        ]
+        self.mock_challenge.image = None  # No image by default
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.EmailMultiAlternatives")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_success(
+        self, mock_settings, mock_email_class, mock_render_to_string, mock_logger
+    ):
+        """Test successful email sending in production mode"""
+        # Setup mocks
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "https://evalai.cloudcv.org"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.return_value = "<html>Test Email Content</html>"
+        
+        mock_email_instance = MagicMock()
+        mock_email_class.return_value = mock_email_instance
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify template rendering was called with correct context
+        expected_context = {
+            "challenge_name": "Test Challenge",
+            "challenge_url": "https://evalai.cloudcv.org/web/challenges/challenge-page/123",
+            "challenge_manage_url": "https://evalai.cloudcv.org/web/challenges/challenge-page/123/manage",
+            "challenge_id": 123,
+            "host_team_name": "Test Host Team",
+            "support_email": "team@cloudcv.org",
+        }
+        mock_render_to_string.assert_called_once_with(
+            'challenges/subscription_plans_email.html', expected_context
+        )
+
+        # Verify emails were created and sent
+        self.assertEqual(mock_email_class.call_count, 2)
+        self.assertEqual(mock_email_instance.attach_alternative.call_count, 2)
+        self.assertEqual(mock_email_instance.send.call_count, 2)
+
+        # Verify email creation parameters
+        mock_email_class.assert_any_call(
+            subject="EvalAI Subscription Plans - Challenge: Test Challenge",
+            body="Please view this email in HTML format.",
+            from_email="team@cloudcv.org",
+            to=["host1@example.com"],
+        )
+        mock_email_class.assert_any_call(
+            subject="EvalAI Subscription Plans - Challenge: Test Challenge",
+            body="Please view this email in HTML format.",
+            from_email="team@cloudcv.org",
+            to=["host2@example.com"],
+        )
+
+        # Verify HTML content was attached
+        mock_email_instance.attach_alternative.assert_called_with(
+            "<html>Test Email Content</html>", "text/html"
+        )
+
+        # Verify logging
+        self.assertEqual(mock_logger.info.call_count, 3)  # 2 individual + 1 summary
+        mock_logger.info.assert_any_call(
+            "Subscription plans email sent to host1@example.com for challenge 123"
+        )
+        mock_logger.info.assert_any_call(
+            "Subscription plans email sent to host2@example.com for challenge 123"
+        )
+        mock_logger.info.assert_any_call(
+            "Sent subscription plans email to 2/2 hosts for challenge 123"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_debug_mode(
+        self, mock_settings, mock_render_to_string, mock_logger
+    ):
+        """Test email sending in DEBUG mode (should only log, not send)"""
+        # Setup mocks
+        mock_settings.DEBUG = True
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.return_value = "<html>Test Email Content</html>"
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify template rendering was called
+        mock_render_to_string.assert_called_once()
+
+        # Verify debug logging
+        expected_context = {
+            "challenge_name": "Test Challenge",
+            "challenge_url": "http://localhost:8000/web/challenges/challenge-page/123",
+            "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
+            "challenge_id": 123,
+            "host_team_name": "Test Host Team",
+            "support_email": "team@cloudcv.org",
+        }
+        
+        mock_logger.info.assert_any_call(
+            "DEBUG MODE: Would send subscription plans email to host1@example.com for challenge 123"
+        )
+        mock_logger.info.assert_any_call(
+            "Email subject: EvalAI Subscription Plans - Challenge: Test Challenge"
+        )
+        mock_logger.info.assert_any_call(f"Email context: {expected_context}")
+        mock_logger.info.assert_any_call(
+            "Subscription plans email simulated to host1@example.com for challenge 123"
+        )
+        mock_logger.info.assert_any_call(
+            "Simulated subscription plans email to 2/2 hosts for challenge 123"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    def test_send_subscription_plans_email_no_host_emails(self, mock_logger):
+        """Test behavior when no challenge host emails are found"""
+        # Setup mock challenge with no host emails
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = []
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify warning was logged and function returned early
+        mock_logger.warning.assert_called_once_with(
+            "No challenge host emails found for challenge 123"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_with_challenge_image(
+        self, mock_settings, mock_render_to_string, mock_logger
+    ):
+        """Test email sending when challenge has an image"""
+        # Setup mocks
+        mock_settings.DEBUG = True
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.return_value = "<html>Test Email Content</html>"
+        
+        # Add image to challenge
+        mock_image = MagicMock()
+        mock_image.url = "https://example.com/challenge-image.jpg"
+        self.mock_challenge.image = mock_image
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify template rendering was called with image URL in context
+        expected_context = {
+            "challenge_name": "Test Challenge",
+            "challenge_url": "http://localhost:8000/web/challenges/challenge-page/123",
+            "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
+            "challenge_id": 123,
+            "host_team_name": "Test Host Team",
+            "support_email": "team@cloudcv.org",
+            "challenge_image_url": "https://example.com/challenge-image.jpg",
+        }
+        mock_render_to_string.assert_called_once_with(
+            'challenges/subscription_plans_email.html', expected_context
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.EmailMultiAlternatives")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_individual_email_failure(
+        self, mock_settings, mock_email_class, mock_render_to_string, mock_logger
+    ):
+        """Test handling of individual email sending failures"""
+        # Setup mocks
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "https://evalai.cloudcv.org"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.return_value = "<html>Test Email Content</html>"
+        
+        # Make the first email fail, second succeed
+        mock_email_instance1 = MagicMock()
+        mock_email_instance1.send.side_effect = Exception("SMTP Error")
+        mock_email_instance2 = MagicMock()
+        
+        mock_email_class.side_effect = [mock_email_instance1, mock_email_instance2]
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify error was logged for failed email
+        mock_logger.error.assert_called_once_with(
+            "Failed to send subscription plans email to host1@example.com for challenge 123: SMTP Error"
+        )
+
+        # Verify success was logged for successful email
+        mock_logger.info.assert_any_call(
+            "Subscription plans email sent to host2@example.com for challenge 123"
+        )
+
+        # Verify summary shows 1 success out of 2 attempts
+        mock_logger.info.assert_any_call(
+            "Sent subscription plans email to 1/2 hosts for challenge 123"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_default_settings(
+        self, mock_settings, mock_logger
+    ):
+        """Test email sending with default settings fallback"""
+        # Setup mocks with no custom settings
+        mock_settings.DEBUG = True
+        del mock_settings.EVALAI_API_SERVER  # Remove attribute to test getattr fallback
+        del mock_settings.CLOUDCV_TEAM_EMAIL  # Remove attribute to test getattr fallback
+        
+        # Mock getattr to return defaults
+        with mockpatch("challenges.utils.getattr") as mock_getattr:
+            mock_getattr.side_effect = lambda obj, attr, default: default
+            
+            with mockpatch("challenges.utils.render_to_string") as mock_render_to_string:
+                mock_render_to_string.return_value = "<html>Test Email Content</html>"
+                
+                # Call the function
+                send_subscription_plans_email(self.mock_challenge)
+
+                # Verify template rendering was called with default values
+                expected_context = {
+                    "challenge_name": "Test Challenge",
+                    "challenge_url": "http://localhost:8000/web/challenges/challenge-page/123",
+                    "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
+                    "challenge_id": 123,
+                    "host_team_name": "Test Host Team",
+                    "support_email": "team@cloudcv.org",
+                }
+                mock_render_to_string.assert_called_once_with(
+                    'challenges/subscription_plans_email.html', expected_context
+                )
+
+    @mockpatch("challenges.utils.logger")
+    def test_send_subscription_plans_email_general_exception(self, mock_logger):
+        """Test handling of general exceptions during email sending process"""
+        # Make get_all_challenge_host_email raise an exception
+        self.mock_challenge.creator.get_all_challenge_host_email.side_effect = Exception("Database Error")
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify error was logged
+        mock_logger.error.assert_called_once_with(
+            "Error sending subscription plans email for challenge 123: Database Error"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_template_rendering_exception(
+        self, mock_settings, mock_render_to_string, mock_logger
+    ):
+        """Test handling of template rendering exceptions"""
+        # Setup mocks
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "https://evalai.cloudcv.org"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.side_effect = Exception("Template Error")
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify error was logged
+        mock_logger.error.assert_called_once_with(
+            "Error sending subscription plans email for challenge 123: Template Error"
+        )
+
+    @mockpatch("challenges.utils.logger")
+    @mockpatch("challenges.utils.render_to_string")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_single_host_email(
+        self, mock_settings, mock_render_to_string, mock_logger
+    ):
+        """Test email sending with single host email"""
+        # Setup mocks
+        mock_settings.DEBUG = True
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_render_to_string.return_value = "<html>Test Email Content</html>"
+        
+        # Set single host email
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "singlehost@example.com"
+        ]
+
+        # Call the function
+        send_subscription_plans_email(self.mock_challenge)
+
+        # Verify single email was simulated
+        mock_logger.info.assert_any_call(
+            "DEBUG MODE: Would send subscription plans email to singlehost@example.com for challenge 123"
+        )
+        mock_logger.info.assert_any_call(
+            "Simulated subscription plans email to 1/1 hosts for challenge 123"
         )
