@@ -3,6 +3,7 @@ import random
 import string
 import unittest
 from unittest.mock import MagicMock
+from unittest.mock import patch
 from unittest.mock import patch as mockpatch
 
 import pytest
@@ -14,6 +15,7 @@ from challenges.utils import (
     add_sponsors_to_challenge,
     add_tags_to_challenge,
     generate_presigned_url,
+    generate_presigned_url_for_multipart_upload,
     get_file_content,
     parse_submission_meta_attributes,
     send_emails,
@@ -119,6 +121,69 @@ class TestGeneratePresignedUrl(unittest.TestCase):
             ExpiresIn=3600,
             HttpMethod="PUT",
         )
+
+    @patch("challenges.utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.logger")
+    @patch("challenges.utils.settings")
+    def test_generate_presigned_url_exception(
+        self,
+        mock_settings,
+        mock_logger,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_settings.PRESIGNED_URL_EXPIRY_TIME = 3600
+
+        mock_get_aws_credentials.return_value = {
+            "AWS_ACCESS_KEY_ID": "fake_access_key",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
+            "AWS_STORAGE_BUCKET_NAME": "fake_bucket",
+        }
+
+        mock_s3_client = MagicMock()
+
+        mock_s3_client.generate_presigned_url.side_effect = Exception(
+            "S3 error"
+        )
+        mock_get_boto3_client.return_value = mock_s3_client
+
+        result = generate_presigned_url("file_key", 1)
+        assert result == {"error": "Could not fetch presigned url."}
+        mock_logger.exception.assert_called_once()
+
+    @patch("challenges.utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.logger")
+    @patch("challenges.utils.settings")
+    def test_generate_presigned_url_for_multipart_upload_exception(
+        self,
+        mock_settings,
+        mock_logger,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.PRESIGNED_URL_EXPIRY_TIME = 3600
+
+        mock_get_aws_credentials.return_value = {
+            "AWS_ACCESS_KEY_ID": "fake_access_key",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
+            "AWS_STORAGE_BUCKET_NAME": "fake_bucket",
+        }
+
+        mock_s3_client = MagicMock()
+        # Simulate exception when calling create_multipart_upload
+        mock_s3_client.create_multipart_upload.side_effect = Exception(
+            "S3 error"
+        )
+        mock_get_boto3_client.return_value = mock_s3_client
+
+        result = generate_presigned_url_for_multipart_upload("file_key", 1, 2)
+        assert result == {"error": "Could not fetch presigned urls."}
+        mock_logger.exception.assert_called_once()
 
 
 class TestChallengeUtils(unittest.TestCase):
