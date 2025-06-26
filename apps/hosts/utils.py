@@ -1,5 +1,5 @@
-from base.utils import get_model_object, is_user_a_staff
-from challenges.models import Challenge
+from apps.base.utils import get_model_object, is_user_a_staff
+from apps.challenges.models import Challenge
 
 from .models import ChallengeHost, ChallengeHostTeam
 
