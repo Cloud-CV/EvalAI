@@ -3034,7 +3034,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
@@ -5801,7 +5800,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"message": "Approval request sent!"})
+        self.assertEqual(response.data, {"message": "Approval request sent! You should also receive an email with subscription plan details."})
 
     def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
         self,
@@ -5858,6 +5857,255 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 "error": "The following challenge phases do not have finished submissions: Challenge Phase"
             },
         )
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    @mock.patch("challenges.views.logger")
+    def test_request_challenge_approval_with_successful_subscription_email(
+        self, mock_logger, mock_send_email
+    ):
+        """Test that subscription plans email is sent successfully during approval request"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called with correct challenge
+        mock_send_email.assert_called_once_with(self.challenge)
+        
+        # Verify success logging
+        mock_logger.info.assert_any_call(
+            "Subscription plans email sent successfully for challenge {}".format(
+                self.challenge.pk
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data, 
+            {"message": "Approval request sent! You should also receive an email with subscription plan details."}
+        )
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    @mock.patch("challenges.views.logger")
+    def test_request_challenge_approval_with_email_failure_continues_approval(
+        self, mock_logger, mock_send_email
+    ):
+        """Test that approval process continues even if email sending fails"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        # Make email sending fail
+        mock_send_email.side_effect = Exception("Email service unavailable")
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called
+        mock_send_email.assert_called_once_with(self.challenge)
+        
+        # Verify error logging
+        mock_logger.error.assert_any_call(
+            "Failed to send subscription plans email for challenge {}: {}".format(
+                self.challenge.pk, "Email service unavailable"
+            )
+        )
+
+        # Verify approval process continues despite email failure
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data, 
+            {"message": "Approval request sent! You should also receive an email with subscription plan details."}
+        )
+
+    @override_settings(DEBUG=True)
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_in_debug_mode_with_email(
+        self, mock_send_email
+    ):
+        """Test that subscription plans email is called in DEBUG mode"""
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called even in DEBUG mode
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # In DEBUG mode, the view returns an error message about local deployments
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": "Please approve the challenge using admin for local deployments."}
+        )
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_challenge_not_found(
+        self, mock_send_email
+    ):
+        """Test that email is not sent when challenge doesn't exist"""
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": 99999},  # Non-existent challenge
+        )
+        response = self.client.get(url)
+
+        # Verify email function was not called for non-existent challenge
+        mock_send_email.assert_not_called()
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_user_not_host(
+        self, mock_send_email
+    ):
+        """Test that email is not sent when user is not challenge host"""
+        # Create a different user who is not a challenge host
+        other_user = User.objects.create(
+            username="otheruser",
+            password="other_password",
+            email="other@test.com",
+        )
+        EmailAddress.objects.create(
+            user=other_user,
+            email="other@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        # Authenticate as the other user
+        self.client.force_authenticate(user=other_user)
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was not called for unauthorized user
+        mock_send_email.assert_not_called()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_webhook_failure_after_email_success(
+        self, mock_send_email
+    ):
+        """Test that email is sent even if webhook fails later"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"error",  # Simulate webhook failure
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called despite webhook failure
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Webhook failure should result in error response
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("error", response.data)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_with_smtp_error(
+        self, mock_send_email
+    ):
+        """Test handling of SMTP-specific errors during email sending"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        # Simulate SMTP error
+        from smtplib import SMTPException
+        mock_send_email.side_effect = SMTPException("SMTP server not available")
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Approval should continue despite SMTP error
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_integration_with_challenge_phases(
+        self, mock_send_email
+    ):
+        """Test email integration with challenge that has multiple phases"""
+        # Create additional challenge phase
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            additional_phase = ChallengePhase.objects.create(
+                name="Additional Phase",
+                description="Description for Additional Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file2.txt",
+                    b"Dummy file content 2",
+                    content_type="text/plain",
+                ),
+            )
+
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called with the challenge
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class CreateOrUpdateGithubChallengeTest(APITestCase):
