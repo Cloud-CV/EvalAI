@@ -21,7 +21,7 @@ class TestHasParticipantTeamParticipatedInChallenge(TestCase):
         challenge = Challenge.objects.create(
             title="challenge1", creator=host_team
         )
-        # This will raise FieldError due to wrong related name in utils.py
+
         with self.assertRaises(FieldError):
             has_participant_team_participated_in_challenge(
                 team.id, challenge.id
