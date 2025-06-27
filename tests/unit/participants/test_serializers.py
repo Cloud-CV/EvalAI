@@ -35,7 +35,7 @@ class TestInviteParticipantToTeamSerializer(TestCase):
         request.user = user
         context = {"request": request, "participant_team": None}
         serializer = InviteParticipantToTeamSerializer(context=context)
-        # Use an email that does not exist in the User table
+
         with self.assertRaisesMessage(Exception, "User does not exist"):
             serializer.validate_email("notfound@example.com")
 
