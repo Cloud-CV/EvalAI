@@ -537,15 +537,12 @@ class ExtractChallengeDataWorkerTest(BaseAPITestClass):
         mock_download_and_extract_zip_file,
         mock_create_dir_as_python_package,
     ):
-        # Setup
         mock_isfile.return_value = False
         challenge = self.challenge
         phase = self.challenge_phase
 
-        # Call
         extract_challenge_data(challenge, [phase])
 
-        # Asserts
         mock_create_dir_as_python_package.assert_called()
         mock_download_and_extract_zip_file.assert_called()
         mock_create_dir.assert_called()
@@ -640,7 +637,6 @@ class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
         mock_multiout,
         mock_evaluation_scripts,
     ):
-        # Setup
         challenge_id = self.challenge.id
         challenge_phase = self.challenge_phase
         submission = self.submission
@@ -650,7 +646,7 @@ class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
         temp_run_dir = join(
             SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
         )
-        # Add this line to set up the annotation file name map
+
         PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
             challenge_phase.id: "dummy_annotation.txt"
         }
@@ -658,12 +654,10 @@ class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
             "Eval error"
         )
 
-        # Simulate evaluate raising exception
         mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
             "Eval error"
         )
 
-        # Patch ContentFile to avoid file IO
         with patch(
             "scripts.workers.submission_worker.ContentFile",
             side_effect=lambda x: ContentFile(x),
@@ -675,13 +669,12 @@ class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
                 user_annotation_file_path,
             )
 
-        # Check submission status is FAILED and completed_at is set
         submission.refresh_from_db()
         assert submission.status == Submission.FAILED
         assert submission.completed_at is not None
-        # Check logs are saved (open called for stdout and stderr)
-        assert mock_open_builtin.call_count >= 4  # open for write and read
-        # Check temp dir is deleted
+
+        assert mock_open_builtin.call_count >= 4
+
         mock_rmtree.assert_called_with(temp_run_dir)
 
     @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
@@ -738,7 +731,7 @@ class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
         submission.refresh_from_db()
         assert submission.status == Submission.FAILED
         assert submission.completed_at is not None
-        # open should not be called for logs
+
         assert mock_open_builtin.call_count < 4
         mock_rmtree.assert_called_with(temp_run_dir)
 
@@ -763,7 +756,6 @@ class RunSubmissionDatasetSplitExceptionTest(BaseAPITestClass):
         mock_multiout,
         mock_evaluation_scripts,
     ):
-        # Setup
         challenge_id = self.challenge.id
         challenge_phase = self.challenge_phase
         submission = self.submission
@@ -776,12 +768,10 @@ class RunSubmissionDatasetSplitExceptionTest(BaseAPITestClass):
             challenge_phase.id: "dummy_annotation.txt"
         }
 
-        # Mock evaluation script to return a result with a split_codename
         mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
             "result": [{"split_codename_1": {"key1": 10}}]
         }
 
-        # Patch ChallengePhaseSplit.objects.get to return a mock with dataset_split raising Exception
         with patch(
             "scripts.workers.submission_worker.ChallengePhaseSplit.objects.get"
         ) as mock_cps_get:
@@ -807,7 +797,7 @@ class RunSubmissionDatasetSplitExceptionTest(BaseAPITestClass):
         submission.refresh_from_db()
         assert submission.status == Submission.FAILED
         assert submission.completed_at is not None
-        # Check temp dir is deleted
+
         mock_rmtree.assert_called_with(temp_run_dir)
 
 
@@ -847,18 +837,15 @@ class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
             challenge_phase.id: "dummy_annotation.txt"
         }
 
-        # Mock evaluation script to return a result with a split_codename
         mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
             "result": [{"split_codename_1": {"key1": 10}}]
         }
 
-        # Mock ChallengePhaseSplit and dataset_split
         mock_cps = MagicMock()
         mock_cps.leaderboard = MagicMock()
         mock_cps.dataset_split.codename = "split_codename_1"
         mock_cps_get.return_value = mock_cps
 
-        # Patch ContentFile to avoid file IO
         with patch(
             "scripts.workers.submission_worker.ContentFile",
             side_effect=lambda x: ContentFile(x),
@@ -870,7 +857,6 @@ class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
                 user_annotation_file_path,
             )
 
-        # Check LeaderboardData was created and appended
         assert mock_leaderboard_data.call_count >= 1
         submission.refresh_from_db()
         assert submission.status in [Submission.FINISHED, Submission.FAILED]
@@ -912,19 +898,16 @@ class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
             challenge_phase.id: "dummy_annotation.txt"
         }
 
-        # Mock evaluation script to return a result and error
         mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
             "result": [{"split_codename_1": {"key1": 10}}],
             "error": [{"split_codename_1": {"errorkey": 1}}],
         }
 
-        # Mock ChallengePhaseSplit and dataset_split
         mock_cps = MagicMock()
         mock_cps.leaderboard = MagicMock()
         mock_cps.dataset_split.codename = "split_codename_1"
         mock_cps_get.return_value = mock_cps
 
-        # Patch ContentFile to avoid file IO
         with patch(
             "scripts.workers.submission_worker.ContentFile",
             side_effect=lambda x: ContentFile(x),
@@ -936,7 +919,6 @@ class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
                 user_annotation_file_path,
             )
 
-        # Check LeaderboardData was created and error was set
         assert mock_leaderboard_data.call_count >= 1
         submission.refresh_from_db()
         assert submission.status in [Submission.FINISHED, Submission.FAILED]
@@ -950,7 +932,6 @@ class ProcessAddChallengeMessageTest(BaseAPITestClass):
     def test_process_add_challenge_message_success(
         self, mock_challenge_get, mock_extract_challenge_data
     ):
-        # Mock challenge and its phases
         mock_challenge = MagicMock()
         mock_challenge.challengephase_set.all.return_value = [MagicMock()]
         mock_challenge_get.return_value = mock_challenge
@@ -973,7 +954,7 @@ class ProcessAddChallengeMessageTest(BaseAPITestClass):
         try:
             process_add_challenge_message(message)
         except UnboundLocalError:
-            pass  # This is expected due to the bug in the source code
+            pass
 
         mock_challenge_get.assert_called_with(id=999)
         mock_logger_exception.assert_called_with(
@@ -1062,10 +1043,9 @@ class MainFunctionTest(BaseAPITestClass):
         mock_delete_old_temp_directories,
         mock_logger_info,
         mock_GracefulKiller,
-        mock_invalidate_caches,  # <-- add this
-        mock_import_module,  # <-- add this
+        mock_invalidate_caches,
+        mock_import_module,
     ):
-        # Setup environment
         with patch.object(sys, "argv", ["worker"]), patch(
             "scripts.workers.submission_worker.settings"
         ) as mock_settings, patch(
@@ -1073,7 +1053,7 @@ class MainFunctionTest(BaseAPITestClass):
         ):
             mock_settings.DEBUG = True
             mock_settings.TEST = False
-            # Simulate LIMIT_CONCURRENT_SUBMISSION_PROCESSING
+
             with patch.dict(
                 "os.environ",
                 {
@@ -1081,9 +1061,8 @@ class MainFunctionTest(BaseAPITestClass):
                     "CHALLENGE_PK": str(self.challenge.pk),
                 },
             ):
-                # Setup mocks
                 killer_instance = MagicMock()
-                killer_instance.kill_now = True  # To break the while loop
+                killer_instance.kill_now = True
                 mock_GracefulKiller.return_value = killer_instance
                 mock_load_challenge_and_return_max_submissions.return_value = (
                     1,
@@ -1191,18 +1170,12 @@ class DeleteOldTempDirectoriesTest(BaseAPITestClass):
     def test_delete_old_temp_directories_delete_error(
         self, mock_getctime, mock_rmtree, mock_logger_info
     ):
-        import os
-        import tempfile
-
-        # Create two temp dirs
         temp_dir = tempfile.gettempdir()
         dir1 = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
         dir2 = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
 
-        # Mock creation times so dir2 is latest
         mock_getctime.side_effect = lambda path: {dir1: 100, dir2: 200}[path]
 
-        # Simulate rmtree raising exception for dir1
         def rmtree_side_effect(path):
             if path == dir1:
                 raise Exception("delete error")
@@ -1211,14 +1184,12 @@ class DeleteOldTempDirectoriesTest(BaseAPITestClass):
 
         delete_old_temp_directories(prefix="tmp")
 
-        # Check logger.info called with error message for dir1
         assert any(
             f"Error deleting directory {dir1}: delete error"
             in str(call_args[0][0])
             for call_args in mock_logger_info.call_args_list
         )
 
-        # Clean up
         if os.path.exists(dir2):
             shutil.rmtree(dir2)
 
@@ -1229,7 +1200,6 @@ class ExtractSubmissionDataCancelledTest(BaseAPITestClass):
     def test_extract_submission_data_cancelled(
         self, mock_submission_get, mock_logger_info
     ):
-        # Mock a submission with status CANCELLED
         mock_submission = MagicMock()
         mock_submission.status = Submission.CANCELLED
         mock_submission_get.return_value = mock_submission
