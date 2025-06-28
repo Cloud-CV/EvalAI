@@ -2,7 +2,7 @@
 
 This guide provides a set of fully functional examples of `challenge_config.yaml` file for common challenge setups on EvalAI. Each example illustrates a different real-world use case—ranging from single-phase challenges to multi-phase, multi-leaderboard competitions. These templates are designed to help organizers get started quickly, and understand how various components of the configuration work together.
 
-Before using any of the following templates as your challenge configuration, make sure all the mentioned files exist in the correct paths as mentioned in different fields of the configuration. (e.g., `test_annotation_file`, `description`, etc.)
+Before using any of the following templates as your challenge configuration, make sure all the mentioned files exist in the respective paths as mentioned in different fields of the configuration. (e.g., `test_annotation_file`, `description`, etc.)
 
 ## Example 1: One Challenge, One Phase, One Leaderboard, One Phase Split
 
