@@ -231,6 +231,133 @@ it('should handle signup error with password2 error', function () {
     expect(vm.FormError).toBe('Password2 error');
 });
 
+it('should redirect to previousState after successful signup and login', function () {
+    var signupCalled = false, loginCalled = false;
+    $rootScope.previousState = 'web.profile';
+    spyOn($state, 'go');
+    spyOn(utilities, 'storeData');
+    utilities.sendRequest = function (parameters, header) {
+        if (parameters.url === 'auth/registration/') {
+            signupCalled = true;
+            parameters.callback.onSuccess({status: 201});
+        } else if (parameters.url === 'auth/login/') {
+            loginCalled = true;
+            parameters.callback.onSuccess({status: 200, data: {token: 'testtoken'}});
+        }
+    };
+    vm.regUser = {name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com'};
+    vm.userSignUp(true);
+    expect(signupCalled).toBe(true);
+    expect(loginCalled).toBe(true);
+    expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'testtoken');
+    expect($state.go).toHaveBeenCalledWith('web.profile');
+});
+
+it('should alert if login after signup returns non-200', function () {
+    utilities.sendRequest = function (parameters, header) {
+        if (parameters.url === 'auth/registration/') {
+            parameters.callback.onSuccess({status: 201});
+        } else if (parameters.url === 'auth/login/') {
+            parameters.callback.onSuccess({status: 500});
+        }
+    };
+    spyOn(window, 'alert');
+    vm.regUser = {name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com'};
+    vm.userSignUp(true);
+    expect(window.alert).toHaveBeenCalledWith('Something went wrong');
+});
+
+it('should handle login error after signup with exception', function () {
+    utilities.sendRequest = function (parameters, header) {
+        if (parameters.url === 'auth/registration/') {
+            parameters.callback.onSuccess({status: 201});
+        } else if (parameters.url === 'auth/login/') {
+            parameters.callback.onError({status: 400, data: null});
+        }
+    };
+    spyOn($rootScope, 'notify');
+    vm.regUser = {name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com'};
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect($rootScope.notify).toHaveBeenCalled();
+});
+
+
+it('should set FormError for non_field_errors on signup error', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: {non_field_errors: ['A non-field error occurred']}
+        });
+    };
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect(vm.FormError).toBe('A non-field error occurred');
+});
+
+it('should set FormError for username error on signup error', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: {username: ['Username already exists']}
+        });
+    };
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect(vm.FormError).toBe('Username already exists');
+});
+
+it('should set FormError for email error on signup error', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: {email: ['Email already exists']}
+        });
+    };
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect(vm.FormError).toBe('Email already exists');
+});
+
+it('should set FormError for password1 error on signup error', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: {password1: ['Password too short']}
+        });
+    };
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect(vm.FormError).toBe('Password too short');
+});
+
+it('should set FormError for password2 error on signup error', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: {password2: ['Passwords do not match']}
+        });
+    };
+    vm.userSignUp(true);
+    expect(vm.isFormError).toBe(true);
+    expect(vm.FormError).toBe('Passwords do not match');
+});
+
+it('should notify on signup error exception', function () {
+    utilities.sendRequest = function (parameters, header) {
+        parameters.callback.onError({
+            status: 400,
+            data: null
+        });
+    };
+    spyOn($rootScope, 'notify');
+    vm.userSignUp(true);
+    expect($rootScope.notify).toHaveBeenCalled();
+});
+
+
+
+
 
 });
 
@@ -514,6 +641,18 @@ it('should set showPasswordStrength to false and update message/color when passw
             vm.verifyEmail();
             expect(vm.email_verify_msg).toEqual('Something went wrong!! Please try again.');
         });
+
+        it('should start loader and set correct parameters when verifyEmail is called', function () {
+    spyOn(vm, 'startLoader');
+    spyOn(utilities, 'sendRequest');
+    $state.params.email_conf_key = 'abc123';
+    vm.verifyEmail();
+    expect(vm.startLoader).toHaveBeenCalledWith('Verifying Your Email');
+    expect(utilities.sendRequest).toHaveBeenCalled();
+    var params = utilities.sendRequest.calls.mostRecent().args[0];
+    expect(params.url).toBe('auth/registration/account-confirm-email/abc123/');
+    expect(params.method).toBe('GET');
+});
     });
 
     describe('Unit tests for resetPassword function `auth/password/reset/`', function () {
