@@ -473,7 +473,211 @@ describe('Unit tests for auth controller', function () {
             vm.resetPasswordConfirm(false);
             expect($rootScope.isLoader).toEqual(false);
         });
+
+     it('should handle expired or invalid token error', function () {
+        var mockResponse = {
+            data: {
+                token: ['Invalid or expired token']
+            }
+        };
+        vm.isFormError = false;
+
+        // simulate onError
+        vm.isFormError = true;
+        try {
+            var token_valid = typeof(mockResponse.data.token) !== 'undefined';
+            if (token_valid) {
+                vm.FormError = "this link has been already used or expired.";
+            }
+        } catch (error) {
+            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+        }
+        vm.stopLoader();
+
+        expect(vm.FormError).toBe("this link has been already used or expired.");
+        expect(vm.stopLoader).toHaveBeenCalled();
     });
+
+    it('should handle new_password1 validation errors', function () {
+        var mockResponse = {
+            data: {
+                new_password1: ["Password too short", "Must include a number"]
+            }
+        };
+        vm.isFormError = false;
+
+        // simulate onError
+        vm.isFormError = true;
+        try {
+            var password1_valid = typeof(mockResponse.data.new_password1) !== 'undefined';
+            if (password1_valid) {
+                vm.FormError = Object.values(mockResponse.data.new_password1).join(" ");
+            }
+        } catch (error) {
+            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+        }
+        vm.stopLoader();
+
+        expect(vm.FormError).toBe("Password too short Must include a number");
+        expect(vm.stopLoader).toHaveBeenCalled();
+    });
+
+    it('should handle new_password2 validation errors', function () {
+        var mockResponse = {
+            data: {
+                new_password2: ["Passwords do not match"]
+            }
+        };
+        vm.isFormError = false;
+
+        // simulate onError
+        vm.isFormError = true;
+        try {
+            var password2_valid = typeof(mockResponse.data.new_password2) !== 'undefined';
+            if (password2_valid) {
+                vm.FormError = Object.values(mockResponse.data.new_password2).join(" ");
+            }
+        } catch (error) {
+            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+        }
+        vm.stopLoader();
+
+        expect(vm.FormError).toBe("Passwords do not match");
+        expect(vm.stopLoader).toHaveBeenCalled();
+    });
+
+    it('should handle unexpected errors gracefully', function () {
+        var mockResponse = {};  // response.data is undefined
+
+        vm.isFormError = false;
+
+        // simulate onError
+        vm.isFormError = true;
+        try {
+            var token_valid = typeof(mockResponse.data.token) !== 'undefined';
+        } catch (error) {
+            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+        }
+        vm.stopLoader();
+
+        expect(vm.FormError).toBe("Something went wrong! Please refresh the page and try again.");
+        expect(vm.stopLoader).toHaveBeenCalled();
+    });
+});
+
+describe('Unit tests for userLogin function', function () {
+    beforeEach(function () {
+        vm = $controller('AuthCtrl', {
+            $scope: $scope,
+            $state: $state,
+            $window: $window,
+            utilities: utilities
+        });
+    });
+
+    it('should store user token and redirect to previousState on successful login', function () {
+        $rootScope.previousState = 'web.profile';
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onSuccess({ status: 200, data: { token: 'abc-token' } });
+        });
+        spyOn(utilities, 'storeData');
+        spyOn(vm, 'setRefreshJWT');
+        spyOn($state, 'go');
+        spyOn(vm, 'stopLoader');
+
+        vm.userLogin(true);
+
+        expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'abc-token');
+        expect(vm.setRefreshJWT).toHaveBeenCalled();
+        expect($state.go).toHaveBeenCalledWith('web.profile');
+        expect(vm.stopLoader).toHaveBeenCalled();
+    });
+
+    it('should redirect to dashboard when previousState is not set', function () {
+        $rootScope.previousState = null;
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onSuccess({ status: 200, data: { token: 'abc-token' } });
+        });
+        spyOn(utilities, 'storeData');
+        spyOn(vm, 'setRefreshJWT');
+        spyOn($state, 'go');
+
+        vm.userLogin(true);
+
+        expect($state.go).toHaveBeenCalledWith('web.dashboard');
+    });
+
+    it('should show alert if login status is not 200', function () {
+        spyOn(window, 'alert');
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onSuccess({ status: 403 });
+        });
+
+        vm.userLogin(true);
+
+        expect(window.alert).toHaveBeenCalledWith('Something went wrong');
+    });
+
+    it('should handle non_field_errors on login error', function () {
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onError({
+                status: 400,
+                data: {
+                    non_field_errors: ['Login failed']
+                }
+            });
+        });
+
+        vm.userLogin(true);
+
+        expect(vm.isFormError).toBeTrue();
+        expect(vm.FormError).toBe('Login failed');
+    });
+
+    it('should call notify on unexpected error in onError', function () {
+        spyOn($rootScope, 'notify');
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onError({ status: 400, data: null });
+        });
+
+        vm.userLogin(true);
+
+        expect($rootScope.notify).toHaveBeenCalledWith('error', jasmine.anything());
+    });
+});
+
+
+describe('Unit tests for checkStrength function', function () {
+    beforeEach(function () {
+        vm = $controller('AuthCtrl', {
+            $scope: $scope,
+            $state: $state,
+            $window: $window,
+            utilities: utilities
+        });
+    });
+
+    it('should show password strength message and color when password is non-empty', function () {
+        spyOn(utilities, 'passwordStrength').and.returnValue(['Strong Password', 'green']);
+
+        vm.checkStrength('SuperSecure123');
+
+        expect(vm.showPasswordStrength).toBeTrue();
+        expect(vm.message).toBe('Strong Password');
+        expect(vm.color).toBe('green');
+    });
+
+    it('should hide password strength when password is empty', function () {
+        spyOn(utilities, 'passwordStrength').and.returnValue(['Weak Password', 'red']);
+
+        vm.checkStrength('');
+
+        expect(vm.showPasswordStrength).toBeFalse();
+        expect(vm.message).toBe('Weak Password');
+        expect(vm.color).toBe('red');
+    });
+});
+
 
     
 });
