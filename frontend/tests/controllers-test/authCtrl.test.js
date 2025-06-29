@@ -149,9 +149,8 @@ describe('Unit tests for auth controller', function () {
             vm.userSignUp(false);
             expect($rootScope.isLoader).toEqual(false);
         });
-    });
-    
-        it('successful signup followed by successful login and redirect to dashboard', function () {
+
+              it('successful signup followed by successful login and redirect to dashboard', function () {
     $rootScope.previousState = null;
     vm.regUser = {
         name: 'ford',
@@ -182,10 +181,9 @@ describe('Unit tests for auth controller', function () {
     expect(loginSuccessCalled).toBeTrue();
     expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'xyz');
     expect($state.go).toHaveBeenCalledWith('web.dashboard');
+    });
 });
-
-
-
+    
     describe('Unit tests for setRefreshJWT function', function () {
     beforeEach(function () {
         vm = $controller('AuthCtrl', {
