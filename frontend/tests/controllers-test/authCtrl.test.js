@@ -150,6 +150,95 @@ describe('Unit tests for auth controller', function () {
             expect($rootScope.isLoader).toEqual(false);
         });
     });
+    
+        it('successful signup followed by successful login and redirect to dashboard', function () {
+    $rootScope.previousState = null;
+    vm.regUser = {
+        name: 'ford',
+        email: 'ford@galaxy.com',
+        password: 'dontpanic42',
+        confirm_password: 'dontpanic42'
+    };
+
+    var loginSuccessCalled = false;
+    var signupSuccessCalled = false;
+
+    utilities.sendRequest = function (parameters, headerType) {
+        if (parameters.url === 'auth/registration/') {
+            parameters.callback.onSuccess({status: 201});
+            signupSuccessCalled = true;
+        } else if (parameters.url === 'auth/login/') {
+            parameters.callback.onSuccess({status: 200, data: {token: 'xyz'}});
+            loginSuccessCalled = true;
+        }
+    };
+
+    spyOn(utilities, 'storeData');
+    spyOn($state, 'go');
+
+    vm.userSignUp(true);
+
+    expect(signupSuccessCalled).toBeTrue();
+    expect(loginSuccessCalled).toBeTrue();
+    expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'xyz');
+    expect($state.go).toHaveBeenCalledWith('web.dashboard');
+});
+
+
+
+    describe('Unit tests for setRefreshJWT function', function () {
+    beforeEach(function () {
+        vm = $controller('AuthCtrl', {
+            $scope: $scope,
+            utilities: utilities
+        });
+    });
+
+    it('should store refreshJWT token on success', function () {
+        spyOn(utilities, 'getData').and.returnValue('user-token');
+        spyOn(utilities, 'storeData');
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            expect(parameters.url).toBe('accounts/user/get_auth_token');
+            expect(parameters.method).toBe('GET');
+            expect(parameters.token).toBe('user-token');
+            parameters.callback.onSuccess({ status: 200, data: { token: 'refresh-token' } });
+        });
+
+        vm.setRefreshJWT();
+
+        expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'refresh-token');
+    });
+
+    it('should handle non_field_errors on 400 error response', function () {
+        spyOn(utilities, 'getData').and.returnValue('user-token');
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onError({ 
+                status: 400,
+                data: {
+                    non_field_errors: ['Some error']
+                }
+            });
+        });
+        spyOn($rootScope, 'notify');
+
+        vm.setRefreshJWT();
+
+        expect(vm.isFormError).toBeTrue();
+        expect(vm.FormError).toBe('Some error');
+    });
+
+    it('should notify error on exception in error handler', function () {
+        spyOn(utilities, 'getData').and.returnValue('user-token');
+        spyOn(utilities, 'sendRequest').and.callFake(function (parameters, headerType) {
+            parameters.callback.onError({ status: 400, data: null });  // no non_field_errors
+        });
+        spyOn($rootScope, 'notify');
+
+        vm.setRefreshJWT();
+
+        expect($rootScope.notify).toHaveBeenCalledWith('error', jasmine.anything());
+    });
+});
 
     describe('Unit tests for userLogin function `auth/login/`', function () {
         var nonFieldErrors, token;
@@ -387,4 +476,6 @@ describe('Unit tests for auth controller', function () {
             expect($rootScope.isLoader).toEqual(false);
         });
     });
+
+    
 });
