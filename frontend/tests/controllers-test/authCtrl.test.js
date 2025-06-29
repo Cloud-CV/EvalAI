@@ -190,6 +190,7 @@ describe('Unit tests for auth controller', function () {
             $scope: $scope,
             utilities: utilities
         });
+          spyOn(vm, 'stopLoader');
     });
 
     it('should store refreshJWT token on success', function () {
@@ -573,6 +574,7 @@ describe('Unit tests for userLogin function', function () {
             $window: $window,
             utilities: utilities
         });
+          spyOn(vm, 'stopLoader');
     });
 
     it('should store user token and redirect to previousState on successful login', function () {
@@ -655,6 +657,7 @@ describe('Unit tests for checkStrength function', function () {
             $window: $window,
             utilities: utilities
         });
+          spyOn(vm, 'stopLoader');
     });
 
     it('should show password strength message and color when password is non-empty', function () {
