@@ -88,6 +88,12 @@
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
                 vm.expiresAt = moment.utc(response.data['expires_at']).local().format("MMM D, YYYY h:mm:ss A");
+                var expirationDateStr = response.data['expires_at'];
+                var expirationDate = new Date(expirationDateStr);
+                var currentDate = new Date();
+                if (expirationDate < currentDate) {
+                    vm.showTokenExpiredDialog(); 
+                }
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
                 var timezone = moment.tz.guess();
                 vm.expiresAtTimezone = moment.tz.zone(timezone).abbr(expiresAtOffset);
@@ -182,7 +188,24 @@
             }
             return (url.length <= 200);
         };
-
+        
+        vm.showTokenExpiredDialog = function() {
+            $mdDialog.show({
+                templateUrl: 'dist/views/web/auth/auth-token-expired-dialog.html', 
+                controller: ['$scope', '$mdDialog', function($scope, $mdDialog) {
+                    $scope.refreshToken = function() {
+                        $mdDialog.hide();
+                        vm.refreshToken();
+                    };
+            
+                    $scope.dismiss = function() {
+                        $mdDialog.hide();
+                    };
+                }]
+            });
+            
+        };
+        
         vm.editprofileDialog = function(ev) {
             switch (ev.currentTarget.id) {
                 case "first_name":
