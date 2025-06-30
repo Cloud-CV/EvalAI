@@ -13,6 +13,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
+from django.utils import timezone
 
 from evalai.celery import app
 
@@ -298,6 +299,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     ]
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
+                    set_log_retention_for_challenge(challenge)
                 return response
             except ClientError as e:
                 logger.exception(e)
@@ -1241,6 +1243,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 f"Error: {failures[0]['message']}"
             )
         else:
+            set_log_retention_for_challenge(challenge)
             challenge_url = "{}/web/challenges/challenge-page/{}".format(
                 settings.EVALAI_API_SERVER, challenge.id
             )
@@ -1339,6 +1342,96 @@ def delete_log_group(log_group_name):
             client.delete_log_group(logGroupName=log_group_name)
         except Exception as e:
             logger.exception(e)
+
+
+def calculate_retention_days(challenge_end_date):
+    if not challenge_end_date:
+        return 90
+    now = timezone.now()
+    if challenge_end_date < now:
+        retention_delta = now - challenge_end_date
+        retention_days = 30 + retention_delta.days
+    else:
+        retention_delta = challenge_end_date - now
+        retention_days = retention_delta.days + 30
+    # Map to nearest allowed value (rounding up)
+    allowed_values = [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1827,
+        3653,
+    ]
+    for value in allowed_values:
+        if value >= retention_days:
+            return value
+    return 3653
+
+
+def set_log_retention_for_challenge(challenge):
+    from .utils import get_aws_credentials_for_challenge
+
+    log_group_name = get_log_group_name(challenge.pk)
+    retention_days = calculate_retention_days(challenge.end_date)
+    if settings.DEBUG:
+        logger.info(
+            f"[DEBUG MODE] Would set retention policy of {retention_days} days for log group {log_group_name}"
+        )
+        return {
+            "message": f"DEBUG MODE: Would set retention policy of {retention_days} days"
+        }
+    try:
+        challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+        logs_client = get_boto3_client("logs", challenge_aws_keys)
+        log_groups = logs_client.describe_log_groups(
+            logGroupNamePrefix=log_group_name
+        )
+        if not log_groups.get("logGroups"):
+            logger.info(
+                f"Log group {log_group_name} does not exist, skipping retention setting"
+            )
+            return {"message": f"Log group {log_group_name} does not exist"}
+        response = logs_client.put_retention_policy(
+            logGroupName=log_group_name, retentionInDays=retention_days
+        )
+
+        logger.info(
+            f"Set retention policy of {retention_days} days for log group {log_group_name}"
+        )
+        return {
+            "response": response,
+            "message": f"Set retention policy of {retention_days} days for log group {log_group_name}",
+        }
+
+    except Exception as e:
+        error_code = (
+            getattr(e, "response", {}).get("Error", {}).get("Code", None)
+        )
+        if error_code == "ResourceNotFoundException":
+            logger.info(
+                f"Log group {log_group_name} does not exist, skipping retention setting"
+            )
+            return {"message": f"Log group {log_group_name} does not exist"}
+
+        logger.exception(
+            f"Error setting retention policy for log group {log_group_name}: {e}"
+        )
+        return {
+            "error": str(e),
+            "message": f"Error setting retention policy for log group {log_group_name}",
+        }
 
 
 @app.task
@@ -1831,6 +1924,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                         )
                     )
                 else:
+                    set_log_retention_for_challenge(challenge)
                     construct_and_send_worker_start_mail(challenge)
 
         if prev and not curr:
