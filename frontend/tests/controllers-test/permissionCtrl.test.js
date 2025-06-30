@@ -62,7 +62,7 @@ describe('Unit tests for permission controller', function () {
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 params.callback.onError({
                     status: 400,
-                    data: { detail: 'Some error' }
+                    data: { detail: 'Error code 123' } // <-- contains a number
                 });
             });
             spyOn($rootScope, 'notify');
