@@ -298,6 +298,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     ]
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
+                    # Set CloudWatch log retention policy after registering task definition
+                    set_cloudwatch_log_retention(challenge)
                 return response
             except ClientError as e:
                 logger.exception(e)
@@ -359,6 +361,8 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
                 challenge.workers = 1
                 challenge.save()
+                # Set CloudWatch log retention policy after creating service
+                set_cloudwatch_log_retention(challenge)
             return response
         except ClientError as e:
             logger.exception(e)
@@ -1241,6 +1245,9 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 f"Error: {failures[0]['message']}"
             )
         else:
+            # Update CloudWatch log retention policy after restarting workers
+            set_cloudwatch_log_retention(challenge)
+            
             challenge_url = "{}/web/challenges/challenge-page/{}".format(
                 settings.EVALAI_API_SERVER, challenge.id
             )
@@ -1339,6 +1346,170 @@ def delete_log_group(log_group_name):
             client.delete_log_group(logGroupName=log_group_name)
         except Exception as e:
             logger.exception(e)
+
+
+def calculate_log_retention_period(challenge):
+    """
+    Calculate the appropriate CloudWatch log retention period for a challenge
+    based on its end date.
+    
+    Args:
+        challenge: Challenge object with end_date
+        
+    Returns:
+        int: Retention period in days (mapped to valid AWS CloudWatch values)
+    """
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    
+    # Valid CloudWatch log retention periods (in days)
+    VALID_RETENTION_PERIODS = [
+        1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653
+    ]
+    
+    # Default retention period: 30 days after challenge ends
+    DEFAULT_RETENTION_DAYS = 30
+    
+    # Get the latest end date from all challenge phases
+    latest_end_date = None
+    for phase in challenge.challengephase_set.all():
+        if phase.end_date:
+            if latest_end_date is None or phase.end_date > latest_end_date:
+                latest_end_date = phase.end_date
+    
+    if not latest_end_date:
+        # If no end date is set, use a default retention period
+        return 30
+    
+    # Calculate retention period: challenge end date + 30 days
+    retention_end_date = latest_end_date + timedelta(days=DEFAULT_RETENTION_DAYS)
+    
+    # Calculate days from now until retention end
+    days_until_retention_end = (retention_end_date - timezone.now()).days
+    
+    # Ensure minimum retention period
+    if days_until_retention_end <= 0:
+        return 30  # Minimum 30 days for recently ended challenges
+    
+    # Find the closest valid retention period that covers our requirement
+    for period in VALID_RETENTION_PERIODS:
+        if period >= days_until_retention_end:
+            return period
+    
+    # If requirement exceeds maximum, use maximum valid period
+    return VALID_RETENTION_PERIODS[-1]
+
+
+def set_cloudwatch_log_retention(challenge):
+    """
+    Set CloudWatch log retention policy for a challenge's log group.
+    
+    Args:
+        challenge: Challenge object
+        
+    Returns:
+        dict: Response from AWS CloudWatch Logs API or error information
+    """
+    if settings.DEBUG:
+        return {
+            "message": "CloudWatch log retention not set in development environment",
+            "success": True
+        }
+    
+    try:
+        log_group_name = get_log_group_name(challenge.pk)
+        retention_days = calculate_log_retention_period(challenge)
+        
+        client = get_boto3_client("logs", aws_keys)
+        
+        # Check if log group exists
+        try:
+            client.describe_log_groups(logGroupNamePrefix=log_group_name)
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                logger.warning(f"Log group {log_group_name} not found, skipping retention policy")
+                return {
+                    "message": f"Log group {log_group_name} not found",
+                    "success": False
+                }
+            raise
+        
+        # Set retention policy
+        response = client.put_retention_policy(
+            logGroupName=log_group_name,
+            retentionInDays=retention_days
+        )
+        
+        logger.info(f"Set retention policy for {log_group_name}: {retention_days} days")
+        
+        return {
+            "message": f"Retention policy set successfully for {log_group_name}",
+            "retention_days": retention_days,
+            "log_group_name": log_group_name,
+            "success": True,
+            "response": response
+        }
+        
+    except ClientError as e:
+        logger.exception(f"Failed to set CloudWatch log retention for challenge {challenge.pk}")
+        return {
+            "error": str(e),
+            "success": False
+        }
+    except Exception as e:
+        logger.exception(f"Unexpected error setting CloudWatch log retention for challenge {challenge.pk}")
+        return {
+            "error": str(e),
+            "success": False
+        }
+
+
+def update_log_retention_for_all_challenges():
+    """
+    Update CloudWatch log retention policies for all challenges.
+    This function can be called periodically to ensure all challenges
+    have appropriate retention policies set.
+    
+    Returns:
+        dict: Summary of operations performed
+    """
+    from .models import Challenge
+    
+    if settings.DEBUG:
+        return {
+            "message": "CloudWatch log retention update skipped in development environment",
+            "success": True
+        }
+    
+    challenges = Challenge.objects.filter(
+        approved_by_admin=True,
+        workers__isnull=False
+    ).exclude(workers=0)
+    
+    success_count = 0
+    failure_count = 0
+    failures = []
+    
+    for challenge in challenges:
+        result = set_cloudwatch_log_retention(challenge)
+        if result.get("success"):
+            success_count += 1
+        else:
+            failure_count += 1
+            failures.append({
+                "challenge_pk": challenge.pk,
+                "challenge_title": challenge.title,
+                "error": result.get("error", "Unknown error")
+            })
+    
+    logger.info(f"Updated log retention policies: {success_count} successful, {failure_count} failed")
+    
+    return {
+        "success_count": success_count,
+        "failure_count": failure_count,
+        "failures": failures,
+        "total_processed": success_count + failure_count
+    }
 
 
 @app.task
@@ -1832,6 +2003,8 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                     )
                 else:
                     construct_and_send_worker_start_mail(challenge)
+                    # Set CloudWatch log retention policy after starting workers
+                    set_cloudwatch_log_retention(challenge)
 
         if prev and not curr:
             if challenge.workers:
@@ -1871,3 +2044,41 @@ def update_sqs_retention_period_task(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     return update_sqs_retention_period(challenge_obj)
+
+
+@app.task
+def update_cloudwatch_log_retention_task():
+    """
+    Periodic task to update CloudWatch log retention policies for all active challenges.
+    This should be scheduled to run periodically (e.g., daily) to ensure all challenges
+    have appropriate retention policies set.
+    
+    Returns:
+        dict: Summary of operations performed
+    """
+    return update_log_retention_for_all_challenges()
+
+
+@app.task
+def set_cloudwatch_log_retention_task(challenge_pk):
+    """
+    Celery task to set CloudWatch log retention policy for a specific challenge.
+    
+    Arguments:
+        challenge_pk {int} -- Primary key of the challenge
+        
+    Returns:
+        dict: Response from the retention policy operation
+    """
+    from .utils import get_challenge_model
+    
+    try:
+        challenge = get_challenge_model(challenge_pk)
+        return set_cloudwatch_log_retention(challenge)
+    except Exception as e:
+        logger.exception(f"Failed to set CloudWatch log retention for challenge {challenge_pk}")
+        return {
+            "error": str(e),
+            "success": False,
+            "challenge_pk": challenge_pk
+        }
