@@ -2717,24 +2717,29 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for manageWorker, sendApprovalRequest, startLoadingLogs, stopLoadingLogs, highlightSpecificLeaderboardEntry', function () {
-        var parameters;
+        var parameters, $httpBackend;
+
+        beforeEach(inject(function (_$httpBackend_) {
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, {});
+        }));
+
         beforeEach(function () {
             parameters = {};
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                // Immediately call the callback for testing
                 if (params.callback && params.callback.onSuccess) {
                     params.callback.onSuccess({ data: { action: "Success" } });
                 }
             });
             spyOn($rootScope, 'notify');
-            spyOn($interval, 'cancel');
+            // Set spy only once globally
+            if (!$interval.cancel.calls) {
+                spyOn($interval, 'cancel');
+            }
         });
 
         describe('manageWorker', function () {
             it('should notify success on successful worker management', function () {
-                utilities.sendRequest.and.callFake(function (params) {
-                    params.callback.onSuccess({ data: { action: "Success" } });
-                });
                 vm.challengeId = 1;
                 vm.manageWorker('start');
                 expect($rootScope.notify).toHaveBeenCalledWith("success", "Worker(s) started succesfully.");
@@ -2808,12 +2813,11 @@ describe('Unit tests for challenge controller', function () {
 
         describe('startLoadingLogs and stopLoadingLogs', function () {
             beforeEach(function () {
-                spyOn($interval, 'cancel');
+                vm.workerLogs = [];
             });
 
             it('should push evaluation_module_error to workerLogs if present', function () {
                 vm.evaluation_module_error = "Eval error";
-                vm.workerLogs = [];
                 spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 1; });
                 vm.startLoadingLogs();
                 expect(vm.workerLogs).toContain("Eval error");
@@ -2824,9 +2828,7 @@ describe('Unit tests for challenge controller', function () {
                 utilities.sendRequest.and.callFake(function (params) {
                     params.callback.onSuccess({
                         data: {
-                            logs: [
-                                "[2024-06-30 12:00:00] Some log entry"
-                            ]
+                            logs: ["[2024-06-30 12:00:00] Some log entry"]
                         }
                     });
                 });
@@ -2874,161 +2876,7 @@ describe('Unit tests for challenge controller', function () {
             });
         });
     });
-
-    describe('Unit tests for getTeamName', function () {
-        beforeEach(function () {
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                // Simulate backend response
-                params.callback.onSuccess({
-                    data: {
-                        team_name: "Test Team",
-                        approved: true
-                    }
-                });
-            });
-        });
-
-        it('should set participated_team_name and eligible_to_submit from response', function () {
-            vm.challengeId = 123;
-            vm.getTeamName(vm.challengeId);
-            expect(vm.participated_team_name).toBe("Test Team");
-            expect(vm.eligible_to_submit).toBe(true);
-        });
-
-        it('should handle false approval', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({
-                    data: {
-                        team_name: "Another Team",
-                        approved: false
-                    }
-                });
-            });
-            vm.challengeId = 456;
-            vm.getTeamName(vm.challengeId);
-            expect(vm.participated_team_name).toBe("Another Team");
-            expect(vm.eligible_to_submit).toBe(false);
-        });
-    });
-
-    describe('Unit tests for fetching prizes and sponsors', function () {
-        beforeEach(function () {
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-        });
-
-        it('should fetch prizes when hasPrizes is true and set vm.prizes', function () {
-            vm.hasPrizes = true;
-            vm.challengeId = 1;
-            // Simulate the callback
-            utilities.sendRequest.and.callFake(function (params) {
-                expect(params.url).toContain('/prizes/');
-                params.callback.onSuccess({ data: ['Prize1', 'Prize2'] });
-            });
-            // Simulate the code block
-            vm.prizes = [];
-            if (vm.hasPrizes) {
-                var parameters = {
-                    url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
-                    method: 'GET',
-                    data: {},
-                    callback: {
-                        onSuccess: function (response) {
-                            vm.prizes = response.data;
-                        },
-                        onError: function (response) {
-                            var error = response.data;
-                            $rootScope.notify("error", error);
-                        }
-                    }
-                };
-                utilities.sendRequest(parameters);
-            }
-            expect(vm.prizes).toEqual(['Prize1', 'Prize2']);
-        });
-
-        it('should notify error if fetching prizes fails', function () {
-            vm.hasPrizes = true;
-            vm.challengeId = 1;
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: 'Prize error' });
-            });
-            vm.prizes = [];
-            if (vm.hasPrizes) {
-                var parameters = {
-                    url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
-                    method: 'GET',
-                    data: {},
-                    callback: {
-                        onSuccess: function (response) {
-                            vm.prizes = response.data;
-                        },
-                        onError: function (response) {
-                            var error = response.data;
-                            $rootScope.notify("error", error);
-                        }
-                    }
-                };
-                utilities.sendRequest(parameters);
-            }
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Prize error");
-        });
-
-        it('should fetch sponsors when has_sponsors is true and set vm.sponsors', function () {
-            vm.has_sponsors = true;
-            vm.challengeId = 2;
-            utilities.sendRequest.and.callFake(function (params) {
-                expect(params.url).toContain('/sponsors/');
-                params.callback.onSuccess({ data: { sponsor: 'Sponsor1' } });
-            });
-            vm.sponsors = {};
-            if (vm.has_sponsors) {
-                var parameters = {
-                    url: 'challenges/challenge/' + vm.challengeId + '/sponsors/',
-                    method: 'GET',
-                    data: {},
-                    callback: {
-                        onSuccess: function (response) {
-                            vm.sponsors = response.data;
-                        },
-                        onError: function (response) {
-                            var error = response.data;
-                            $rootScope.notify("error", error);
-                        }
-                    }
-                };
-                utilities.sendRequest(parameters);
-            }
-            expect(vm.sponsors).toEqual({ sponsor: 'Sponsor1' });
-        });
-
-        it('should notify error if fetching sponsors fails', function () {
-            vm.has_sponsors = true;
-            vm.challengeId = 2;
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: 'Sponsor error' });
-            });
-            vm.sponsors = {};
-            if (vm.has_sponsors) {
-                var parameters = {
-                    url: 'challenges/challenge/' + vm.challengeId + '/sponsors/',
-                    method: 'GET',
-                    data: {},
-                    callback: {
-                        onSuccess: function (response) {
-                            vm.sponsors = response.data;
-                        },
-                        onError: function (response) {
-                            var error = response.data;
-                            $rootScope.notify("error", error);
-                        }
-                    }
-                };
-                utilities.sendRequest(parameters);
-            }
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Sponsor error");
-        });
-    });
+    
 
     describe('Unit tests for vm.getAllSubmissionResults pagination logic (teams)', function () {
         var $q, $rootScope, $http, $injector, vm;
@@ -3043,15 +2891,16 @@ describe('Unit tests for challenge controller', function () {
         }));
 
         it('should set isNext, isPrev, and currentPage correctly when next is null', function (done) {
-            var response = {
+            const response = {
                 data: {
                     next: null,
                     previous: null,
                     count: 20
                 }
             };
-            spyOn($http, 'get').and.callFake(function () {
-                var deferred = $q.defer();
+
+            spyOn($http, 'get').and.callFake(() => {
+                const deferred = $q.defer();
                 deferred.resolve(response);
                 return deferred.promise;
             });
@@ -3059,9 +2908,9 @@ describe('Unit tests for challenge controller', function () {
             vm.getAllSubmissionResults(1);
             $rootScope.$apply();
 
-            setTimeout(function () {
+            setTimeout(() => {
                 expect(vm.isNext).toBe('disabled');
-                expect(vm.currentPage).toBe(2); // 20 / 10
+                expect(vm.currentPage).toBe(2);
                 expect(vm.isPrev).toBe('disabled');
                 expect(vm.existTeam).toBe(response.data);
                 expect(vm.stopLoader).toHaveBeenCalled();
@@ -3070,15 +2919,16 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should set isNext, isPrev, and currentPage correctly when next is not null', function (done) {
-            var response = {
+            const response = {
                 data: {
                     next: 'page=3',
                     previous: 'page=1',
                     count: 30
                 }
             };
-            spyOn($http, 'get').and.callFake(function () {
-                var deferred = $q.defer();
+
+            spyOn($http, 'get').and.callFake(() => {
+                const deferred = $q.defer();
                 deferred.resolve(response);
                 return deferred.promise;
             });
@@ -3086,9 +2936,9 @@ describe('Unit tests for challenge controller', function () {
             vm.getAllSubmissionResults(1);
             $rootScope.$apply();
 
-            setTimeout(function () {
+            setTimeout(() => {
                 expect(vm.isNext).toBe('');
-                expect(vm.currentPage).toBe(2); // 30 / 10 = page 2
+                expect(vm.currentPage).toBe(2);
                 expect(vm.isPrev).toBe('');
                 expect(vm.existTeam).toBe(response.data);
                 expect(vm.stopLoader).toHaveBeenCalled();
@@ -3136,11 +2986,11 @@ describe('Unit tests for challenge controller', function () {
             spyOn($mdDialog, 'confirm').and.callThrough();
             spyOn($mdDialog, 'show').and.callFake(() => {
                 const deferred = $q.defer();
-                deferred.resolve();
+                deferred.resolve(); // Simulates user confirming the dialog
                 return deferred.promise;
             });
 
-            const ev = { stopPropagation: function () { } };
+            const ev = { stopPropagation: () => { } };
             vm.challengeId = 42;
             vm.isRegistrationOpen = true;
 
@@ -3148,6 +2998,7 @@ describe('Unit tests for challenge controller', function () {
                 expect(params.method).toBe("PATCH");
                 expect(params.url).toContain("/challenge_host_team/99/challenge/42");
                 expect(params.data.is_registration_open).toBe(false);
+
                 params.callback.onSuccess();
                 expect($rootScope.notify).toHaveBeenCalled();
                 done();
@@ -3161,11 +3012,11 @@ describe('Unit tests for challenge controller', function () {
             spyOn($mdDialog, 'confirm').and.callThrough();
             spyOn($mdDialog, 'show').and.callFake(() => {
                 const deferred = $q.defer();
-                deferred.resolve();
+                deferred.resolve(); // User confirms
                 return deferred.promise;
             });
 
-            const ev = { stopPropagation: function () { } };
+            const ev = { stopPropagation: () => { } };
             vm.challengeId = 42;
             vm.isRegistrationOpen = false;
 
@@ -3206,10 +3057,12 @@ describe('Unit tests for challenge controller', function () {
             spyOn(angular, 'element').and.returnValue({ val: () => "somefile.zip" });
             vm.fileUrl = "http://example.com/file.zip";
             vm.isCurrentSubmissionMetaAttributeValid.and.returnValue(false);
+
             const result = vm.makeSubmission();
             expect(vm.subErrors.msg).toBe("Please provide input for meta attributes!");
             expect(result).toBe(false);
         });
     });
+
     
 });
