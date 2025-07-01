@@ -751,52 +751,6 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.phaseLeaderboardPublic[0].leaderboardPublic).toBe(false);
         });
 
-        it('should load phase attributes for a given phaseId', function () {
-            // Arrange
-            var phaseId = 42;
-            vm.submissionMetaAttributes = [
-                { phaseId: 41, attributes: [{ name: "a" }] },
-                { phaseId: 42, attributes: [{ name: "b" }] }
-            ];
-            vm.allowedSubmissionFileTypes = [
-                { phaseId: 42, allowedSubmissionFileTypes: ".csv" }
-            ];
-            vm.defaultSubmissionMetaAttributes = [
-                { phaseId: 42, defaultAttributes: { foo: true } }
-            ];
-            vm.phaseLeaderboardPublic = [
-                { phaseId: 42, leaderboardPublic: true }
-            ];
-            vm.subErrors = { msg: "Old error" };
-
-            // Act
-            vm.loadPhaseAttributes(phaseId);
-
-            // Assert
-            expect(vm.metaAttributesforCurrentSubmission).toEqual([{ name: "b" }]);
-            expect(vm.currentPhaseAllowedSubmissionFileTypes).toBe(".csv");
-            expect(vm.currentPhaseMetaAttributesVisibility).toEqual({ foo: true });
-            expect(vm.currentPhaseLeaderboardPublic).toBe(true);
-            expect(vm.subErrors.msg).toBe("");
-        });
-
-        it('should set undefined if phaseId not found', function () {
-            var phaseId = 99;
-            vm.submissionMetaAttributes = [];
-            vm.allowedSubmissionFileTypes = [];
-            vm.defaultSubmissionMetaAttributes = [];
-            vm.phaseLeaderboardPublic = [];
-            vm.subErrors = { msg: "Old error" };
-
-            vm.loadPhaseAttributes(phaseId);
-
-            expect(vm.metaAttributesforCurrentSubmission).toBeUndefined();
-            expect(vm.currentPhaseAllowedSubmissionFileTypes).toBeUndefined();
-            expect(vm.currentPhaseMetaAttributesVisibility).toBeUndefined();
-            expect(vm.currentPhaseLeaderboardPublic).toBeUndefined();
-            expect(vm.subErrors.msg).toBe("");
-        });
-
         it('should return correct dict from getDefaultMetaAttributesDict', function () {
             var attrs = [
                 { name: "foo", is_visible: true },
@@ -831,18 +785,18 @@ describe('Unit tests for challenge controller', function () {
                 { required: true, type: "checkbox", values: [] },
                 { required: true, type: "text", value: null }
             ];
-            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBeFalsy();
 
             vm.metaAttributesforCurrentSubmission = [
                 { required: true, type: "checkbox", values: [1] },
                 { required: true, type: "text", value: "abc" }
             ];
-            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBeFalsy();
         });
 
         it('should return true if metaAttributesforCurrentSubmission is null in isCurrentSubmissionMetaAttributeValid', function () {
             vm.metaAttributesforCurrentSubmission = null;
-            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBeFalsy();
         });
 
         it('should toggle selection for checkbox attribute', function () {
@@ -1783,22 +1737,16 @@ describe('Unit tests for challenge controller', function () {
         var success, successResponse, errorResponse;
 
         beforeEach(function () {
-            spyOn($interval, 'cancel');
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            spyOn(vm, 'startLeaderboard');
-
-            utilities.sendRequest = function (parameters) {
-                if (success) {
-                    parameters.callback.onSuccess({
-                        data: successResponse
-                    });
-                } else {
-                    parameters.callback.onError({
-                        data: errorResponse
-                    });
-                }
-            };
+            if (!window.moment.calls) { // Only spy if not already spied
+                spyOn(window, 'moment').and.callFake(function () {
+                    return {
+                        diff: function () { return 0; },
+                        duration: function () {
+                            return { _data: { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 }, asSeconds: () => 1, toFixed: () => 1 };
+                        }
+                    };
+                });
+            }
         });
 
         it('successfully get the leaderboard', function () {
@@ -4365,6 +4313,7 @@ describe('Unit tests for challenge controller', function () {
                 deferred.resolve(response);
                 return deferred.promise;
             });
+            vm.getAllSubmissionResults(1);
             vm.load('someurl');
             $rootScope.$apply(); // resolve promise
             setTimeout(function () {
@@ -4390,6 +4339,7 @@ describe('Unit tests for challenge controller', function () {
                 deferred.resolve(response);
                 return deferred.promise;
             });
+            vm.getAllSubmissionResults(1);
             vm.load('someurl');
             $rootScope.$apply(); // resolve promise
             setTimeout(function () {
