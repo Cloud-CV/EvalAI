@@ -3030,7 +3030,7 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for vm.load pagination logic (teams)', function () {
+    describe('Unit tests for vm.getAllSubmissionResults pagination logic (teams)', function () {
         var $q, $rootScope, $http, $injector, vm;
 
         beforeEach(inject(function (_$q_, _$rootScope_, _$http_, _$injector_) {
@@ -3055,12 +3055,13 @@ describe('Unit tests for challenge controller', function () {
                 deferred.resolve(response);
                 return deferred.promise;
             });
+
             vm.getAllSubmissionResults(1);
-            vm.load('someurl');
-            $rootScope.$apply(); // resolve promise
+            $rootScope.$apply();
+
             setTimeout(function () {
                 expect(vm.isNext).toBe('disabled');
-                expect(vm.currentPage).toBe(2); // 20/10
+                expect(vm.currentPage).toBe(2); // 20 / 10
                 expect(vm.isPrev).toBe('disabled');
                 expect(vm.existTeam).toBe(response.data);
                 expect(vm.stopLoader).toHaveBeenCalled();
@@ -3081,12 +3082,13 @@ describe('Unit tests for challenge controller', function () {
                 deferred.resolve(response);
                 return deferred.promise;
             });
+
             vm.getAllSubmissionResults(1);
-            vm.load('someurl');
-            $rootScope.$apply(); // resolve promise
+            $rootScope.$apply();
+
             setTimeout(function () {
                 expect(vm.isNext).toBe('');
-                expect(vm.currentPage).toBe(2); // 3-1
+                expect(vm.currentPage).toBe(2); // 30 / 10 = page 2
                 expect(vm.isPrev).toBe('');
                 expect(vm.existTeam).toBe(response.data);
                 expect(vm.stopLoader).toHaveBeenCalled();
@@ -3110,26 +3112,20 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
         }));
 
-        it('should open confirmation dialog with correct text for closing participation', function () {
+        it('should open confirmation dialog for closing participation', function () {
             spyOn($mdDialog, 'confirm').and.callThrough();
-            spyOn($mdDialog, 'show').and.callFake(function () {
-                var deferred = $q.defer();
-                return deferred.promise;
-            });
-            var ev = { stopPropagation: jasmine.createSpy() };
+            spyOn($mdDialog, 'show').and.callFake(() => $q.defer().promise);
+            const ev = { stopPropagation: jasmine.createSpy() };
             vm.challengeId = 42;
             vm.toggleParticipation(ev, true);
             expect($mdDialog.confirm).toHaveBeenCalled();
             expect($mdDialog.show).toHaveBeenCalled();
         });
 
-        it('should open confirmation dialog with correct text for opening participation', function () {
+        it('should open confirmation dialog for opening participation', function () {
             spyOn($mdDialog, 'confirm').and.callThrough();
-            spyOn($mdDialog, 'show').and.callFake(function () {
-                var deferred = $q.defer();
-                return deferred.promise;
-            });
-            var ev = { stopPropagation: jasmine.createSpy() };
+            spyOn($mdDialog, 'show').and.callFake(() => $q.defer().promise);
+            const ev = { stopPropagation: jasmine.createSpy() };
             vm.challengeId = 42;
             vm.toggleParticipation(ev, false);
             expect($mdDialog.confirm).toHaveBeenCalled();
@@ -3138,67 +3134,82 @@ describe('Unit tests for challenge controller', function () {
 
         it('should PATCH and notify success when confirmed', function (done) {
             spyOn($mdDialog, 'confirm').and.callThrough();
-            spyOn($mdDialog, 'show').and.callFake(function () {
-                var deferred = $q.defer();
+            spyOn($mdDialog, 'show').and.callFake(() => {
+                const deferred = $q.defer();
                 deferred.resolve();
                 return deferred.promise;
             });
-            utilities.getData.and.returnValue({ 42: 99 });
-            var ev = { stopPropagation: function () { } };
+
+            const ev = { stopPropagation: function () { } };
             vm.challengeId = 42;
             vm.isRegistrationOpen = true;
+
             utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess();
                 expect(params.method).toBe("PATCH");
                 expect(params.url).toContain("/challenge_host_team/99/challenge/42");
                 expect(params.data.is_registration_open).toBe(false);
+                params.callback.onSuccess();
+                expect($rootScope.notify).toHaveBeenCalled();
                 done();
             });
+
             vm.toggleParticipation(ev, true);
+            $rootScope.$apply();
         });
 
         it('should PATCH and notify error on error callback', function (done) {
             spyOn($mdDialog, 'confirm').and.callThrough();
-            spyOn($mdDialog, 'show').and.callFake(function () {
-                var deferred = $q.defer();
+            spyOn($mdDialog, 'show').and.callFake(() => {
+                const deferred = $q.defer();
                 deferred.resolve();
                 return deferred.promise;
             });
-            utilities.getData.and.returnValue({ 42: 99 });
-            var ev = { stopPropagation: function () { } };
+
+            const ev = { stopPropagation: function () { } };
             vm.challengeId = 42;
             vm.isRegistrationOpen = false;
+
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "fail" } });
                 expect($rootScope.notify).toHaveBeenCalledWith('error', 'fail');
                 done();
             });
+
             vm.toggleParticipation(ev, false);
+            $rootScope.$apply();
         });
     });
 
     describe('Unit tests for makeSubmission validation errors', function () {
-        beforeEach(function () {
+        var $rootScope, $controller, $scope, vm;
+
+        beforeEach(inject(function (_$rootScope_, _$controller_) {
+            $rootScope = _$rootScope_;
+            $controller = _$controller_;
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+
             vm.isParticipated = true;
             vm.eligible_to_submit = true;
             vm.subErrors = {};
             spyOn(vm, 'isCurrentSubmissionMetaAttributeValid').and.returnValue(false);
-        });
+        }));
 
         it('should set error if file and URL are missing', function () {
-            spyOn(angular, 'element').and.returnValue({ val: function () { return ""; } });
+            spyOn(angular, 'element').and.returnValue({ val: () => "" });
             vm.fileUrl = "";
             vm.makeSubmission();
             expect(vm.subErrors.msg).toBe("Please upload file or enter submission URL!");
         });
 
         it('should set error if meta attributes are invalid', function () {
-            spyOn(angular, 'element').and.returnValue({ val: function () { return "somefile.zip"; } });
+            spyOn(angular, 'element').and.returnValue({ val: () => "somefile.zip" });
             vm.fileUrl = "http://example.com/file.zip";
             vm.isCurrentSubmissionMetaAttributeValid.and.returnValue(false);
-            var result = vm.makeSubmission();
+            const result = vm.makeSubmission();
             expect(vm.subErrors.msg).toBe("Please provide input for meta attributes!");
             expect(result).toBe(false);
         });
     });
+    
 });
