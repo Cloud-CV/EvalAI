@@ -2810,9 +2810,6 @@ describe('Unit tests for challenge controller', function () {
             spyOn($interval, 'apply').and.callThrough();
             spyOn($interval, 'bind').and.callThrough();
             spyOn($interval, 'toString').and.callThrough();
-            spyOn($interval, 'length').and.callThrough();
-            spyOn($interval, 'name').and.callThrough();
-            spyOn($interval, 'prototype').and.callThrough();
 
             spyOn($interval, 'call').and.callThrough();
 
