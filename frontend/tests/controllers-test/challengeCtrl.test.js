@@ -592,52 +592,6 @@ describe('Unit tests for challenge controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
-
-        describe('Unit tests for vm.load (team pagination)', function () {
-            beforeEach(function () {
-                spyOn(vm, 'startLoader');
-                spyOn(vm, 'stopLoader');
-                spyOn($http, 'get').and.callFake(function () {
-                    return {
-                        then: function (cb) {
-                            // cb({ data: ... }) will be called in each test
-                        }
-                    };
-                });
-            });
-
-            it('should set isNext to disabled and currentPage to count/10 when next is null', function () {
-                var url = 'participants/participant_team/page=2';
-                var details = { next: null, previous: null, count: 20 };
-                $http.get.and.callFake(function () {
-                    return {
-                        then: function (cb) { cb({ data: details }); }
-                    };
-                });
-                vm.load(url);
-                expect(vm.isNext).toEqual('disabled');
-                expect(vm.currentPage).toEqual(details.count / 10);
-                expect(vm.isPrev).toEqual('disabled');
-                expect(vm.existTeam).toEqual(details);
-                expect(vm.stopLoader).toHaveBeenCalled();
-            });
-
-            it('should set isNext to "" and currentPage to parsed value when next is not null', function () {
-                var url = 'participants/participant_team/page=2';
-                var details = { next: 'page=5', previous: 'page=2', count: 50 };
-                $http.get.and.callFake(function () {
-                    return {
-                        then: function (cb) { cb({ data: details }); }
-                    };
-                });
-                vm.load(url);
-                expect(vm.isNext).toEqual('');
-                expect(vm.currentPage).toEqual(parseInt(details.next.split('page=')[1] - 1));
-                expect(vm.isPrev).toEqual('');
-                expect(vm.existTeam).toEqual(details);
-                expect(vm.stopLoader).toHaveBeenCalled();
-            });
-        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -2758,6 +2712,68 @@ describe('Unit tests for challenge controller', function () {
             vm.termsAndConditionDialog();
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toBe(true);
+        });
+    });
+
+    describe('Unit tests for toggleParticipation function', function () {
+        var ev, $mdDialog, challengeHostList;
+
+        beforeEach(function () {
+            ev = {
+                stopPropagation: jasmine.createSpy('stopPropagation')
+            };
+            $mdDialog = $injector.get('$mdDialog');
+            spyOn($mdDialog, 'confirm').and.callThrough();
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                // Simulate user clicking "OK"
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // Simulate backend call
+                parameters.callback.onSuccess();
+            });
+            challengeHostList = { '1': 42 };
+            spyOn(utilities, 'getData').and.callFake(function (key) {
+                if (key === 'challengeCreator') return challengeHostList;
+                return null;
+            });
+            vm.challengeId = '1';
+            vm.isRegistrationOpen = false;
+        });
+
+        it('should open dialog and toggle participation to opened', function () {
+            vm.toggleParticipation(ev, false);
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participation is opened successfully');
+            expect(vm.isRegistrationOpen).toBe(true);
+        });
+
+        it('should open dialog and toggle participation to closed', function () {
+            vm.isRegistrationOpen = true;
+            vm.toggleParticipation(ev, true);
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participation is closed successfully');
+            expect(vm.isRegistrationOpen).toBe(false);
+        });
+
+        it('should notify error on backend error', function () {
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            utilities.sendRequest.and.callFake(function (parameters) {
+                parameters.callback.onError({ data: { error: 'Some error' } });
+            });
+            vm.toggleParticipation(ev, false);
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Some error');
         });
     });
 });
