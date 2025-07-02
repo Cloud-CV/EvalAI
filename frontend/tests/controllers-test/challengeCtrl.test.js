@@ -2851,7 +2851,6 @@ describe('Unit tests for challenge controller', function () {
 
 
         it('should do nothing if user cancels the dialog', function () {
-            // Simulate user clicking "Cancel"
             $mdDialog.show.and.callFake(function () {
                 return {
                     then: function (ok, cancel) {
@@ -2859,14 +2858,12 @@ describe('Unit tests for challenge controller', function () {
                     }
                 };
             });
-            spyOn(utilities, 'sendRequest');
+            utilities.sendRequest.calls.reset(); // Instead of spyOn
             vm.toggleParticipation(ev, false);
             expect(utilities.sendRequest).not.toHaveBeenCalled();
-            // Optionally, check that notify is not called for success/error
         });
 
         it('should not set challengeHostId if challengeId not in challengeHostList', function () {
-            // Set up a challengeHostList that does not contain the challengeId
             challengeHostList = { '999': 42 };
             utilities.getData.and.callFake(function (key) {
                 if (key === 'challengeCreator') return challengeHostList;
@@ -2879,8 +2876,7 @@ describe('Unit tests for challenge controller', function () {
                     }
                 };
             });
-            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
-                // We want to check what challengeHostId is set to
+            utilities.sendRequest.and.callFake(function (parameters) {
                 expect(vm.challengeHostId).toBeUndefined();
                 parameters.callback.onSuccess();
             });
