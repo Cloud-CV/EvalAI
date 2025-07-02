@@ -2802,24 +2802,20 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
-        var $intervalCancelSpy;
-        beforeEach(function () {
-            // Patch $interval to immediately call the function
-            spyOn($interval, 'cancel');
-            spyOn($interval, 'call').and.callThrough();
-            spyOn($interval, 'apply').and.callThrough();
-            spyOn($interval, 'bind').and.callThrough();
-            spyOn($interval, 'toString').and.callThrough();
+        beforeEach(inject(function (_$interval_, _utilities_) {
+            $interval = _$interval_;
+            utilities = _utilities_;
 
-            // Patch $interval to immediately call the function
-            spyOn(window, 'setInterval'); // just in case
-            $interval.and.callFake(function (fn) {
-                fn();
-                return 1;
-            });
+            spyOn($interval, 'cancel');
+
+            // Optional: mock $interval execution immediately
+            spyOn($interval, 'cancel').and.callFake(function () { });
+            spyOn(utilities, 'sendRequest');
+
             vm.challengeId = 1;
             vm.workerLogs = [];
-        });
+        }));
+        
 
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Eval error";
