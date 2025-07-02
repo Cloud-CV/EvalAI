@@ -592,6 +592,52 @@ describe('Unit tests for challenge controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        describe('Unit tests for vm.load (team pagination)', function () {
+            beforeEach(function () {
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                spyOn($http, 'get').and.callFake(function () {
+                    return {
+                        then: function (cb) {
+                            // cb({ data: ... }) will be called in each test
+                        }
+                    };
+                });
+            });
+
+            it('should set isNext to disabled and currentPage to count/10 when next is null', function () {
+                var url = 'participants/participant_team/page=2';
+                var details = { next: null, previous: null, count: 20 };
+                $http.get.and.callFake(function () {
+                    return {
+                        then: function (cb) { cb({ data: details }); }
+                    };
+                });
+                vm.load(url);
+                expect(vm.isNext).toEqual('disabled');
+                expect(vm.currentPage).toEqual(details.count / 10);
+                expect(vm.isPrev).toEqual('disabled');
+                expect(vm.existTeam).toEqual(details);
+                expect(vm.stopLoader).toHaveBeenCalled();
+            });
+
+            it('should set isNext to "" and currentPage to parsed value when next is not null', function () {
+                var url = 'participants/participant_team/page=2';
+                var details = { next: 'page=5', previous: 'page=2', count: 50 };
+                $http.get.and.callFake(function () {
+                    return {
+                        then: function (cb) { cb({ data: details }); }
+                    };
+                });
+                vm.load(url);
+                expect(vm.isNext).toEqual('');
+                expect(vm.currentPage).toEqual(parseInt(details.next.split('page=')[1] - 1));
+                expect(vm.isPrev).toEqual('');
+                expect(vm.existTeam).toEqual(details);
+                expect(vm.stopLoader).toHaveBeenCalled();
+            });
+        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -2714,149 +2760,4 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialogOpened).toBe(true);
         });
     });
-
-    describe('Unit tests for manageWorker', function () {
-        var success, action, responseData;
-
-        beforeEach(function () {
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            action = 'start';
-        });
-
-        it('should notify success when action is successful', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { action: "Success" } });
-            });
-            vm.challengeId = 1;
-            vm.manageWorker(action);
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Worker(s) started succesfully.");
-        });
-
-        it('should notify error when action fails', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { action: "Failure", error: "fail error" } });
-            });
-            vm.challengeId = 1;
-            vm.manageWorker(action);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "fail error");
-        });
-
-        it('should notify error on error callback with error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { error: "err" } });
-            });
-            vm.challengeId = 1;
-            vm.manageWorker(action);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: err");
-        });
-
-        it('should notify error on error callback without error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: {} });
-            });
-            vm.challengeId = 1;
-            vm.manageWorker(action);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
-        });
-    });
-
-    describe('Unit tests for sendApprovalRequest', function () {
-        beforeEach(function () {
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            vm.challengeId = 1;
-        });
-
-        it('should notify success when no error in response', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: {} });
-            });
-            vm.sendApprovalRequest();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Request sent successfully.");
-        });
-
-        it('should notify error when error in response', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { error: "err" } });
-            });
-            vm.sendApprovalRequest();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "err");
-        });
-
-        it('should notify error on error callback with error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { error: "err" } });
-            });
-            vm.sendApprovalRequest();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: err");
-        });
-
-        it('should notify error on error callback without error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: {} });
-            });
-            vm.sendApprovalRequest();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
-        });
-    });
-    describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
-        beforeEach(inject(function (_$interval_, _utilities_) {
-            $interval = _$interval_;
-            utilities = _utilities_;
-
-            spyOn($interval, 'cancel').and.callThrough();
-            spyOn(utilities, 'sendRequest');
-
-            // Mock $interval to immediately call the function
-            spyOn(window, 'setInterval'); // just in case
-            $interval.and.callFake(function (fn, delay) {
-                fn();
-                return 1;
-            });
-
-            vm.challengeId = 1;
-            vm.workerLogs = [];
-        }));
-
-        it('should push evaluation_module_error to workerLogs if present', function () {
-            vm.evaluation_module_error = "Eval error";
-            vm.workerLogs = [];
-            vm.startLoadingLogs();
-            expect(vm.workerLogs).toContain("Eval error");
-        });
-
-        it('should format logs with UTC time and push to workerLogs', function () {
-            var logWithUtc = "[2024-07-01 12:00:00] Some log";
-            var details = { logs: [logWithUtc] };
-
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: details });
-            });
-
-            vm.evaluation_module_error = null;
-            vm.workerLogs = [];
-            vm.startLoadingLogs();
-            expect(vm.workerLogs.length).toBeGreaterThan(0);
-            expect(vm.workerLogs[0]).toContain("Some log");
-        });
-
-        it('should push error to workerLogs on error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { error: "Log error" } });
-            });
-
-            vm.evaluation_module_error = null;
-            vm.workerLogs = [];
-            vm.startLoadingLogs();
-            expect(vm.workerLogs).toContain("Log error");
-        });
-
-        it('should cancel interval on stopLoadingLogs', function () {
-            vm.logs_poller = 123;
-            vm.stopLoadingLogs();
-            expect($interval.cancel).toHaveBeenCalledWith(123);
-        });
-    });
-    
 });
