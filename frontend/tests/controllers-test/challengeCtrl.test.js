@@ -592,6 +592,81 @@ describe('Unit tests for challenge controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        it('should populate submissionMetaAttributes, allowedSubmissionFileTypes, and defaultSubmissionMetaAttributes for each phase', function () {
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = true;
+            challengePhaseSplitSuccess = null;
+
+            // Mock challenge phase details response with meta attributes and file types
+            successResponse = {
+                count: 2,
+                results: [
+                    {
+                        id: 1,
+                        is_public: false,
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
+                        submission_meta_attributes: [
+                            { name: "attr1", type: "checkbox" },
+                            { name: "attr2", type: "text" }
+                        ],
+                        allowed_submission_file_types: ".csv,.zip",
+                        default_submission_meta_attributes: [
+                            { name: "attr1", is_visible: true }
+                        ],
+                        leaderboard_public: true
+                    },
+                    {
+                        id: 2,
+                        is_public: true,
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
+                        submission_meta_attributes: null,
+                        allowed_submission_file_types: null,
+                        default_submission_meta_attributes: null,
+                        leaderboard_public: false
+                    }
+                ]
+            };
+
+            // Spy on getDefaultMetaAttributesDict to return a predictable value
+            spyOn(vm, 'getDefaultMetaAttributesDict').and.callFake(function (attrs) {
+                return { attr1: true };
+            });
+
+            spyOn(utilities, 'hideLoader');
+            vm = createController();
+
+            // Check the first phase (with attributes)
+            expect(vm.submissionMetaAttributes[0].phaseId).toEqual(1);
+            expect(Array.isArray(vm.submissionMetaAttributes[0].attributes)).toBe(true);
+            expect(vm.allowedSubmissionFileTypes[0]).toEqual({
+                phaseId: 1,
+                allowedSubmissionFileTypes: ".csv,.zip"
+            });
+            expect(vm.defaultSubmissionMetaAttributes[0]).toEqual({
+                phaseId: 1,
+                defaultAttributes: { attr1: true }
+            });
+
+            // Check the second phase (no attributes)
+            expect(vm.submissionMetaAttributes[1].phaseId).toEqual(2);
+            expect(vm.submissionMetaAttributes[1].attributes).toBeNull();
+            expect(vm.allowedSubmissionFileTypes[1]).toEqual({
+                phaseId: 2,
+                allowedSubmissionFileTypes: ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+            });
+            expect(vm.defaultSubmissionMetaAttributes[1]).toEqual({
+                phaseId: 2,
+                defaultAttributes: {}
+            });
+
+            expect(utilities.hideLoader).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
