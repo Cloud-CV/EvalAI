@@ -2805,8 +2805,7 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             utilities = _utilities_;
 
-            spyOn($interval, 'cancel').and.callFake(function () { });  // ✅ only this one
-
+            spyOn($interval, 'cancel').and.callThrough();  // Allow actual cancel
             spyOn(utilities, 'sendRequest');
 
             vm.challengeId = 1;
@@ -2816,19 +2815,31 @@ describe('Unit tests for challenge controller', function () {
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Eval error";
             vm.workerLogs = [];
+
+            // Call startLoadingLogs
             vm.startLoadingLogs();
+
+            // ✅ Flush interval to trigger log fetch
+            $interval.flush(5000);
+
             expect(vm.workerLogs).toContain("Eval error");
         });
 
         it('should format logs with UTC time and push to workerLogs', function () {
             var logWithUtc = "[2024-07-01 12:00:00] Some log";
             var details = { logs: [logWithUtc] };
+
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: details });
             });
+
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
             vm.startLoadingLogs();
+
+            // ✅ Trigger interval manually
+            $interval.flush(5000);
+
             expect(vm.workerLogs.length).toBeGreaterThan(0);
             expect(vm.workerLogs[0]).toContain("Some log");
         });
@@ -2837,9 +2848,14 @@ describe('Unit tests for challenge controller', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Log error" } });
             });
+
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
             vm.startLoadingLogs();
+
+            // ✅ Trigger interval manually
+            $interval.flush(5000);
+
             expect(vm.workerLogs).toContain("Log error");
         });
 
@@ -2849,4 +2865,5 @@ describe('Unit tests for challenge controller', function () {
             expect($interval.cancel).toHaveBeenCalledWith(123);
         });
     });
+    
 });
