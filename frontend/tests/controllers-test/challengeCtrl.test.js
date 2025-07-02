@@ -124,6 +124,22 @@ describe('Unit tests for challenge controller', function () {
             };
         });
 
+        beforeEach(function () {
+            angular.mock.inject(function ($controller) {
+                $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
+                    var defaultMetaAttributesDict = {};
+                    if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
+                        defaultMetaAttributes.forEach(function (attribute) {
+                            var attributeName = attribute["name"];
+                            var is_visible = attribute["is_visible"];
+                            defaultMetaAttributesDict[attributeName] = is_visible;
+                        });
+                    }
+                    return defaultMetaAttributesDict;
+                };
+            });
+        });
+
         it('get the details of the particular challenge \
             `challenges/challenge/<challenge_id>/`', function () {
             challengeSuccess = true;
@@ -570,22 +586,6 @@ describe('Unit tests for challenge controller', function () {
                 }
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        beforeEach(function () {
-            angular.mock.inject(function ($controller) {
-                $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
-                    var defaultMetaAttributesDict = {};
-                    if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
-                        defaultMetaAttributes.forEach(function (attribute) {
-                            var attributeName = attribute["name"];
-                            var is_visible = attribute["is_visible"];
-                            defaultMetaAttributesDict[attributeName] = is_visible;
-                        });
-                    }
-                    return defaultMetaAttributesDict;
-                };
-            });
         });
 
         it('backend error of particular challenge phase split `challenges/<challenge_id>/challenge_phase_split`', function () {
