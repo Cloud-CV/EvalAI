@@ -2805,8 +2805,15 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             utilities = _utilities_;
 
-            spyOn($interval, 'cancel').and.callThrough();  // Allow actual cancel
+            spyOn($interval, 'cancel').and.callThrough();
             spyOn(utilities, 'sendRequest');
+
+            // Mock $interval to immediately call the function
+            spyOn(window, 'setInterval'); // just in case
+            $interval.and.callFake(function (fn, delay) {
+                fn();
+                return 1;
+            });
 
             vm.challengeId = 1;
             vm.workerLogs = [];
@@ -2815,13 +2822,7 @@ describe('Unit tests for challenge controller', function () {
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Eval error";
             vm.workerLogs = [];
-
-            // Call startLoadingLogs
             vm.startLoadingLogs();
-
-            // ✅ Flush interval to trigger log fetch
-            $interval.flush(5000);
-
             expect(vm.workerLogs).toContain("Eval error");
         });
 
@@ -2836,10 +2837,6 @@ describe('Unit tests for challenge controller', function () {
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
             vm.startLoadingLogs();
-
-            // ✅ Trigger interval manually
-            $interval.flush(5000);
-
             expect(vm.workerLogs.length).toBeGreaterThan(0);
             expect(vm.workerLogs[0]).toContain("Some log");
         });
@@ -2852,10 +2849,6 @@ describe('Unit tests for challenge controller', function () {
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
             vm.startLoadingLogs();
-
-            // ✅ Trigger interval manually
-            $interval.flush(5000);
-
             expect(vm.workerLogs).toContain("Log error");
         });
 
