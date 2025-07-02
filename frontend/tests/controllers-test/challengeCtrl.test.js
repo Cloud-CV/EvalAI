@@ -2811,10 +2811,6 @@ describe('Unit tests for challenge controller', function () {
             spyOn($interval, 'bind').and.callThrough();
             spyOn($interval, 'toString').and.callThrough();
 
-            spyOn($interval, 'call').and.callThrough();
-
-            spyOn($interval, 'apply').and.callThrough();
-
             // Patch $interval to immediately call the function
             spyOn(window, 'setInterval'); // just in case
             $interval.and.callFake(function (fn) {
