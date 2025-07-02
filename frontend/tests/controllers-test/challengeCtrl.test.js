@@ -2714,4 +2714,104 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialogOpened).toBe(true);
         });
     });
+
+    describe('Unit tests for toggleParticipation function', function () {
+        var ev, $mdDialog, challengeHostList;
+
+        beforeEach(function () {
+            ev = {
+                stopPropagation: jasmine.createSpy('stopPropagation')
+            };
+            $mdDialog = $injector.get('$mdDialog');
+            spyOn($mdDialog, 'confirm').and.callThrough();
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                // Simulate user clicking "OK"
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // Simulate backend call
+                parameters.callback.onSuccess();
+            });
+            challengeHostList = { '1': 42 };
+            spyOn(utilities, 'getData').and.callFake(function (key) {
+                if (key === 'challengeCreator') return challengeHostList;
+                return null;
+            });
+            vm.challengeId = '1';
+            vm.isRegistrationOpen = false;
+        });
+
+        it('should open dialog and toggle participation to opened', function () {
+            vm.toggleParticipation(ev, false);
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participation is opened successfully');
+            expect(vm.isRegistrationOpen).toBe(true);
+        });
+
+        it('should open dialog and toggle participation to closed', function () {
+            vm.isRegistrationOpen = true;
+            vm.toggleParticipation(ev, true);
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participation is closed successfully');
+            expect(vm.isRegistrationOpen).toBe(false);
+        });
+
+        it('should notify error on backend error', function () {
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            utilities.sendRequest.and.callFake(function (parameters) {
+                parameters.callback.onError({ data: { error: 'Some error' } });
+            });
+            vm.toggleParticipation(ev, false);
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Some error');
+        });
+
+
+        it('should do nothing if user cancels the dialog', function () {
+            // Simulate user clicking "Cancel"
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        cancel();
+                    }
+                };
+            });
+            spyOn(utilities, 'sendRequest');
+            vm.toggleParticipation(ev, false);
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+            // Optionally, check that notify is not called for success/error
+        });
+
+        it('should not set challengeHostId if challengeId not in challengeHostList', function () {
+            // Set up a challengeHostList that does not contain the challengeId
+            challengeHostList = { '999': 42 };
+            utilities.getData.and.callFake(function (key) {
+                if (key === 'challengeCreator') return challengeHostList;
+                return null;
+            });
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // We want to check what challengeHostId is set to
+                expect(vm.challengeHostId).toBeUndefined();
+                parameters.callback.onSuccess();
+            });
+            vm.toggleParticipation(ev, false);
+        });
+    });
 });
