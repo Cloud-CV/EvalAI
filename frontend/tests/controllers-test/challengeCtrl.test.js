@@ -2848,5 +2848,43 @@ describe('Unit tests for challenge controller', function () {
             vm.toggleParticipation(ev, false);
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Some error');
         });
+
+
+        it('should do nothing if user cancels the dialog', function () {
+            // Simulate user clicking "Cancel"
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        cancel();
+                    }
+                };
+            });
+            spyOn(utilities, 'sendRequest');
+            vm.toggleParticipation(ev, false);
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+            // Optionally, check that notify is not called for success/error
+        });
+
+        it('should not set challengeHostId if challengeId not in challengeHostList', function () {
+            // Set up a challengeHostList that does not contain the challengeId
+            challengeHostList = { '999': 42 };
+            utilities.getData.and.callFake(function (key) {
+                if (key === 'challengeCreator') return challengeHostList;
+                return null;
+            });
+            $mdDialog.show.and.callFake(function () {
+                return {
+                    then: function (ok, cancel) {
+                        ok();
+                    }
+                };
+            });
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // We want to check what challengeHostId is set to
+                expect(vm.challengeHostId).toBeUndefined();
+                parameters.callback.onSuccess();
+            });
+            vm.toggleParticipation(ev, false);
+        });
     });
 });
