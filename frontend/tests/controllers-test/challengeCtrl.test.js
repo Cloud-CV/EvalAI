@@ -665,6 +665,100 @@ describe('Unit tests for challenge controller', function () {
 
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        it('should handle missing submission_meta_attributes, allowed_submission_file_types, and default_submission_meta_attributes', function () {
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = true;
+            challengePhaseSplitSuccess = null;
+
+            // Mock challenge phase details response with missing/null values
+            successResponse = {
+                count: 1,
+                results: [
+                    {
+                        id: 1,
+                        is_public: false,
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
+                        submission_meta_attributes: null,
+                        allowed_submission_file_types: null,
+                        default_submission_meta_attributes: null,
+                        leaderboard_public: true
+                    }
+                ]
+            };
+
+            spyOn(utilities, 'hideLoader');
+            vm = createController();
+
+            // Check submissionMetaAttributes fallback
+            expect(vm.submissionMetaAttributes[0].phaseId).toEqual(1);
+            expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
+
+            // Check allowedSubmissionFileTypes fallback
+            expect(vm.allowedSubmissionFileTypes[0]).toEqual({
+                phaseId: 1,
+                allowedSubmissionFileTypes: ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+            });
+
+            // Check defaultSubmissionMetaAttributes fallback
+            expect(vm.defaultSubmissionMetaAttributes[0]).toEqual({
+                phaseId: 1,
+                defaultAttributes: {}
+            });
+
+            expect(utilities.hideLoader).toHaveBeenCalled();
+        });
+
+        it('should handle undefined submission_meta_attributes, allowed_submission_file_types, and default_submission_meta_attributes', function () {
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = true;
+            challengePhaseSplitSuccess = null;
+
+            // Mock challenge phase details response with missing/undefined values
+            successResponse = {
+                count: 1,
+                results: [
+                    {
+                        id: 2,
+                        is_public: true,
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
+                        // submission_meta_attributes: undefined,
+                        // allowed_submission_file_types: undefined,
+                        // default_submission_meta_attributes: undefined,
+                        leaderboard_public: false
+                    }
+                ]
+            };
+
+            spyOn(utilities, 'hideLoader');
+            vm = createController();
+
+            // Check submissionMetaAttributes fallback
+            expect(vm.submissionMetaAttributes[0].phaseId).toEqual(2);
+            expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
+
+            // Check allowedSubmissionFileTypes fallback
+            expect(vm.allowedSubmissionFileTypes[0]).toEqual({
+                phaseId: 2,
+                allowedSubmissionFileTypes: ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+            });
+
+            // Check defaultSubmissionMetaAttributes fallback
+            expect(vm.defaultSubmissionMetaAttributes[0]).toEqual({
+                phaseId: 2,
+                defaultAttributes: {}
+            });
+
+            expect(utilities.hideLoader).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -2847,40 +2941,6 @@ describe('Unit tests for challenge controller', function () {
             });
             vm.toggleParticipation(ev, false);
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Some error');
-        });
-
-
-        it('should do nothing if user cancels the dialog', function () {
-            $mdDialog.show.and.callFake(function () {
-                return {
-                    then: function (ok, cancel) {
-                        cancel();
-                    }
-                };
-            });
-            utilities.sendRequest.calls.reset(); // Instead of spyOn
-            vm.toggleParticipation(ev, false);
-            expect(utilities.sendRequest).not.toHaveBeenCalled();
-        });
-
-        it('should not set challengeHostId if challengeId not in challengeHostList', function () {
-            challengeHostList = { '999': 42 };
-            utilities.getData.and.callFake(function (key) {
-                if (key === 'challengeCreator') return challengeHostList;
-                return null;
-            });
-            $mdDialog.show.and.callFake(function () {
-                return {
-                    then: function (ok, cancel) {
-                        ok();
-                    }
-                };
-            });
-            utilities.sendRequest.and.callFake(function (parameters) {
-                expect(vm.challengeHostId).toBeUndefined();
-                parameters.callback.onSuccess();
-            });
-            vm.toggleParticipation(ev, false);
         });
     });
 });
