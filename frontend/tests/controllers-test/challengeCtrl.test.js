@@ -2812,6 +2812,6 @@ describe('Unit tests for challenge controller', function () {
                 parameters.callback.onSuccess();
             });
             vm.toggleParticipation(ev, false);
-        });
+        });       
     });
 });
