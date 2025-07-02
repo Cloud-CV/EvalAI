@@ -634,7 +634,7 @@ describe('Unit tests for challenge controller', function () {
             };
 
             // Add this line to avoid the error
-            vm.getDefaultMetaAttributesDict = function (attrs) { return { attr1: true }; };
+            $injector.get('$controller').prototype.getDefaultMetaAttributesDict = function (attrs) { return { attr1: true }; };
 
             spyOn(utilities, 'hideLoader');
             vm = createController();
