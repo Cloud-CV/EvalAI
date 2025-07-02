@@ -633,10 +633,8 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
 
-            // Spy on getDefaultMetaAttributesDict to return a predictable value
-            spyOn(vm, 'getDefaultMetaAttributesDict').and.callFake(function (attrs) {
-                return { attr1: true };
-            });
+            // Add this line to avoid the error
+            vm.getDefaultMetaAttributesDict = function (attrs) { return { attr1: true }; };
 
             spyOn(utilities, 'hideLoader');
             vm = createController();
