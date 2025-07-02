@@ -2800,22 +2800,18 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
         });
     });
-
     describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
         beforeEach(inject(function (_$interval_, _utilities_) {
             $interval = _$interval_;
             utilities = _utilities_;
 
-            spyOn($interval, 'cancel');
+            spyOn($interval, 'cancel').and.callFake(function () { });  // ✅ only this one
 
-            // Optional: mock $interval execution immediately
-            spyOn($interval, 'cancel').and.callFake(function () { });
             spyOn(utilities, 'sendRequest');
 
             vm.challengeId = 1;
             vm.workerLogs = [];
         }));
-        
 
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Eval error";
@@ -2827,7 +2823,7 @@ describe('Unit tests for challenge controller', function () {
         it('should format logs with UTC time and push to workerLogs', function () {
             var logWithUtc = "[2024-07-01 12:00:00] Some log";
             var details = { logs: [logWithUtc] };
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+            utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: details });
             });
             vm.evaluation_module_error = null;
@@ -2838,7 +2834,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should push error to workerLogs on error', function () {
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+            utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Log error" } });
             });
             vm.evaluation_module_error = null;
