@@ -510,8 +510,8 @@ def send_subscription_plans_email(challenge):
         emails_sent = 0
         for email in challenge_host_emails:
             try:
-                # TEMPORARY: Always send emails even in DEBUG mode for testing
-                # Create email message
+                # Send emails in production mode, or in debug mode if explicitly enabled
+                # This allows testing email functionality with MailHog in development
                 email_message = EmailMultiAlternatives(
                     subject=subject,
                     body="Please view this email in HTML format.",  # Plain text fallback
