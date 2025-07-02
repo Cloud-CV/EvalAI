@@ -2802,10 +2802,28 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
-        var $intervalSpy, $intervalCancelSpy;
+        var $intervalCancelSpy;
         beforeEach(function () {
-            $intervalSpy = jasmine.createSpy('$interval');
-            $intervalCancelSpy = spyOn($interval, 'cancel');
+            // Patch $interval to immediately call the function
+            spyOn($interval, 'cancel');
+            spyOn($interval, 'call').and.callThrough();
+            spyOn($interval, 'apply').and.callThrough();
+            spyOn($interval, 'bind').and.callThrough();
+            spyOn($interval, 'toString').and.callThrough();
+            spyOn($interval, 'length').and.callThrough();
+            spyOn($interval, 'name').and.callThrough();
+            spyOn($interval, 'prototype').and.callThrough();
+
+            spyOn($interval, 'call').and.callThrough();
+
+            spyOn($interval, 'apply').and.callThrough();
+
+            // Patch $interval to immediately call the function
+            spyOn(window, 'setInterval'); // just in case
+            $interval.and.callFake(function (fn) {
+                fn();
+                return 1;
+            });
             vm.challengeId = 1;
             vm.workerLogs = [];
         });
@@ -2813,12 +2831,6 @@ describe('Unit tests for challenge controller', function () {
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Eval error";
             vm.workerLogs = [];
-            vm.startLoadingLogs = function () {
-                if (vm.evaluation_module_error) {
-                    vm.workerLogs = [];
-                    vm.workerLogs.push(vm.evaluation_module_error);
-                }
-            };
             vm.startLoadingLogs();
             expect(vm.workerLogs).toContain("Eval error");
         });
@@ -2831,8 +2843,6 @@ describe('Unit tests for challenge controller', function () {
             });
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
-            // Patch $interval to call the function immediately
-            spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 1; });
             vm.startLoadingLogs();
             expect(vm.workerLogs.length).toBeGreaterThan(0);
             expect(vm.workerLogs[0]).toContain("Some log");
@@ -2844,7 +2854,6 @@ describe('Unit tests for challenge controller', function () {
             });
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
-            spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 1; });
             vm.startLoadingLogs();
             expect(vm.workerLogs).toContain("Log error");
         });
