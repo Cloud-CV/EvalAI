@@ -510,34 +510,27 @@ def send_subscription_plans_email(challenge):
         emails_sent = 0
         for email in challenge_host_emails:
             try:
-                if settings.DEBUG:
-                    # In DEBUG mode, just log what would be sent
-                    logger.info(
-                        "DEBUG MODE: Would send subscription plans email to {} for challenge {}".format(
-                            email, challenge.pk
-                        )
-                    )
-                    logger.info("Email subject: {}".format(subject))
-                    logger.info("Email context: {}".format(context))
-                else:
-                    # Create email message
-                    email_message = EmailMultiAlternatives(
-                        subject=subject,
-                        body="Please view this email in HTML format.",  # Plain text fallback
-                        from_email=getattr(settings, 'CLOUDCV_TEAM_EMAIL', 'team@cloudcv.org'),
-                        to=[email],
-                    )
-                    email_message.attach_alternative(html_content, "text/html")
-                    email_message.send()
+                # TEMPORARY: Always send emails even in DEBUG mode for testing
+                # Create email message
+                email_message = EmailMultiAlternatives(
+                    subject=subject,
+                    body="Please view this email in HTML format.",  # Plain text fallback
+                    from_email=getattr(settings, 'CLOUDCV_TEAM_EMAIL', 'team@cloudcv.org'),
+                    to=[email],
+                )
+                email_message.attach_alternative(html_content, "text/html")
+                email_message.send()
 
                 emails_sent += 1
                 logger.info(
-                    "Subscription plans email {} to {} for challenge {}".format(
-                        "simulated" if settings.DEBUG else "sent",
+                    "Subscription plans email sent to {} for challenge {}".format(
                         email, 
                         challenge.pk
                     )
                 )
+                if settings.DEBUG:
+                    logger.info("Email subject: {}".format(subject))
+                    logger.info("Email context: {}".format(context))
             except Exception as e:
                 logger.error(
                     "Failed to send subscription plans email to {} for challenge {}: {}".format(
@@ -546,8 +539,7 @@ def send_subscription_plans_email(challenge):
                 )
 
         logger.info(
-            "{} subscription plans email to {}/{} hosts for challenge {}".format(
-                "Simulated" if settings.DEBUG else "Sent",
+            "Sent subscription plans email to {}/{} hosts for challenge {}".format(
                 emails_sent, 
                 len(challenge_host_emails), 
                 challenge.pk
