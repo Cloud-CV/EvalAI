@@ -2824,4 +2824,45 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.subErrors.msg).toBe('');
         });
     });
+
+    escribe('Unit tests for getMetricDescription function', function () {
+        beforeEach(function () {
+            vm.leaderboard = [{
+                leaderboard__schema: {
+                    metadata: {
+                        accuracy: { description: "Accuracy of the model" },
+                        loss: { description: "Loss value" }
+                    }
+                }
+            }];
+        });
+
+        it('should return the description if metric and description exist', function () {
+            var desc = vm.getMetricDescription('accuracy');
+            expect(desc).toEqual("Accuracy of the model");
+        });
+
+        it('should return empty string if metadata is null', function () {
+            vm.leaderboard[0].leaderboard__schema.metadata = null;
+            var desc = vm.getMetricDescription('accuracy');
+            expect(desc).toEqual("");
+        });
+
+        it('should return empty string if metadata is undefined', function () {
+            vm.leaderboard[0].leaderboard__schema.metadata = undefined;
+            var desc = vm.getMetricDescription('accuracy');
+            expect(desc).toEqual("");
+        });
+
+        it('should return empty string if metric is not in metadata', function () {
+            var desc = vm.getMetricDescription('nonexistent_metric');
+            expect(desc).toEqual("");
+        });
+
+        it('should return empty string if metric exists but description is undefined', function () {
+            vm.leaderboard[0].leaderboard__schema.metadata['foo'] = {};
+            var desc = vm.getMetricDescription('foo');
+            expect(desc).toEqual("");
+        });
+    });
 });
