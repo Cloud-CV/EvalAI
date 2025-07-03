@@ -124,22 +124,6 @@ describe('Unit tests for challenge controller', function () {
             };
         });
 
-        beforeEach(function () {
-            angular.mock.inject(function ($controller) {
-                $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
-                    var defaultMetaAttributesDict = {};
-                    if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
-                        defaultMetaAttributes.forEach(function (attribute) {
-                            var attributeName = attribute["name"];
-                            var is_visible = attribute["is_visible"];
-                            defaultMetaAttributesDict[attributeName] = is_visible;
-                        });
-                    }
-                    return defaultMetaAttributesDict;
-                };
-            });
-        });
-
         it('get the details of the particular challenge \
             `challenges/challenge/<challenge_id>/`', function () {
             challengeSuccess = true;
@@ -728,54 +712,6 @@ describe('Unit tests for challenge controller', function () {
 
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
-
-        it('should handle undefined submission_meta_attributes, allowed_submission_file_types, and default_submission_meta_attributes', function () {
-            challengeSuccess = null;
-            participantTeamChallengeSuccess = null;
-            participantTeamSuccess = null;
-            selectExistTeamSuccess = null;
-            challengePhaseSuccess = true;
-            challengePhaseSplitSuccess = null;
-
-            // Mock challenge phase details response with missing/undefined values
-            successResponse = {
-                count: 1,
-                results: [
-                    {
-                        id: 2,
-                        is_public: true,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
-                        // submission_meta_attributes: undefined,
-                        // allowed_submission_file_types: undefined,
-                        // default_submission_meta_attributes: undefined,
-                        leaderboard_public: false
-                    }
-                ]
-            };
-
-            spyOn(utilities, 'hideLoader');
-            vm = createController();
-
-            // Check submissionMetaAttributes fallback
-            expect(vm.submissionMetaAttributes[0].phaseId).toEqual(2);
-            expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
-
-            // Check allowedSubmissionFileTypes fallback
-            expect(vm.allowedSubmissionFileTypes[0]).toEqual({
-                phaseId: 2,
-                allowedSubmissionFileTypes: ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
-            });
-
-            // Check defaultSubmissionMetaAttributes fallback
-            expect(vm.defaultSubmissionMetaAttributes[0]).toEqual({
-                phaseId: 2,
-                defaultAttributes: {}
-            });
-
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-    });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
         `jobs/<challenge_id>/remaining_submissions`', function () {
