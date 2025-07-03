@@ -2825,7 +2825,7 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for getMetricDescription function', function () {
+    describe('Unit tests for getLabelDescription function', function () {
         beforeEach(function () {
             vm.leaderboard = [{
                 leaderboard__schema: {
@@ -2838,30 +2838,30 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should return the description if metric and description exist', function () {
-            var desc = vm.getMetricDescription('accuracy');
+            var desc = vm.getLabelDescription('accuracy');
             expect(desc).toEqual("Accuracy of the model");
         });
 
         it('should return empty string if metadata is null', function () {
             vm.leaderboard[0].leaderboard__schema.metadata = null;
-            var desc = vm.getMetricDescription('accuracy');
+            var desc = vm.getLabelDescription('accuracy');
             expect(desc).toEqual("");
         });
 
         it('should return empty string if metadata is undefined', function () {
             vm.leaderboard[0].leaderboard__schema.metadata = undefined;
-            var desc = vm.getMetricDescription('accuracy');
+            var desc = vm.getLabelDescription('accuracy');
             expect(desc).toEqual("");
         });
 
         it('should return empty string if metric is not in metadata', function () {
-            var desc = vm.getMetricDescription('nonexistent_metric');
+            var desc = vm.getLabelDescription('nonexistent_metric');
             expect(desc).toEqual("");
         });
 
         it('should return empty string if metric exists but description is undefined', function () {
             vm.leaderboard[0].leaderboard__schema.metadata['foo'] = {};
-            var desc = vm.getMetricDescription('foo');
+            var desc = vm.getLabelDescription('foo');
             expect(desc).toEqual("");
         });
     });
