@@ -712,6 +712,7 @@ describe('Unit tests for challenge controller', function () {
 
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+    });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
         `jobs/<challenge_id>/remaining_submissions`', function () {
