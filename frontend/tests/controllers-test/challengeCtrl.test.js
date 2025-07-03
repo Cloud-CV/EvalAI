@@ -2884,6 +2884,7 @@ describe('Unit tests for challenge controller', function () {
             var fakeLeaderboard = [{
                 id: 1,
                 leaderboard__schema: { labels: ['accuracy', 'loss'] },
+                orderLeaderboardBy: 'accuracy',
                 submission__submission_metadata: null,
                 submission__submitted_at: new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString() // 2 years ago
             }];
@@ -2904,4 +2905,5 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.chosenMetrics).toEqual(['0']);
         });
     });
+    
 });
