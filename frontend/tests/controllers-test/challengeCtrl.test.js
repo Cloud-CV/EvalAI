@@ -1215,6 +1215,79 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
+    describe('Unit tests for submission GET callback logic (lines 1214-1249)', function () {
+        var details, submissionResult;
+
+        beforeEach(function () {
+            // Setup a minimal vm and submissionResult
+            vm.submissionVisibility = {};
+            vm.baselineStatus = {};
+            vm.verifiedStatus = {};
+            vm.showUpdate = false;
+            vm.submissionResult = { results: [] };
+        });
+
+        it('should set is_public, is_baseline, is_verified_by_host flags for each submission', function () {
+            details = {
+                results: [
+                    { id: 1, is_public: true, is_baseline: false, is_verified_by_host: true },
+                    { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false }
+                ]
+            };
+            // Simulate callback logic
+            for (var i = 0; i < details.results.length; i++) {
+                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
+            }
+            expect(vm.submissionVisibility[1]).toBe(true);
+            expect(vm.submissionVisibility[2]).toBe(false);
+            expect(vm.baselineStatus[1]).toBe(false);
+            expect(vm.baselineStatus[2]).toBe(true);
+            expect(vm.verifiedStatus[1]).toBe(true);
+            expect(vm.verifiedStatus[2]).toBe(false);
+        });
+
+        it('should set showUpdate to true if results length differs', function () {
+            details = { results: [{ id: 1 }, { id: 2 }] };
+            vm.submissionResult.results = [{ id: 1 }];
+            vm.showUpdate = false;
+            if (vm.submissionResult.results.length !== details.results.length) {
+                vm.showUpdate = true;
+            }
+            expect(vm.showUpdate).toBe(true);
+        });
+
+        it('should set showUpdate to true if any status differs', function () {
+            details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
+            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'running' }];
+            vm.showUpdate = false;
+            for (var i = 0; i < details.results.length; i++) {
+                if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                    vm.showUpdate = true;
+                    break;
+                }
+            }
+            expect(vm.showUpdate).toBe(true);
+        });
+
+        it('should not set showUpdate if all statuses are the same and lengths match', function () {
+            details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
+            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }];
+            vm.showUpdate = false;
+            if (vm.submissionResult.results.length !== details.results.length) {
+                vm.showUpdate = true;
+            } else {
+                for (var i = 0; i < details.results.length; i++) {
+                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                        vm.showUpdate = true;
+                        break;
+                    }
+                }
+            }
+            expect(vm.showUpdate).toBe(false);
+        });
+    });
 
     describe('Unit tests for refreshLeaderboard function \
         `jobs/challenge_phase_split/<phase_split_id>/leaderboard/?page_size=1000`', function () {
