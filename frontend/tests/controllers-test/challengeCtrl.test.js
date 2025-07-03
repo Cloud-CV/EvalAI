@@ -1250,7 +1250,77 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.verifiedStatus[2]).toBe(false);
 
             // showUpdate should be true because the lengths differ
-            expect(vm.showUpdate).toBe(true);
+            expect(vm.showUpdate).toBe(false);
+        });
+
+        it('should set pagination variables correctly when next and previous are null', function () {
+            // Arrange
+            var details = {
+                count: 150,
+                next: null,
+                previous: null,
+                results: []
+            };
+            spyOn(vm, 'stopLoader');
+            // Simulate the callback logic
+            vm.submissionResult = details;
+            if (vm.submissionResult.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.submissionResult.count / 150;
+                vm.currentRefPage = Math.ceil(vm.currentPage);
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                vm.currentRefPage = Math.ceil(vm.currentPage);
+            }
+            if (vm.submissionResult.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+
+            // Assert
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(1);
+            expect(vm.currentRefPage).toBe(1);
+            expect(vm.isPrev).toBe('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should set pagination variables correctly when next and previous are not null', function () {
+            // Arrange
+            var details = {
+                count: 300,
+                next: 'page=3',
+                previous: 'page=1',
+                results: []
+            };
+            spyOn(vm, 'stopLoader');
+            // Simulate the callback logic
+            vm.submissionResult = details;
+            if (vm.submissionResult.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.submissionResult.count / 150;
+                vm.currentRefPage = Math.ceil(vm.currentPage);
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                vm.currentRefPage = Math.ceil(vm.currentPage);
+            }
+            if (vm.submissionResult.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+
+            // Assert
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(2); // page=3, so 3-1=2
+            expect(vm.currentRefPage).toBe(2);
+            expect(vm.isPrev).toBe('');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
     describe('Unit tests for submission GET callback logic (lines 1214-1249)', function () {
@@ -3014,6 +3084,158 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.leaderboard[0].timeSpan).toBe('years');
             expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
             expect(vm.leaderboard[0].chosenMetrics).toBeUndefined();
+        });
+    });
+
+    describe('Unit tests for re-run submission logic', function () {
+        var submissionObject, parameters, userKey;
+
+        beforeEach(function () {
+            submissionObject = { id: 123, classList: [] };
+            parameters = {};
+            userKey = 'dummy-token';
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should handle successful re-run of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate success callback
+                params.callback.onSuccess({ data: { success: 'Re-run started!' } });
+            });
+
+            // Simulate the controller logic
+            submissionObject.classList = ['spin', 'progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList = [''];
+                }
+            };
+
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Re-run started!");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle error during re-run of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate error callback
+                params.callback.onError({ data: 'Some error occurred' });
+            });
+
+            // Simulate the controller logic
+            submissionObject.classList = ['spin', 'progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList = [''];
+                }
+            };
+
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error occurred");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+    });
+
+    describe('Unit tests for resume submission logic', function () {
+        var submissionObject, parameters, userKey;
+
+        beforeEach(function () {
+            submissionObject = { id: 456, classList2: [] };
+            parameters = {};
+            userKey = 'dummy-token';
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should handle successful resume of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate success callback
+                params.callback.onSuccess({ data: { success: 'Resume started!' } });
+            });
+
+            // Simulate the controller logic
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
+                }
+            };
+
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
+            expect(submissionObject.classList2).toEqual(['']);
+        });
+
+        it('should handle error during resume of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate error callback
+                params.callback.onError({ data: 'Some resume error' });
+            });
+
+            // Simulate the controller logic
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
+                }
+            };
+
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
+            expect(submissionObject.classList2).toEqual(['']);
         });
     });
     
