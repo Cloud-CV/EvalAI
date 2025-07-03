@@ -3,18 +3,27 @@ import logging
 import os
 import random
 import string
+import tempfile
 import uuid
+import zipfile
+from os.path import basename, join
 
+import boto3
+import botocore
 from base.utils import (
     get_boto3_client,
     get_model_object,
+    get_queue_name,
     mock_if_non_prod_aws,
     send_email,
 )
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from moto import mock_ecr, mock_sts
+from participants.models import ParticipantTeam
 
 from .models import (
     Challenge,
@@ -24,7 +33,6 @@ from .models import (
     ChallengeSponsor,
     DatasetSplit,
     Leaderboard,
-    ParticipantTeam,
 )
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
@@ -465,35 +473,43 @@ def send_subscription_plans_email(challenge):
     Arguments:
         challenge {Class Object} -- Challenge model object
     """
-    from django.core.mail import EmailMultiAlternatives
-    from django.template.loader import render_to_string
-    from django.conf import settings
-
     try:
         # Get challenge host emails
-        challenge_host_emails = challenge.creator.get_all_challenge_host_email()
-        
+        challenge_host_emails = (
+            challenge.creator.get_all_challenge_host_email()
+        )
+
         if not challenge_host_emails:
             logger.warning(
-                "No challenge host emails found for challenge {}".format(challenge.pk)
+                "No challenge host emails found for challenge {}".format(
+                    challenge.pk
+                )
             )
             return
 
         # Prepare template context
         challenge_url = "{}/web/challenges/challenge-page/{}".format(
-            getattr(settings, 'EVALAI_API_SERVER', 'http://localhost:8000'), challenge.pk
+            getattr(settings, "EVALAI_API_SERVER", "http://localhost:8000"),
+            challenge.pk,
         )
-        challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
-            getattr(settings, 'EVALAI_API_SERVER', 'http://localhost:8000'), challenge.pk
+        challenge_manage_url = (
+            "{}/web/challenges/challenge-page/{}/manage".format(
+                getattr(
+                    settings, "EVALAI_API_SERVER", "http://localhost:8000"
+                ),
+                challenge.pk,
+            )
         )
-        
+
         context = {
             "challenge_name": challenge.title,
             "challenge_url": challenge_url,
             "challenge_manage_url": challenge_manage_url,
             "challenge_id": challenge.pk,
             "host_team_name": challenge.creator.team_name,
-            "support_email": getattr(settings, 'CLOUDCV_TEAM_EMAIL', 'team@cloudcv.org'),
+            "support_email": getattr(
+                settings, "CLOUDCV_TEAM_EMAIL", "team@cloudcv.org"
+            ),
         }
 
         # Add challenge image if available
@@ -501,8 +517,10 @@ def send_subscription_plans_email(challenge):
             context["challenge_image_url"] = challenge.image.url
 
         # Render the HTML template
-        html_content = render_to_string('challenges/subscription_plans_email.html', context)
-        
+        html_content = render_to_string(
+            "challenges/subscription_plans_email.html", context
+        )
+
         # Create the email subject
         subject = f"EvalAI Subscription Plans - Challenge: {challenge.title}"
 
@@ -510,12 +528,13 @@ def send_subscription_plans_email(challenge):
         emails_sent = 0
         for email in challenge_host_emails:
             try:
-                # Send emails in production mode, or in debug mode if explicitly enabled
-                # This allows testing email functionality with MailHog in development
+                # Send subscription plans email to challenge host
                 email_message = EmailMultiAlternatives(
                     subject=subject,
                     body="Please view this email in HTML format.",  # Plain text fallback
-                    from_email=getattr(settings, 'CLOUDCV_TEAM_EMAIL', 'team@cloudcv.org'),
+                    from_email=getattr(
+                        settings, "CLOUDCV_TEAM_EMAIL", "team@cloudcv.org"
+                    ),
                     to=[email],
                 )
                 email_message.attach_alternative(html_content, "text/html")
@@ -524,13 +543,9 @@ def send_subscription_plans_email(challenge):
                 emails_sent += 1
                 logger.info(
                     "Subscription plans email sent to {} for challenge {}".format(
-                        email, 
-                        challenge.pk
+                        email, challenge.pk
                     )
                 )
-                if settings.DEBUG:
-                    logger.info("Email subject: {}".format(subject))
-                    logger.info("Email context: {}".format(context))
             except Exception as e:
                 logger.error(
                     "Failed to send subscription plans email to {} for challenge {}: {}".format(
@@ -540,9 +555,7 @@ def send_subscription_plans_email(challenge):
 
         logger.info(
             "Sent subscription plans email to {}/{} hosts for challenge {}".format(
-                emails_sent, 
-                len(challenge_host_emails), 
-                challenge.pk
+                emails_sent, len(challenge_host_emails), challenge.pk
             )
         )
 

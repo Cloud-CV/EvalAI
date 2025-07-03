@@ -4813,6 +4813,14 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     and send approval request for the challenge
     """
     challenge = get_challenge_model(challenge_pk)
+
+    # Check if the user is a host of this challenge
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to request approval for this challenge!"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
     unfinished_phases = []
 
