@@ -3236,5 +3236,106 @@ describe('Unit tests for challenge controller', function () {
             expect(submissionObject.classList2).toEqual(['']);
         });
     });
+
+    describe('Unit tests for toggleShowLeaderboardByLatest function', function () {
+        beforeEach(function () {
+            // Set up initial state
+            vm.phaseSplitId = 123;
+            vm.selectedPhaseSplit = { show_leaderboard_by_latest_submission: false, id: 123 };
+            spyOn(utilities, 'sendRequest');
+            spyOn(vm, 'getLeaderboard');
+            spyOn(vm, 'stopLoader');
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should PATCH and on success update selectedPhaseSplit, call getLeaderboard, and set sortLeaderboardTextOption', function () {
+            // Arrange: simulate backend success
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: { show_leaderboard_by_latest_submission: true, id: 123 }
+                });
+            });
+
+            // Act
+            vm.toggleShowLeaderboardByLatest();
+
+            // Assert
+            expect(vm.selectedPhaseSplit.show_leaderboard_by_latest_submission).toBe(true);
+            expect(vm.getLeaderboard).toHaveBeenCalledWith(123);
+            expect(vm.sortLeaderboardTextOption).toBe("Sort by best");
+        });
+
+        it('should call stopLoader and notify on error', function () {
+            // Arrange: simulate backend error
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error" });
+            });
+
+            // Act
+            vm.toggleShowLeaderboardByLatest();
+
+            // Assert
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+        });
+    });
+    
+
+    describe('Unit tests for getAllEntriesOnPublicLeaderboard function', function () {
+        beforeEach(function () {
+            // Set up initial state and spies
+            vm.phaseSplitId = 123;
+            vm.orderLeaderboardBy = 'accuracy';
+            spyOn($interval, 'cancel');
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn(vm, 'startLeaderboard');
+            spyOn(vm, 'scrollToEntryAfterLeaderboardLoads');
+            spyOn(utilities, 'sendRequest');
+        });
+
+        it('should fetch and format leaderboard entries on success', function () {
+            // Arrange: mock leaderboard data
+            var now = new Date();
+            var leaderboardData = [{
+                id: 1,
+                submission__submitted_at: now.toISOString()
+            }];
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: { results: leaderboardData }
+                });
+            });
+
+            // Act
+            vm.getAllEntriesOnPublicLeaderboard(123);
+
+            // Assert
+            expect($interval.cancel).toHaveBeenCalled();
+            expect(vm.isResult).toBe(true);
+            expect(vm.phaseSplitId).toBe(123);
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Leaderboard Items");
+            expect(vm.leaderboard).toEqual(leaderboardData);
+            expect(vm.phaseName).toBe(123);
+            expect(vm.startLeaderboard).toHaveBeenCalled();
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.scrollToEntryAfterLeaderboardLoads).toHaveBeenCalled();
+            // Check that submission__submitted_at_formatted is set
+            expect(vm.leaderboard[0].submission__submitted_at_formatted).toBe(now.toISOString());
+            // Check that initial_ranking is set
+            expect(vm.initial_ranking[1]).toBe(1);
+        });
+
+        it('should set leaderboard.error and stopLoader on error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error" });
+            });
+
+            vm.getAllEntriesOnPublicLeaderboard(123);
+
+            expect(vm.leaderboard.error).toBe("Some error");
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
     
 });
