@@ -3,6 +3,22 @@
 describe('Unit tests for challenge controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
+    beforeEach(function () {
+        angular.mock.inject(function ($controller) {
+            $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
+                var defaultMetaAttributesDict = {};
+                if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
+                    defaultMetaAttributes.forEach(function (attribute) {
+                        var attributeName = attribute["name"];
+                        var is_visible = attribute["is_visible"];
+                        defaultMetaAttributesDict[attributeName] = is_visible;
+                    });
+                }
+                return defaultMetaAttributesDict;
+            };
+        });
+    });
+
     var $controller, createController, $injector, $rootScope, $state, $scope, utilities, $http, $interval, $mdDialog, moment, vm;
 
     beforeEach(inject(function (_$controller_, _$injector_,  _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
@@ -22,22 +38,6 @@ describe('Unit tests for challenge controller', function () {
         };
         vm = $controller('ChallengeCtrl', { $scope: $scope });
     }));
-
-    beforeEach(function () {
-        angular.mock.inject(function ($controller) {
-            $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
-                var defaultMetaAttributesDict = {};
-                if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
-                    defaultMetaAttributes.forEach(function (attribute) {
-                        var attributeName = attribute["name"];
-                        var is_visible = attribute["is_visible"];
-                        defaultMetaAttributesDict[attributeName] = is_visible;
-                    });
-                }
-                return defaultMetaAttributesDict;
-            };
-        });
-    });
 
     describe('Global variables', function () {
         it('has default values', function () {
