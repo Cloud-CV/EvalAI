@@ -2825,7 +2825,7 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    escribe('Unit tests for getMetricDescription function', function () {
+    describe('Unit tests for getMetricDescription function', function () {
         beforeEach(function () {
             vm.leaderboard = [{
                 leaderboard__schema: {
