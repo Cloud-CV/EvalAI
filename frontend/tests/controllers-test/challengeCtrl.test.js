@@ -1227,6 +1227,9 @@ describe('Unit tests for challenge controller', function () {
                 // Simulate the real callback with a mock response
                 parameters.callback.onSuccess({
                     data: {
+                        count: 2,
+                        next: null,
+                        previous: null,
                         results: [
                             { id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished' },
                             { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false, status: 'failed' }
