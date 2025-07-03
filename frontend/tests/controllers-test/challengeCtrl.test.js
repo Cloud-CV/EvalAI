@@ -665,53 +665,6 @@ describe('Unit tests for challenge controller', function () {
 
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
-
-        it('should handle missing submission_meta_attributes, allowed_submission_file_types, and default_submission_meta_attributes', function () {
-            challengeSuccess = null;
-            participantTeamChallengeSuccess = null;
-            participantTeamSuccess = null;
-            selectExistTeamSuccess = null;
-            challengePhaseSuccess = true;
-            challengePhaseSplitSuccess = null;
-
-            // Mock challenge phase details response with missing/null values
-            successResponse = {
-                count: 1,
-                results: [
-                    {
-                        id: 1,
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530",
-                        submission_meta_attributes: null,
-                        allowed_submission_file_types: null,
-                        default_submission_meta_attributes: null,
-                        leaderboard_public: true
-                    }
-                ]
-            };
-
-            spyOn(utilities, 'hideLoader');
-            vm = createController();
-
-            // Check submissionMetaAttributes fallback
-            expect(vm.submissionMetaAttributes[0].phaseId).toEqual(1);
-            expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
-
-            // Check allowedSubmissionFileTypes fallback
-            expect(vm.allowedSubmissionFileTypes[0]).toEqual({
-                phaseId: 1,
-                allowedSubmissionFileTypes: ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
-            });
-
-            // Check defaultSubmissionMetaAttributes fallback
-            expect(vm.defaultSubmissionMetaAttributes[0]).toEqual({
-                phaseId: 1,
-                defaultAttributes: {}
-            });
-
-            expect(utilities.hideLoader).toHaveBeenCalled();
-        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -2894,6 +2847,37 @@ describe('Unit tests for challenge controller', function () {
             });
             vm.toggleParticipation(ev, false);
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Some error');
+        });
+    });
+
+    describe('Unit tests for loadPhaseAttributes function', function () {
+        it('should set metaAttributesforCurrentSubmission, currentPhaseAllowedSubmissionFileTypes, currentPhaseMetaAttributesVisibility, currentPhaseLeaderboardPublic, and clear subErrors.msg', function () {
+            // Arrange
+            var phaseId = 42;
+            vm.submissionMetaAttributes = [
+                { phaseId: 41, attributes: [{ name: 'foo' }] },
+                { phaseId: 42, attributes: [{ name: 'bar' }] }
+            ];
+            vm.allowedSubmissionFileTypes = [
+                { phaseId: 42, allowedSubmissionFileTypes: '.csv' }
+            ];
+            vm.defaultSubmissionMetaAttributes = [
+                { phaseId: 42, defaultAttributes: { bar: true } }
+            ];
+            vm.phaseLeaderboardPublic = [
+                { phaseId: 42, leaderboardPublic: true }
+            ];
+            vm.subErrors = { msg: 'previous error' };
+
+            // Act
+            vm.loadPhaseAttributes(42);
+
+            // Assert
+            expect(vm.metaAttributesforCurrentSubmission).toEqual([{ name: 'bar' }]);
+            expect(vm.currentPhaseAllowedSubmissionFileTypes).toEqual('.csv');
+            expect(vm.currentPhaseMetaAttributesVisibility).toEqual({ bar: true });
+            expect(vm.currentPhaseLeaderboardPublic).toBe(true);
+            expect(vm.subErrors.msg).toBe('');
         });
     });
 });
