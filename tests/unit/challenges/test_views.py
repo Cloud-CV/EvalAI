@@ -6139,7 +6139,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         """Test that email is not sent when submission check fails"""
         # Create a challenge phase without finished submissions
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
-            unfinished_phase = ChallengePhase.objects.create(
+            _unfinished_phase = ChallengePhase.objects.create(
                 name="Unfinished Phase",
                 description="Description for Unfinished Phase",
                 leaderboard_public=False,
