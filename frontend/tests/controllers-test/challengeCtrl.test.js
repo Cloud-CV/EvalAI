@@ -23,6 +23,22 @@ describe('Unit tests for challenge controller', function () {
         vm = $controller('ChallengeCtrl', { $scope: $scope });
     }));
 
+    beforeEach(function () {
+        angular.mock.inject(function ($controller) {
+            $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
+                var defaultMetaAttributesDict = {};
+                if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
+                    defaultMetaAttributes.forEach(function (attribute) {
+                        var attributeName = attribute["name"];
+                        var is_visible = attribute["is_visible"];
+                        defaultMetaAttributesDict[attributeName] = is_visible;
+                    });
+                }
+                return defaultMetaAttributesDict;
+            };
+        });
+    });
+
     describe('Global variables', function () {
         it('has default values', function () {
             expect(vm.phaseId).toEqual(null);
