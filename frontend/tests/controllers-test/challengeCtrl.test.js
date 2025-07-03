@@ -1261,7 +1261,6 @@ describe('Unit tests for challenge controller', function () {
                 previous: null,
                 results: []
             };
-            spyOn(vm, 'stopLoader');
             // Simulate the callback logic
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
@@ -1296,7 +1295,6 @@ describe('Unit tests for challenge controller', function () {
                 previous: 'page=1',
                 results: []
             };
-            spyOn(vm, 'stopLoader');
             // Simulate the callback logic
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
