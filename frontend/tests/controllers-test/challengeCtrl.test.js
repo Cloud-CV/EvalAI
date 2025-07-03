@@ -2902,7 +2902,7 @@ describe('Unit tests for challenge controller', function () {
             // Assert: check that the code block was executed
             expect(vm.leaderboard[0].timeSpan).toBe('years');
             expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
-            expect(vm.chosenMetrics).toEqual(['0']);
+            expect(vm.leaderboard[0].chosenMetrics).toEqual(['0']);
         });
     });
     
