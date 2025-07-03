@@ -5801,6 +5801,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {"message": "Approval request sent! You should also receive an email with subscription plan details."})
+        self.assertEqual(response.data, {"message": "Approval request sent! You should also receive an email with subscription plan details."})
 
     def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
         self,

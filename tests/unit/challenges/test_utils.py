@@ -18,6 +18,7 @@ from challenges.utils import (
     parse_submission_meta_attributes,
     send_emails,
     send_subscription_plans_email,
+    send_subscription_plans_email,
 )
 from django.conf import settings
 from django.contrib.auth.models import User
