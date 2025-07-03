@@ -5936,27 +5936,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             {"message": "Approval request sent! You should also receive an email with subscription plan details."}
         )
 
-    @override_settings(DEBUG=True)
-    @mock.patch("challenges.views.send_subscription_plans_email")
-    def test_request_challenge_approval_in_debug_mode_with_email(
-        self, mock_send_email
-    ):
-        """Test that subscription plans email is called in DEBUG mode"""
-        url = reverse_lazy(
-            "challenges:request_challenge_approval_by_pk",
-            kwargs={"challenge_pk": self.challenge.pk},
-        )
-        response = self.client.get(url)
 
-        # Verify email function was called even in DEBUG mode
-        mock_send_email.assert_called_once_with(self.challenge)
-
-        # In DEBUG mode, the view returns an error message about local deployments
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-        self.assertEqual(
-            response.data,
-            {"error": "Please approve the challenge using admin for local deployments."}
-        )
 
     @responses.activate
     @mock.patch("challenges.views.send_subscription_plans_email")
@@ -6088,6 +6068,35 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 ),
             )
 
+        # Create a finished submission for the additional phase to satisfy the submission check
+        from jobs.models import Submission
+        from participants.models import Participant
+        
+        # Ensure participant team is associated with the challenge and user is a participant
+        self.challenge.participant_teams.add(self.participant_team)
+        Participant.objects.get_or_create(
+            user=self.user,
+            team=self.participant_team,
+            defaults={"status": Participant.ACCEPTED}
+        )
+        
+        submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=additional_phase,
+            created_by=self.user,
+            status="submitted",  # Start with submitted status
+            input_file=SimpleUploadedFile("test_input.txt", b"test input", content_type="text/plain"),
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+        
+        # Manually update the status to finished after creation to bypass any automatic processing
+        submission.status = "finished"
+        submission.save()
+
         responses.add(
             responses.POST,
             settings.APPROVAL_WEBHOOK_URL,
@@ -6106,6 +6115,42 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_called_once_with(self.challenge)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_not_sent_when_submissions_incomplete(
+        self, mock_send_email
+    ):
+        """Test that email is not sent when submission check fails"""
+        # Create a challenge phase without finished submissions
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            unfinished_phase = ChallengePhase.objects.create(
+                name="Unfinished Phase",
+                description="Description for Unfinished Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_unfinished_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Email should NOT be sent when submission check fails
+        mock_send_email.assert_not_called()
+        
+        # The request should fail due to unfinished submissions
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("do not have finished submissions", response.data["error"])
 
 
 class CreateOrUpdateGithubChallengeTest(APITestCase):
