@@ -2869,6 +2869,7 @@ describe('Unit tests for challenge controller', function () {
     describe('Unit tests for loadPhaseAttributes function', function () {
         it('should set metaAttributesforCurrentSubmission, currentPhaseAllowedSubmissionFileTypes, currentPhaseMetaAttributesVisibility, currentPhaseLeaderboardPublic, and clear subErrors.msg', function () {
             // Arrange
+            var vm = createController(); // Always create a fresh controller instance!
             var phaseId = 42;
             vm.submissionMetaAttributes = [
                 { phaseId: 41, attributes: [{ name: 'foo' }] },
