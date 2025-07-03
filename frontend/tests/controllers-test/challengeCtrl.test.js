@@ -1214,6 +1214,41 @@ describe('Unit tests for challenge controller', function () {
             vm.refreshSubmissionData();
             expect(vm.stopLoader).toHaveBeenCalled();
         });
+
+        it('should handle submission GET callback and set flags and showUpdate correctly', function () {
+            // Arrange: set up initial state
+            vm.submissionResult = { results: [{ id: 1, status: 'finished' }] };
+            vm.currentPage = 1;
+            vm.challengeId = 42;
+            vm.phaseId = 99;
+
+            // Spy on utilities.sendRequest to immediately call the callback
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // Simulate the real callback with a mock response
+                parameters.callback.onSuccess({
+                    data: {
+                        results: [
+                            { id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished' },
+                            { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false, status: 'failed' }
+                        ]
+                    }
+                });
+            });
+
+            // Act: call the real controller method
+            vm.refreshSubmissionData();
+
+            // Assert: check that the flags are set
+            expect(vm.submissionVisibility[1]).toBe(true);
+            expect(vm.submissionVisibility[2]).toBe(false);
+            expect(vm.baselineStatus[1]).toBe(false);
+            expect(vm.baselineStatus[2]).toBe(true);
+            expect(vm.verifiedStatus[1]).toBe(true);
+            expect(vm.verifiedStatus[2]).toBe(false);
+
+            // showUpdate should be true because the lengths differ
+            expect(vm.showUpdate).toBe(true);
+        });
     });
     describe('Unit tests for submission GET callback logic (lines 1214-1249)', function () {
         var details, submissionResult;
