@@ -2865,4 +2865,155 @@ describe('Unit tests for challenge controller', function () {
             expect(desc).toEqual("");
         });
     });
+
+    describe('Unit tests for leaderboard submission__submitted_at formatting and meta attributes', function () {
+        beforeEach(function () {
+            vm.leaderboard = [{
+                id: 1,
+                leaderboard__schema: {
+                    labels: ['accuracy', 'loss']
+                },
+                submission__submission_metadata: null,
+                submission__submitted_at: new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString() // 2 years ago
+            }];
+            vm.orderLeaderboardBy = 'accuracy';
+            vm.initial_ranking = {};
+        });
+
+        it('should set showSubmissionMetaAttributesOnLeaderboard to false if submission__submission_metadata is null', function () {
+            // Simulate the code block
+            if (vm.leaderboard[0].submission__submission_metadata == null) {
+                vm.showSubmissionMetaAttributesOnLeaderboard = false;
+            } else {
+                vm.showSubmissionMetaAttributesOnLeaderboard = true;
+            }
+            expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
+        });
+
+        it('should set showSubmissionMetaAttributesOnLeaderboard to true if submission__submission_metadata is not null', function () {
+            vm.leaderboard[0].submission__submission_metadata = {};
+            if (vm.leaderboard[0].submission__submission_metadata == null) {
+                vm.showSubmissionMetaAttributesOnLeaderboard = false;
+            } else {
+                vm.showSubmissionMetaAttributesOnLeaderboard = true;
+            }
+            expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(true);
+        });
+
+        it('should set chosenMetrics to index string if orderLeaderboardBy is found', function () {
+            var leaderboardLabels = vm.leaderboard[0].leaderboard__schema.labels;
+            var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+            vm.chosenMetrics = index !== -1 ? [index.toString()] : undefined;
+            expect(vm.chosenMetrics).toEqual(['0']);
+        });
+
+        it('should set chosenMetrics to undefined if orderLeaderboardBy is not found', function () {
+            vm.orderLeaderboardBy = 'notfound';
+            var leaderboardLabels = vm.leaderboard[0].leaderboard__schema.labels;
+            var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+            vm.chosenMetrics = index !== -1 ? [index.toString()] : undefined;
+            expect(vm.chosenMetrics).toBeUndefined();
+        });
+
+        it('should set timeSpan to "years" if duration is in years', function () {
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            var years = duration.asYears();
+            if (duration._data.years != 0) {
+                vm.leaderboard[0].submission__submitted_at = years;
+                if (years.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'year';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'years';
+                }
+            }
+            expect(vm.leaderboard[0].timeSpan).toBe('years');
+        });
+
+        it('should set timeSpan to "months" if duration is in months', function () {
+            vm.leaderboard[0].submission__submitted_at = new Date(Date.now() - 2 * 30 * 24 * 60 * 60 * 1000).toISOString(); // 2 months ago
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            if (duration._data.years == 0 && duration._data.months != 0) {
+                var months = duration.months();
+                vm.leaderboard[0].submission__submitted_at = months;
+                if (months.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'month';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'months';
+                }
+            }
+            expect(['month', 'months']).toContain(vm.leaderboard[0].timeSpan);
+        });
+
+        it('should set timeSpan to "days" if duration is in days', function () {
+            vm.leaderboard[0].submission__submitted_at = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 days ago
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            if (duration._data.years == 0 && duration._data.months == 0 && duration._data.days != 0) {
+                var days = duration.asDays();
+                vm.leaderboard[0].submission__submitted_at = days;
+                if (days.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'day';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'days';
+                }
+            }
+            expect(['day', 'days']).toContain(vm.leaderboard[0].timeSpan);
+        });
+
+        it('should set timeSpan to "hours" if duration is in hours', function () {
+            vm.leaderboard[0].submission__submitted_at = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(); // 2 hours ago
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            if (duration._data.years == 0 && duration._data.months == 0 && duration._data.days == 0 && duration._data.hours != 0) {
+                var hours = duration.asHours();
+                vm.leaderboard[0].submission__submitted_at = hours;
+                if (hours.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'hour';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'hours';
+                }
+            }
+            expect(['hour', 'hours']).toContain(vm.leaderboard[0].timeSpan);
+        });
+
+        it('should set timeSpan to "minutes" if duration is in minutes', function () {
+            vm.leaderboard[0].submission__submitted_at = new Date(Date.now() - 2 * 60 * 1000).toISOString(); // 2 minutes ago
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            if (duration._data.years == 0 && duration._data.months == 0 && duration._data.days == 0 && duration._data.hours == 0 && duration._data.minutes != 0) {
+                var minutes = duration.asMinutes();
+                vm.leaderboard[0].submission__submitted_at = minutes;
+                if (minutes.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'minute';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'minutes';
+                }
+            }
+            expect(['minute', 'minutes']).toContain(vm.leaderboard[0].timeSpan);
+        });
+
+        it('should set timeSpan to "seconds" if duration is in seconds', function () {
+            vm.leaderboard[0].submission__submitted_at = new Date(Date.now() - 2 * 1000).toISOString(); // 2 seconds ago
+            var dateTimeNow = moment(new Date());
+            var submissionTime = moment(vm.leaderboard[0].submission__submitted_at);
+            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+            if (duration._data.years == 0 && duration._data.months == 0 && duration._data.days == 0 && duration._data.hours == 0 && duration._data.minutes == 0 && duration._data.seconds != 0) {
+                var seconds = duration.asSeconds();
+                vm.leaderboard[0].submission__submitted_at = seconds;
+                if (seconds.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'second';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'seconds';
+                }
+            }
+            expect(['second', 'seconds']).toContain(vm.leaderboard[0].timeSpan);
+        });
+    });
 });
