@@ -3,17 +3,11 @@ import logging
 import os
 import random
 import string
-import tempfile
 import uuid
-import zipfile
-from os.path import basename, join
 
-import boto3
-import botocore
 from base.utils import (
     get_boto3_client,
     get_model_object,
-    get_queue_name,
     mock_if_non_prod_aws,
     send_email,
 )
