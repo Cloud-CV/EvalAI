@@ -152,10 +152,17 @@ class Command(BaseCommand):
         """Handle updating retention dates"""
         self.stdout.write("Updating submission retention dates...")
 
-        result = update_submission_retention_dates.delay()
-        self.stdout.write(
-            self.style.SUCCESS(f"Update task started with ID: {result.id}")
-        )
+        try:
+            # Run directly instead of via Celery in development
+            from challenges.aws_utils import update_submission_retention_dates
+            result = update_submission_retention_dates()
+            self.stdout.write(
+                self.style.SUCCESS(f"Updated retention dates for {result.get('updated_submissions', 0)} submissions")
+            )
+        except Exception as e:
+            self.stdout.write(
+                self.style.ERROR(f"Failed to update retention dates: {e}")
+            )
 
     def handle_send_warnings(self):
         """Handle sending warning notifications"""

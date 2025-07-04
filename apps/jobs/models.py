@@ -142,6 +142,24 @@ class Submission(TimeStampedModel):
     # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
     is_verified_by_host = models.BooleanField(default=False)
+    
+    # Retention policy fields
+    retention_eligible_date = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="Date when submission artifacts become eligible for deletion",
+        db_index=True
+    )
+    is_artifact_deleted = models.BooleanField(
+        default=False,
+        help_text="Flag indicating whether submission artifacts have been deleted",
+        db_index=True
+    )
+    artifact_deletion_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when submission artifacts were deleted"
+    )
 
     def __str__(self):
         return "{}".format(self.id)

@@ -15,6 +15,8 @@ import os
 import sys
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, "apps")
@@ -212,6 +214,22 @@ AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
+# Celery Beat Schedule for Periodic Tasks
+CELERY_BEAT_SCHEDULE = {
+    'cleanup-expired-submission-artifacts': {
+        'task': 'challenges.aws_utils.cleanup_expired_submission_artifacts',
+        'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM UTC
+    },
+    'send-retention-warning-notifications': {
+        'task': 'challenges.aws_utils.send_retention_warning_notifications',
+        'schedule': crontab(hour=10, minute=0),  # Daily at 10 AM UTC
+    },
+    'update-submission-retention-dates': {
+        'task': 'challenges.aws_utils.update_submission_retention_dates',
+        'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM UTC
+    },
+}
+
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -345,6 +363,7 @@ SENDGRID_SETTINGS = {
         "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd",
         "CLUSTER_CREATION_TEMPLATE": "d-6de90fd760df4a41bb9bff1872eaab82",
         "WORKER_START_EMAIL": "d-debd127cab2345e789538131501ff416",
+        "RETENTION_WARNING_EMAIL": "d-placeholder-retention-warning-template",
     }
 }
 
