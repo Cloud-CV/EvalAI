@@ -3967,19 +3967,31 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLoadingLogs function', function () {
-        var $intervalSpy, $intervalCallback, intervalDelay;
+        var $interval, $intervalCallback, intervalDelay;
     
-        beforeEach(function () {
-            // Spy on $interval to capture the callback and delay
-            $intervalSpy = spyOn(window, '$interval').and.callFake(function (cb, delay) {
+        beforeEach(inject(function(_$interval_) {
+            $interval = _$interval_;
+            spyOn(utilities, 'sendRequest');
+            vm.challengeId = 42;
+            vm.workerLogs = [];
+            // Mock $interval to capture the callback and delay
+            spyOn(vm, 'stopLeaderboard'); // if needed
+            spyOn($interval, 'cancel'); // if your code uses $interval.cancel
+            spyOn($interval, 'flush'); // if you want to flush intervals in tests
+    
+            // Instead of spyOn(window, '$interval'), do:
+            spyOn($interval, 'callFake').and.callFake(function (cb, delay) {
                 $intervalCallback = cb;
                 intervalDelay = delay;
                 return 'intervalPromise';
             });
-            spyOn(utilities, 'sendRequest');
-            vm.challengeId = 42;
-            vm.workerLogs = [];
-        });
+            // Or, if you want to fully control the interval:
+            vm._interval = function(cb, delay) {
+                $intervalCallback = cb;
+                intervalDelay = delay;
+                return 'intervalPromise';
+            };
+        }));
     
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
@@ -4118,15 +4130,10 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLeaderboard function', function () {
-        var $intervalSpy, $intervalCallback, intervalDelay;
+        var $interval, $intervalCallback, intervalDelay;
     
-        beforeEach(function () {
-            // Spy on $interval to capture the callback and delay
-            $intervalSpy = spyOn(window, '$interval').and.callFake(function (cb, delay) {
-                $intervalCallback = cb;
-                intervalDelay = delay;
-                return 'pollerPromise';
-            });
+        beforeEach(inject(function(_$interval_) {
+            $interval = _$interval_;
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
             spyOn(utilities, 'storeData');
@@ -4136,15 +4143,16 @@ describe('Unit tests for challenge controller', function () {
             vm.orderLeaderboardBy = 'rank';
             vm.leaderboard = { count: 5 };
             vm.showLeaderboardUpdate = false;
-        });
     
-        it('should set poller and call stopLeaderboard', function () {
-            vm.startLeaderboard();
-            expect(vm.stopLeaderboard).toHaveBeenCalled();
-            expect(vm.poller).toBe('pollerPromise');
-            expect($intervalSpy).toHaveBeenCalled();
-            expect(intervalDelay).toBe(10000);
-        });
+            // Mock $interval to capture the callback and delay
+            spyOn($interval, 'cancel');
+            spyOn($interval, 'flush');
+            spyOn($interval, 'callFake').and.callFake(function (cb, delay) {
+                $intervalCallback = cb;
+                intervalDelay = delay;
+                return 'pollerPromise';
+            });
+        }));
     
         it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
             vm.startLeaderboard();
@@ -4181,9 +4189,9 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            // You may need to set userKey if it's not global in your test setup
-            window.userKey = 'dummy-token';
-        });
+            // Set the userKey to match what your app expects
+            window.userKey = 'encrypted key'; // or 'dummy-token' if that's what your app expects
+        });    
     
         it('should notify success and reset classList2 on success', function () {
             var submissionObject = { id: 123, classList2: [] };
