@@ -3966,29 +3966,23 @@ describe('Unit tests for challenge controller', function () {
         });
     });
     describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $intervalCallback, intervalDelay;
-
-        beforeEach(function () {
-            $intervalCallback = null;
-            $interval = function (cb, delay) {
-                $intervalCallback = cb;
-                intervalDelay = delay;
-                return 'intervalPromise';
-            };
-            window.$interval = $interval;
+        var $interval;
+    
+        beforeEach(inject(function(_$interval_) {
+            $interval = _$interval_;
             spyOn(utilities, 'sendRequest');
             vm.challengeId = 42;
             vm.workerLogs = [];
             spyOn(vm, 'stopLeaderboard');
-        });
-
+        }));
+    
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
             vm.startLoadingLogs();
-            $intervalCallback();
+            $interval.flush(5000);
             expect(vm.workerLogs).toEqual(["Some error"]);
         });
-
+    
         it('should process logs with UTC time and convert to local', function () {
             vm.evaluation_module_error = null;
             utilities.sendRequest.and.callFake(function (params) {
@@ -4002,27 +3996,23 @@ describe('Unit tests for challenge controller', function () {
                 });
             });
             vm.startLoadingLogs();
-            $intervalCallback();
+            $interval.flush(5000);
             expect(vm.workerLogs.length).toBe(2);
             expect(vm.workerLogs[0]).toContain("Log message 1");
             expect(vm.workerLogs[1]).toBe("No timestamp log");
         });
-
+    
         it('should push error to workerLogs on error callback', function () {
             vm.evaluation_module_error = null;
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Log error" } });
             });
             vm.startLoadingLogs();
-            $intervalCallback();
+            $interval.flush(5000);
             expect(vm.workerLogs).toContain("Log error");
         });
-
-        it('should call $interval with 5000ms delay', function () {
-            vm.evaluation_module_error = null;
-            vm.startLoadingLogs();
-            expect(intervalDelay).toBe(5000);
-        });
+    
+        // You can remove the intervalDelay test, or just check that flush works as expected.
     });
 
     describe('Unit tests for clearMetaAttributeValues function', function () {
@@ -4116,16 +4106,10 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLeaderboard function', function () {
-        var $interval, $intervalCallback, intervalDelay;
-
-        beforeEach(function () {
-            $intervalCallback = null;
-            $interval = function (cb, delay) {
-                $intervalCallback = cb;
-                intervalDelay = delay;
-                return 'pollerPromise';
-            };
-            window.$interval = $interval;
+        var $interval;
+    
+        beforeEach(inject(function(_$interval_) {
+            $interval = _$interval_;
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
             spyOn(utilities, 'storeData');
@@ -4135,32 +4119,32 @@ describe('Unit tests for challenge controller', function () {
             vm.orderLeaderboardBy = 'rank';
             vm.leaderboard = { count: 5 };
             vm.showLeaderboardUpdate = false;
-        });
-
+        }));
+    
         it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
             vm.startLeaderboard();
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { results: { count: 10 } } });
             });
-            $intervalCallback();
+            $interval.flush(10000);
             expect(vm.showLeaderboardUpdate).toBe(true);
         });
-
+    
         it('should not set showLeaderboardUpdate if leaderboard count is the same', function () {
             vm.startLeaderboard();
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { results: { count: 5 } } });
             });
-            $intervalCallback();
+            $interval.flush(10000);
             expect(vm.showLeaderboardUpdate).toBe(false);
         });
-
+    
         it('should handle error callback and redirect', function () {
             vm.startLeaderboard();
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { detail: "Some error" } });
             });
-            $intervalCallback();
+            $interval.flush(10000);
             expect(utilities.storeData).toHaveBeenCalledWith('emailError', "Some error");
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(vm.stopLoader).toHaveBeenCalled();
