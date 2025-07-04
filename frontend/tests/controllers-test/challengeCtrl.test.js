@@ -3965,16 +3965,16 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.getTrophySize(undefined)).toBe('trophy-black');
         });
     });
-
     describe('Unit tests for startLoadingLogs function', function () {
         var $interval, $intervalCallback, intervalDelay;
 
         beforeEach(function () {
-            $interval = jasmine.createSpy('$interval').and.callFake(function (cb, delay) {
+            $intervalCallback = null;
+            $interval = function (cb, delay) {
                 $intervalCallback = cb;
                 intervalDelay = delay;
                 return 'intervalPromise';
-            });
+            };
             window.$interval = $interval;
             spyOn(utilities, 'sendRequest');
             vm.challengeId = 42;
@@ -3988,7 +3988,7 @@ describe('Unit tests for challenge controller', function () {
             $intervalCallback();
             expect(vm.workerLogs).toEqual(["Some error"]);
         });
-    
+
         it('should process logs with UTC time and convert to local', function () {
             vm.evaluation_module_error = null;
             utilities.sendRequest.and.callFake(function (params) {
@@ -4003,12 +4003,11 @@ describe('Unit tests for challenge controller', function () {
             });
             vm.startLoadingLogs();
             $intervalCallback();
-            // The first log should have the UTC time replaced with local time, the second should be unchanged
             expect(vm.workerLogs.length).toBe(2);
             expect(vm.workerLogs[0]).toContain("Log message 1");
             expect(vm.workerLogs[1]).toBe("No timestamp log");
         });
-    
+
         it('should push error to workerLogs on error callback', function () {
             vm.evaluation_module_error = null;
             utilities.sendRequest.and.callFake(function (params) {
@@ -4018,11 +4017,10 @@ describe('Unit tests for challenge controller', function () {
             $intervalCallback();
             expect(vm.workerLogs).toContain("Log error");
         });
-    
+
         it('should call $interval with 5000ms delay', function () {
             vm.evaluation_module_error = null;
             vm.startLoadingLogs();
-            expect($intervalSpy).toHaveBeenCalled();
             expect(intervalDelay).toBe(5000);
         });
     });
@@ -4121,11 +4119,12 @@ describe('Unit tests for challenge controller', function () {
         var $interval, $intervalCallback, intervalDelay;
 
         beforeEach(function () {
-            $interval = jasmine.createSpy('$interval').and.callFake(function (cb, delay) {
+            $intervalCallback = null;
+            $interval = function (cb, delay) {
                 $intervalCallback = cb;
                 intervalDelay = delay;
                 return 'pollerPromise';
-            });
+            };
             window.$interval = $interval;
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
@@ -4146,7 +4145,7 @@ describe('Unit tests for challenge controller', function () {
             $intervalCallback();
             expect(vm.showLeaderboardUpdate).toBe(true);
         });
-    
+
         it('should not set showLeaderboardUpdate if leaderboard count is the same', function () {
             vm.startLeaderboard();
             utilities.sendRequest.and.callFake(function (params) {
@@ -4155,7 +4154,7 @@ describe('Unit tests for challenge controller', function () {
             $intervalCallback();
             expect(vm.showLeaderboardUpdate).toBe(false);
         });
-    
+
         it('should handle error callback and redirect', function () {
             vm.startLeaderboard();
             utilities.sendRequest.and.callFake(function (params) {
@@ -4172,7 +4171,7 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            window.userKey = 'dummy-token'; // Set to what your test expects
+            window.userKey = 'encrypted key'; // or 'dummy-token', match your code/test
         });
 
         it('should notify success and reset classList2 on success', function () {
@@ -4180,7 +4179,7 @@ describe('Unit tests for challenge controller', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 expect(params.url).toBe('jobs/submissions/123/resume/');
                 expect(params.method).toBe('POST');
-                expect(params.token).toBe('dummy-token');
+                expect(params.token).toBe('encrypted key'); // or 'dummy-token'
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
 
@@ -4189,14 +4188,15 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
+
         it('should notify error and reset classList2 on error', function () {
             var submissionObject = { id: 456, classList2: [] };
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: "Some resume error" });
             });
-    
+
             vm.resumeSubmission(submissionObject);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
             expect(submissionObject.classList2).toEqual(['']);
         });
