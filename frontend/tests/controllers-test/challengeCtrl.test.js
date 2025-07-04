@@ -3475,40 +3475,35 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for changeSubmissionVisibility function (success path)', function () {
         beforeEach(function () {
-            // Set up a fresh controller instance and spies
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            spyOn($mdDialog, 'hide');
             vm.challengeId = 1;
             vm.phaseId = 2;
             vm.submissionVisibility = {};
             vm.isCurrentPhaseRestrictedToSelectOneSubmission = false;
-            spyOn($rootScope, 'notify');
-            spyOn($mdDialog, 'hide');
         });
     
         it('should notify public message when is_public is true and status is 200', function () {
-            // Arrange
             var submissionId = 10;
             var submissionVisibility = true;
-            var response = {
-                status: 200,
-                data: { is_public: true }
-            };
-            // Simulate the callback
-            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-            parameters.callback.onSuccess(response);
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200, data: { is_public: true } });
+            });
     
-            // Assert
+            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+    
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made public.");
         });
     
         it('should notify private message when is_public is false and status is 200', function () {
             var submissionId = 11;
             var submissionVisibility = false;
-            var response = {
-                status: 200,
-                data: { is_public: false }
-            };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200, data: { is_public: false } });
+            });
+    
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-            parameters.callback.onSuccess(response);
     
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made private.");
         });
@@ -3519,12 +3514,11 @@ describe('Unit tests for challenge controller', function () {
             vm.isCurrentPhaseRestrictedToSelectOneSubmission = true;
             vm.previousPublicSubmissionId = 99;
             vm.submissionVisibility[99] = true;
-            var response = {
-                status: 200,
-                data: { is_public: true }
-            };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200, data: { is_public: true } });
+            });
+    
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-            parameters.callback.onSuccess(response);
     
             expect($mdDialog.hide).toHaveBeenCalled();
             expect(vm.submissionVisibility[99]).toBe(false);
@@ -3538,19 +3532,18 @@ describe('Unit tests for challenge controller', function () {
             vm.isCurrentPhaseRestrictedToSelectOneSubmission = true;
             vm.previousPublicSubmissionId = 13;
             vm.submissionVisibility[13] = true;
-            var response = {
-                status: 200,
-                data: { is_public: true }
-            };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200, data: { is_public: true } });
+            });
+    
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-            parameters.callback.onSuccess(response);
     
             expect($mdDialog.hide).toHaveBeenCalled();
             expect(vm.previousPublicSubmissionId).toBe(null);
             expect(vm.submissionVisibility[submissionId]).toBe(true);
         });
     });
-
+    
     describe('Unit tests for team_approval_list function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
@@ -3588,12 +3581,10 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            spyOn(angular, 'element').and.callFake(function () {
-                // Mock anchor element with attr and click
-                return [{
-                    attr: function () { return { click: function () {} }; }
-                }];
-            });
+            // Properly mock angular.element for anchor
+            var anchorMock = [{ click: jasmine.createSpy('click') }];
+            anchorMock.attr = function () { return anchorMock; };
+            spyOn(angular, 'element').and.returnValue(anchorMock);
             vm.challengeId = 1;
             vm.phaseId = 2;
             vm.fileSelected = 'csv';
