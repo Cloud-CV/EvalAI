@@ -3659,4 +3659,211 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
         });
     });
+
+    describe('Unit tests for showVisibilityDialog function', function () {
+        beforeEach(function () {
+            spyOn(vm, 'changeSubmissionVisibility');
+            spyOn($mdDialog, 'show');
+            vm.previousPublicSubmissionId = null;
+        });
+    
+        it('should set submissionId and call changeSubmissionVisibility when making private', function () {
+            var submissionId = 1;
+            var submissionVisibility = false;
+            vm.showVisibilityDialog(submissionId, submissionVisibility);
+            expect(vm.submissionId).toBe(submissionId);
+            expect(vm.changeSubmissionVisibility).toHaveBeenCalledWith(submissionId, submissionVisibility);
+            expect($mdDialog.show).not.toHaveBeenCalled();
+        });
+    
+        it('should set submissionId and call changeSubmissionVisibility when making public and no previousPublicSubmissionId', function () {
+            var submissionId = 2;
+            var submissionVisibility = true;
+            vm.previousPublicSubmissionId = null;
+            vm.showVisibilityDialog(submissionId, submissionVisibility);
+            expect(vm.submissionId).toBe(submissionId);
+            expect(vm.changeSubmissionVisibility).toHaveBeenCalledWith(submissionId, submissionVisibility);
+            expect($mdDialog.show).not.toHaveBeenCalled();
+        });
+    
+        it('should set submissionId and show dialog when making public and previousPublicSubmissionId exists', function () {
+            var submissionId = 3;
+            var submissionVisibility = true;
+            vm.previousPublicSubmissionId = 99;
+            vm.showVisibilityDialog(submissionId, submissionVisibility);
+            expect(vm.submissionId).toBe(submissionId);
+            expect($mdDialog.show).toHaveBeenCalledWith({
+                scope: jasmine.any(Object),
+                preserveScope: true,
+                templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
+            });
+            expect(vm.changeSubmissionVisibility).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Unit tests for cancelSubmission function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($mdDialog, 'hide');
+            spyOn($rootScope, 'notify');
+            vm.challengeId = 42;
+        });
+    
+        it('should hide dialog and notify success on successful cancellation', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.url).toBe("jobs/challenges/42/submissions/123/update_submission_meta/");
+                expect(params.method).toBe('PATCH');
+                expect(params.data).toEqual({ status: "cancelled" });
+                params.callback.onSuccess({ status: 200 });
+            });
+    
+            vm.cancelSubmission(123);
+    
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Submission cancelled successfully!");
+        });
+    
+        it('should hide dialog and notify error on error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error" });
+            });
+    
+            vm.cancelSubmission(456);
+    
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+        });
+    });
+
+    describe('Unit tests for showCancelSubmissionDialog and hideDialog functions', function () {
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($mdDialog, 'show');
+            spyOn($mdDialog, 'hide');
+            vm.allowCancelRunningSubmissions = false;
+        });
+    
+        it('should notify error and not show dialog if not allowed and status is not "submitted"', function () {
+            vm.showCancelSubmissionDialog(123, "running");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Only unproccessed submissions can be cancelled");
+            expect($mdDialog.show).not.toHaveBeenCalled();
+        });
+    
+        it('should set submissionId and show dialog if allowed or status is "submitted"', function () {
+            vm.allowCancelRunningSubmissions = true;
+            vm.showCancelSubmissionDialog(456, "running");
+            expect(vm.submissionId).toBe(456);
+            expect($mdDialog.show).toHaveBeenCalledWith({
+                scope: jasmine.any(Object),
+                preserveScope: true,
+                templateUrl: 'dist/views/web/challenge/cancel-submission.html'
+            });
+    
+            // Also test the "submitted" status branch
+            vm.allowCancelRunningSubmissions = false;
+            vm.showCancelSubmissionDialog(789, "submitted");
+            expect(vm.submissionId).toBe(789);
+            expect($mdDialog.show).toHaveBeenCalled();
+        });
+    
+        it('should hide dialog when hideDialog is called', function () {
+            vm.hideDialog();
+            expect($mdDialog.hide).toHaveBeenCalled();
+        });
+    });
+
+    describe('Unit tests for verifySubmission function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            vm.challengeId = 42;
+        });
+    
+        it('should notify success when verification is successful', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.url).toBe("jobs/challenges/42/submissions/123/update_submission_meta/");
+                expect(params.method).toBe('PATCH');
+                expect(params.data).toEqual({ is_verified_by_host: true });
+                params.callback.onSuccess({ status: 200 });
+            });
+    
+            vm.verifySubmission(123, true);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Verification status updated successfully!");
+        });
+    
+        it('should notify error when verification fails', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error" });
+            });
+    
+            vm.verifySubmission(456, false);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+        });
+    });
+
+    describe('Unit tests for editChallengeDate function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'getData').and.returnValue({ 42: 99 });
+            spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'showLoader');
+            spyOn(utilities, 'sendRequest');
+            spyOn($mdDialog, 'hide');
+            spyOn($rootScope, 'notify');
+            vm.challengeId = 42;
+            vm.page = {};
+            vm.challengeStartDate = {
+                valueOf: function () { return 1000; },
+                format: function () { return "Jan 1, 2020 12:00:00 AM"; }
+            };
+            vm.challengeEndDate = {
+                valueOf: function () { return 2000; },
+                format: function () { return "Jan 2, 2020 12:00:00 AM"; }
+            };
+        });
+    
+        it('should update dates and notify success on valid form and valid dates', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200 });
+            });
+    
+            vm.editChallengeDate(true);
+    
+            expect(utilities.getData).toHaveBeenCalledWith("challengeCreator");
+            expect(utilities.showLoader).toHaveBeenCalled();
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "The challenge start and end date is successfully updated!");
+            expect(vm.page.start_date).toBe("Jan 1, 2020 12:00:00 AM");
+            expect(vm.page.end_date).toBe("Jan 2, 2020 12:00:00 AM");
+        });
+    
+        it('should notify error if start date is not less than end date', function () {
+            vm.challengeStartDate = { valueOf: function () { return 3000; } };
+            vm.challengeEndDate = { valueOf: function () { return 2000; } };
+    
+            vm.editChallengeDate(true);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "The challenge start date cannot be same or greater than end date.");
+            expect($mdDialog.hide).not.toHaveBeenCalled();
+        });
+    
+        it('should hide dialog if form is invalid', function () {
+            vm.editChallengeDate(false);
+            expect($mdDialog.hide).toHaveBeenCalled();
+        });
+    
+        it('should notify error and hide dialog on backend error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error" });
+            });
+    
+            vm.editChallengeDate(true);
+    
+            expect(utilities.hideLoader).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+        });
+    });
 });
