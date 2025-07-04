@@ -3966,15 +3966,25 @@ describe('Unit tests for challenge controller', function () {
         });
     });
     describe('Unit tests for startLoadingLogs function', function () {
-        var $interval;
+        var $interval, $httpBackend;
     
-        beforeEach(inject(function(_$interval_) {
+        beforeEach(inject(function(_$interval_, _$httpBackend_) {
             $interval = _$interval_;
+            $httpBackend = _$httpBackend_;
+            
+            // Mock the auth token request that gets triggered
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            
             spyOn(utilities, 'sendRequest');
             vm.challengeId = 42;
             vm.workerLogs = [];
             spyOn(vm, 'stopLeaderboard');
         }));
+    
+        afterEach(function() {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
     
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
@@ -4011,8 +4021,6 @@ describe('Unit tests for challenge controller', function () {
             $interval.flush(5000);
             expect(vm.workerLogs).toContain("Log error");
         });
-    
-        // You can remove the intervalDelay test, or just check that flush works as expected.
     });
 
     describe('Unit tests for clearMetaAttributeValues function', function () {
@@ -4106,10 +4114,15 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLeaderboard function', function () {
-        var $interval;
+        var $interval, $httpBackend;
     
-        beforeEach(inject(function(_$interval_) {
+        beforeEach(inject(function(_$interval_, _$httpBackend_) {
             $interval = _$interval_;
+            $httpBackend = _$httpBackend_;
+            
+            // Mock the auth token request that gets triggered
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
             spyOn(utilities, 'storeData');
@@ -4120,6 +4133,11 @@ describe('Unit tests for challenge controller', function () {
             vm.leaderboard = { count: 5 };
             vm.showLeaderboardUpdate = false;
         }));
+    
+        afterEach(function() {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
     
         it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
             vm.startLeaderboard();
@@ -4150,7 +4168,6 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
-
     describe('Unit tests for resumeSubmission function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
