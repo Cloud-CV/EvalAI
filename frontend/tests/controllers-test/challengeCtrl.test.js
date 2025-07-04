@@ -4092,5 +4092,57 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for sendApprovalRequest function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            vm.challengeId = 42;
+        });
+    
+        it('should notify success when request is successful and no error in result', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: {} });
+            });
+    
+            vm.sendApprovalRequest();
+    
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Request sent successfully.");
+        });
+    
+        it('should notify error when result.error is present', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { error: "Some error" } });
+            });
+    
+            vm.sendApprovalRequest();
+    
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+        });
+    
+        it('should notify error with error message on error callback with error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Backend error" } });
+            });
+    
+            vm.sendApprovalRequest();
+    
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: Backend error");
+        });
+    
+        it('should notify error with generic message on error callback without error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: {} });
+            });
+    
+            vm.sendApprovalRequest();
+    
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
+        });
+    });
+
     
 });
