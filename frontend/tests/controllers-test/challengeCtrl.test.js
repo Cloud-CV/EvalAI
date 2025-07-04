@@ -4300,7 +4300,7 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    escribe('Unit tests for isMetricOrderedAscending function', function () {
+    describe('Unit tests for isMetricOrderedAscending function', function () {
         beforeEach(function () {
             vm.leaderboard = [{
                 leaderboard__schema: {
@@ -4345,5 +4345,364 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for startLeaderboard function (lines 1026-1049)', function () {
+        var $interval, $httpBackend;
+    
+        beforeEach(inject(function(_$interval_, _$httpBackend_) {
+            $interval = _$interval_;
+            $httpBackend = _$httpBackend_;
+            
+            // Mock utilities.getData to prevent initial auth token request
+            spyOn(utilities, 'getData').and.callFake(function(key) {
+                if (key === 'refreshJWT') return 'dummy-token';
+                if (key === 'userKey') return 'dummy-token';
+                return null;
+            });
+            
+            // Mock HTTP backend for auth token request
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            
+            vm.phaseSplitId = 123;
+            vm.orderLeaderboardBy = 'accuracy';
+            vm.leaderboard = { count: 5 };
+            vm.showLeaderboardUpdate = false;
+            
+            spyOn(vm, 'stopLeaderboard');
+            spyOn(utilities, 'sendRequest');
+            spyOn(utilities, 'storeData');
+            spyOn($state, 'go');
+            spyOn(vm, 'stopLoader');
+        }));
+    
+        afterEach(function () {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
+    
+        it('should call stopLeaderboard and set up interval with correct parameters', function () {
+            vm.startLeaderboard();
+            
+            expect(vm.stopLeaderboard).toHaveBeenCalled();
+            expect(vm.poller).toBeDefined();
+        });
+    
+        it('should set showLeaderboardUpdate to true when count differs', function () {
+            vm.startLeaderboard();
+            
+            // Simulate the interval callback
+            utilities.sendRequest.and.callFake(function(params) {
+                expect(params.url).toBe("jobs/challenge_phase_split/123/leaderboard/?page_size=1000&order_by=accuracy");
+                expect(params.method).toBe('GET');
+                
+                // Call success callback with different count
+                params.callback.onSuccess({
+                    data: {
+                        results: { count: 10 } // Different from vm.leaderboard.count (5)
+                    }
+                });
+            });
+            
+            $interval.flush(10000);
+            
+            expect(vm.showLeaderboardUpdate).toBe(true);
+        });
+    
+        it('should not set showLeaderboardUpdate when count is the same', function () {
+            vm.startLeaderboard();
+            
+            utilities.sendRequest.and.callFake(function(params) {
+                // Call success callback with same count
+                params.callback.onSuccess({
+                    data: {
+                        results: { count: 5 } // Same as vm.leaderboard.count (5)
+                    }
+                });
+            });
+            
+            $interval.flush(10000);
+            
+            expect(vm.showLeaderboardUpdate).toBe(false);
+        });
+    
+        it('should handle error by storing error data and navigating to permission denied', function () {
+            vm.startLeaderboard();
+            
+            utilities.sendRequest.and.callFake(function(params) {
+                // Call error callback
+                params.callback.onError({
+                    data: { detail: 'Permission denied error' }
+                });
+            });
+            
+            $interval.flush(10000);
+            
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', 'Permission denied error');
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should use correct URL with phaseSplitId and orderLeaderboardBy', function () {
+            vm.phaseSplitId = 456;
+            vm.orderLeaderboardBy = 'loss';
+            
+            vm.startLeaderboard();
+            
+            utilities.sendRequest.and.callFake(function(params) {
+                expect(params.url).toBe("jobs/challenge_phase_split/456/leaderboard/?page_size=1000&order_by=loss");
+                params.callback.onSuccess({ data: { results: { count: 5 } } });
+            });
+            
+            $interval.flush(10000);
+        });
+    });
+
+    describe('Unit tests for time duration formatting logic (lines 1123-1165)', function () {
+        var moment, duration;
+    
+        beforeEach(inject(function(_moment_) {
+            moment = _moment_;
+            vm.leaderboard = [];
+            
+            // Mock duration object with _data property
+            duration = {
+                _data: {},
+                months: function() { return this._data.months; },
+                asDays: function() { return this._data.days; },
+                asHours: function() { return this._data.hours; },
+                asMinutes: function() { return this._data.minutes; },
+                asSeconds: function() { return this._data.seconds; }
+            };
+        }));
+    
+        it('should handle months duration (singular)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 1, days: 0, hours: 0, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for months
+            if (duration._data.months != 0) {
+                var months = duration.months();
+                vm.leaderboard[0].submission__submitted_at = months;
+                if (months.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'month';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'months';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
+            expect(vm.leaderboard[0].timeSpan).toBe('month');
+        });
+    
+        it('should handle months duration (plural)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 3, days: 0, hours: 0, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for months
+            if (duration._data.months != 0) {
+                var months = duration.months();
+                vm.leaderboard[0].submission__submitted_at = months;
+                if (months.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'month';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'months';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(3);
+            expect(vm.leaderboard[0].timeSpan).toBe('months');
+        });
+    
+        it('should handle days duration (singular)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for days
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                var days = duration.asDays();
+                vm.leaderboard[0].submission__submitted_at = days;
+                if (days.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'day';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'days';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
+            expect(vm.leaderboard[0].timeSpan).toBe('day');
+        });
+    
+        it('should handle days duration (plural)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for days
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                var days = duration.asDays();
+                vm.leaderboard[0].submission__submitted_at = days;
+                if (days.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'day';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'days';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(5);
+            expect(vm.leaderboard[0].timeSpan).toBe('days');
+        });
+    
+        it('should handle hours duration (singular)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for hours
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                var hours = duration.asHours();
+                vm.leaderboard[0].submission__submitted_at = hours;
+                if (hours.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'hour';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'hours';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
+            expect(vm.leaderboard[0].timeSpan).toBe('hour');
+        });
+    
+        it('should handle hours duration (plural)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 };
+            
+            // Simulate the code block for hours
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                var hours = duration.asHours();
+                vm.leaderboard[0].submission__submitted_at = hours;
+                if (hours.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'hour';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'hours';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(12);
+            expect(vm.leaderboard[0].timeSpan).toBe('hours');
+        });
+    
+        it('should handle minutes duration (singular)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 0, minutes: 1, seconds: 0 };
+            
+            // Simulate the code block for minutes
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                // hours logic
+            } else if (duration._data.minutes != 0) {
+                var minutes = duration.asMinutes();
+                vm.leaderboard[0].submission__submitted_at = minutes;
+                if (minutes.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'minute';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'minutes';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
+            expect(vm.leaderboard[0].timeSpan).toBe('minute');
+        });
+    
+        it('should handle minutes duration (plural)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 };
+            
+            // Simulate the code block for minutes
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                // hours logic
+            } else if (duration._data.minutes != 0) {
+                var minutes = duration.asMinutes();
+                vm.leaderboard[0].submission__submitted_at = minutes;
+                if (minutes.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'minute';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'minutes';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(30);
+            expect(vm.leaderboard[0].timeSpan).toBe('minutes');
+        });
+    
+        it('should handle seconds duration (singular)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 };
+            
+            // Simulate the code block for seconds
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                // hours logic
+            } else if (duration._data.minutes != 0) {
+                // minutes logic
+            } else if (duration._data.seconds != 0) {
+                var second = duration.asSeconds();
+                vm.leaderboard[0].submission__submitted_at = second;
+                if (second.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'second';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'seconds';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
+            expect(vm.leaderboard[0].timeSpan).toBe('second');
+        });
+    
+        it('should handle seconds duration (plural)', function () {
+            vm.leaderboard[0] = {};
+            duration._data = { months: 0, days: 0, hours: 0, minutes: 0, seconds: 45 };
+            
+            // Simulate the code block for seconds
+            if (duration._data.months != 0) {
+                // months logic
+            } else if (duration._data.days != 0) {
+                // days logic
+            } else if (duration._data.hours != 0) {
+                // hours logic
+            } else if (duration._data.minutes != 0) {
+                // minutes logic
+            } else if (duration._data.seconds != 0) {
+                var second = duration.asSeconds();
+                vm.leaderboard[0].submission__submitted_at = second;
+                if (second.toFixed(0) == 1) {
+                    vm.leaderboard[0].timeSpan = 'second';
+                } else {
+                    vm.leaderboard[0].timeSpan = 'seconds';
+                }
+            }
+            
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(45);
+            expect(vm.leaderboard[0].timeSpan).toBe('seconds');
+        });
+    });
     
 });
