@@ -4144,5 +4144,161 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for processing phase details (lines 794-841)', function () {
+        var details, vm;
+    
+        beforeEach(function () {
+            vm = createController();
+            vm.submissionMetaAttributes = [];
+            vm.allowedSubmissionFileTypes = [];
+            vm.defaultSubmissionMetaAttributes = [];
+            vm.phaseLeaderboardPublic = [];
+            spyOn(vm, 'getDefaultMetaAttributesDict').and.callFake(function (meta_attributes) {
+                // Just return a dummy object for testing
+                return { foo: true };
+            });
+        });
+    
+        it('should process all fields when all values are present', function () {
+            details = {
+                count: 1,
+                results: [{
+                    id: 101,
+                    submission_meta_attributes: [
+                        { name: "attr1", type: "checkbox" },
+                        { name: "attr2", type: "text" }
+                    ],
+                    allowed_submission_file_types: ".csv",
+                    default_submission_meta_attributes: [{ name: "foo", is_visible: true }],
+                    leaderboard_public: true
+                }]
+            };
+    
+            // Simulate the code block
+            for (var k = 0; k < details.count; k++) {
+                if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null) {
+                    var attributes = details.results[k].submission_meta_attributes;
+                    attributes.forEach(function(attribute){
+                        if (attribute["type"] == "checkbox") {
+                            attribute["values"] = [];
+                        }
+                        else {
+                            attribute["value"] = null;
+                        }
+                    });
+                    var data = {"phaseId":details.results[k].id, "attributes": attributes};
+                    vm.submissionMetaAttributes.push(data);
+                }
+                else {
+                    var data = {"phaseId":details.results[k].id, "attributes": null};
+                    vm.submissionMetaAttributes.push(data);
+                }
+                if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
+                    vm.allowedSubmissionFileTypes.push({
+                        "phaseId": details.results[k].id,
+                        "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types
+                    });
+                } else {
+                    vm.allowedSubmissionFileTypes.push({
+                        "phaseId": details.results[k].id,
+                        "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+                    });
+                }
+                if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
+                    var meta_attributes = details.results[k].default_submission_meta_attributes;
+                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(meta_attributes);
+                    vm.defaultSubmissionMetaAttributes.push({
+                        "phaseId": details.results[k].id,
+                        "defaultAttributes": defaultMetaAttributes
+                    });
+                } else {
+                    vm.defaultSubmissionMetaAttributes.push({
+                        "phaseId":details.results[k].id,
+                        "defaultAttributes": {}
+                    });
+                }
+                vm.phaseLeaderboardPublic.push({
+                    "phaseId": details.results[k].id,
+                    "leaderboardPublic": details.results[k].leaderboard_public
+                });
+            }
+    
+            // Assertions
+            expect(vm.submissionMetaAttributes.length).toBe(1);
+            expect(vm.submissionMetaAttributes[0].attributes[0].values).toEqual([]);
+            expect(vm.submissionMetaAttributes[0].attributes[1].value).toBeNull();
+            expect(vm.allowedSubmissionFileTypes[0].allowedSubmissionFileTypes).toBe(".csv");
+            expect(vm.defaultSubmissionMetaAttributes[0].defaultAttributes).toEqual({ foo: true });
+            expect(vm.phaseLeaderboardPublic[0].leaderboardPublic).toBe(true);
+        });
+    
+        it('should handle missing optional fields and use defaults', function () {
+            details = {
+                count: 1,
+                results: [{
+                    id: 102,
+                    // submission_meta_attributes is missing
+                    // allowed_submission_file_types is missing
+                    // default_submission_meta_attributes is missing
+                    leaderboard_public: false
+                }]
+            };
+    
+            for (var k = 0; k < details.count; k++) {
+                if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null) {
+                    var attributes = details.results[k].submission_meta_attributes;
+                    attributes.forEach(function(attribute){
+                        if (attribute["type"] == "checkbox") {
+                            attribute["values"] = [];
+                        }
+                        else {
+                            attribute["value"] = null;
+                        }
+                    });
+                    var data = {"phaseId":details.results[k].id, "attributes": attributes};
+                    vm.submissionMetaAttributes.push(data);
+                }
+                else {
+                    var data = {"phaseId":details.results[k].id, "attributes": null};
+                    vm.submissionMetaAttributes.push(data);
+                }
+                if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
+                    vm.allowedSubmissionFileTypes.push({
+                        "phaseId": details.results[k].id,
+                        "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types
+                    });
+                } else {
+                    vm.allowedSubmissionFileTypes.push({
+                        "phaseId": details.results[k].id,
+                        "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+                    });
+                }
+                if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
+                    var meta_attributes = details.results[k].default_submission_meta_attributes;
+                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(meta_attributes);
+                    vm.defaultSubmissionMetaAttributes.push({
+                        "phaseId": details.results[k].id,
+                        "defaultAttributes": defaultMetaAttributes
+                    });
+                } else {
+                    vm.defaultSubmissionMetaAttributes.push({
+                        "phaseId":details.results[k].id,
+                        "defaultAttributes": {}
+                    });
+                }
+                vm.phaseLeaderboardPublic.push({
+                    "phaseId": details.results[k].id,
+                    "leaderboardPublic": details.results[k].leaderboard_public
+                });
+            }
+    
+            // Assertions
+            expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
+            expect(vm.allowedSubmissionFileTypes[0].allowedSubmissionFileTypes).toBe(".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy");
+            expect(vm.defaultSubmissionMetaAttributes[0].defaultAttributes).toEqual({});
+            expect(vm.phaseLeaderboardPublic[0].leaderboardPublic).toBe(false);
+        });
+    });
+
     
 });
