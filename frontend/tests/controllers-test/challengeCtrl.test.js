@@ -3968,35 +3968,23 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for startLoadingLogs function', function () {
         var $interval, $intervalCallback, intervalDelay;
-    
-        beforeEach(inject(function(_$interval_) {
-            $interval = _$interval_;
-            spyOn(utilities, 'sendRequest');
-            vm.challengeId = 42;
-            vm.workerLogs = [];
-            // Mock $interval to capture the callback and delay
-            spyOn(vm, 'stopLeaderboard'); // if needed
-            spyOn($interval, 'cancel'); // if your code uses $interval.cancel
-            spyOn($interval, 'flush'); // if you want to flush intervals in tests
-    
-            // Instead of spyOn(window, '$interval'), do:
-            spyOn($interval, 'callFake').and.callFake(function (cb, delay) {
+
+        beforeEach(function () {
+            $interval = jasmine.createSpy('$interval').and.callFake(function (cb, delay) {
                 $intervalCallback = cb;
                 intervalDelay = delay;
                 return 'intervalPromise';
             });
-            // Or, if you want to fully control the interval:
-            vm._interval = function(cb, delay) {
-                $intervalCallback = cb;
-                intervalDelay = delay;
-                return 'intervalPromise';
-            };
-        }));
-    
+            window.$interval = $interval;
+            spyOn(utilities, 'sendRequest');
+            vm.challengeId = 42;
+            vm.workerLogs = [];
+            spyOn(vm, 'stopLeaderboard');
+        });
+
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
             vm.startLoadingLogs();
-            // Simulate the interval callback
             $intervalCallback();
             expect(vm.workerLogs).toEqual(["Some error"]);
         });
@@ -4131,9 +4119,14 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for startLeaderboard function', function () {
         var $interval, $intervalCallback, intervalDelay;
-    
-        beforeEach(inject(function(_$interval_) {
-            $interval = _$interval_;
+
+        beforeEach(function () {
+            $interval = jasmine.createSpy('$interval').and.callFake(function (cb, delay) {
+                $intervalCallback = cb;
+                intervalDelay = delay;
+                return 'pollerPromise';
+            });
+            window.$interval = $interval;
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
             spyOn(utilities, 'storeData');
@@ -4143,20 +4136,10 @@ describe('Unit tests for challenge controller', function () {
             vm.orderLeaderboardBy = 'rank';
             vm.leaderboard = { count: 5 };
             vm.showLeaderboardUpdate = false;
-    
-            // Mock $interval to capture the callback and delay
-            spyOn($interval, 'cancel');
-            spyOn($interval, 'flush');
-            spyOn($interval, 'callFake').and.callFake(function (cb, delay) {
-                $intervalCallback = cb;
-                intervalDelay = delay;
-                return 'pollerPromise';
-            });
-        }));
-    
+        });
+
         it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
             vm.startLeaderboard();
-            // Simulate the $interval callback and a count change
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { results: { count: 10 } } });
             });
@@ -4189,10 +4172,9 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            // Set the userKey to match what your app expects
-            window.userKey = 'encrypted key'; // or 'dummy-token' if that's what your app expects
-        });    
-    
+            window.userKey = 'dummy-token'; // Set to what your test expects
+        });
+
         it('should notify success and reset classList2 on success', function () {
             var submissionObject = { id: 123, classList2: [] };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4201,13 +4183,12 @@ describe('Unit tests for challenge controller', function () {
                 expect(params.token).toBe('dummy-token');
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
-    
+
             vm.resumeSubmission(submissionObject);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
-    
         it('should notify error and reset classList2 on error', function () {
             var submissionObject = { id: 456, classList2: [] };
             utilities.sendRequest.and.callFake(function (params) {
