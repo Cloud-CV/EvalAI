@@ -4300,5 +4300,50 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    escribe('Unit tests for isMetricOrderedAscending function', function () {
+        beforeEach(function () {
+            vm.leaderboard = [{
+                leaderboard__schema: {
+                    metadata: {
+                        accuracy: { sort_ascending: false },
+                        loss: { sort_ascending: true },
+                        f1_score: { sort_ascending: false }
+                    }
+                }
+            }];
+        });
+    
+        it('should return false when metadata is null', function () {
+            vm.leaderboard[0].leaderboard__schema.metadata = null;
+            expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
+        });
+    
+        it('should return false when metadata is undefined', function () {
+            vm.leaderboard[0].leaderboard__schema.metadata = undefined;
+            expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
+        });
+    
+        it('should return false when metric is not found in metadata', function () {
+            expect(vm.isMetricOrderedAscending('nonexistent_metric')).toBe(false);
+        });
+    
+        it('should return true when metric has sort_ascending set to true', function () {
+            expect(vm.isMetricOrderedAscending('loss')).toBe(true);
+        });
+    
+        it('should return false when metric has sort_ascending set to false', function () {
+            expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
+        });
+    
+        it('should return false when metric has sort_ascending set to false (f1_score)', function () {
+            expect(vm.isMetricOrderedAscending('f1_score')).toBe(false);
+        });
+    
+        it('should handle empty leaderboard gracefully', function () {
+            vm.leaderboard = [];
+            expect(function() { vm.isMetricOrderedAscending('accuracy'); }).toThrow();
+        });
+    });
+
     
 });
