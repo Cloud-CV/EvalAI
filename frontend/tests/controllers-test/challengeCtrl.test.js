@@ -4352,15 +4352,15 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             $httpBackend = _$httpBackend_;
             
+            // Set up HTTP mock BEFORE creating controller
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            
             // Mock utilities.getData to prevent initial auth token request
             spyOn(utilities, 'getData').and.callFake(function(key) {
                 if (key === 'refreshJWT') return 'dummy-token';
                 if (key === 'userKey') return 'dummy-token';
                 return null;
             });
-            
-            // Mock HTTP backend for auth token request
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
             
             vm.phaseSplitId = 123;
             vm.orderLeaderboardBy = 'accuracy';
