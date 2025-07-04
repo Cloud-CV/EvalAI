@@ -3472,4 +3472,200 @@ describe('Unit tests for challenge controller', function () {
             expect(localVm.stopLoader).toHaveBeenCalled();
         });
     });
+
+    describe('Unit tests for changeSubmissionVisibility function (success path)', function () {
+        beforeEach(function () {
+            // Set up a fresh controller instance and spies
+            vm.challengeId = 1;
+            vm.phaseId = 2;
+            vm.submissionVisibility = {};
+            vm.isCurrentPhaseRestrictedToSelectOneSubmission = false;
+            spyOn($rootScope, 'notify');
+            spyOn($mdDialog, 'hide');
+        });
+    
+        it('should notify public message when is_public is true and status is 200', function () {
+            // Arrange
+            var submissionId = 10;
+            var submissionVisibility = true;
+            var response = {
+                status: 200,
+                data: { is_public: true }
+            };
+            // Simulate the callback
+            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+            parameters.callback.onSuccess(response);
+    
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made public.");
+        });
+    
+        it('should notify private message when is_public is false and status is 200', function () {
+            var submissionId = 11;
+            var submissionVisibility = false;
+            var response = {
+                status: 200,
+                data: { is_public: false }
+            };
+            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+            parameters.callback.onSuccess(response);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made private.");
+        });
+    
+        it('should handle restricted phase logic and update previousPublicSubmissionId', function () {
+            var submissionId = 12;
+            var submissionVisibility = true;
+            vm.isCurrentPhaseRestrictedToSelectOneSubmission = true;
+            vm.previousPublicSubmissionId = 99;
+            vm.submissionVisibility[99] = true;
+            var response = {
+                status: 200,
+                data: { is_public: true }
+            };
+            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+            parameters.callback.onSuccess(response);
+    
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(vm.submissionVisibility[99]).toBe(false);
+            expect(vm.previousPublicSubmissionId).toBe(submissionId);
+            expect(vm.submissionVisibility[submissionId]).toBe(true);
+        });
+    
+        it('should handle restricted phase logic and reset previousPublicSubmissionId if same as submission_id', function () {
+            var submissionId = 13;
+            var submissionVisibility = true;
+            vm.isCurrentPhaseRestrictedToSelectOneSubmission = true;
+            vm.previousPublicSubmissionId = 13;
+            vm.submissionVisibility[13] = true;
+            var response = {
+                status: 200,
+                data: { is_public: true }
+            };
+            vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+            parameters.callback.onSuccess(response);
+    
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(vm.previousPublicSubmissionId).toBe(null);
+            expect(vm.submissionVisibility[submissionId]).toBe(true);
+        });
+    });
+
+    describe('Unit tests for team_approval_list function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn(vm, 'activateCollapsible');
+            spyOn($rootScope, 'notify');
+        });
+    
+        it('should set approved_teams and call activateCollapsible on success', function () {
+            // Arrange
+            var fakeTeams = [{ id: 1, name: 'Team A' }];
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: fakeTeams });
+            });
+    
+            // Act
+            vm.team_approval_list();
+    
+            // Assert
+            expect(vm.approved_teams).toEqual(fakeTeams);
+            expect(vm.activateCollapsible).toHaveBeenCalled();
+        });
+    
+        it('should notify error on error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError();
+            });
+    
+            vm.team_approval_list();
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error occured.Please try again.");
+        });
+    });
+
+    describe('Unit tests for downloadChallengeSubmissions function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            spyOn(angular, 'element').and.callFake(function () {
+                // Mock anchor element with attr and click
+                return [{
+                    attr: function () { return { click: function () {} }; }
+                }];
+            });
+            vm.challengeId = 1;
+            vm.phaseId = 2;
+            vm.fileSelected = 'csv';
+            vm.fields = [
+                { id: 'participant_team' },
+                { id: 'status' }
+            ];
+        });
+    
+        it('should send GET request and trigger download when fieldsToGet is undefined', function () {
+            vm.fieldsToGet = undefined;
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.method).toBe("GET");
+                params.callback.onSuccess({ data: "csvdata" });
+            });
+    
+            vm.downloadChallengeSubmissions();
+    
+            expect(angular.element).toHaveBeenCalled();
+        });
+    
+        it('should send GET request and trigger download when fieldsToGet is empty', function () {
+            vm.fieldsToGet = [];
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.method).toBe("GET");
+                params.callback.onSuccess({ data: "csvdata" });
+            });
+    
+            vm.downloadChallengeSubmissions();
+    
+            expect(angular.element).toHaveBeenCalled();
+        });
+    
+        it('should send POST request and trigger download when fieldsToGet is not empty', function () {
+            vm.fieldsToGet = ['participant_team', 'status'];
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.method).toBe("POST");
+                expect(params.data).toEqual(['participant_team', 'status']);
+                params.callback.onSuccess({ data: "csvdata" });
+            });
+    
+            vm.downloadChallengeSubmissions();
+    
+            expect(angular.element).toHaveBeenCalled();
+        });
+    
+        it('should notify error if phaseId is not set', function () {
+            vm.phaseId = null;
+            vm.downloadChallengeSubmissions();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Please select a challenge phase!");
+        });
+    
+        it('should notify error on GET error', function () {
+            vm.fieldsToGet = undefined;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Download failed" } });
+            });
+    
+            vm.downloadChallengeSubmissions();
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
+        });
+    
+        it('should notify error on POST error', function () {
+            vm.fieldsToGet = ['participant_team'];
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Download failed" } });
+            });
+    
+            vm.downloadChallengeSubmissions();
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
+        });
+    });
 });
