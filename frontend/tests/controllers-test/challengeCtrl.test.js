@@ -3866,4 +3866,352 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
     });
+
+    describe('Unit tests for deregister function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            spyOn($mdDialog, 'hide');
+            spyOn($state, 'go');
+            spyOn($state, 'reload');
+            vm.challengeId = 42;
+        });
+    
+        it('should notify success, hide dialog, go to overview, and reload on successful deregistration', function (done) {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200 });
+            });
+    
+            // Use Jasmine clock to control setTimeout
+            jasmine.clock().install();
+            vm.deregister(true);
+    
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "You have successfully deregistered from the challenge.");
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($state.go).toHaveBeenCalledWith('web.challenge-main.challenge-page.overview');
+    
+            // Fast-forward the setTimeout
+            jasmine.clock().tick(101);
+            expect($state.reload).toHaveBeenCalled();
+            jasmine.clock().uninstall();
+            done();
+        });
+    
+        it('should notify error and hide dialog on error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Deregister error" } });
+            });
+    
+            vm.deregister(true);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Deregister error");
+            expect($mdDialog.hide).toHaveBeenCalled();
+        });
+    
+        it('should hide dialog if form is invalid', function () {
+            vm.deregister(false);
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Unit tests for openLeaderboardDropdown function', function () {
+        beforeEach(function () {
+            vm.leaderboard = [{
+                leaderboard__schema: {
+                    labels: [' accuracy ', 'loss']
+                }
+            }];
+            vm.leaderboardDropdown = false;
+        });
+    
+        it('should set chosenMetrics if undefined and toggle leaderboardDropdown', function () {
+            vm.chosenMetrics = undefined;
+            vm.openLeaderboardDropdown();
+            expect(vm.chosenMetrics).toEqual(['accuracy', 'loss']);
+            expect(vm.leaderboardDropdown).toBe(true);
+        });
+    
+        it('should not reset chosenMetrics if already set and should toggle leaderboardDropdown', function () {
+            vm.chosenMetrics = ['foo', 'bar'];
+            vm.leaderboardDropdown = false;
+            vm.openLeaderboardDropdown();
+            expect(vm.chosenMetrics).toEqual(['foo', 'bar']);
+            expect(vm.leaderboardDropdown).toBe(true);
+            // Toggle again to check toggling
+            vm.openLeaderboardDropdown();
+            expect(vm.leaderboardDropdown).toBe(false);
+        });
+    });
+
+    describe('Unit tests for getTrophySize function', function () {
+        it('should return trophy-gold for rank 1', function () {
+            expect(vm.getTrophySize(1)).toBe('trophy-gold');
+        });
+    
+        it('should return trophy-silver for rank 2', function () {
+            expect(vm.getTrophySize(2)).toBe('trophy-silver');
+        });
+    
+        it('should return trophy-bronze for rank 3', function () {
+            expect(vm.getTrophySize(3)).toBe('trophy-bronze');
+        });
+    
+        it('should return trophy-black for other ranks', function () {
+            expect(vm.getTrophySize(4)).toBe('trophy-black');
+            expect(vm.getTrophySize(0)).toBe('trophy-black');
+            expect(vm.getTrophySize(100)).toBe('trophy-black');
+            expect(vm.getTrophySize(undefined)).toBe('trophy-black');
+        });
+    });
+
+    describe('Unit tests for startLoadingLogs function', function () {
+        var $intervalSpy, $intervalCallback, intervalDelay;
+    
+        beforeEach(function () {
+            // Spy on $interval to capture the callback and delay
+            $intervalSpy = spyOn(window, '$interval').and.callFake(function (cb, delay) {
+                $intervalCallback = cb;
+                intervalDelay = delay;
+                return 'intervalPromise';
+            });
+            spyOn(utilities, 'sendRequest');
+            vm.challengeId = 42;
+            vm.workerLogs = [];
+        });
+    
+        it('should push evaluation_module_error to workerLogs if present', function () {
+            vm.evaluation_module_error = "Some error";
+            vm.startLoadingLogs();
+            // Simulate the interval callback
+            $intervalCallback();
+            expect(vm.workerLogs).toEqual(["Some error"]);
+        });
+    
+        it('should process logs with UTC time and convert to local', function () {
+            vm.evaluation_module_error = null;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: {
+                        logs: [
+                            "[2023-01-01 12:00:00] Log message 1",
+                            "No timestamp log"
+                        ]
+                    }
+                });
+            });
+            vm.startLoadingLogs();
+            $intervalCallback();
+            // The first log should have the UTC time replaced with local time, the second should be unchanged
+            expect(vm.workerLogs.length).toBe(2);
+            expect(vm.workerLogs[0]).toContain("Log message 1");
+            expect(vm.workerLogs[1]).toBe("No timestamp log");
+        });
+    
+        it('should push error to workerLogs on error callback', function () {
+            vm.evaluation_module_error = null;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Log error" } });
+            });
+            vm.startLoadingLogs();
+            $intervalCallback();
+            expect(vm.workerLogs).toContain("Log error");
+        });
+    
+        it('should call $interval with 5000ms delay', function () {
+            vm.evaluation_module_error = null;
+            vm.startLoadingLogs();
+            expect($intervalSpy).toHaveBeenCalled();
+            expect(intervalDelay).toBe(5000);
+        });
+    });
+
+    describe('Unit tests for clearMetaAttributeValues function', function () {
+        it('should clear values for checkbox and set value to null for other types', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { type: 'checkbox', values: [1, 2, 3] },
+                { type: 'text', value: 'foo' },
+                { type: 'radio', value: 'bar' }
+            ];
+            vm.clearMetaAttributeValues();
+            expect(vm.metaAttributesforCurrentSubmission[0].values).toEqual([]);
+            expect(vm.metaAttributesforCurrentSubmission[1].value).toBeNull();
+            expect(vm.metaAttributesforCurrentSubmission[2].value).toBeNull();
+        });
+    
+        it('should do nothing if metaAttributesforCurrentSubmission is null', function () {
+            vm.metaAttributesforCurrentSubmission = null;
+            // Should not throw
+            expect(function () { vm.clearMetaAttributeValues(); }).not.toThrow();
+        });
+    });
+
+    describe('Unit tests for isCurrentSubmissionMetaAttributeValid function', function () {
+        it('should return true if all required attributes are filled', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { required: true, type: 'text', value: 'foo' },
+                { required: true, type: 'checkbox', values: [1] },
+                { required: false, type: 'radio', value: null }
+            ];
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
+        });
+    
+        it('should return false if a required text attribute is null', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { required: true, type: 'text', value: null }
+            ];
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
+        });
+    
+        it('should return false if a required text attribute is undefined', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { required: true, type: 'text', value: undefined }
+            ];
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
+        });
+    
+        it('should return false if a required checkbox attribute is empty', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { required: true, type: 'checkbox', values: [] }
+            ];
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
+        });
+    
+        it('should return true if metaAttributesforCurrentSubmission is null', function () {
+            vm.metaAttributesforCurrentSubmission = null;
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
+        });
+    
+        it('should return true if no required attributes', function () {
+            vm.metaAttributesforCurrentSubmission = [
+                { required: false, type: 'text', value: null }
+            ];
+            expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
+        });
+    });
+
+    describe('Unit tests for toggleSelection function', function () {
+        it('should add value if not present', function () {
+            var attribute = { values: [1, 2] };
+            vm.toggleSelection(attribute, 3);
+            expect(attribute.values).toEqual([1, 2, 3]);
+        });
+    
+        it('should remove value if present', function () {
+            var attribute = { values: [1, 2, 3] };
+            vm.toggleSelection(attribute, 2);
+            expect(attribute.values).toEqual([1, 3]);
+        });
+    
+        it('should handle empty values array', function () {
+            var attribute = { values: [] };
+            vm.toggleSelection(attribute, 5);
+            expect(attribute.values).toEqual([5]);
+        });
+    
+        it('should handle removing the only value', function () {
+            var attribute = { values: [7] };
+            vm.toggleSelection(attribute, 7);
+            expect(attribute.values).toEqual([]);
+        });
+    });
+
+    describe('Unit tests for startLeaderboard function', function () {
+        var $intervalSpy, $intervalCallback, intervalDelay;
+    
+        beforeEach(function () {
+            // Spy on $interval to capture the callback and delay
+            $intervalSpy = spyOn(window, '$interval').and.callFake(function (cb, delay) {
+                $intervalCallback = cb;
+                intervalDelay = delay;
+                return 'pollerPromise';
+            });
+            spyOn(vm, 'stopLeaderboard');
+            spyOn(utilities, 'sendRequest');
+            spyOn(utilities, 'storeData');
+            spyOn($state, 'go');
+            spyOn(vm, 'stopLoader');
+            vm.phaseSplitId = 123;
+            vm.orderLeaderboardBy = 'rank';
+            vm.leaderboard = { count: 5 };
+            vm.showLeaderboardUpdate = false;
+        });
+    
+        it('should set poller and call stopLeaderboard', function () {
+            vm.startLeaderboard();
+            expect(vm.stopLeaderboard).toHaveBeenCalled();
+            expect(vm.poller).toBe('pollerPromise');
+            expect($intervalSpy).toHaveBeenCalled();
+            expect(intervalDelay).toBe(10000);
+        });
+    
+        it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
+            vm.startLeaderboard();
+            // Simulate the $interval callback and a count change
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { results: { count: 10 } } });
+            });
+            $intervalCallback();
+            expect(vm.showLeaderboardUpdate).toBe(true);
+        });
+    
+        it('should not set showLeaderboardUpdate if leaderboard count is the same', function () {
+            vm.startLeaderboard();
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { results: { count: 5 } } });
+            });
+            $intervalCallback();
+            expect(vm.showLeaderboardUpdate).toBe(false);
+        });
+    
+        it('should handle error callback and redirect', function () {
+            vm.startLeaderboard();
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { detail: "Some error" } });
+            });
+            $intervalCallback();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', "Some error");
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
+
+    describe('Unit tests for resumeSubmission function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            // You may need to set userKey if it's not global in your test setup
+            window.userKey = 'dummy-token';
+        });
+    
+        it('should notify success and reset classList2 on success', function () {
+            var submissionObject = { id: 123, classList2: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.url).toBe('jobs/submissions/123/resume/');
+                expect(params.method).toBe('POST');
+                expect(params.token).toBe('dummy-token');
+                params.callback.onSuccess({ data: { success: 'Resume started!' } });
+            });
+    
+            vm.resumeSubmission(submissionObject);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
+            expect(submissionObject.classList2).toEqual(['']);
+        });
+    
+        it('should notify error and reset classList2 on error', function () {
+            var submissionObject = { id: 456, classList2: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some resume error" });
+            });
+    
+            vm.resumeSubmission(submissionObject);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
+            expect(submissionObject.classList2).toEqual(['']);
+        });
+    });
+
+    
 });
