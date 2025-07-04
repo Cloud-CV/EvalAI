@@ -3972,14 +3972,19 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             $httpBackend = _$httpBackend_;
             
-            // Mock ALL possible auth token requests with wildcard matching
-            $httpBackend.whenGET(/.*\/api\/accounts\/user\/get_auth_token.*/).respond(200, { token: 'dummy-token' });
-            $httpBackend.whenGET(/.*get_auth_token.*/).respond(200, { token: 'dummy-token' });
-            $httpBackend.whenGET(/.*auth.*/).respond(200, { token: 'dummy-token' });
+            // Mock utilities.getData to prevent the initial auth token request
+            spyOn(utilities, 'getData').and.callFake(function(key) {
+                if (key === 'refreshJWT') {
+                    return 'dummy-refresh-token';
+                }
+                if (key === 'userKey') {
+                    return 'dummy-user-key';
+                }
+                return null;
+            });
             
-            // Also mock any other potential requests that might be triggered
-            $httpBackend.whenGET(/.*/).respond(200, {});
-            $httpBackend.whenPOST(/.*/).respond(200, {});
+            // Mock the auth token request that gets triggered
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
             
             spyOn(utilities, 'sendRequest');
             vm.challengeId = 42;
@@ -4125,14 +4130,19 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             $httpBackend = _$httpBackend_;
             
-            // Mock ALL possible auth token requests with wildcard matching
-            $httpBackend.whenGET(/.*\/api\/accounts\/user\/get_auth_token.*/).respond(200, { token: 'dummy-token' });
-            $httpBackend.whenGET(/.*get_auth_token.*/).respond(200, { token: 'dummy-token' });
-            $httpBackend.whenGET(/.*auth.*/).respond(200, { token: 'dummy-token' });
+            // Mock utilities.getData to prevent the initial auth token request
+            spyOn(utilities, 'getData').and.callFake(function(key) {
+                if (key === 'refreshJWT') {
+                    return 'dummy-refresh-token';
+                }
+                if (key === 'userKey') {
+                    return 'dummy-user-key';
+                }
+                return null;
+            });
             
-            // Also mock any other potential requests that might be triggered
-            $httpBackend.whenGET(/.*/).respond(200, {});
-            $httpBackend.whenPOST(/.*/).respond(200, {});
+            // Mock the auth token request that gets triggered
+            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
             
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
