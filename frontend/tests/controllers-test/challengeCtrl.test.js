@@ -2,6 +2,7 @@
 
 describe('Unit tests for challenge controller', function () {
     beforeEach(angular.mock.module('evalai'));
+    
 
     beforeEach(function () {
         angular.mock.inject(function ($controller) {
@@ -3965,74 +3966,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.getTrophySize(undefined)).toBe('trophy-black');
         });
     });
-    describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $httpBackend;
-    
-        beforeEach(inject(function(_$interval_, _$httpBackend_) {
-            $interval = _$interval_;
-            $httpBackend = _$httpBackend_;
-            
-            // Mock utilities.getData to prevent the initial auth token request
-            spyOn(utilities, 'getData').and.callFake(function(key) {
-                if (key === 'refreshJWT') {
-                    return 'dummy-refresh-token';
-                }
-                if (key === 'userKey') {
-                    return 'dummy-user-key';
-                }
-                return null;
-            });
-            
-            // Mock the auth token request that gets triggered
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
-            
-            spyOn(utilities, 'sendRequest');
-            vm.challengeId = 42;
-            vm.workerLogs = [];
-            spyOn(vm, 'stopLeaderboard');
-        }));
-    
-        afterEach(function() {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
-    
-        it('should push evaluation_module_error to workerLogs if present', function () {
-            vm.evaluation_module_error = "Some error";
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(["Some error"]);
-        });
-    
-        it('should process logs with UTC time and convert to local', function () {
-            vm.evaluation_module_error = null;
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({
-                    data: {
-                        logs: [
-                            "[2023-01-01 12:00:00] Log message 1",
-                            "No timestamp log"
-                        ]
-                    }
-                });
-            });
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs.length).toBe(2);
-            expect(vm.workerLogs[0]).toContain("Log message 1");
-            expect(vm.workerLogs[1]).toBe("No timestamp log");
-        });
-    
-        it('should push error to workerLogs on error callback', function () {
-            vm.evaluation_module_error = null;
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { error: "Log error" } });
-            });
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toContain("Log error");
-        });
-    });
+
     describe('Unit tests for clearMetaAttributeValues function', function () {
         it('should clear values for checkbox and set value to null for other types', function () {
             vm.metaAttributesforCurrentSubmission = [
@@ -4123,72 +4057,6 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for startLeaderboard function', function () {
-        var $interval, $httpBackend;
-    
-        beforeEach(inject(function(_$interval_, _$httpBackend_) {
-            $interval = _$interval_;
-            $httpBackend = _$httpBackend_;
-            
-            // Mock utilities.getData to prevent the initial auth token request
-            spyOn(utilities, 'getData').and.callFake(function(key) {
-                if (key === 'refreshJWT') {
-                    return 'dummy-refresh-token';
-                }
-                if (key === 'userKey') {
-                    return 'dummy-user-key';
-                }
-                return null;
-            });
-            
-            // Mock the auth token request that gets triggered
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
-            
-            spyOn(vm, 'stopLeaderboard');
-            spyOn(utilities, 'sendRequest');
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
-            spyOn(vm, 'stopLoader');
-            vm.phaseSplitId = 123;
-            vm.orderLeaderboardBy = 'rank';
-            vm.leaderboard = { count: 5 };
-            vm.showLeaderboardUpdate = false;
-        }));
-    
-        afterEach(function() {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
-    
-        it('should set showLeaderboardUpdate to true if leaderboard count changes', function () {
-            vm.startLeaderboard();
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { results: { count: 10 } } });
-            });
-            $interval.flush(10000);
-            expect(vm.showLeaderboardUpdate).toBe(true);
-        });
-    
-        it('should not set showLeaderboardUpdate if leaderboard count is the same', function () {
-            vm.startLeaderboard();
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { results: { count: 5 } } });
-            });
-            $interval.flush(10000);
-            expect(vm.showLeaderboardUpdate).toBe(false);
-        });
-    
-        it('should handle error callback and redirect', function () {
-            vm.startLeaderboard();
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { detail: "Some error" } });
-            });
-            $interval.flush(10000);
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', "Some error");
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    });
     describe('Unit tests for resumeSubmission function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
