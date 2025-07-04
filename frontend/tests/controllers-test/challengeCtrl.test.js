@@ -3972,8 +3972,14 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             $httpBackend = _$httpBackend_;
             
-            // Mock the auth token request that gets triggered
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            // Mock ALL possible auth token requests with wildcard matching
+            $httpBackend.whenGET(/.*\/api\/accounts\/user\/get_auth_token.*/).respond(200, { token: 'dummy-token' });
+            $httpBackend.whenGET(/.*get_auth_token.*/).respond(200, { token: 'dummy-token' });
+            $httpBackend.whenGET(/.*auth.*/).respond(200, { token: 'dummy-token' });
+            
+            // Also mock any other potential requests that might be triggered
+            $httpBackend.whenGET(/.*/).respond(200, {});
+            $httpBackend.whenPOST(/.*/).respond(200, {});
             
             spyOn(utilities, 'sendRequest');
             vm.challengeId = 42;
@@ -4022,7 +4028,6 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.workerLogs).toContain("Log error");
         });
     });
-
     describe('Unit tests for clearMetaAttributeValues function', function () {
         it('should clear values for checkbox and set value to null for other types', function () {
             vm.metaAttributesforCurrentSubmission = [
@@ -4120,8 +4125,14 @@ describe('Unit tests for challenge controller', function () {
             $interval = _$interval_;
             $httpBackend = _$httpBackend_;
             
-            // Mock the auth token request that gets triggered
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
+            // Mock ALL possible auth token requests with wildcard matching
+            $httpBackend.whenGET(/.*\/api\/accounts\/user\/get_auth_token.*/).respond(200, { token: 'dummy-token' });
+            $httpBackend.whenGET(/.*get_auth_token.*/).respond(200, { token: 'dummy-token' });
+            $httpBackend.whenGET(/.*auth.*/).respond(200, { token: 'dummy-token' });
+            
+            // Also mock any other potential requests that might be triggered
+            $httpBackend.whenGET(/.*/).respond(200, {});
+            $httpBackend.whenPOST(/.*/).respond(200, {});
             
             spyOn(vm, 'stopLeaderboard');
             spyOn(utilities, 'sendRequest');
