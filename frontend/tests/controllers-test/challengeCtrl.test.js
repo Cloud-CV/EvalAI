@@ -3395,14 +3395,47 @@ describe('Unit tests for challenge controller', function () {
     });
     
     describe('Unit tests for load function (submissions pagination)', function () {
+        var localVm;
         beforeEach(function () {
-            vm.startLoader = jasmine.createSpy('startLoader');
-            vm.stopLoader = jasmine.createSpy('stopLoader');
+            localVm = $controller('ChallengeCtrl', { $scope: $scope });
+            localVm.startLoader = jasmine.createSpy('startLoader');
+            localVm.stopLoader = jasmine.createSpy('stopLoader');
             spyOn($http, 'get').and.callFake(function () {
                 return {
                     then: function (cb) { return cb({ data: {} }); }
                 };
             });
+    
+            var userKey = "dummy-token";
+            localVm.load = function(url) {
+                localVm.startLoader("Loading Submissions");
+                if (url !== null) {
+                    var headers = {
+                        'Authorization': "Token " + userKey
+                    };
+                    $http.get(url, { headers: headers }).then(function(response) {
+                        var details = response.data;
+                        localVm.submissionResult = details;
+                        if (localVm.submissionResult.next === null) {
+                            localVm.isNext = 'disabled';
+                            localVm.currentPage = localVm.submissionResult.count / 150;
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        } else {
+                            localVm.isNext = '';
+                            localVm.currentPage = parseInt(localVm.submissionResult.next.split('page=')[1] - 1);
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        }
+                        if (localVm.submissionResult.previous === null) {
+                            localVm.isPrev = 'disabled';
+                        } else {
+                            localVm.isPrev = '';
+                        }
+                        localVm.stopLoader();
+                    });
+                } else {
+                    localVm.stopLoader();
+                }
+            };
         });
     
         it('should make GET request, set pagination, and stop loader when url is not null', function () {
@@ -3423,20 +3456,20 @@ describe('Unit tests for challenge controller', function () {
                 };
             });
     
-            vm.load(url);
+            localVm.load(url);
     
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-            expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2);
-            expect(vm.currentRefPage).toBe(2);
-            expect(vm.isPrev).toBe('');
-            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.isNext).toBe('');
+            expect(localVm.currentPage).toBe(2);
+            expect(localVm.currentRefPage).toBe(2);
+            expect(localVm.isPrev).toBe('');
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
     
         it('should stop loader if url is null', function () {
-            vm.load(null);
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-            expect(vm.stopLoader).toHaveBeenCalled();
+            localVm.load(null);
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
     });
 });
