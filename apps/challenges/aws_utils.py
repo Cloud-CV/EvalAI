@@ -1895,8 +1895,6 @@ def calculate_retention_period_days(challenge_end_date):
     Returns:
         int: Number of days for retention (30 days after challenge ends)
     """
-    from datetime import timedelta
-
     from django.utils import timezone
 
     now = timezone.now()
@@ -1991,7 +1989,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
         logs_client = get_boto3_client("logs", challenge_aws_keys)
 
         # Set retention policy
-        response = logs_client.put_retention_policy(
+        logs_client.put_retention_policy(
             logGroupName=log_group_name, retentionInDays=aws_retention_days
         )
 
@@ -2037,8 +2035,6 @@ def calculate_submission_retention_date(challenge_phase):
         datetime: Date when submission artifacts can be deleted
     """
     from datetime import timedelta
-
-    from django.utils import timezone
 
     if not challenge_phase.end_date:
         return None
@@ -2169,7 +2165,9 @@ def cleanup_expired_submission_artifacts():
         logger.info("No submissions eligible for cleanup")
         return cleanup_stats
 
-    logger.info(f"Found {eligible_submissions.count()} submissions eligible for cleanup")
+    logger.info(
+        f"Found {eligible_submissions.count()} submissions eligible for cleanup"
+    )
 
     for submission in eligible_submissions:
         cleanup_stats["total_processed"] += 1
@@ -2199,7 +2197,7 @@ def cleanup_expired_submission_artifacts():
                 {
                     "submission_id": submission.pk,
                     "challenge_id": submission.challenge_phase.challenge.pk,
-                    "error": str(e)
+                    "error": str(e),
                 }
             )
             logger.exception(
@@ -2240,10 +2238,14 @@ def update_submission_retention_dates():
         )
 
         if not ended_phases.exists():
-            logger.info("No ended challenge phases found - no retention dates to update")
+            logger.info(
+                "No ended challenge phases found - no retention dates to update"
+            )
             return {"updated_submissions": 0, "errors": []}
 
-        logger.info(f"Found {ended_phases.count()} ended challenge phases to process")
+        logger.info(
+            f"Found {ended_phases.count()} ended challenge phases to process"
+        )
 
         for phase in ended_phases:
             try:
@@ -2264,16 +2266,20 @@ def update_submission_retention_dates():
                             f"({phase.challenge.title}) with retention date {retention_date}"
                         )
                 else:
-                    logger.debug(f"No retention date calculated for phase {phase.pk} - phase may still be public")
+                    logger.debug(
+                        f"No retention date calculated for phase {phase.pk} - phase may still be public"
+                    )
 
             except Exception as e:
                 error_msg = f"Failed to update retention dates for phase {phase.pk}: {str(e)}"
                 logger.error(error_msg)
-                errors.append({
-                    "phase_id": phase.pk,
-                    "challenge_id": phase.challenge.pk,
-                    "error": str(e)
-                })
+                errors.append(
+                    {
+                        "phase_id": phase.pk,
+                        "challenge_id": phase.challenge.pk,
+                        "error": str(e),
+                    }
+                )
 
     except Exception as e:
         error_msg = f"Unexpected error during retention date update: {str(e)}"
@@ -2281,14 +2287,11 @@ def update_submission_retention_dates():
         errors.append({"error": str(e)})
 
     logger.info(f"Updated retention dates for {updated_count} submissions")
-    
+
     if errors:
         logger.error(f"Retention date update errors: {errors}")
-    
-    return {
-        "updated_submissions": updated_count,
-        "errors": errors
-    }
+
+    return {"updated_submissions": updated_count, "errors": errors}
 
 
 @app.task
@@ -2314,7 +2317,9 @@ def send_retention_warning_notifications():
         logger.info("No submissions require retention warning notifications")
         return {"notifications_sent": 0}
 
-    logger.info(f"Found {warning_submissions.count()} submissions requiring retention warnings")
+    logger.info(
+        f"Found {warning_submissions.count()} submissions requiring retention warnings"
+    )
 
     # Group by challenge to send one email per challenge
     challenges_to_notify = {}
@@ -2337,12 +2342,19 @@ def send_retention_warning_notifications():
         try:
             # Skip if challenge doesn't want host notifications
             if not challenge.inform_hosts:
-                logger.info(f"Skipping notification for challenge {challenge.pk} - inform_hosts is False")
+                logger.info(
+                    f"Skipping notification for challenge {challenge.pk} - inform_hosts is False"
+                )
                 continue
 
             # Send notification email to challenge hosts
-            if not hasattr(settings, 'EVALAI_API_SERVER') or not settings.EVALAI_API_SERVER:
-                logger.error("EVALAI_API_SERVER setting is missing - cannot generate challenge URL")
+            if (
+                not hasattr(settings, "EVALAI_API_SERVER")
+                or not settings.EVALAI_API_SERVER
+            ):
+                logger.error(
+                    "EVALAI_API_SERVER setting is missing - cannot generate challenge URL"
+                )
                 continue
 
             challenge_url = f"{settings.EVALAI_API_SERVER}/web/challenges/challenge-page/{challenge.id}"
@@ -2364,17 +2376,23 @@ def send_retention_warning_notifications():
             )
 
             if not template_id:
-                logger.error("RETENTION_WARNING_EMAIL template ID not configured in settings")
+                logger.error(
+                    "RETENTION_WARNING_EMAIL template ID not configured in settings"
+                )
                 continue
 
             # Get challenge host emails
             try:
                 emails = challenge.creator.get_all_challenge_host_email()
                 if not emails:
-                    logger.warning(f"No host emails found for challenge {challenge.pk}")
+                    logger.warning(
+                        f"No host emails found for challenge {challenge.pk}"
+                    )
                     continue
             except Exception as e:
-                logger.error(f"Failed to get host emails for challenge {challenge.pk}: {e}")
+                logger.error(
+                    f"Failed to get host emails for challenge {challenge.pk}: {e}"
+                )
                 continue
 
             # Send emails to all hosts
@@ -2388,34 +2406,43 @@ def send_retention_warning_notifications():
                         template_data=template_data,
                     )
                     email_sent = True
-                    logger.info(f"Sent retention warning email to {email} for challenge {challenge.pk}")
+                    logger.info(
+                        f"Sent retention warning email to {email} for challenge {challenge.pk}"
+                    )
                 except Exception as e:
-                    logger.error(f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}")
-                    notification_errors.append({
-                        "challenge_id": challenge.pk,
-                        "email": email,
-                        "error": str(e)
-                    })
+                    logger.error(
+                        f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"
+                    )
+                    notification_errors.append(
+                        {
+                            "challenge_id": challenge.pk,
+                            "email": email,
+                            "error": str(e),
+                        }
+                    )
 
             if email_sent:
                 notifications_sent += 1
-                logger.info(f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)")
+                logger.info(
+                    f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)"
+                )
 
         except Exception as e:
-            logger.exception(f"Failed to send retention warning for challenge {challenge.pk}")
-            notification_errors.append({
-                "challenge_id": challenge.pk,
-                "error": str(e)
-            })
+            logger.exception(
+                f"Failed to send retention warning for challenge {challenge.pk}"
+            )
+            notification_errors.append(
+                {"challenge_id": challenge.pk, "error": str(e)}
+            )
 
     logger.info(f"Sent {notifications_sent} retention warning notifications")
-    
+
     if notification_errors:
         logger.error(f"Notification errors: {notification_errors}")
-    
+
     return {
         "notifications_sent": notifications_sent,
-        "errors": notification_errors
+        "errors": notification_errors,
     }
 
 

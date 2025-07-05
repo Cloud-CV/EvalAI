@@ -2,12 +2,10 @@ import logging
 from datetime import timedelta
 
 from challenges.aws_utils import (
-    calculate_submission_retention_date,
     cleanup_expired_submission_artifacts,
     delete_submission_files_from_storage,
     send_retention_warning_notifications,
     set_cloudwatch_log_retention,
-    update_submission_retention_dates,
 )
 from challenges.models import Challenge, ChallengePhase
 from django.core.management.base import BaseCommand, CommandError
@@ -36,13 +34,13 @@ class Command(BaseCommand):
         )
 
         # Update retention dates
-        update_parser = subparsers.add_parser(
+        subparsers.add_parser(
             "update-dates",
             help="Update retention eligible dates for submissions",
         )
 
         # Send warning notifications
-        notify_parser = subparsers.add_parser(
+        subparsers.add_parser(
             "send-warnings",
             help="Send retention warning notifications to challenge hosts",
         )
@@ -155,9 +153,12 @@ class Command(BaseCommand):
         try:
             # Run directly instead of via Celery in development
             from challenges.aws_utils import update_submission_retention_dates
+
             result = update_submission_retention_dates()
             self.stdout.write(
-                self.style.SUCCESS(f"Updated retention dates for {result.get('updated_submissions', 0)} submissions")
+                self.style.SUCCESS(
+                    f"Updated retention dates for {result.get('updated_submissions', 0)} submissions"
+                )
             )
         except Exception as e:
             self.stdout.write(
@@ -286,6 +287,10 @@ class Command(BaseCommand):
             self.stdout.write(f"\nPhase: {phase.name}")
             self.stdout.write(f"  End date: {phase.end_date}")
             self.stdout.write(f"  Is public: {phase.is_public}")
+
+            from challenges.aws_utils import (
+                calculate_submission_retention_date,
+            )
 
             retention_date = calculate_submission_retention_date(phase)
             if retention_date:

@@ -2,13 +2,9 @@ import logging
 
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from django.utils import timezone
 from jobs.models import Submission
 
-from .aws_utils import (
-    calculate_submission_retention_date,
-    update_submission_retention_dates,
-)
+from .aws_utils import calculate_submission_retention_date
 from .models import ChallengePhase
 
 logger = logging.getLogger(__name__)
