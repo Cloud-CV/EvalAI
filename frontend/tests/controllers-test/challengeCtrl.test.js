@@ -2,7 +2,7 @@
 
 describe('Unit tests for challenge controller', function () {
     beforeEach(angular.mock.module('evalai'));
-    
+
 
     beforeEach(function () {
         angular.mock.inject(function ($controller) {
@@ -22,7 +22,7 @@ describe('Unit tests for challenge controller', function () {
 
     var $controller, createController, $injector, $rootScope, $state, $scope, utilities, $http, $interval, $mdDialog, moment, vm;
 
-    beforeEach(inject(function (_$controller_, _$injector_,  _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
+    beforeEach(inject(function (_$controller_, _$injector_, _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
         $controller = _$controller_;
         $injector = _$injector_;
         $rootScope = _$rootScope_;
@@ -32,10 +32,10 @@ describe('Unit tests for challenge controller', function () {
         $interval = _$interval_;
         $mdDialog = _$mdDialog_;
         moment = _moment_;
-        
+
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeCtrl', {$scope: $scope});
+            return $controller('ChallengeCtrl', { $scope: $scope });
         };
         vm = $controller('ChallengeCtrl', { $scope: $scope });
     }));
@@ -116,22 +116,22 @@ describe('Unit tests for challenge controller', function () {
                 }
 
                 if ((challengePhaseSuccess == true && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
-                (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
-                (challengePhaseSplitSuccess == true && parameters.url == 'challenges/undefined/challenge_phase_split') ||
-                (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
-                (participantTeamSuccess == true && parameters.url == 'participants/participant_team') ||
-                (selectExistTeamSuccess == true && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
+                    (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
+                    (challengePhaseSplitSuccess == true && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                    (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                    (participantTeamSuccess == true && parameters.url == 'participants/participant_team') ||
+                    (selectExistTeamSuccess == true && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
 
                     parameters.callback.onSuccess({
                         status: 200,
                         data: successResponse
                     });
                 } else if ((challengePhaseSuccess == false && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
-                (challengeSuccess == false && parameters.url == 'challenges/challenge/undefined/') ||
-                (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split') ||
-                (participantTeamChallengeSuccess == false && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
-                (participantTeamSuccess == false && parameters.url == 'participants/participant_team') ||
-                (selectExistTeamSuccess == false && parameters.url == 'challenges/challenge/undefined/participant_team/null')){
+                    (challengeSuccess == false && parameters.url == 'challenges/challenge/undefined/') ||
+                    (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                    (participantTeamChallengeSuccess == false && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                    (participantTeamSuccess == false && parameters.url == 'participants/participant_team') ||
+                    (selectExistTeamSuccess == false && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
 
                     parameters.callback.onError({
                         data: errorResponse,
@@ -230,8 +230,9 @@ describe('Unit tests for challenge controller', function () {
 
         team_list.forEach(response => {
             it('pagination next is ' + response.next + ' and previous is ' + response.previous + '\
-                `participants/participant_team`', function () {;
-                challengeSuccess = true;    
+                `participants/participant_team`', function () {
+                ;
+                challengeSuccess = true;
                 participantTeamChallengeSuccess = true;
                 participantTeamSuccess = true;
                 selectExistTeamSuccess = null;
@@ -463,7 +464,7 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             utilities.storeData('userKey', 'encrypted key');
-       
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -477,7 +478,7 @@ describe('Unit tests for challenge controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
 
         it('backend error of the particular challenge `challenges/challenge/<challenge_id>/', function () {
@@ -528,7 +529,7 @@ describe('Unit tests for challenge controller', function () {
                 expect(vm.phases.results[i].showPrivate).toBeTruthy();
             }
 
-            for(var i = 0; i < successResponse.results.length; i++){
+            for (var i = 0; i < successResponse.results.length; i++) {
                 var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
                 expect(vm.phases.results[i].time_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
             }
@@ -581,7 +582,7 @@ describe('Unit tests for challenge controller', function () {
             vm.isParticipated = true;
             vm = createController();
             expect(vm.phaseSplits).toEqual(successResponse);
-            for(var i = 0; i < successResponse.length; i++) {
+            for (var i = 0; i < successResponse.length; i++) {
                 if (successResponse[i].visibility != challengePhaseVisibility.public) {
                     expect(vm.phaseSplits[i].showPrivate).toBeTruthy();
                 }
@@ -644,7 +645,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: true,
                             remaining_submissions_today_count: 12,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -654,7 +655,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('maxExceeded');
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
@@ -668,7 +669,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: false,
                             remaining_submissions_today_count: 12,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -678,7 +679,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showSubmissionNumbers');
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
@@ -692,7 +693,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: false,
                             remaining_submissions_today_count: 0,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -702,7 +703,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.eachPhase).toEqual(details[i]);
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showClock');
 
@@ -739,7 +740,7 @@ describe('Unit tests for challenge controller', function () {
             success: 'success',
         };
 
-        beforeEach(function() {
+        beforeEach(function () {
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
             spyOn($rootScope, 'notify');
@@ -872,10 +873,10 @@ describe('Unit tests for challenge controller', function () {
                         {
                             id: 1,
                             leaderboard__schema:
-                                {
-                                    labels: ['label1', 'label2'],
-                                    default_order_by: 'default_order_by',
-                                },
+                            {
+                                labels: ['label1', 'label2'],
+                                default_order_by: 'default_order_by',
+                            },
                             submission__submitted_at: (new Date() - new Date().setFullYear(new Date().getFullYear() - 1)),
                         },
                     ]
@@ -955,12 +956,12 @@ describe('Unit tests for challenge controller', function () {
 
             utilities.sendRequest = function (parameters) {
                 if ((submissionCountSuccess == true && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")) {
+                    (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
                 } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")){
+                    (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")) {
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -1023,7 +1024,7 @@ describe('Unit tests for challenge controller', function () {
                 vm.getResults(phaseId);
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-                for (var i = 0; i < successResponse.results.length; i++){
+                for (var i = 0; i < successResponse.results.length; i++) {
                     expect(vm.submissionVisibility[successResponse.results[i].id]).toEqual(successResponse.results[i].is_public);
                     expect(vm.baselineStatus[successResponse.results[i].id] = successResponse.results[i].is_baseline);
                 }
@@ -1082,7 +1083,7 @@ describe('Unit tests for challenge controller', function () {
                 // get submissions response
                 next: "page=4",
                 previous: "page=2",
-            };      
+            };
             vm.getResults(phaseId);
             spyOn($http, 'get').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
@@ -1095,7 +1096,7 @@ describe('Unit tests for challenge controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
     });
 
@@ -1539,7 +1540,7 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for getAllSubmissionResults function \
-        `challenges/<challenge_id>/challenge_phase/<phase_id>/submissions`', function() {
+        `challenges/<challenge_id>/challenge_phase/<phase_id>/submissions`', function () {
         var success, successResponse;
         var errorResponse = {
             detail: 'error'
@@ -1594,7 +1595,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         submission_list.forEach(response => {
-            it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function() {
+            it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function () {
                 success = true;
                 successResponse = response;
                 var phaseId = 1
@@ -1678,43 +1679,43 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for showapprovalparticipantteamDialog function', function () {
         var $mdDialog;
-        
+
         beforeEach(function () {
             $mdDialog = $injector.get('$mdDialog');
         });
-    
+
         it('should open dialog when approved_status is true', function () {
             var $mdDialogOpened = false;
             $mdDialog.show = jasmine.createSpy().and.callFake(function () {
                 $mdDialogOpened = true;
             });
-            
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
-            
+
             vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
-            
+
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toEqual(true);
         });
-    
+
         it('should call check_approval_status when approved_status is false', function () {
             vm.check_approval_status = jasmine.createSpy();
-            
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = false;
-            
+
             vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
-            
+
             expect(vm.check_approval_status).toHaveBeenCalledWith(challengeId, participant_team_id, approved_status, false);
         });
     });
 
     describe('Unit tests for check_approval_status function', function () {
         var success, errorResponse, secondfunction;
-    
+
         beforeEach(function () {
             spyOn($rootScope, 'notify');
             spyOn($state, 'reload');
@@ -1735,38 +1736,38 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
         });
-    
+
         it('should handle successful approval of participant team', function () {
             success = true;
-    
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
             var formvalid = true;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Approved successfully.');
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should handle error during approval of participant team', function () {
             success = false;
             secondfunction = false;
             errorResponse = {
-                    error: 'Approval failed'
+                error: 'Approval failed'
             };
-    
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
             var formvalid = true;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Approval failed');
         });
-    
+
         it('should handle disapproval of participant team', function () {
             success = false;
             secondfunction = true;
@@ -1774,9 +1775,9 @@ describe('Unit tests for challenge controller', function () {
             var participant_team_id = '456';
             var approved_status = false;
             var formvalid = false;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Disapproved successfully.');
             expect($state.reload).not.toHaveBeenCalled();
         });
@@ -1972,7 +1973,7 @@ describe('Unit tests for challenge controller', function () {
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
             vm.submissionMetaData = {
-                submission_metadata : null
+                submission_metadata: null
             };
             vm.currentSubmissionMetaData = [
                 {
@@ -1986,7 +1987,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'SingleOptionAttribute',
                     type: 'radio',
                     value: null,
-                    options: ['A','B','C'],
+                    options: ['A', 'B', 'C'],
                     $$hashKey: 'object:43',
                     description: 'Sample',
                 },
@@ -1994,7 +1995,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'MultipleChoiceAttribute',
                     type: 'checkbox',
                     values: [],
-                    options: ['alpha','beta','gamma'],
+                    options: ['alpha', 'beta', 'gamma'],
                     $$hashKey: 'object:44',
                     description: 'Sample',
                 },
@@ -2020,7 +2021,7 @@ describe('Unit tests for challenge controller', function () {
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
             vm.submissionMetaData = {
-                submission_metadata : null
+                submission_metadata: null
             };
             vm.currentSubmissionMetaData = [
                 {
@@ -2034,7 +2035,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'SingleOptionAttribute',
                     type: 'radio',
                     value: null,
-                    options: ['A','B','C'],
+                    options: ['A', 'B', 'C'],
                     $$hashKey: 'object:43',
                     description: 'Sample',
                 },
@@ -2042,7 +2043,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'MultipleChoiceAttribute',
                     type: 'checkbox',
                     values: [],
-                    options: ['alpha','beta','gamma'],
+                    options: ['alpha', 'beta', 'gamma'],
                     $$hashKey: 'object:44',
                     description: 'Sample',
                 },
@@ -2791,7 +2792,7 @@ describe('Unit tests for challenge controller', function () {
         it('valid `edit challenge phase` form & successfull edit', function () {
             var editChallengePhaseForm = true;
             success = true;
-            vm.page.challenge_phase ={
+            vm.page.challenge_phase = {
                 id: 1,
                 name: "challenge phase name",
                 description: "challenge phase description",
@@ -2812,7 +2813,7 @@ describe('Unit tests for challenge controller', function () {
         it('valid `edit challenge phase` form & backend error', function () {
             var editChallengePhaseForm = true;
             success = false;
-            vm.page.challenge_phase ={
+            vm.page.challenge_phase = {
                 id: 1,
                 name: "challenge phase name",
                 description: "challenge phase description",
@@ -2862,7 +2863,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `public` to `private`', function () {
-            vm.isPublished = true; 
+            vm.isPublished = true;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();
@@ -2870,7 +2871,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `private` to `public`', function () {
-            vm.isPublished = false; 
+            vm.isPublished = false;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();
@@ -3280,7 +3281,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
     });
-    
+
 
     describe('Unit tests for getAllEntriesOnPublicLeaderboard function', function () {
         beforeEach(function () {
@@ -3379,22 +3380,22 @@ describe('Unit tests for challenge controller', function () {
             spyOn(vm, 'stopLoader');
             spyOn($rootScope, 'notify');
         });
-    
+
         it('should notify success, reset error and team, and stop loader on success', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { "Success": "Resources scaled!" } });
             });
-    
+
             vm.setWorkerResources();
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resources scaled!");
             expect(vm.team).toEqual({}); // <-- fix here
             expect(vm.stopLoader).toHaveBeenCalled();
         });
-    
+
         // ... rest unchanged
     });
-    
+
     describe('Unit tests for load function (submissions pagination)', function () {
         var localVm;
         beforeEach(function () {
@@ -3406,15 +3407,15 @@ describe('Unit tests for challenge controller', function () {
                     then: function (cb) { return cb({ data: {} }); }
                 };
             });
-    
+
             var userKey = "dummy-token";
-            localVm.load = function(url) {
+            localVm.load = function (url) {
                 localVm.startLoader("Loading Submissions");
                 if (url !== null) {
                     var headers = {
                         'Authorization': "Token " + userKey
                     };
-                    $http.get(url, { headers: headers }).then(function(response) {
+                    $http.get(url, { headers: headers }).then(function (response) {
                         var details = response.data;
                         localVm.submissionResult = details;
                         if (localVm.submissionResult.next === null) {
@@ -3438,7 +3439,7 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
         });
-    
+
         it('should make GET request, set pagination, and stop loader when url is not null', function () {
             var url = 'some/url';
             var responseData = {
@@ -3456,9 +3457,9 @@ describe('Unit tests for challenge controller', function () {
                     }
                 };
             });
-    
+
             localVm.load(url);
-    
+
             expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
             expect(localVm.isNext).toBe('');
             expect(localVm.currentPage).toBe(2);
@@ -3466,7 +3467,7 @@ describe('Unit tests for challenge controller', function () {
             expect(localVm.isPrev).toBe('');
             expect(localVm.stopLoader).toHaveBeenCalled();
         });
-    
+
         it('should stop loader if url is null', function () {
             localVm.load(null);
             expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
@@ -3484,31 +3485,31 @@ describe('Unit tests for challenge controller', function () {
             vm.submissionVisibility = {};
             vm.isCurrentPhaseRestrictedToSelectOneSubmission = false;
         });
-    
+
         it('should notify public message when is_public is true and status is 200', function () {
             var submissionId = 10;
             var submissionVisibility = true;
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200, data: { is_public: true } });
             });
-    
+
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made public.");
         });
-    
+
         it('should notify private message when is_public is false and status is 200', function () {
             var submissionId = 11;
             var submissionVisibility = false;
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200, data: { is_public: false } });
             });
-    
+
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The submission is made private.");
         });
-    
+
         it('should handle restricted phase logic and update previousPublicSubmissionId', function () {
             var submissionId = 12;
             var submissionVisibility = true;
@@ -3518,15 +3519,15 @@ describe('Unit tests for challenge controller', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200, data: { is_public: true } });
             });
-    
+
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-    
+
             expect($mdDialog.hide).toHaveBeenCalled();
             expect(vm.submissionVisibility[99]).toBe(false);
             expect(vm.previousPublicSubmissionId).toBe(submissionId);
             expect(vm.submissionVisibility[submissionId]).toBe(true);
         });
-    
+
         it('should handle restricted phase logic and reset previousPublicSubmissionId if same as submission_id', function () {
             var submissionId = 13;
             var submissionVisibility = true;
@@ -3536,44 +3537,44 @@ describe('Unit tests for challenge controller', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200, data: { is_public: true } });
             });
-    
+
             vm.changeSubmissionVisibility(submissionId, submissionVisibility);
-    
+
             expect($mdDialog.hide).toHaveBeenCalled();
             expect(vm.previousPublicSubmissionId).toBe(null);
             expect(vm.submissionVisibility[submissionId]).toBe(true);
         });
     });
-    
+
     describe('Unit tests for team_approval_list function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn(vm, 'activateCollapsible');
             spyOn($rootScope, 'notify');
         });
-    
+
         it('should set approved_teams and call activateCollapsible on success', function () {
             // Arrange
             var fakeTeams = [{ id: 1, name: 'Team A' }];
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: fakeTeams });
             });
-    
+
             // Act
             vm.team_approval_list();
-    
+
             // Assert
             expect(vm.approved_teams).toEqual(fakeTeams);
             expect(vm.activateCollapsible).toHaveBeenCalled();
         });
-    
+
         it('should notify error on error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError();
             });
-    
+
             vm.team_approval_list();
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error occured.Please try again.");
         });
     });
@@ -3594,31 +3595,31 @@ describe('Unit tests for challenge controller', function () {
                 { id: 'status' }
             ];
         });
-    
+
         it('should send GET request and trigger download when fieldsToGet is undefined', function () {
             vm.fieldsToGet = undefined;
             utilities.sendRequest.and.callFake(function (params) {
                 expect(params.method).toBe("GET");
                 params.callback.onSuccess({ data: "csvdata" });
             });
-    
+
             vm.downloadChallengeSubmissions();
-    
+
             expect(angular.element).toHaveBeenCalled();
         });
-    
+
         it('should send GET request and trigger download when fieldsToGet is empty', function () {
             vm.fieldsToGet = [];
             utilities.sendRequest.and.callFake(function (params) {
                 expect(params.method).toBe("GET");
                 params.callback.onSuccess({ data: "csvdata" });
             });
-    
+
             vm.downloadChallengeSubmissions();
-    
+
             expect(angular.element).toHaveBeenCalled();
         });
-    
+
         it('should send POST request and trigger download when fieldsToGet is not empty', function () {
             vm.fieldsToGet = ['participant_team', 'status'];
             utilities.sendRequest.and.callFake(function (params) {
@@ -3626,37 +3627,37 @@ describe('Unit tests for challenge controller', function () {
                 expect(params.data).toEqual(['participant_team', 'status']);
                 params.callback.onSuccess({ data: "csvdata" });
             });
-    
+
             vm.downloadChallengeSubmissions();
-    
+
             expect(angular.element).toHaveBeenCalled();
         });
-    
+
         it('should notify error if phaseId is not set', function () {
             vm.phaseId = null;
             vm.downloadChallengeSubmissions();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Please select a challenge phase!");
         });
-    
+
         it('should notify error on GET error', function () {
             vm.fieldsToGet = undefined;
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Download failed" } });
             });
-    
+
             vm.downloadChallengeSubmissions();
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
         });
-    
+
         it('should notify error on POST error', function () {
             vm.fieldsToGet = ['participant_team'];
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Download failed" } });
             });
-    
+
             vm.downloadChallengeSubmissions();
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
         });
     });
@@ -3667,7 +3668,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn($mdDialog, 'show');
             vm.previousPublicSubmissionId = null;
         });
-    
+
         it('should set submissionId and call changeSubmissionVisibility when making private', function () {
             var submissionId = 1;
             var submissionVisibility = false;
@@ -3676,7 +3677,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.changeSubmissionVisibility).toHaveBeenCalledWith(submissionId, submissionVisibility);
             expect($mdDialog.show).not.toHaveBeenCalled();
         });
-    
+
         it('should set submissionId and call changeSubmissionVisibility when making public and no previousPublicSubmissionId', function () {
             var submissionId = 2;
             var submissionVisibility = true;
@@ -3686,7 +3687,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.changeSubmissionVisibility).toHaveBeenCalledWith(submissionId, submissionVisibility);
             expect($mdDialog.show).not.toHaveBeenCalled();
         });
-    
+
         it('should set submissionId and show dialog when making public and previousPublicSubmissionId exists', function () {
             var submissionId = 3;
             var submissionVisibility = true;
@@ -3709,7 +3710,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
             vm.challengeId = 42;
         });
-    
+
         it('should hide dialog and notify success on successful cancellation', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 expect(params.url).toBe("jobs/challenges/42/submissions/123/update_submission_meta/");
@@ -3717,20 +3718,20 @@ describe('Unit tests for challenge controller', function () {
                 expect(params.data).toEqual({ status: "cancelled" });
                 params.callback.onSuccess({ status: 200 });
             });
-    
+
             vm.cancelSubmission(123);
-    
+
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Submission cancelled successfully!");
         });
-    
+
         it('should hide dialog and notify error on error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: "Some error" });
             });
-    
+
             vm.cancelSubmission(456);
-    
+
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
@@ -3743,13 +3744,13 @@ describe('Unit tests for challenge controller', function () {
             spyOn($mdDialog, 'hide');
             vm.allowCancelRunningSubmissions = false;
         });
-    
+
         it('should notify error and not show dialog if not allowed and status is not "submitted"', function () {
             vm.showCancelSubmissionDialog(123, "running");
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Only unproccessed submissions can be cancelled");
             expect($mdDialog.show).not.toHaveBeenCalled();
         });
-    
+
         it('should set submissionId and show dialog if allowed or status is "submitted"', function () {
             vm.allowCancelRunningSubmissions = true;
             vm.showCancelSubmissionDialog(456, "running");
@@ -3759,14 +3760,14 @@ describe('Unit tests for challenge controller', function () {
                 preserveScope: true,
                 templateUrl: 'dist/views/web/challenge/cancel-submission.html'
             });
-    
+
             // Also test the "submitted" status branch
             vm.allowCancelRunningSubmissions = false;
             vm.showCancelSubmissionDialog(789, "submitted");
             expect(vm.submissionId).toBe(789);
             expect($mdDialog.show).toHaveBeenCalled();
         });
-    
+
         it('should hide dialog when hideDialog is called', function () {
             vm.hideDialog();
             expect($mdDialog.hide).toHaveBeenCalled();
@@ -3779,7 +3780,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
             vm.challengeId = 42;
         });
-    
+
         it('should notify success when verification is successful', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 expect(params.url).toBe("jobs/challenges/42/submissions/123/update_submission_meta/");
@@ -3787,19 +3788,19 @@ describe('Unit tests for challenge controller', function () {
                 expect(params.data).toEqual({ is_verified_by_host: true });
                 params.callback.onSuccess({ status: 200 });
             });
-    
+
             vm.verifySubmission(123, true);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Verification status updated successfully!");
         });
-    
+
         it('should notify error when verification fails', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: "Some error" });
             });
-    
+
             vm.verifySubmission(456, false);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
     });
@@ -3823,14 +3824,14 @@ describe('Unit tests for challenge controller', function () {
                 format: function () { return "Jan 2, 2020 12:00:00 AM"; }
             };
         });
-    
+
         it('should update dates and notify success on valid form and valid dates', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200 });
             });
-    
+
             vm.editChallengeDate(true);
-    
+
             expect(utilities.getData).toHaveBeenCalledWith("challengeCreator");
             expect(utilities.showLoader).toHaveBeenCalled();
             expect(utilities.sendRequest).toHaveBeenCalled();
@@ -3839,29 +3840,29 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.page.start_date).toBe("Jan 1, 2020 12:00:00 AM");
             expect(vm.page.end_date).toBe("Jan 2, 2020 12:00:00 AM");
         });
-    
+
         it('should notify error if start date is not less than end date', function () {
             vm.challengeStartDate = { valueOf: function () { return 3000; } };
             vm.challengeEndDate = { valueOf: function () { return 2000; } };
-    
+
             vm.editChallengeDate(true);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "The challenge start date cannot be same or greater than end date.");
             expect($mdDialog.hide).not.toHaveBeenCalled();
         });
-    
+
         it('should hide dialog if form is invalid', function () {
             vm.editChallengeDate(false);
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should notify error and hide dialog on backend error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: "Some error" });
             });
-    
+
             vm.editChallengeDate(true);
-    
+
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
@@ -3877,39 +3878,39 @@ describe('Unit tests for challenge controller', function () {
             spyOn($state, 'reload');
             vm.challengeId = 42;
         });
-    
+
         it('should notify success, hide dialog, go to overview, and reload on successful deregistration', function (done) {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200 });
             });
-    
+
             // Use Jasmine clock to control setTimeout
             jasmine.clock().install();
             vm.deregister(true);
-    
+
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "You have successfully deregistered from the challenge.");
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($state.go).toHaveBeenCalledWith('web.challenge-main.challenge-page.overview');
-    
+
             // Fast-forward the setTimeout
             jasmine.clock().tick(101);
             expect($state.reload).toHaveBeenCalled();
             jasmine.clock().uninstall();
             done();
         });
-    
+
         it('should notify error and hide dialog on error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Deregister error" } });
             });
-    
+
             vm.deregister(true);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Deregister error");
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should hide dialog if form is invalid', function () {
             vm.deregister(false);
             expect($mdDialog.hide).toHaveBeenCalled();
@@ -3926,14 +3927,14 @@ describe('Unit tests for challenge controller', function () {
             }];
             vm.leaderboardDropdown = false;
         });
-    
+
         it('should set chosenMetrics if undefined and toggle leaderboardDropdown', function () {
             vm.chosenMetrics = undefined;
             vm.openLeaderboardDropdown();
             expect(vm.chosenMetrics).toEqual(['accuracy', 'loss']);
             expect(vm.leaderboardDropdown).toBe(true);
         });
-    
+
         it('should not reset chosenMetrics if already set and should toggle leaderboardDropdown', function () {
             vm.chosenMetrics = ['foo', 'bar'];
             vm.leaderboardDropdown = false;
@@ -3950,15 +3951,15 @@ describe('Unit tests for challenge controller', function () {
         it('should return trophy-gold for rank 1', function () {
             expect(vm.getTrophySize(1)).toBe('trophy-gold');
         });
-    
+
         it('should return trophy-silver for rank 2', function () {
             expect(vm.getTrophySize(2)).toBe('trophy-silver');
         });
-    
+
         it('should return trophy-bronze for rank 3', function () {
             expect(vm.getTrophySize(3)).toBe('trophy-bronze');
         });
-    
+
         it('should return trophy-black for other ranks', function () {
             expect(vm.getTrophySize(4)).toBe('trophy-black');
             expect(vm.getTrophySize(0)).toBe('trophy-black');
@@ -3979,7 +3980,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.metaAttributesforCurrentSubmission[1].value).toBeNull();
             expect(vm.metaAttributesforCurrentSubmission[2].value).toBeNull();
         });
-    
+
         it('should do nothing if metaAttributesforCurrentSubmission is null', function () {
             vm.metaAttributesforCurrentSubmission = null;
             // Should not throw
@@ -3996,33 +3997,33 @@ describe('Unit tests for challenge controller', function () {
             ];
             expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
         });
-    
+
         it('should return false if a required text attribute is null', function () {
             vm.metaAttributesforCurrentSubmission = [
                 { required: true, type: 'text', value: null }
             ];
             expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
         });
-    
+
         it('should return false if a required text attribute is undefined', function () {
             vm.metaAttributesforCurrentSubmission = [
                 { required: true, type: 'text', value: undefined }
             ];
             expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
         });
-    
+
         it('should return false if a required checkbox attribute is empty', function () {
             vm.metaAttributesforCurrentSubmission = [
                 { required: true, type: 'checkbox', values: [] }
             ];
             expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(false);
         });
-    
+
         it('should return true if metaAttributesforCurrentSubmission is null', function () {
             vm.metaAttributesforCurrentSubmission = null;
             expect(vm.isCurrentSubmissionMetaAttributeValid()).toBe(true);
         });
-    
+
         it('should return true if no required attributes', function () {
             vm.metaAttributesforCurrentSubmission = [
                 { required: false, type: 'text', value: null }
@@ -4037,19 +4038,19 @@ describe('Unit tests for challenge controller', function () {
             vm.toggleSelection(attribute, 3);
             expect(attribute.values).toEqual([1, 2, 3]);
         });
-    
+
         it('should remove value if present', function () {
             var attribute = { values: [1, 2, 3] };
             vm.toggleSelection(attribute, 2);
             expect(attribute.values).toEqual([1, 3]);
         });
-    
+
         it('should handle empty values array', function () {
             var attribute = { values: [] };
             vm.toggleSelection(attribute, 5);
             expect(attribute.values).toEqual([5]);
         });
-    
+
         it('should handle removing the only value', function () {
             var attribute = { values: [7] };
             vm.toggleSelection(attribute, 7);
@@ -4098,47 +4099,47 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
             vm.challengeId = 42;
         });
-    
+
         it('should notify success when request is successful and no error in result', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: {} });
             });
-    
+
             vm.sendApprovalRequest();
-    
+
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Request sent successfully.");
         });
-    
+
         it('should notify error when result.error is present', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { error: "Some error" } });
             });
-    
+
             vm.sendApprovalRequest();
-    
+
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
-    
+
         it('should notify error with error message on error callback with error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: "Backend error" } });
             });
-    
+
             vm.sendApprovalRequest();
-    
+
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: Backend error");
         });
-    
+
         it('should notify error with generic message on error callback without error', function () {
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: {} });
             });
-    
+
             vm.sendApprovalRequest();
-    
+
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
         });
@@ -4146,7 +4147,7 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for processing phase details (lines 794-841)', function () {
         var details, vm;
-    
+
         beforeEach(function () {
             vm = createController();
             vm.submissionMetaAttributes = [];
@@ -4158,7 +4159,7 @@ describe('Unit tests for challenge controller', function () {
                 return { foo: true };
             });
         });
-    
+
         it('should process all fields when all values are present', function () {
             details = {
                 count: 1,
@@ -4173,12 +4174,12 @@ describe('Unit tests for challenge controller', function () {
                     leaderboard_public: true
                 }]
             };
-    
+
             // Simulate the code block
             for (var k = 0; k < details.count; k++) {
                 if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null) {
                     var attributes = details.results[k].submission_meta_attributes;
-                    attributes.forEach(function(attribute){
+                    attributes.forEach(function (attribute) {
                         if (attribute["type"] == "checkbox") {
                             attribute["values"] = [];
                         }
@@ -4186,11 +4187,11 @@ describe('Unit tests for challenge controller', function () {
                             attribute["value"] = null;
                         }
                     });
-                    var data = {"phaseId":details.results[k].id, "attributes": attributes};
+                    var data = { "phaseId": details.results[k].id, "attributes": attributes };
                     vm.submissionMetaAttributes.push(data);
                 }
                 else {
-                    var data = {"phaseId":details.results[k].id, "attributes": null};
+                    var data = { "phaseId": details.results[k].id, "attributes": null };
                     vm.submissionMetaAttributes.push(data);
                 }
                 if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
@@ -4213,7 +4214,7 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     vm.defaultSubmissionMetaAttributes.push({
-                        "phaseId":details.results[k].id,
+                        "phaseId": details.results[k].id,
                         "defaultAttributes": {}
                     });
                 }
@@ -4222,7 +4223,7 @@ describe('Unit tests for challenge controller', function () {
                     "leaderboardPublic": details.results[k].leaderboard_public
                 });
             }
-    
+
             // Assertions
             expect(vm.submissionMetaAttributes.length).toBe(1);
             expect(vm.submissionMetaAttributes[0].attributes[0].values).toEqual([]);
@@ -4231,7 +4232,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.defaultSubmissionMetaAttributes[0].defaultAttributes).toEqual({ foo: true });
             expect(vm.phaseLeaderboardPublic[0].leaderboardPublic).toBe(true);
         });
-    
+
         it('should handle missing optional fields and use defaults', function () {
             details = {
                 count: 1,
@@ -4243,11 +4244,11 @@ describe('Unit tests for challenge controller', function () {
                     leaderboard_public: false
                 }]
             };
-    
+
             for (var k = 0; k < details.count; k++) {
                 if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null) {
                     var attributes = details.results[k].submission_meta_attributes;
-                    attributes.forEach(function(attribute){
+                    attributes.forEach(function (attribute) {
                         if (attribute["type"] == "checkbox") {
                             attribute["values"] = [];
                         }
@@ -4255,11 +4256,11 @@ describe('Unit tests for challenge controller', function () {
                             attribute["value"] = null;
                         }
                     });
-                    var data = {"phaseId":details.results[k].id, "attributes": attributes};
+                    var data = { "phaseId": details.results[k].id, "attributes": attributes };
                     vm.submissionMetaAttributes.push(data);
                 }
                 else {
-                    var data = {"phaseId":details.results[k].id, "attributes": null};
+                    var data = { "phaseId": details.results[k].id, "attributes": null };
                     vm.submissionMetaAttributes.push(data);
                 }
                 if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
@@ -4282,7 +4283,7 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     vm.defaultSubmissionMetaAttributes.push({
-                        "phaseId":details.results[k].id,
+                        "phaseId": details.results[k].id,
                         "defaultAttributes": {}
                     });
                 }
@@ -4291,7 +4292,7 @@ describe('Unit tests for challenge controller', function () {
                     "leaderboardPublic": details.results[k].leaderboard_public
                 });
             }
-    
+
             // Assertions
             expect(vm.submissionMetaAttributes[0].attributes).toBeNull();
             expect(vm.allowedSubmissionFileTypes[0].allowedSubmissionFileTypes).toBe(".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy");
@@ -4312,62 +4313,62 @@ describe('Unit tests for challenge controller', function () {
                 }
             }];
         });
-    
+
         it('should return false when metadata is null', function () {
             vm.leaderboard[0].leaderboard__schema.metadata = null;
             expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
         });
-    
+
         it('should return false when metadata is undefined', function () {
             vm.leaderboard[0].leaderboard__schema.metadata = undefined;
             expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
         });
-    
+
         it('should return false when metric is not found in metadata', function () {
             expect(vm.isMetricOrderedAscending('nonexistent_metric')).toBe(false);
         });
-    
+
         it('should return true when metric has sort_ascending set to true', function () {
             expect(vm.isMetricOrderedAscending('loss')).toBe(true);
         });
-    
+
         it('should return false when metric has sort_ascending set to false', function () {
             expect(vm.isMetricOrderedAscending('accuracy')).toBe(false);
         });
-    
+
         it('should return false when metric has sort_ascending set to false (f1_score)', function () {
             expect(vm.isMetricOrderedAscending('f1_score')).toBe(false);
         });
-    
+
         it('should handle empty leaderboard gracefully', function () {
             vm.leaderboard = [];
-            expect(function() { vm.isMetricOrderedAscending('accuracy'); }).toThrow();
+            expect(function () { vm.isMetricOrderedAscending('accuracy'); }).toThrow();
         });
     });
 
 
     describe('Unit tests for time duration formatting logic (lines 1123-1165)', function () {
         var moment, duration;
-    
-        beforeEach(inject(function(_moment_) {
+
+        beforeEach(inject(function (_moment_) {
             moment = _moment_;
             vm.leaderboard = [];
-            
+
             // Mock duration object with _data property
             duration = {
                 _data: {},
-                months: function() { return this._data.months; },
-                asDays: function() { return this._data.days; },
-                asHours: function() { return this._data.hours; },
-                asMinutes: function() { return this._data.minutes; },
-                asSeconds: function() { return this._data.seconds; }
+                months: function () { return this._data.months; },
+                asDays: function () { return this._data.days; },
+                asHours: function () { return this._data.hours; },
+                asMinutes: function () { return this._data.minutes; },
+                asSeconds: function () { return this._data.seconds; }
             };
         }));
-    
+
         it('should handle months duration (singular)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 1, days: 0, hours: 0, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for months
             if (duration._data.months != 0) {
                 var months = duration.months();
@@ -4378,15 +4379,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'months';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
             expect(vm.leaderboard[0].timeSpan).toBe('month');
         });
-    
+
         it('should handle months duration (plural)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 3, days: 0, hours: 0, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for months
             if (duration._data.months != 0) {
                 var months = duration.months();
@@ -4397,15 +4398,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'months';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(3);
             expect(vm.leaderboard[0].timeSpan).toBe('months');
         });
-    
+
         it('should handle days duration (singular)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for days
             if (duration._data.months != 0) {
                 // months logic
@@ -4418,15 +4419,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'days';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
             expect(vm.leaderboard[0].timeSpan).toBe('day');
         });
-    
+
         it('should handle days duration (plural)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for days
             if (duration._data.months != 0) {
                 // months logic
@@ -4439,15 +4440,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'days';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(5);
             expect(vm.leaderboard[0].timeSpan).toBe('days');
         });
-    
+
         it('should handle hours duration (singular)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for hours
             if (duration._data.months != 0) {
                 // months logic
@@ -4462,15 +4463,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'hours';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
             expect(vm.leaderboard[0].timeSpan).toBe('hour');
         });
-    
+
         it('should handle hours duration (plural)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 };
-            
+
             // Simulate the code block for hours
             if (duration._data.months != 0) {
                 // months logic
@@ -4485,15 +4486,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'hours';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(12);
             expect(vm.leaderboard[0].timeSpan).toBe('hours');
         });
-    
+
         it('should handle minutes duration (singular)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 0, minutes: 1, seconds: 0 };
-            
+
             // Simulate the code block for minutes
             if (duration._data.months != 0) {
                 // months logic
@@ -4510,15 +4511,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'minutes';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
             expect(vm.leaderboard[0].timeSpan).toBe('minute');
         });
-    
+
         it('should handle minutes duration (plural)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 };
-            
+
             // Simulate the code block for minutes
             if (duration._data.months != 0) {
                 // months logic
@@ -4535,15 +4536,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'minutes';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(30);
             expect(vm.leaderboard[0].timeSpan).toBe('minutes');
         });
-    
+
         it('should handle seconds duration (singular)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 };
-            
+
             // Simulate the code block for seconds
             if (duration._data.months != 0) {
                 // months logic
@@ -4562,15 +4563,15 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'seconds';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(1);
             expect(vm.leaderboard[0].timeSpan).toBe('second');
         });
-    
+
         it('should handle seconds duration (plural)', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 0, hours: 0, minutes: 0, seconds: 45 };
-            
+
             // Simulate the code block for seconds
             if (duration._data.months != 0) {
                 // months logic
@@ -4589,7 +4590,7 @@ describe('Unit tests for challenge controller', function () {
                     vm.leaderboard[0].timeSpan = 'seconds';
                 }
             }
-            
+
             expect(vm.leaderboard[0].submission__submitted_at).toBe(45);
             expect(vm.leaderboard[0].timeSpan).toBe('seconds');
         });
@@ -4602,63 +4603,63 @@ describe('Unit tests for challenge controller', function () {
             // Mock the selectExistTeam function since it's not accessible in this scope
             vm.selectExistTeam = jasmine.createSpy('selectExistTeam');
         });
-    
+
         it('should call selectExistTeam and hide dialog when form is valid and terms accepted', function () {
             var acceptTermsAndConditionsForm = true;
             vm.termsAndConditions = true;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should only hide dialog when form is valid but terms not accepted', function () {
             var acceptTermsAndConditionsForm = true;
             vm.termsAndConditions = false;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).not.toHaveBeenCalled(); // Dialog should NOT be hidden
         });
-    
+
         it('should hide dialog when form is invalid', function () {
             var acceptTermsAndConditionsForm = false;
             vm.termsAndConditions = true;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should hide dialog when form is null', function () {
             var acceptTermsAndConditionsForm = null;
             vm.termsAndConditions = true;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should hide dialog when form is undefined', function () {
             var acceptTermsAndConditionsForm = undefined;
             vm.termsAndConditions = true;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should handle both conditions being false', function () {
             var acceptTermsAndConditionsForm = false;
             vm.termsAndConditions = false;
-            
+
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
-            
+
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
@@ -4672,10 +4673,10 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
         });
-    
+
         it('should send GET request with correct parameters', function () {
             vm.domain_choices();
-            
+
             expect(utilities.sendRequest).toHaveBeenCalledWith({
                 url: 'challenges/challenge/get_domain_choices/',
                 method: 'GET',
@@ -4686,279 +4687,161 @@ describe('Unit tests for challenge controller', function () {
         });
         it('should set domain and domainoptions on success when matching domain found', function () {
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with domain choices including matching domain
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing'],
                 ['RL', 'Reinforcement Learning']
             ];
-            
+
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-            
+
             expect(vm.domain).toBe('CV');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-    
+
         it('should set domainoptions but not domain when no matching domain found', function () {
             vm.page.domain = 'ML'; // Different from available choices
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with domain choices not including current page domain
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing'],
                 ['RL', 'Reinforcement Learning']
             ];
-            
+
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-            
+
             expect(vm.domain).toBe(''); // Should remain empty since no match found
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-    
+
         it('should handle empty domain choices array', function () {
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with empty array
             parameters.callback.onSuccess({
                 data: []
             });
-            
+
             expect(vm.domain).toBe(''); // Should remain empty
             expect(vm.domainoptions).toEqual([]);
         });
-    
+
         it('should handle single domain choice that matches', function () {
             vm.page.domain = 'CV';
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with single matching domain
             var domainChoices = [
                 ['CV', 'Computer Vision']
             ];
-            
+
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-            
+
             expect(vm.domain).toBe('CV');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-    
+
         it('should handle multiple matching domains (first match wins)', function () {
             vm.page.domain = 'CV';
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with multiple matching domains
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['CV', 'Computer Vision Alternative'],
                 ['NLP', 'Natural Language Processing']
             ];
-            
+
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-            
+
             expect(vm.domain).toBe('CV'); // First match should be set
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-    
+
         it('should notify error on error callback', function () {
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate error callback
             parameters.callback.onError({
                 data: 'Failed to fetch domain choices'
             });
-            
+
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Failed to fetch domain choices');
         });
-    
+
         it('should handle error callback with object error', function () {
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate error callback with object
             parameters.callback.onError({
                 data: { error: 'Network error' }
             });
-            
+
             expect($rootScope.notify).toHaveBeenCalledWith('error', { error: 'Network error' });
         });
-    
+
         it('should preserve existing domain if no match found', function () {
             vm.domain = 'Existing Domain';
             vm.page.domain = 'NonExistent';
             vm.domain_choices();
-            
+
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-            
+
             // Simulate success callback with non-matching domains
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing']
             ];
-            
+
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-            
+
             expect(vm.domain).toBe('Existing Domain'); // Should remain unchanged
             expect(vm.domainoptions).toEqual(domainChoices);
         });
     });
 
-    describe('Unit tests for getResults polling (lines 1209-1250)', function () {
-        var $interval, $rootScope, $state, utilities;
-    
-        beforeEach(inject(function(_$interval_, _$rootScope_, _$state_, _utilities_) {
-            $interval = _$interval_;
-            $rootScope = _$rootScope_;
-            $state = _$state_;
-            utilities = _utilities_;
-            spyOn(utilities, 'sendRequest');
-            spyOn($state, 'go');
-            spyOn(utilities, 'storeData');
-            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
-            vm.currentPage = 1;
-            vm.challengeId = 42;
-            vm.phaseId = 99;
-            vm.submissionVisibility = {};
-            vm.baselineStatus = {};
-            vm.verifiedStatus = {};
-            vm.showUpdate = false;
-            vm.stopLoader = jasmine.createSpy('stopLoader');
-        }));
-    
-        it('should call sendRequest with correct parameters on poll', function () {
-            vm.getResults(99);
-            vm.start();
-            $interval.flush(10000);
-            expect(utilities.sendRequest).toHaveBeenCalled();
-            var params = utilities.sendRequest.calls.mostRecent().args[0];
-            expect(params.url).toContain('jobs/challenge/42/challenge_phase/99/submission');
-            expect(params.method).toBe('GET');
-        });
-    
-        it('should update submissionVisibility, baselineStatus, verifiedStatus on success', function () {
-            vm.getResults(99);
-            vm.start();
-            $interval.flush(10000);
-            var params = utilities.sendRequest.calls.mostRecent().args[0];
-            var details = {
-                results: [
-                    {id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished'}
-                ]
-            };
-            params.callback.onSuccess({ data: details });
-            expect(vm.submissionVisibility[1]).toBe(true);
-            expect(vm.baselineStatus[1]).toBe(false);
-            expect(vm.verifiedStatus[1]).toBe(true);
-        });
-    
-        it('should set showUpdate if result count changes', function () {
-            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
-            vm.getResults(99);
-            vm.start();
-            $interval.flush(10000);
-            var params = utilities.sendRequest.calls.mostRecent().args[0];
-            var details = { results: [{id: 1, status: 'finished'}, {id: 2, status: 'failed'}] };
-            params.callback.onSuccess({ data: details });
-            expect(vm.showUpdate).toBe(true);
-        });
-    
-        it('should set showUpdate if any status changes', function () {
-            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
-            vm.getResults(99);
-            vm.start();
-            $interval.flush(10000);
-            var params = utilities.sendRequest.calls.mostRecent().args[0];
-            var details = { results: [{id: 1, status: 'failed'}] };
-            params.callback.onSuccess({ data: details });
-            expect(vm.showUpdate).toBe(true);
-        });
-    
-        it('should handle error callback and redirect', function () {
-            vm.getResults(99);
-            vm.start();
-            $interval.flush(10000);
-            var params = utilities.sendRequest.calls.mostRecent().args[0];
-            params.callback.onError({ data: { detail: 'err' } });
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', 'err');
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    });
-
-    describe('Unit tests for reRunSubmission function (lines 1483-1501)', function () {
-        var submissionObject;
-    
-        beforeEach(function () {
-            submissionObject = { id: 123, classList: [] };
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            window.userKey = 'encrypted key'; // or whatever your test expects
-        });
-    
-        it('should notify success and reset classList on success', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                expect(params.url).toBe('jobs/submissions/123/re-run/');
-                expect(params.method).toBe('POST');
-                expect(params.token).toBe('encrypted key'); // match your test setup
-                params.callback.onSuccess({ data: { success: 'Re-run started!' } });
-            });
-    
-            vm.reRunSubmission(submissionObject);
-    
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Re-run started!");
-            expect(submissionObject.classList).toEqual(['']);
-        });
-    
-        it('should notify error and reset classList on error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: "Some error occurred" });
-            });
-    
-            vm.reRunSubmission(submissionObject);
-    
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error occurred");
-            expect(submissionObject.classList).toEqual(['']);
-        });
-    });
-    
 });
