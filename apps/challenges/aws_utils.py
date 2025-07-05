@@ -2070,7 +2070,7 @@ def delete_submission_files_from_storage(submission):
         challenge_pk = submission.challenge_phase.challenge.pk
         challenge_aws_keys = get_aws_credentials_for_challenge(challenge_pk)
         s3_client = get_boto3_client("s3", challenge_aws_keys)
-        bucket_name = aws_keys["AWS_STORAGE_BUCKET_NAME"]
+        bucket_name = challenge_aws_keys["AWS_STORAGE_BUCKET_NAME"]
 
         # List of file fields to delete
         file_fields = [
@@ -2165,6 +2165,12 @@ def cleanup_expired_submission_artifacts():
         "errors": [],
     }
 
+    if not eligible_submissions.exists():
+        logger.info("No submissions eligible for cleanup")
+        return cleanup_stats
+
+    logger.info(f"Found {eligible_submissions.count()} submissions eligible for cleanup")
+
     for submission in eligible_submissions:
         cleanup_stats["total_processed"] += 1
 
@@ -2173,20 +2179,28 @@ def cleanup_expired_submission_artifacts():
             if result["success"]:
                 cleanup_stats["successful_deletions"] += 1
                 logger.info(
-                    f"Successfully cleaned up submission {submission.pk}"
+                    f"Successfully cleaned up submission {submission.pk} from challenge {submission.challenge_phase.challenge.title}"
                 )
             else:
                 cleanup_stats["failed_deletions"] += 1
                 cleanup_stats["errors"].append(
                     {
                         "submission_id": submission.pk,
+                        "challenge_id": submission.challenge_phase.challenge.pk,
                         "error": result.get("error", "Unknown error"),
                     }
+                )
+                logger.error(
+                    f"Failed to clean up submission {submission.pk}: {result.get('error', 'Unknown error')}"
                 )
         except Exception as e:
             cleanup_stats["failed_deletions"] += 1
             cleanup_stats["errors"].append(
-                {"submission_id": submission.pk, "error": str(e)}
+                {
+                    "submission_id": submission.pk,
+                    "challenge_id": submission.challenge_phase.challenge.pk,
+                    "error": str(e)
+                }
             )
             logger.exception(
                 f"Unexpected error cleaning up submission {submission.pk}"
@@ -2197,6 +2211,10 @@ def cleanup_expired_submission_artifacts():
         f"Successful: {cleanup_stats['successful_deletions']}, "
         f"Failed: {cleanup_stats['failed_deletions']}"
     )
+
+    # Log errors for monitoring
+    if cleanup_stats["errors"]:
+        logger.error(f"Cleanup errors: {cleanup_stats['errors']}")
 
     return cleanup_stats
 
@@ -2213,32 +2231,64 @@ def update_submission_retention_dates():
     logger.info("Updating submission retention dates")
 
     updated_count = 0
+    errors = []
 
-    # Get all challenge phases that have ended and are not public
-    ended_phases = ChallengePhase.objects.filter(
-        end_date__isnull=False, is_public=False
-    )
+    try:
+        # Get all challenge phases that have ended and are not public
+        ended_phases = ChallengePhase.objects.filter(
+            end_date__isnull=False, is_public=False
+        )
 
-    for phase in ended_phases:
-        retention_date = calculate_submission_retention_date(phase)
-        if retention_date:
-            # Update submissions for this phase
-            submissions_updated = Submission.objects.filter(
-                challenge_phase=phase,
-                retention_eligible_date__isnull=True,
-                is_artifact_deleted=False,
-            ).update(retention_eligible_date=retention_date)
+        if not ended_phases.exists():
+            logger.info("No ended challenge phases found - no retention dates to update")
+            return {"updated_submissions": 0, "errors": []}
 
-            updated_count += submissions_updated
+        logger.info(f"Found {ended_phases.count()} ended challenge phases to process")
 
-            if submissions_updated > 0:
-                logger.info(
-                    f"Updated {submissions_updated} submissions for phase {phase.pk} "
-                    f"with retention date {retention_date}"
-                )
+        for phase in ended_phases:
+            try:
+                retention_date = calculate_submission_retention_date(phase)
+                if retention_date:
+                    # Update submissions for this phase
+                    submissions_updated = Submission.objects.filter(
+                        challenge_phase=phase,
+                        retention_eligible_date__isnull=True,
+                        is_artifact_deleted=False,
+                    ).update(retention_eligible_date=retention_date)
+
+                    updated_count += submissions_updated
+
+                    if submissions_updated > 0:
+                        logger.info(
+                            f"Updated {submissions_updated} submissions for phase {phase.pk} "
+                            f"({phase.challenge.title}) with retention date {retention_date}"
+                        )
+                else:
+                    logger.debug(f"No retention date calculated for phase {phase.pk} - phase may still be public")
+
+            except Exception as e:
+                error_msg = f"Failed to update retention dates for phase {phase.pk}: {str(e)}"
+                logger.error(error_msg)
+                errors.append({
+                    "phase_id": phase.pk,
+                    "challenge_id": phase.challenge.pk,
+                    "error": str(e)
+                })
+
+    except Exception as e:
+        error_msg = f"Unexpected error during retention date update: {str(e)}"
+        logger.exception(error_msg)
+        errors.append({"error": str(e)})
 
     logger.info(f"Updated retention dates for {updated_count} submissions")
-    return {"updated_submissions": updated_count}
+    
+    if errors:
+        logger.error(f"Retention date update errors: {errors}")
+    
+    return {
+        "updated_submissions": updated_count,
+        "errors": errors
+    }
 
 
 @app.task
@@ -2260,6 +2310,12 @@ def send_retention_warning_notifications():
         is_artifact_deleted=False,
     ).select_related("challenge_phase__challenge__creator")
 
+    if not warning_submissions.exists():
+        logger.info("No submissions require retention warning notifications")
+        return {"notifications_sent": 0}
+
+    logger.info(f"Found {warning_submissions.count()} submissions requiring retention warnings")
+
     # Group by challenge to send one email per challenge
     challenges_to_notify = {}
     for submission in warning_submissions:
@@ -2272,13 +2328,23 @@ def send_retention_warning_notifications():
         challenges_to_notify[challenge.pk]["submission_count"] += 1
 
     notifications_sent = 0
+    notification_errors = []
 
     for challenge_data in challenges_to_notify.values():
         challenge = challenge_data["challenge"]
         submission_count = challenge_data["submission_count"]
 
         try:
+            # Skip if challenge doesn't want host notifications
+            if not challenge.inform_hosts:
+                logger.info(f"Skipping notification for challenge {challenge.pk} - inform_hosts is False")
+                continue
+
             # Send notification email to challenge hosts
+            if not hasattr(settings, 'EVALAI_API_SERVER') or not settings.EVALAI_API_SERVER:
+                logger.error("EVALAI_API_SERVER setting is missing - cannot generate challenge URL")
+                continue
+
             challenge_url = f"{settings.EVALAI_API_SERVER}/web/challenges/challenge-page/{challenge.id}"
 
             template_data = {
@@ -2292,33 +2358,65 @@ def send_retention_warning_notifications():
             if challenge.image:
                 template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
 
-            # Get template ID from settings (you'll need to add this)
+            # Get template ID from settings
             template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES", {}).get(
                 "RETENTION_WARNING_EMAIL", None
             )
 
-            if template_id and challenge.inform_hosts:
+            if not template_id:
+                logger.error("RETENTION_WARNING_EMAIL template ID not configured in settings")
+                continue
+
+            # Get challenge host emails
+            try:
                 emails = challenge.creator.get_all_challenge_host_email()
-                for email in emails:
+                if not emails:
+                    logger.warning(f"No host emails found for challenge {challenge.pk}")
+                    continue
+            except Exception as e:
+                logger.error(f"Failed to get host emails for challenge {challenge.pk}: {e}")
+                continue
+
+            # Send emails to all hosts
+            email_sent = False
+            for email in emails:
+                try:
                     send_email(
                         sender=settings.CLOUDCV_TEAM_EMAIL,
                         recipient=email,
                         template_id=template_id,
                         template_data=template_data,
                     )
+                    email_sent = True
+                    logger.info(f"Sent retention warning email to {email} for challenge {challenge.pk}")
+                except Exception as e:
+                    logger.error(f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}")
+                    notification_errors.append({
+                        "challenge_id": challenge.pk,
+                        "email": email,
+                        "error": str(e)
+                    })
 
+            if email_sent:
                 notifications_sent += 1
-                logger.info(
-                    f"Sent retention warning for challenge {challenge.pk}"
-                )
+                logger.info(f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)")
 
         except Exception as e:
-            logger.exception(
-                f"Failed to send retention warning for challenge {challenge.pk}"
-            )
+            logger.exception(f"Failed to send retention warning for challenge {challenge.pk}")
+            notification_errors.append({
+                "challenge_id": challenge.pk,
+                "error": str(e)
+            })
 
     logger.info(f"Sent {notifications_sent} retention warning notifications")
-    return {"notifications_sent": notifications_sent}
+    
+    if notification_errors:
+        logger.error(f"Notification errors: {notification_errors}")
+    
+    return {
+        "notifications_sent": notifications_sent,
+        "errors": notification_errors
+    }
 
 
 def update_challenge_log_retention_on_approval(challenge):

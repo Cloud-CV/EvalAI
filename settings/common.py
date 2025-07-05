@@ -230,6 +230,10 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+# Celery timezone configuration
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -291,6 +295,16 @@ LOGGING = {
         "django.db.backends": {
             "handlers": ["mail_admins", "console"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "challenges.aws_utils": {
+            "handlers": ["console", "logfile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery": {
+            "handlers": ["console", "logfile"],
+            "level": "INFO",
             "propagate": False,
         },
     },
