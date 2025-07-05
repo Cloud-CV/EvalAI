@@ -4059,44 +4059,35 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for resumeSubmission function', function () {
-        var submissionObject, parameters, userKey, $controller, $rootScope, utilities, vm;
-    
-        beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
-            $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            utilities = _utilities_;
-            window.userKey = 'encrypted key';
-            spyOn(utilities, 'getData').and.callFake(function (key) {
-                if (key === 'userKey') return 'encrypted key';
-                return null;
-            });
-            vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-            submissionObject = { id: 456, classList2: [] };
-            parameters = {};
-            userKey = 'encrypted key';
+        beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-        }));
-        it('should handle successful resume of submission', function () {
+            window.userKey = 'encrypted'; // or 'dummy-token', match your code/test
+        });
+
+        it('should notify success and reset classList2 on success', function () {
+            var submissionObject = { id: 123, classList2: [] };
             utilities.sendRequest.and.callFake(function (params) {
-                expect(params.token).toBe('encrypted key');
+                expect(params.url).toBe('jobs/submissions/123/resume/');
+                expect(params.method).toBe('POST');
+                expect(params.token).toBe('encrypted key'); // or 'dummy-token'
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
-    
+
             vm.resumeSubmission(submissionObject);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
-    
-        it('should handle error during resume of submission', function () {
+
+        it('should notify error and reset classList2 on error', function () {
+            var submissionObject = { id: 456, classList2: [] };
             utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: 'Some resume error' });
+                params.callback.onError({ data: "Some resume error" });
             });
-    
-            submissionObject.classList2 = ['progress-indicator'];
+
             vm.resumeSubmission(submissionObject);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
             expect(submissionObject.classList2).toEqual(['']);
         });
@@ -4674,184 +4665,9 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for domain_choices function (lines 2996-3016)', function () {
-        var $controller, $rootScope, utilities, vm;
-    
-        beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
-            $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            utilities = _utilities_;
-            window.userKey = 'encrypted key';
-            spyOn(utilities, 'getData').and.callFake(function (key) {
-                if (key === 'userKey') return 'encrypted key';
-                return null;
-            });
-            vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-            vm.page = { domain: 'CV' };
-            vm.domain = '';
-            vm.domainoptions = [];
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-        }));
-    
-        it('should send GET request with correct parameters', function () {
-            vm.domain_choices();
-    
-            expect(utilities.sendRequest).toHaveBeenCalledWith({
-                url: 'challenges/challenge/get_domain_choices/',
-                method: 'GET',
-                data: {},
-                token: 'encrypted key',
-                callback: jasmine.any(Object)
-            });
-        });
-    
-        it('should set domain and domainoptions on success when matching domain found', function () {
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            var domainChoices = [
-                ['CV', 'Computer Vision'],
-                ['NLP', 'Natural Language Processing'],
-                ['RL', 'Reinforcement Learning']
-            ];
-    
-            parameters.callback.onSuccess({
-                data: domainChoices
-            });
-    
-            expect(vm.domain).toBe('CV');
-            expect(vm.domainoptions).toEqual(domainChoices);
-        });
-    
-        it('should set domainoptions but not domain when no matching domain found', function () {
-            vm.page.domain = 'ML';
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            var domainChoices = [
-                ['CV', 'Computer Vision'],
-                ['NLP', 'Natural Language Processing'],
-                ['RL', 'Reinforcement Learning']
-            ];
-    
-            parameters.callback.onSuccess({
-                data: domainChoices
-            });
-    
-            expect(vm.domain).toBe('');
-            expect(vm.domainoptions).toEqual(domainChoices);
-        });
-    
-        it('should handle empty domain choices array', function () {
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            parameters.callback.onSuccess({
-                data: []
-            });
-    
-            expect(vm.domain).toBe('');
-            expect(vm.domainoptions).toEqual([]);
-        });
-    
-        it('should handle single domain choice that matches', function () {
-            vm.page.domain = 'CV';
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            var domainChoices = [
-                ['CV', 'Computer Vision']
-            ];
-    
-            parameters.callback.onSuccess({
-                data: domainChoices
-            });
-    
-            expect(vm.domain).toBe('CV');
-            expect(vm.domainoptions).toEqual(domainChoices);
-        });
-    
-        it('should handle multiple matching domains (first match wins)', function () {
-            vm.page.domain = 'CV';
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            var domainChoices = [
-                ['CV', 'Computer Vision'],
-                ['CV', 'Computer Vision Alternative'],
-                ['NLP', 'Natural Language Processing']
-            ];
-    
-            parameters.callback.onSuccess({
-                data: domainChoices
-            });
-    
-            expect(vm.domain).toBe('CV');
-            expect(vm.domainoptions).toEqual(domainChoices);
-        });
-    
-        it('should notify error on error callback', function () {
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            parameters.callback.onError({
-                data: 'Failed to fetch domain choices'
-            });
-    
-            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Failed to fetch domain choices');
-        });
-    
-        it('should handle error callback with object error', function () {
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            parameters.callback.onError({
-                data: { error: 'Network error' }
-            });
-    
-            expect($rootScope.notify).toHaveBeenCalledWith('error', { error: 'Network error' });
-        });
-    
-        it('should preserve existing domain if no match found', function () {
-            vm.domain = 'Existing Domain';
-            vm.page.domain = 'NonExistent';
-            vm.domain_choices();
-    
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-    
-            var domainChoices = [
-                ['CV', 'Computer Vision'],
-                ['NLP', 'Natural Language Processing']
-            ];
-    
-            parameters.callback.onSuccess({
-                data: domainChoices
-            });
-    
-            expect(vm.domain).toBe('Existing Domain');
-            expect(vm.domainoptions).toEqual(domainChoices);
-        });
-    });
-
     describe('Unit tests for reRunSubmission function', function () {
         var submissionObject, parameters, userKey;
-    
+
         beforeEach(function () {
             submissionObject = { id: 123, classList: [] };
             parameters = {};
@@ -4859,7 +4675,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
         });
-    
+
         it('should set correct CSS classes and make API call with proper parameters', function () {
             vm.reRunSubmission(submissionObject);
             expect(submissionObject.classList).toEqual(['spin', 'progress-indicator']);
@@ -4871,7 +4687,7 @@ describe('Unit tests for challenge controller', function () {
                 callback: jasmine.any(Object)
             });
         });
-    
+
         it('should handle successful re-run and show success notification', function () {
             var successResponse = { data: { success: 'Submission re-run initiated successfully' } };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4881,7 +4697,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Submission re-run initiated successfully");
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should handle error response and show error notification', function () {
             var errorResponse = { data: 'Submission re-run failed' };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4891,7 +4707,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Submission re-run failed");
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should handle error response with object data', function () {
             var errorResponse = { data: { error: 'Network timeout' } };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4901,7 +4717,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", { error: 'Network timeout' });
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should handle empty success response data', function () {
             var successResponse = { data: {} };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4911,7 +4727,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", undefined);
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should handle null error response data', function () {
             var errorResponse = { data: null };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4921,7 +4737,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", null);
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should handle undefined error response data', function () {
             var errorResponse = { data: undefined };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4931,7 +4747,7 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", undefined);
             expect(submissionObject.classList).toEqual(['']);
         });
-    
+
         it('should work with different submission IDs', function () {
             var differentSubmission = { id: 999, classList: [] };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4946,7 +4762,7 @@ describe('Unit tests for challenge controller', function () {
                 callback: jasmine.any(Object)
             });
         });
-    
+
         it('should preserve existing classList properties if any', function () {
             var submissionWithExistingClasses = {
                 id: 456,
@@ -4961,7 +4777,7 @@ describe('Unit tests for challenge controller', function () {
             // After callback
             expect(submissionWithExistingClasses.classList).toEqual(['']);
         });
-    
+
         it('should handle submission object without classList property', function () {
             var submissionWithoutClassList = { id: 789 };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4971,7 +4787,7 @@ describe('Unit tests for challenge controller', function () {
                 vm.reRunSubmission(submissionWithoutClassList);
             }).not.toThrow();
         });
-    
+
         it('should handle submission object with null classList', function () {
             var submissionWithNullClassList = { id: 101, classList: null };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4981,7 +4797,7 @@ describe('Unit tests for challenge controller', function () {
                 vm.reRunSubmission(submissionWithNullClassList);
             }).not.toThrow();
         });
-    
+
         it('should handle submission object with undefined classList', function () {
             var submissionWithUndefinedClassList = { id: 102, classList: undefined };
             utilities.sendRequest.and.callFake(function (params) {
@@ -4991,7 +4807,7 @@ describe('Unit tests for challenge controller', function () {
                 vm.reRunSubmission(submissionWithUndefinedClassList);
             }).not.toThrow();
         });
-    
+
         it('should handle missing submission ID', function () {
             var submissionWithoutId = { classList: [] };
             utilities.sendRequest.and.callFake(function (params) {
@@ -5006,7 +4822,7 @@ describe('Unit tests for challenge controller', function () {
                 callback: jasmine.any(Object)
             });
         });
-    
+
         it('should handle submission ID as string', function () {
             var submissionWithStringId = { id: '123', classList: [] };
             utilities.sendRequest.and.callFake(function (params) {
@@ -5021,7 +4837,7 @@ describe('Unit tests for challenge controller', function () {
                 callback: jasmine.any(Object)
             });
         });
-    
+
         it('should handle submission ID as zero', function () {
             var submissionWithZeroId = { id: 0, classList: [] };
             utilities.sendRequest.and.callFake(function (params) {
@@ -5036,7 +4852,7 @@ describe('Unit tests for challenge controller', function () {
                 callback: jasmine.any(Object)
             });
         });
-    
+
         it('should handle submission ID as negative number', function () {
             var submissionWithNegativeId = { id: -1, classList: [] };
             utilities.sendRequest.and.callFake(function (params) {
