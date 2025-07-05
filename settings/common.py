@@ -218,15 +218,15 @@ CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 CELERY_BEAT_SCHEDULE = {
     'cleanup-expired-submission-artifacts': {
         'task': 'challenges.aws_utils.cleanup_expired_submission_artifacts',
-        'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM UTC
+        'schedule': crontab(hour=2, minute=0, day_of_month=1),  # Monthly on the 1st at 2 AM UTC
     },
     'send-retention-warning-notifications': {
         'task': 'challenges.aws_utils.send_retention_warning_notifications',
-        'schedule': crontab(hour=10, minute=0),  # Daily at 10 AM UTC
+        'schedule': crontab(hour=10, minute=0, day_of_week=1),  # Weekly on Mondays at 10 AM UTC
     },
     'update-submission-retention-dates': {
         'task': 'challenges.aws_utils.update_submission_retention_dates',
-        'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM UTC
+        'schedule': crontab(hour=1, minute=0, day_of_week=0),  # Weekly on Sundays at 1 AM UTC
     },
 }
 
