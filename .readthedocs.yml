@@ -1,14 +1,17 @@
 version: 2
 
-sphinx:
-  builder: html
-
-formats:
-  - epub
-  - pdf
+build:
+  os: ubuntu-22.04 # required since Oct 2023
+  tools:
+    python: "3.11"
 
 python:
-   version: 3.6
-   install:
-   - requirements: requirements/readthedocs.txt
-   system_packages: true
+  install:
+    - requirements: requirements/readthedocs.txt
+
+sphinx:
+  configuration: docs/source/conf.py
+  builder: html
+  formats:
+    - epub
+    - pdf
