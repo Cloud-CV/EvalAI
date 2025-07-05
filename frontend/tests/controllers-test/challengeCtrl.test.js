@@ -4599,14 +4599,17 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'hide');
             vm.termsAndConditions = false;
+            // Mock the selectExistTeam function since it's not accessible in this scope
+            vm.selectExistTeam = jasmine.createSpy('selectExistTeam');
         });
     
-        it('should hide dialog when form is valid and terms accepted', function () {
+        it('should call selectExistTeam and hide dialog when form is valid and terms accepted', function () {
             var acceptTermsAndConditionsForm = true;
             vm.termsAndConditions = true;
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
+            expect(vm.selectExistTeam).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     
@@ -4616,7 +4619,8 @@ describe('Unit tests for challenge controller', function () {
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
-            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).not.toHaveBeenCalled(); // Dialog should NOT be hidden
         });
     
         it('should hide dialog when form is invalid', function () {
@@ -4625,6 +4629,7 @@ describe('Unit tests for challenge controller', function () {
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     
@@ -4634,6 +4639,7 @@ describe('Unit tests for challenge controller', function () {
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     
@@ -4643,6 +4649,7 @@ describe('Unit tests for challenge controller', function () {
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     
@@ -4652,6 +4659,7 @@ describe('Unit tests for challenge controller', function () {
             
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
             
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
