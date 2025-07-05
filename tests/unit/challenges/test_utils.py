@@ -21,7 +21,7 @@ from challenges.utils import (
 )
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import override_settings, TestCase
+from django.test import TestCase, override_settings
 from hosts.models import ChallengeHostTeam
 
 
