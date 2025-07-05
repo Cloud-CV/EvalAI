@@ -4680,7 +4680,7 @@ describe('Unit tests for challenge controller', function () {
                 url: 'challenges/challenge/get_domain_choices/',
                 method: 'GET',
                 data: {},
-                token: 'encrypted', // Change from 'encrypted key' to 'encrypted'
+                token: 'encrypted key', // Change from 'encrypted key' to 'encrypted'
                 callback: jasmine.any(Object)
             });
         });
