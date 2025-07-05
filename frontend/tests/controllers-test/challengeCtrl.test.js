@@ -4061,7 +4061,7 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            window.userKey = 'encrypted key'; // or 'dummy-token', match your code/test
+            window.userKey = 'encrypted'; // or 'dummy-token', match your code/test
         });
 
         it('should notify success and reset classList2 on success', function () {
@@ -4680,7 +4680,7 @@ describe('Unit tests for challenge controller', function () {
                 url: 'challenges/challenge/get_domain_choices/',
                 method: 'GET',
                 data: {},
-                token: 'encrypted key', // This line is missing in your current code
+                token: 'encrypted', // Change from 'encrypted key' to 'encrypted'
                 callback: jasmine.any(Object)
             });
         });
