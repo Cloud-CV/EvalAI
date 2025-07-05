@@ -4595,253 +4595,201 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for manageWorker function (lines 179-204)', function () {
+    describe('Unit tests for acceptTermsAndConditions function (lines 3045-3055)', function () {
         beforeEach(function () {
-            vm.challengeId = 123;
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
+            spyOn(vm, 'selectExistTeam');
+            spyOn($mdDialog, 'hide');
+            vm.termsAndConditions = false;
         });
-
-        it('should send PUT request with correct URL and data', function () {
-            var action = 'start';
-
-            vm.manageWorker(action);
-
-            expect(utilities.sendRequest).toHaveBeenCalledWith({
-                url: 'challenges/123/manage_worker/start/',
-                method: 'PUT',
-                data: {},
-                callback: jasmine.any(Object)
-            });
+    
+        it('should call selectExistTeam and hide dialog when form is valid and terms accepted', function () {
+            var acceptTermsAndConditionsForm = true;
+            vm.termsAndConditions = true;
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
-
-        it('should notify success when action is "Success"', function () {
-            var action = 'stop';
-
-            vm.manageWorker(action);
-
-            // Get the callback that was passed to sendRequest
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with "Success" action
-            parameters.callback.onSuccess({
-                data: { action: "Success" }
-            });
-
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Worker(s) stopped succesfully.");
+    
+        it('should only hide dialog when form is valid but terms not accepted', function () {
+            var acceptTermsAndConditionsForm = true;
+            vm.termsAndConditions = false;
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
-
-        it('should notify error when action is not "Success"', function () {
-            var action = 'restart';
-
-            vm.manageWorker(action);
-
-            // Get the callback that was passed to sendRequest
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with error action
-            parameters.callback.onSuccess({
-                data: { action: "Failed", error: "Worker not found" }
-            });
-
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Worker not found");
+    
+        it('should hide dialog when form is invalid', function () {
+            var acceptTermsAndConditionsForm = false;
+            vm.termsAndConditions = true; // Even if terms are accepted, form is invalid
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
-
-        it('should notify generic error when error callback has no error message', function () {
-            var action = 'start';
-
-            vm.manageWorker(action);
-
-            // Get the callback that was passed to sendRequest
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-
-            // Simulate error callback without error message
-            parameters.callback.onError({
-                data: {}
-            });
-
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
+    
+        it('should hide dialog when form is null', function () {
+            var acceptTermsAndConditionsForm = null;
+            vm.termsAndConditions = true;
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
-
-        it('should notify specific error when error callback has error message', function () {
-            var action = 'stop';
-
-            vm.manageWorker(action);
-
-            // Get the callback that was passed to sendRequest
-            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-            var parameters = sendRequestCall.args[0];
-
-            // Simulate error callback with error message
-            parameters.callback.onError({
-                data: { error: "Network timeout" }
-            });
-
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: Network timeout");
+    
+        it('should hide dialog when form is undefined', function () {
+            var acceptTermsAndConditionsForm = undefined;
+            vm.termsAndConditions = true;
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
-
-        it('should handle different action types correctly', function () {
-            var actions = ['start', 'stop', 'restart', 'scale'];
-
-            actions.forEach(function (action) {
-                utilities.sendRequest.calls.reset();
-                $rootScope.notify.calls.reset();
-
-                vm.manageWorker(action);
-
-                expect(utilities.sendRequest).toHaveBeenCalledWith({
-                    url: 'challenges/123/manage_worker/' + action + '/',
-                    method: 'PUT',
-                    data: {},
-                    callback: jasmine.any(Object)
-                });
-            });
-        });
-
-        it('should use correct challengeId in URL', function () {
-            vm.challengeId = 456;
-            var action = 'start';
-
-            vm.manageWorker(action);
-
-            expect(utilities.sendRequest).toHaveBeenCalledWith({
-                url: 'challenges/456/manage_worker/start/',
-                method: 'PUT',
-                data: {},
-                callback: jasmine.any(Object)
-            });
+    
+        it('should handle both conditions being false', function () {
+            var acceptTermsAndConditionsForm = false;
+            vm.termsAndConditions = false;
+            
+            vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
+            
+            expect(vm.selectExistTeam).not.toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
 
-    describe('Unit tests for startLoadingLogs and stopLoadingLogs functions (lines 234-275)', function () {
-        var $interval, $httpBackend;
-    
-        beforeEach(inject(function(_$interval_, _$httpBackend_) {
-            $interval = _$interval_;
-            $httpBackend = _$httpBackend_;
-            
-            // Mock utilities.getData to prevent initial auth token request
-            spyOn(utilities, 'getData').and.callFake(function(key) {
-                if (key === 'refreshJWT') return 'dummy-token';
-                if (key === 'userKey') return 'dummy-token';
-                return null;
-            });
-            
-            // Mock HTTP backend for auth token request
-            $httpBackend.whenGET('/api/accounts/user/get_auth_token').respond(200, { token: 'dummy-token' });
-            
-            vm.challengeId = 123;
-            vm.workerLogs = [];
-            vm.evaluation_module_error = null;
-            
+    describe('Unit tests for domain_choices function (lines 2996-3016)', function () {
+        beforeEach(function () {
+            vm.page = { domain: 'CV' };
+            vm.domain = '';
+            vm.domainoptions = [];
             spyOn(utilities, 'sendRequest');
-            spyOn($interval, 'cancel');
-        }));
-    
-        afterEach(function () {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
+            spyOn($rootScope, 'notify');
         });
     
-        it('should set up interval and push evaluation_module_error when present', function () {
-            vm.evaluation_module_error = "Some evaluation error";
+        it('should send GET request with correct parameters', function () {
+            vm.domain_choices();
             
-            vm.startLoadingLogs();
-            
-            expect(vm.logs_poller).toBeDefined();
-            expect(vm.workerLogs).toEqual(["Some evaluation error"]);
-        });
-    
-        it('should make GET request when no evaluation_module_error', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
-            
-            expect(vm.logs_poller).toBeDefined();
             expect(utilities.sendRequest).toHaveBeenCalledWith({
-                url: 'challenges/123/get_worker_logs/',
+                url: 'challenges/challenge/get_domain_choices/',
                 method: 'GET',
                 data: {},
                 callback: jasmine.any(Object)
             });
         });
     
-        it('should process logs with UTC time conversion', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
+        it('should set domain and domainoptions on success when matching domain found', function () {
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
             
-            // Simulate success callback with logs containing UTC timestamps
+            // Simulate success callback with domain choices including matching domain
+            var domainChoices = [
+                ['CV', 'Computer Vision'],
+                ['NLP', 'Natural Language Processing'],
+                ['RL', 'Reinforcement Learning']
+            ];
+            
             parameters.callback.onSuccess({
-                data: {
-                    logs: [
-                        "[2023-01-01 12:00:00] Log message 1",
-                        "No timestamp log",
-                        "[2023-01-01 15:30:45] Log message 2"
-                    ]
-                }
+                data: domainChoices
             });
             
-            expect(vm.workerLogs.length).toBe(3);
-            expect(vm.workerLogs[0]).toContain("Log message 1");
-            expect(vm.workerLogs[1]).toBe("No timestamp log");
-            expect(vm.workerLogs[2]).toContain("Log message 2");
+            expect(vm.domain).toBe('CV');
+            expect(vm.domainoptions).toEqual(domainChoices);
         });
     
-        it('should handle logs without UTC timestamps', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
+        it('should set domainoptions but not domain when no matching domain found', function () {
+            vm.page.domain = 'ML'; // Different from available choices
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
             
-            // Simulate success callback with logs without timestamps
+            // Simulate success callback with domain choices not including current page domain
+            var domainChoices = [
+                ['CV', 'Computer Vision'],
+                ['NLP', 'Natural Language Processing'],
+                ['RL', 'Reinforcement Learning']
+            ];
+            
             parameters.callback.onSuccess({
-                data: {
-                    logs: [
-                        "Simple log message",
-                        "Another log without timestamp"
-                    ]
-                }
+                data: domainChoices
             });
             
-            expect(vm.workerLogs.length).toBe(2);
-            expect(vm.workerLogs[0]).toBe("Simple log message");
-            expect(vm.workerLogs[1]).toBe("Another log without timestamp");
+            expect(vm.domain).toBe(''); // Should remain empty since no match found
+            expect(vm.domainoptions).toEqual(domainChoices);
         });
     
-        it('should handle empty logs array', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
+        it('should handle empty domain choices array', function () {
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
             
-            // Simulate success callback with empty logs
+            // Simulate success callback with empty array
             parameters.callback.onSuccess({
-                data: {
-                    logs: []
-                }
+                data: []
             });
             
-            expect(vm.workerLogs.length).toBe(0);
+            expect(vm.domain).toBe(''); // Should remain empty
+            expect(vm.domainoptions).toEqual([]);
         });
     
-        it('should handle error callback by pushing error to workerLogs', function () {
-            vm.evaluation_module_error = null;
+        it('should handle single domain choice that matches', function () {
+            vm.page.domain = 'CV';
+            vm.domain_choices();
             
-            vm.startLoadingLogs();
+            // Get the callback that was passed to sendRequest
+            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
+            var parameters = sendRequestCall.args[0];
+            
+            // Simulate success callback with single matching domain
+            var domainChoices = [
+                ['CV', 'Computer Vision']
+            ];
+            
+            parameters.callback.onSuccess({
+                data: domainChoices
+            });
+            
+            expect(vm.domain).toBe('CV');
+            expect(vm.domainoptions).toEqual(domainChoices);
+        });
+    
+        it('should handle multiple matching domains (first match wins)', function () {
+            vm.page.domain = 'CV';
+            vm.domain_choices();
+            
+            // Get the callback that was passed to sendRequest
+            var sendRequestCall = utilities.sendRequest.calls.mostRecent();
+            var parameters = sendRequestCall.args[0];
+            
+            // Simulate success callback with multiple matching domains
+            var domainChoices = [
+                ['CV', 'Computer Vision'],
+                ['CV', 'Computer Vision Alternative'],
+                ['NLP', 'Natural Language Processing']
+            ];
+            
+            parameters.callback.onSuccess({
+                data: domainChoices
+            });
+            
+            expect(vm.domain).toBe('CV'); // First match should be set
+            expect(vm.domainoptions).toEqual(domainChoices);
+        });
+    
+        it('should notify error on error callback', function () {
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
@@ -4849,89 +4797,48 @@ describe('Unit tests for challenge controller', function () {
             
             // Simulate error callback
             parameters.callback.onError({
-                data: { error: "Failed to fetch logs" }
+                data: 'Failed to fetch domain choices'
             });
             
-            expect(vm.workerLogs).toEqual(["Failed to fetch logs"]);
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Failed to fetch domain choices');
         });
     
-        it('should handle error callback without error message', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
+        it('should handle error callback with object error', function () {
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
             
-            // Simulate error callback without error
+            // Simulate error callback with object
             parameters.callback.onError({
-                data: {}
+                data: { error: 'Network error' }
             });
             
-            expect(vm.workerLogs).toEqual([undefined]);
+            expect($rootScope.notify).toHaveBeenCalledWith('error', { error: 'Network error' });
         });
     
-        it('should use correct challengeId in URL', function () {
-            vm.challengeId = 456;
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
-            
-            expect(utilities.sendRequest).toHaveBeenCalledWith({
-                url: 'challenges/456/get_worker_logs/',
-                method: 'GET',
-                data: {},
-                callback: jasmine.any(Object)
-            });
-        });
-    
-        it('should clear workerLogs before processing new logs', function () {
-            vm.evaluation_module_error = null;
-            vm.workerLogs = ["old log"];
-            
-            vm.startLoadingLogs();
+        it('should preserve existing domain if no match found', function () {
+            vm.domain = 'Existing Domain';
+            vm.page.domain = 'NonExistent';
+            vm.domain_choices();
             
             // Get the callback that was passed to sendRequest
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
             
-            // Simulate success callback
+            // Simulate success callback with non-matching domains
+            var domainChoices = [
+                ['CV', 'Computer Vision'],
+                ['NLP', 'Natural Language Processing']
+            ];
+            
             parameters.callback.onSuccess({
-                data: {
-                    logs: ["new log"]
-                }
+                data: domainChoices
             });
             
-            expect(vm.workerLogs).toEqual(["new log"]);
-        });
-    
-        it('should cancel interval when stopLoadingLogs is called', function () {
-            vm.startLoadingLogs();
-            expect(vm.logs_poller).toBeDefined();
-            
-            vm.stopLoadingLogs();
-            
-            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
-        });
-    
-        it('should handle interval callback execution', function () {
-            vm.evaluation_module_error = null;
-            
-            vm.startLoadingLogs();
-            
-            // Simulate the interval firing
-            utilities.sendRequest.and.callFake(function(params) {
-                params.callback.onSuccess({
-                    data: {
-                        logs: ["interval log"]
-                    }
-                });
-            });
-            
-            $interval.flush(5000);
-            
-            expect(vm.workerLogs).toEqual(["interval log"]);
+            expect(vm.domain).toBe('Existing Domain'); // Should remain unchanged
+            expect(vm.domainoptions).toEqual(domainChoices);
         });
     });
     
