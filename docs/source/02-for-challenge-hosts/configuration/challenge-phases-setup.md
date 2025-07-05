@@ -65,6 +65,26 @@ Each challenge phase in a challenge contains the following subfields:
   codename: dev
   ```
 
+  #### How `codename` maps in the Evaluation Script?
+
+  When the submission is being evaluated, the `evaluate()` function in the evaluation script receives the `codename` like this:
+
+  ```python
+  def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
+      if phase_codename == "dev":
+          # Evaluation logic for Development Phase
+          ...
+      elif phase_codename == "test":
+          # Logic for another phase (e.g., final test)
+          ...
+  ```
+
+  This mapping ensures that:
+  - The logic can vary across phases (e.g., different metrics, files).
+  - EvalAI can map results returned by evaluation script to the respective challenge phase accordingly.
+
+  To know more about how `codename` is used during Evaluation, read the guide on [Writing an Evaluation Script]("../evaluation/evaluation-scripts.html#writing-an-evaluation-script").
+
 ### Timeline
 
 - **`start_date` (required)**

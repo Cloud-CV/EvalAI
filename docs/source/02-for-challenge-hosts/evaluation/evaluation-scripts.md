@@ -9,7 +9,9 @@ The syntax of evaluate function is:
 
 ```python
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
-    pass
+    if phase_codename == "dev":
+        # Perform evaluation specific to the dev phase
+        ...
 ```
 
 It receives three arguments, namely:
