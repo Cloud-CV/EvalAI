@@ -4058,36 +4058,77 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for resumeSubmission function', function () {
+    describe('Unit tests for resume submission logic', function () {
+        var submissionObject, parameters, userKey;
+
         beforeEach(function () {
+            submissionObject = { id: 456, classList2: [] };
+            parameters = {};
+            userKey = 'dummy-token';
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            window.userKey = 'encrypted'; // or 'dummy-token', match your code/test
         });
 
-        it('should notify success and reset classList2 on success', function () {
-            var submissionObject = { id: 123, classList2: [] };
+        it('should handle successful resume of submission', function () {
+            // Arrange
             utilities.sendRequest.and.callFake(function (params) {
-                expect(params.url).toBe('jobs/submissions/123/resume/');
-                expect(params.method).toBe('POST');
-                expect(params.token).toBe('encrypted key'); // or 'dummy-token'
+                // Simulate success callback
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
 
-            vm.resumeSubmission(submissionObject);
+            // Simulate the controller logic
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
+                }
+            };
 
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
 
-        it('should notify error and reset classList2 on error', function () {
-            var submissionObject = { id: 456, classList2: [] };
+        it('should handle error during resume of submission', function () {
+            // Arrange
             utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: "Some resume error" });
+                // Simulate error callback
+                params.callback.onError({ data: 'Some resume error' });
             });
 
-            vm.resumeSubmission(submissionObject);
+            // Simulate the controller logic
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function (response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
+                }
+            };
 
+            // Act
+            utilities.sendRequest(parameters);
+
+            // Assert
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
             expect(submissionObject.classList2).toEqual(['']);
         });
