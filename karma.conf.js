@@ -99,9 +99,11 @@ module.exports = function(config) {
     }
   };
 
-  // Detect if this is TravisCI running the tests and tell it to use chromium
-  if(process.env.TRAVIS){
+  // Detect if this is Github Actions running the tests and tell it to use chromium
+  if(process.env.GITHUB_ACTIONS){
       configuration.browsers = ['ChromeWithNoSandbox'];
+      configuration.singleRun = true;
+      configuration.autoWatch = false;
   }
 
   config.set(configuration);
