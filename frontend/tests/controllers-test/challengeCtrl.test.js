@@ -4924,5 +4924,41 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
+
+    describe('Unit tests for reRunSubmission function (lines 1483-1501)', function () {
+        var submissionObject;
+    
+        beforeEach(function () {
+            submissionObject = { id: 123, classList: [] };
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            window.userKey = 'encrypted key'; // or whatever your test expects
+        });
+    
+        it('should notify success and reset classList on success', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                expect(params.url).toBe('jobs/submissions/123/re-run/');
+                expect(params.method).toBe('POST');
+                expect(params.token).toBe('encrypted key'); // match your test setup
+                params.callback.onSuccess({ data: { success: 'Re-run started!' } });
+            });
+    
+            vm.reRunSubmission(submissionObject);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Re-run started!");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+    
+        it('should notify error and reset classList on error', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: "Some error occurred" });
+            });
+    
+            vm.reRunSubmission(submissionObject);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error occurred");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+    });
     
 });
