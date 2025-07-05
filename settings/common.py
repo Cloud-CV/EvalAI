@@ -297,7 +297,7 @@ REST_AUTH_SERIALIZERS = {
 
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
-CLOUDCV_TEAM_EMAIL = os.environ.get("CLOUDCV_TEAM_EMAIL", "team@eval.ai")
+CLOUDCV_TEAM_EMAIL = "team@eval.ai"
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
