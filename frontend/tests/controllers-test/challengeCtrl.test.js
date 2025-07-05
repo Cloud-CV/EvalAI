@@ -4842,5 +4842,87 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.domainoptions).toEqual(domainChoices);
         });
     });
+
+    describe('Unit tests for getResults polling (lines 1209-1250)', function () {
+        var $interval, $rootScope, $state, utilities;
+    
+        beforeEach(inject(function(_$interval_, _$rootScope_, _$state_, _utilities_) {
+            $interval = _$interval_;
+            $rootScope = _$rootScope_;
+            $state = _$state_;
+            utilities = _utilities_;
+            spyOn(utilities, 'sendRequest');
+            spyOn($state, 'go');
+            spyOn(utilities, 'storeData');
+            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
+            vm.currentPage = 1;
+            vm.challengeId = 42;
+            vm.phaseId = 99;
+            vm.submissionVisibility = {};
+            vm.baselineStatus = {};
+            vm.verifiedStatus = {};
+            vm.showUpdate = false;
+            vm.stopLoader = jasmine.createSpy('stopLoader');
+        }));
+    
+        it('should call sendRequest with correct parameters on poll', function () {
+            vm.getResults(99);
+            vm.start();
+            $interval.flush(10000);
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            expect(params.url).toContain('jobs/challenge/42/challenge_phase/99/submission');
+            expect(params.method).toBe('GET');
+        });
+    
+        it('should update submissionVisibility, baselineStatus, verifiedStatus on success', function () {
+            vm.getResults(99);
+            vm.start();
+            $interval.flush(10000);
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            var details = {
+                results: [
+                    {id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished'}
+                ]
+            };
+            params.callback.onSuccess({ data: details });
+            expect(vm.submissionVisibility[1]).toBe(true);
+            expect(vm.baselineStatus[1]).toBe(false);
+            expect(vm.verifiedStatus[1]).toBe(true);
+        });
+    
+        it('should set showUpdate if result count changes', function () {
+            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
+            vm.getResults(99);
+            vm.start();
+            $interval.flush(10000);
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            var details = { results: [{id: 1, status: 'finished'}, {id: 2, status: 'failed'}] };
+            params.callback.onSuccess({ data: details });
+            expect(vm.showUpdate).toBe(true);
+        });
+    
+        it('should set showUpdate if any status changes', function () {
+            vm.submissionResult = { results: [{id: 1, status: 'finished'}] };
+            vm.getResults(99);
+            vm.start();
+            $interval.flush(10000);
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            var details = { results: [{id: 1, status: 'failed'}] };
+            params.callback.onSuccess({ data: details });
+            expect(vm.showUpdate).toBe(true);
+        });
+    
+        it('should handle error callback and redirect', function () {
+            vm.getResults(99);
+            vm.start();
+            $interval.flush(10000);
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            params.callback.onError({ data: { detail: 'err' } });
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', 'err');
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
     
 });
