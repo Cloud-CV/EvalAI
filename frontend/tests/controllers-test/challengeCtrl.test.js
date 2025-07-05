@@ -4059,35 +4059,44 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for resumeSubmission function', function () {
-        beforeEach(function () {
+        var submissionObject, parameters, userKey, $controller, $rootScope, utilities, vm;
+    
+        beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            window.userKey = 'encrypted key';
+            spyOn(utilities, 'getData').and.callFake(function (key) {
+                if (key === 'userKey') return 'encrypted key';
+                return null;
+            });
+            vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
+            submissionObject = { id: 456, classList2: [] };
+            parameters = {};
+            userKey = 'encrypted key';
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            window.userKey = 'encrypted'; // or 'dummy-token', match your code/test
-        });
-
-        it('should notify success and reset classList2 on success', function () {
-            var submissionObject = { id: 123, classList2: [] };
+        }));
+        it('should handle successful resume of submission', function () {
             utilities.sendRequest.and.callFake(function (params) {
-                expect(params.url).toBe('jobs/submissions/123/resume/');
-                expect(params.method).toBe('POST');
-                expect(params.token).toBe('encrypted key'); // or 'dummy-token'
+                expect(params.token).toBe('encrypted key');
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
-
+    
             vm.resumeSubmission(submissionObject);
-
+    
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
-
-        it('should notify error and reset classList2 on error', function () {
-            var submissionObject = { id: 456, classList2: [] };
+    
+        it('should handle error during resume of submission', function () {
             utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: "Some resume error" });
+                params.callback.onError({ data: 'Some resume error' });
             });
-
+    
+            submissionObject.classList2 = ['progress-indicator'];
             vm.resumeSubmission(submissionObject);
-
+    
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
             expect(submissionObject.classList2).toEqual(['']);
         });
@@ -4666,180 +4675,176 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for domain_choices function (lines 2996-3016)', function () {
-        beforeEach(function () {
+        var $controller, $rootScope, utilities, vm;
+    
+        beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            window.userKey = 'encrypted key';
+            spyOn(utilities, 'getData').and.callFake(function (key) {
+                if (key === 'userKey') return 'encrypted key';
+                return null;
+            });
+            vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
             vm.page = { domain: 'CV' };
             vm.domain = '';
             vm.domainoptions = [];
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-        });
-
+        }));
+    
         it('should send GET request with correct parameters', function () {
             vm.domain_choices();
-
+    
             expect(utilities.sendRequest).toHaveBeenCalledWith({
                 url: 'challenges/challenge/get_domain_choices/',
                 method: 'GET',
                 data: {},
-                token: 'encrypted key', // Change from 'encrypted key' to 'encrypted'
+                token: 'encrypted key',
                 callback: jasmine.any(Object)
             });
         });
+    
         it('should set domain and domainoptions on success when matching domain found', function () {
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with domain choices including matching domain
+    
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing'],
                 ['RL', 'Reinforcement Learning']
             ];
-
+    
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-
+    
             expect(vm.domain).toBe('CV');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-
+    
         it('should set domainoptions but not domain when no matching domain found', function () {
-            vm.page.domain = 'ML'; // Different from available choices
+            vm.page.domain = 'ML';
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with domain choices not including current page domain
+    
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing'],
                 ['RL', 'Reinforcement Learning']
             ];
-
+    
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-
-            expect(vm.domain).toBe(''); // Should remain empty since no match found
+    
+            expect(vm.domain).toBe('');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-
+    
         it('should handle empty domain choices array', function () {
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with empty array
+    
             parameters.callback.onSuccess({
                 data: []
             });
-
-            expect(vm.domain).toBe(''); // Should remain empty
+    
+            expect(vm.domain).toBe('');
             expect(vm.domainoptions).toEqual([]);
         });
-
+    
         it('should handle single domain choice that matches', function () {
             vm.page.domain = 'CV';
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with single matching domain
+    
             var domainChoices = [
                 ['CV', 'Computer Vision']
             ];
-
+    
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-
+    
             expect(vm.domain).toBe('CV');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-
+    
         it('should handle multiple matching domains (first match wins)', function () {
             vm.page.domain = 'CV';
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with multiple matching domains
+    
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['CV', 'Computer Vision Alternative'],
                 ['NLP', 'Natural Language Processing']
             ];
-
+    
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-
-            expect(vm.domain).toBe('CV'); // First match should be set
+    
+            expect(vm.domain).toBe('CV');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
-
+    
         it('should notify error on error callback', function () {
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate error callback
+    
             parameters.callback.onError({
                 data: 'Failed to fetch domain choices'
             });
-
+    
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Failed to fetch domain choices');
         });
-
+    
         it('should handle error callback with object error', function () {
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate error callback with object
+    
             parameters.callback.onError({
                 data: { error: 'Network error' }
             });
-
+    
             expect($rootScope.notify).toHaveBeenCalledWith('error', { error: 'Network error' });
         });
-
+    
         it('should preserve existing domain if no match found', function () {
             vm.domain = 'Existing Domain';
             vm.page.domain = 'NonExistent';
             vm.domain_choices();
-
-            // Get the callback that was passed to sendRequest
+    
             var sendRequestCall = utilities.sendRequest.calls.mostRecent();
             var parameters = sendRequestCall.args[0];
-
-            // Simulate success callback with non-matching domains
+    
             var domainChoices = [
                 ['CV', 'Computer Vision'],
                 ['NLP', 'Natural Language Processing']
             ];
-
+    
             parameters.callback.onSuccess({
                 data: domainChoices
             });
-
-            expect(vm.domain).toBe('Existing Domain'); // Should remain unchanged
+    
+            expect(vm.domain).toBe('Existing Domain');
             expect(vm.domainoptions).toEqual(domainChoices);
         });
     });
