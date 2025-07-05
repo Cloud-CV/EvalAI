@@ -4844,4 +4844,273 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for reRunSubmission function', function () {
+        var submissionObject, parameters, userKey;
+
+        beforeEach(function () {
+            submissionObject = { id: 123, classList: [] };
+            parameters = {};
+            userKey = 'encrypted key'; // Match the actual userKey used in the code
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+        });
+
+        it('should set correct CSS classes and make API call with proper parameters', function () {
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect(submissionObject.classList).toEqual(['spin', 'progress-indicator']);
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/123/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+
+        it('should handle successful re-run and show success notification', function () {
+            // Arrange
+            var successResponse = { data: { success: 'Submission re-run initiated successfully' } };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess(successResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Submission re-run initiated successfully");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle error response and show error notification', function () {
+            // Arrange
+            var errorResponse = { data: 'Submission re-run failed' };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError(errorResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Submission re-run failed");
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle error response with object data', function () {
+            // Arrange
+            var errorResponse = { data: { error: 'Network timeout' } };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError(errorResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", { error: 'Network timeout' });
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle empty success response data', function () {
+            // Arrange
+            var successResponse = { data: {} };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess(successResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", undefined);
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle null error response data', function () {
+            // Arrange
+            var errorResponse = { data: null };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError(errorResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", null);
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should handle undefined error response data', function () {
+            // Arrange
+            var errorResponse = { data: undefined };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError(errorResponse);
+            });
+
+            // Act
+            vm.reRunSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", undefined);
+            expect(submissionObject.classList).toEqual(['']);
+        });
+
+        it('should work with different submission IDs', function () {
+            // Arrange
+            var differentSubmission = { id: 999, classList: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(differentSubmission);
+
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/999/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+
+        it('should preserve existing classList properties if any', function () {
+            // Arrange
+            var submissionWithExistingClasses = {
+                id: 456,
+                classList: ['existing-class', 'another-class']
+            };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(submissionWithExistingClasses);
+
+            // Assert
+            expect(submissionWithExistingClasses.classList).toEqual(['spin', 'progress-indicator']);
+            // After success callback
+            expect(submissionWithExistingClasses.classList).toEqual(['']);
+        });
+
+        it('should handle submission object without classList property', function () {
+            // Arrange
+            var submissionWithoutClassList = { id: 789 };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act & Assert - should not throw error
+            expect(function () {
+                vm.reRunSubmission(submissionWithoutClassList);
+            }).not.toThrow();
+        });
+
+        it('should handle submission object with null classList', function () {
+            // Arrange
+            var submissionWithNullClassList = { id: 101, classList: null };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act & Assert - should not throw error
+            expect(function () {
+                vm.reRunSubmission(submissionWithNullClassList);
+            }).not.toThrow();
+        });
+
+        it('should handle submission object with undefined classList', function () {
+            // Arrange
+            var submissionWithUndefinedClassList = { id: 102, classList: undefined };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act & Assert - should not throw error
+            expect(function () {
+                vm.reRunSubmission(submissionWithUndefinedClassList);
+            }).not.toThrow();
+        });
+
+        it('should handle missing submission ID', function () {
+            // Arrange
+            var submissionWithoutId = { classList: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(submissionWithoutId);
+
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/undefined/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+
+        it('should handle submission ID as string', function () {
+            // Arrange
+            var submissionWithStringId = { id: '123', classList: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(submissionWithStringId);
+
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/123/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+
+        it('should handle submission ID as zero', function () {
+            // Arrange
+            var submissionWithZeroId = { id: 0, classList: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(submissionWithZeroId);
+
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/0/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+
+        it('should handle submission ID as negative number', function () {
+            // Arrange
+            var submissionWithNegativeId = { id: -1, classList: [] };
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { success: 'Success' } });
+            });
+
+            // Act
+            vm.reRunSubmission(submissionWithNegativeId);
+
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'jobs/submissions/-1/re-run/',
+                method: 'POST',
+                token: userKey,
+                callback: jasmine.any(Object)
+            });
+        });
+    });
+
 });
