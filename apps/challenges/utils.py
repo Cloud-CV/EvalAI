@@ -502,7 +502,7 @@ def send_subscription_plans_email(challenge):
             "challenge_id": challenge.pk,
             "host_team_name": challenge.creator.team_name,
             "support_email": getattr(
-                settings, "CLOUDCV_TEAM_EMAIL", "team@cloudcv.org"
+                settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
             ),
         }
 
@@ -527,7 +527,7 @@ def send_subscription_plans_email(challenge):
                     subject=subject,
                     body="Please view this email in HTML format.",  # Plain text fallback
                     from_email=getattr(
-                        settings, "CLOUDCV_TEAM_EMAIL", "team@cloudcv.org"
+                        settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
                     ),
                     to=[email],
                 )

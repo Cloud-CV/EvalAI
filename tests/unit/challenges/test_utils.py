@@ -21,7 +21,7 @@ from challenges.utils import (
 )
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import override_settings
+from django.test import override_settings, TestCase
 from hosts.models import ChallengeHostTeam
 
 
@@ -355,7 +355,7 @@ class SendEmailsTests(unittest.TestCase):
     def test_send_emails_to_multiple_recipients(
         self, mock_settings, mock_send_email
     ):
-        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
         emails = ["user1@example.com", "user2@example.com"]
         template_id = "template-id"
         template_data = {"key": "value"}
@@ -367,7 +367,7 @@ class SendEmailsTests(unittest.TestCase):
 
         # Check that send_email was called with correct arguments for the first email
         mock_send_email.assert_any_call(
-            sender="team@cloudcv.org",
+            sender="team@eval.ai",
             recipient="user1@example.com",
             template_id=template_id,
             template_data=template_data,
@@ -375,14 +375,14 @@ class SendEmailsTests(unittest.TestCase):
 
         # Check that send_email was called with correct arguments for the second email
         mock_send_email.assert_any_call(
-            sender="team@cloudcv.org",
+            sender="team@eval.ai",
             recipient="user2@example.com",
             template_id=template_id,
             template_data=template_data,
         )
 
 
-class SendSubscriptionPlansEmailTests(unittest.TestCase):
+class SendSubscriptionPlansEmailTests(TestCase):
     """Test cases for send_subscription_plans_email function"""
 
     def setUp(self):
@@ -397,7 +397,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         ]
         self.mock_challenge.image = None  # No image by default
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -421,7 +420,7 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
-            "support_email": "team@cloudcv.org",
+            "support_email": "team@eval.ai",
         }
         mock_render_to_string.assert_called_once_with(
             "challenges/subscription_plans_email.html", expected_context
@@ -436,13 +435,13 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         mock_email_class.assert_any_call(
             subject="EvalAI Subscription Plans - Challenge: Test Challenge",
             body="Please view this email in HTML format.",
-            from_email="team@cloudcv.org",
+            from_email="team@eval.ai",
             to=["host1@example.com"],
         )
         mock_email_class.assert_any_call(
             subject="EvalAI Subscription Plans - Challenge: Test Challenge",
             body="Please view this email in HTML format.",
-            from_email="team@cloudcv.org",
+            from_email="team@eval.ai",
             to=["host2@example.com"],
         )
 
@@ -481,7 +480,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "No challenge host emails found for challenge 123"
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -510,14 +508,13 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
-            "support_email": "team@cloudcv.org",
+            "support_email": "team@eval.ai",
             "challenge_image_url": "https://example.com/challenge-image.jpg",
         }
         mock_render_to_string.assert_called_once_with(
             "challenges/subscription_plans_email.html", expected_context
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -559,27 +556,27 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
-    def test_send_subscription_plans_email_default_settings_fallback(
+    def test_send_subscription_plans_email_configured_settings(
         self, mock_email_class, mock_render_to_string, mock_logger
     ):
-        """Test email sending with default settings fallback when settings are not configured"""
+        """Test email sending with configured test settings"""
         # Setup mocks
         mock_render_to_string.return_value = "<html>Test Email Content</html>"
 
         mock_email_instance = MagicMock()
         mock_email_class.return_value = mock_email_instance
 
-        # Call the function without @override_settings to test default fallback
+        # Call the function with configured test settings
         send_subscription_plans_email(self.mock_challenge)
 
-        # Verify template rendering was called with default fallback values
+        # Verify template rendering was called with configured test values
         expected_context = {
             "challenge_name": "Test Challenge",
             "challenge_url": "http://localhost:8000/web/challenges/challenge-page/123",
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
-            "support_email": "EvalAI Team <team@cloudcv.org>",
+            "support_email": "team@eval.ai",
         }
         mock_render_to_string.assert_called_once_with(
             "challenges/subscription_plans_email.html", expected_context
@@ -603,7 +600,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "Error sending subscription plans email for challenge 123: Database Error"
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     def test_send_subscription_plans_email_template_rendering_exception(
@@ -621,7 +617,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "Error sending subscription plans email for challenge 123: Template Error"
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -647,7 +642,7 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         mock_email_class.assert_called_once_with(
             subject="EvalAI Subscription Plans - Challenge: Test Challenge",
             body="Please view this email in HTML format.",
-            from_email="team@cloudcv.org",
+            from_email="team@eval.ai",
             to=["singlehost@example.com"],
         )
         mock_logger.info.assert_any_call(
@@ -657,7 +652,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "Sent subscription plans email to 1/1 hosts for challenge 123"
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -692,7 +686,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
             "Sent subscription plans email to 0/2 hosts for challenge 123"
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -716,11 +709,10 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         mock_email_class.assert_any_call(
             subject="EvalAI Subscription Plans - Challenge: ",
             body="Please view this email in HTML format.",
-            from_email="team@cloudcv.org",
+            from_email="team@eval.ai",
             to=["host1@example.com"],
         )
 
-    @override_settings(CLOUDCV_TEAM_EMAIL="team@cloudcv.org")
     @mockpatch("challenges.utils.logger")
     @mockpatch("challenges.utils.render_to_string")
     @mockpatch("challenges.utils.EmailMultiAlternatives")
@@ -744,6 +736,6 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         mock_email_class.assert_any_call(
             subject="EvalAI Subscription Plans - Challenge: 测试挑战 🚀 Challenge",
             body="Please view this email in HTML format.",
-            from_email="team@cloudcv.org",
+            from_email="team@eval.ai",
             to=["host1@example.com"],
         )

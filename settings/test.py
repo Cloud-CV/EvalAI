@@ -21,6 +21,7 @@ DATABASES = {
 
 # E-Mail Settings
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+CLOUDCV_TEAM_EMAIL = "team@eval.ai"
 
 CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
