@@ -4972,113 +4972,78 @@ describe('Unit tests for challenge controller', function () {
             expect(typeof params.callback.onSuccess).toBe('function');
             expect(typeof params.callback.onError).toBe('function');
         });
-    });
+    }); 
 
-    describe('Unit tests for getResults polling callback logic (lines 1209-1249)', function () {
-        var $interval, $rootScope, $state, utilities, vm, $controller, $scope;
-
-        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$interval_, _$state_) {
+    describe('Unit tests for load function (submissions pagination)', function () {
+        var localVm, $http, $scope, $controller;
+    
+        beforeEach(inject(function (_$controller_, _$rootScope_, _$http_) {
             $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            utilities = _utilities_;
-            $interval = _$interval_;
-            $state = _$state_;
-            $scope = $rootScope.$new();
-
-            spyOn(utilities, 'sendRequest');
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
-            vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-            vm.challengeId = 1;
-            vm.phaseId = 2;
-            vm.currentPage = 1;
-            vm.submissionResult = { results: [{ id: 1, status: 'finished' }] };
-            vm.submissionVisibility = {};
-            vm.baselineStatus = {};
-            vm.verifiedStatus = {};
-            vm.showUpdate = false;
-            spyOn(vm, 'stopLoader');
+            $scope = _$rootScope_.$new();
+            $http = _$http_;
+            localVm = $controller('ChallengeCtrl', { $scope: $scope });
+            localVm.startLoader = jasmine.createSpy('startLoader');
+            localVm.stopLoader = jasmine.createSpy('stopLoader');
         }));
-
-        it('should set submissionVisibility, baselineStatus, verifiedStatus for each submission', function () {
-            // Simulate the callback
-            var details = {
-                results: [
-                    { id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished' },
-                    { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false, status: 'failed' }
-                ]
+    
+        it('should make GET request, set pagination, and stop loader when url is not null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: 'page=3',
+                previous: 'page=1',
+                count: 300,
+                results: []
             };
-            // Simulate the polling callback
-            for (var i = 0; i < details.results.length; i++) {
-                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
-                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
-            }
-            expect(vm.submissionVisibility[1]).toBe(true);
-            expect(vm.submissionVisibility[2]).toBe(false);
-            expect(vm.baselineStatus[1]).toBe(false);
-            expect(vm.baselineStatus[2]).toBe(true);
-            expect(vm.verifiedStatus[1]).toBe(true);
-            expect(vm.verifiedStatus[2]).toBe(false);
-        });
-
-        it('should set showUpdate to true if results length differs', function () {
-            var details = { results: [{ id: 1 }, { id: 2 }] };
-            vm.submissionResult.results = [{ id: 1 }];
-            vm.showUpdate = false;
-            if (vm.submissionResult.results.length !== details.results.length) {
-                vm.showUpdate = true;
-            }
-            expect(vm.showUpdate).toBe(true);
-        });
-
-        it('should set showUpdate to true if any status differs', function () {
-            var details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
-            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'running' }];
-            vm.showUpdate = false;
-            if (vm.submissionResult.results.length === details.results.length) {
-                for (var i = 0; i < details.results.length; i++) {
-                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
-                        vm.showUpdate = true;
-                        break;
+            spyOn($http, 'get').and.callFake(function (reqUrl, opts) {
+                expect(reqUrl).toBe(url);
+                expect(opts.headers.Authorization).toContain("Token");
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
                     }
-                }
-            }
-            expect(vm.showUpdate).toBe(true);
+                };
+            });
+    
+            localVm.load(url);
+    
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.isNext).toBe('');
+            expect(localVm.currentPage).toBe(2); // page=3, so 3-1=2
+            expect(localVm.currentRefPage).toBe(2);
+            expect(localVm.isPrev).toBe('');
+            expect(localVm.submissionResult).toEqual(responseData);
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
-
-        it('should not set showUpdate if all statuses are the same and lengths match', function () {
-            var details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
-            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }];
-            vm.showUpdate = false;
-            if (vm.submissionResult.results.length === details.results.length) {
-                for (var i = 0; i < details.results.length; i++) {
-                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
-                        vm.showUpdate = true;
-                        break;
-                    }
-                }
-            }
-            expect(vm.showUpdate).toBe(false);
-        });
-
-        it('should handle error: store error, redirect, and stop loader', function () {
-            var errorResponse = { data: { detail: 'error' } };
-            // Simulate the error callback
-            utilities.sendRequest.calls.reset();
-            var callback = {
-                onError: function (response) {
-                    var error = response.data;
-                    utilities.storeData('emailError', error.detail);
-                    $state.go('web.permission-denied');
-                    vm.stopLoader();
-                }
+    
+        it('should set isNext and isPrev to disabled when next and previous are null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: null,
+                previous: null,
+                count: 150,
+                results: []
             };
-            callback.onError(errorResponse);
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', 'error');
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
-            expect(vm.stopLoader).toHaveBeenCalled();
+            spyOn($http, 'get').and.callFake(function (reqUrl, opts) {
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
+                    }
+                };
+            });
+    
+            localVm.load(url);
+    
+            expect(localVm.isNext).toBe('disabled');
+            expect(localVm.currentPage).toBe(1);
+            expect(localVm.currentRefPage).toBe(1);
+            expect(localVm.isPrev).toBe('disabled');
+            expect(localVm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should call stopLoader if url is null', function () {
+            localVm.load(null);
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
     });
-   
 });
