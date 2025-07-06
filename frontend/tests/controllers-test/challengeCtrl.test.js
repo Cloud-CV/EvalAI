@@ -4911,13 +4911,13 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for fetchRefreshJWTToken function (lines 138-176)', function () {
-        var $controller, $rootScope, utilities, vm, userKey;
+        var $controller, $rootScope, $scope, utilities, vm, userKey;
     
         beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
             $controller = _$controller_;
             $rootScope = _$rootScope_;
             utilities = _utilities_;
-            
+    
             // Set up userKey before controller creation
             window.userKey = 'encrypted key';
             spyOn(utilities, 'getData').and.callFake(function (key) {
@@ -4925,9 +4925,10 @@ describe('Unit tests for challenge controller', function () {
                 if (key === 'refreshJWT') return null;
                 return null;
             });
-            
-            vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-            
+    
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+    
             // Set up spies
             spyOn(utilities, 'sendRequest');
             spyOn(utilities, 'storeData');
@@ -5128,30 +5129,30 @@ describe('Unit tests for challenge controller', function () {
             it('should automatically call fetchRefreshJWTToken when refreshJWT is not a string', function () {
                 // Mock that refreshJWT is not a string
                 vm.refreshJWT = null;
-                
+    
                 // Recreate controller to trigger the automatic call
-                vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-                
+                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+    
                 expect(utilities.sendRequest).toHaveBeenCalled();
             });
     
             it('should not automatically call fetchRefreshJWTToken when refreshJWT is already a string', function () {
                 // Mock that refreshJWT is already a string
                 vm.refreshJWT = 'existing-jwt-token';
-                
+    
                 // Recreate controller
-                vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-                
+                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+    
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
     
-            it('should not automatically call fetchRefreshJWTToken when refreshJWT is undefined', function () {
+            it('should automatically call fetchRefreshJWTToken when refreshJWT is undefined', function () {
                 // Mock that refreshJWT is undefined
                 vm.refreshJWT = undefined;
-                
+    
                 // Recreate controller
-                vm = $controller('ChallengeCtrl', { $rootScope: $rootScope, utilities: utilities });
-                
+                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+    
                 expect(utilities.sendRequest).toHaveBeenCalled();
             });
         });
