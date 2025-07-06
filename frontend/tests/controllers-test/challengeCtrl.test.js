@@ -4996,7 +4996,7 @@ describe('Unit tests for challenge controller', function () {
             };
             spyOn($http, 'get').and.callFake(function (reqUrl, opts) {
                 expect(reqUrl).toBe(url);
-                expect(opts.headers.Authorization).toContain("Token");
+                expect(opts.headers.Authorization).toBe("Token encrypted key");
                 return {
                     then: function (cb) {
                         cb({ data: responseData });
