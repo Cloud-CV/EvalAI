@@ -4909,36 +4909,38 @@ describe('Unit tests for challenge controller', function () {
             });
         });
     });
-
     describe('Unit tests for fetchRefreshJWTToken function (lines 138-176)', function () {
-        var $controller, $rootScope, $scope, utilities, vm, userKey;
+        var $controller, $rootScope, $scope, utilities, vm, store;
     
         beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
             $controller = _$controller_;
             $rootScope = _$rootScope_;
             utilities = _utilities_;
     
-            // Set up userKey before controller creation
-            window.userKey = 'encrypted key';
+            // Simulate a real key-value store for getData/storeData
+            store = { userKey: 'encrypted key', refreshJWT: 'existing-token' }; // Set to string to prevent auto-call
             spyOn(utilities, 'getData').and.callFake(function (key) {
-                if (key === 'userKey') return 'encrypted key';
-                if (key === 'refreshJWT') return null;
-                return null;
+                return store[key];
+            });
+            spyOn(utilities, 'storeData').and.callFake(function (key, value) {
+                store[key] = value;
             });
     
-            $scope = $rootScope.$new();
-            vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-    
-            // Set up spies
             spyOn(utilities, 'sendRequest');
-            spyOn(utilities, 'storeData');
             spyOn($rootScope, 'notify');
             spyOn(window, 'alert');
         }));
     
+        function createController() {
+            $scope = $rootScope.$new();
+            return $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+        }
+    
         describe('when userKey is present', function () {
             beforeEach(function () {
-                vm.userKey = 'encrypted key';
+                store.userKey = 'encrypted key';
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
             });
     
             it('should make API call with correct parameters when userKey exists', function () {
@@ -5093,71 +5095,69 @@ describe('Unit tests for challenge controller', function () {
         });
     
         describe('when userKey is not present', function () {
-            beforeEach(function () {
-                vm.userKey = null;
-            });
-    
             it('should not make API call when userKey is null', function () {
+                store.userKey = null;
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
                 vm.fetchRefreshJWTToken();
-    
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
     
             it('should not make API call when userKey is undefined', function () {
-                vm.userKey = undefined;
+                store.userKey = undefined;
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
                 vm.fetchRefreshJWTToken();
-    
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
     
             it('should not make API call when userKey is empty string', function () {
-                vm.userKey = '';
+                store.userKey = '';
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
                 vm.fetchRefreshJWTToken();
-    
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
     
             it('should not make API call when userKey is false', function () {
-                vm.userKey = false;
+                store.userKey = false;
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
                 vm.fetchRefreshJWTToken();
-    
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
         });
     
         describe('automatic token fetching on controller initialization', function () {
             it('should automatically call fetchRefreshJWTToken when refreshJWT is not a string', function () {
-                // Mock that refreshJWT is not a string
-                vm.refreshJWT = null;
-    
-                // Recreate controller to trigger the automatic call
-                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-    
+                store.userKey = 'encrypted key';
+                store.refreshJWT = null;
+                vm = createController();
                 expect(utilities.sendRequest).toHaveBeenCalled();
             });
     
             it('should not automatically call fetchRefreshJWTToken when refreshJWT is already a string', function () {
-                // Mock that refreshJWT is already a string
-                vm.refreshJWT = 'existing-jwt-token';
-    
-                // Recreate controller
-                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-    
+                store.userKey = 'encrypted key';
+                store.refreshJWT = 'existing-jwt-token';
+                vm = createController();
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
             });
     
             it('should automatically call fetchRefreshJWTToken when refreshJWT is undefined', function () {
-                // Mock that refreshJWT is undefined
-                vm.refreshJWT = undefined;
-    
-                // Recreate controller
-                vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-    
+                store.userKey = 'encrypted key';
+                store.refreshJWT = undefined;
+                vm = createController();
                 expect(utilities.sendRequest).toHaveBeenCalled();
             });
         });
     
         describe('edge cases and error handling', function () {
+            beforeEach(function () {
+                store.userKey = 'encrypted key';
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
+            });
+    
             it('should handle success response with empty token', function () {
                 vm.fetchRefreshJWTToken();
     
@@ -5248,6 +5248,12 @@ describe('Unit tests for challenge controller', function () {
         });
     
         describe('integration with utilities service', function () {
+            beforeEach(function () {
+                store.userKey = 'encrypted key';
+                store.refreshJWT = 'existing-token'; // Prevent auto-call
+                vm = createController();
+            });
+    
             it('should use utilities.getData to retrieve stored JWT token', function () {
                 vm.fetchRefreshJWTToken();
     
@@ -5279,5 +5285,4 @@ describe('Unit tests for challenge controller', function () {
             });
         });
     });
-
 });
