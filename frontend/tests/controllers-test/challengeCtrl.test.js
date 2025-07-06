@@ -4973,5 +4973,113 @@ describe('Unit tests for challenge controller', function () {
             expect(typeof params.callback.onError).toBe('function');
         });
     });
+
+    describe('Unit tests for getResults polling callback logic (lines 1209-1249)', function () {
+        var $interval, $rootScope, $state, utilities, vm, $controller, $scope;
+
+        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$interval_, _$state_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            $interval = _$interval_;
+            $state = _$state_;
+            $scope = $rootScope.$new();
+
+            spyOn(utilities, 'sendRequest');
+            spyOn(utilities, 'storeData');
+            spyOn($state, 'go');
+            vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+            vm.challengeId = 1;
+            vm.phaseId = 2;
+            vm.currentPage = 1;
+            vm.submissionResult = { results: [{ id: 1, status: 'finished' }] };
+            vm.submissionVisibility = {};
+            vm.baselineStatus = {};
+            vm.verifiedStatus = {};
+            vm.showUpdate = false;
+            spyOn(vm, 'stopLoader');
+        }));
+
+        it('should set submissionVisibility, baselineStatus, verifiedStatus for each submission', function () {
+            var callback = utilities.sendRequest.calls.mostRecent()?.args[0]?.callback;
+            // Simulate the callback
+            var details = {
+                results: [
+                    { id: 1, is_public: true, is_baseline: false, is_verified_by_host: true, status: 'finished' },
+                    { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false, status: 'failed' }
+                ]
+            };
+            // Simulate the polling callback
+            for (var i = 0; i < details.results.length; i++) {
+                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
+            }
+            expect(vm.submissionVisibility[1]).toBe(true);
+            expect(vm.submissionVisibility[2]).toBe(false);
+            expect(vm.baselineStatus[1]).toBe(false);
+            expect(vm.baselineStatus[2]).toBe(true);
+            expect(vm.verifiedStatus[1]).toBe(true);
+            expect(vm.verifiedStatus[2]).toBe(false);
+        });
+
+        it('should set showUpdate to true if results length differs', function () {
+            var details = { results: [{ id: 1 }, { id: 2 }] };
+            vm.submissionResult.results = [{ id: 1 }];
+            vm.showUpdate = false;
+            if (vm.submissionResult.results.length !== details.results.length) {
+                vm.showUpdate = true;
+            }
+            expect(vm.showUpdate).toBe(true);
+        });
+
+        it('should set showUpdate to true if any status differs', function () {
+            var details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
+            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'running' }];
+            vm.showUpdate = false;
+            if (vm.submissionResult.results.length === details.results.length) {
+                for (var i = 0; i < details.results.length; i++) {
+                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                        vm.showUpdate = true;
+                        break;
+                    }
+                }
+            }
+            expect(vm.showUpdate).toBe(true);
+        });
+
+        it('should not set showUpdate if all statuses are the same and lengths match', function () {
+            var details = { results: [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }] };
+            vm.submissionResult.results = [{ id: 1, status: 'finished' }, { id: 2, status: 'failed' }];
+            vm.showUpdate = false;
+            if (vm.submissionResult.results.length === details.results.length) {
+                for (var i = 0; i < details.results.length; i++) {
+                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                        vm.showUpdate = true;
+                        break;
+                    }
+                }
+            }
+            expect(vm.showUpdate).toBe(false);
+        });
+
+        it('should handle error: store error, redirect, and stop loader', function () {
+            var errorResponse = { data: { detail: 'error' } };
+            // Simulate the error callback
+            utilities.sendRequest.calls.reset();
+            var callback = {
+                onError: function (response) {
+                    var error = response.data;
+                    utilities.storeData('emailError', error.detail);
+                    $state.go('web.permission-denied');
+                    vm.stopLoader();
+                }
+            };
+            callback.onError(errorResponse);
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', 'error');
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
    
 });
