@@ -5001,7 +5001,6 @@ describe('Unit tests for challenge controller', function () {
         }));
 
         it('should set submissionVisibility, baselineStatus, verifiedStatus for each submission', function () {
-            var callback = utilities.sendRequest.calls.mostRecent()?.args[0]?.callback;
             // Simulate the callback
             var details = {
                 results: [
