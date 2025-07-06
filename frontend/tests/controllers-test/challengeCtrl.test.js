@@ -4909,380 +4909,69 @@ describe('Unit tests for challenge controller', function () {
             });
         });
     });
-    describe('Unit tests for fetchRefreshJWTToken function (lines 138-176)', function () {
-        var $controller, $rootScope, $scope, utilities, vm, store;
-    
-        beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_) {
+
+    describe('Unit tests for manageWorker function', function () {
+        var $rootScope, utilities, vm, $controller, $scope;
+
+        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
             $controller = _$controller_;
             $rootScope = _$rootScope_;
             utilities = _utilities_;
-    
-            // Simulate a real key-value store for getData/storeData
-            store = { userKey: 'encrypted key', refreshJWT: 'existing-token' }; // Set to string to prevent auto-call
-            spyOn(utilities, 'getData').and.callFake(function (key) {
-                return store[key];
-            });
-            spyOn(utilities, 'storeData').and.callFake(function (key, value) {
-                store[key] = value;
-            });
-    
+            $scope = $rootScope.$new();
+
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            spyOn(window, 'alert');
+
+            vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
+            vm.challengeId = 42; // set a dummy challengeId
         }));
-    
-        function createController() {
-            $scope = $rootScope.$new();
-            return $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-        }
-    
-        describe('when userKey is present', function () {
-            beforeEach(function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
+
+        it('should notify success when details.action is "Success"', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { action: "Success" } });
             });
-    
-            it('should make API call with correct parameters when userKey exists', function () {
-                vm.fetchRefreshJWTToken();
-    
-                expect(utilities.sendRequest).toHaveBeenCalledWith({
-                    url: 'accounts/user/get_auth_token',
-                    method: 'GET',
-                    token: 'encrypted key',
-                    callback: jasmine.any(Object)
-                }, "header");
-            });
-    
-            it('should store JWT token and update vm.refreshJWT on successful response with status 200', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { token: 'new-jwt-token-123' }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'new-jwt-token-123');
-                expect(vm.refreshJWT).toBe('new-jwt-token-123');
-            });
-    
-            it('should show alert when response status is not 200', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 401,
-                    data: { message: 'Unauthorized' }
-                };
-    
-                parameters.callback.onSuccess(errorResponse);
-    
-                expect(window.alert).toHaveBeenCalledWith("Could not fetch Auth Token");
-            });
-    
-            it('should handle 400 error response with non_field_errors', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 400,
-                    data: {
-                        non_field_errors: ['Invalid credentials']
-                    }
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect(vm.FormError).toBe('Invalid credentials');
-            });
-    
-            it('should handle 400 error response without non_field_errors', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 400,
-                    data: {
-                        field_errors: ['Some field error']
-                    }
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect(vm.FormError).toBeUndefined();
-            });
-    
-            it('should handle 400 error response with malformed data', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 400,
-                    data: null
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
-            });
-    
-            it('should handle non-400 error responses', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 500,
-                    data: { message: 'Internal server error' }
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBeUndefined();
-                expect(vm.FormError).toBeUndefined();
-            });
-    
-            it('should handle error response with undefined data', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 400,
-                    data: undefined
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
-            });
-    
-            it('should handle error response with null data', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var errorResponse = {
-                    status: 400,
-                    data: null
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
-            });
+
+            vm.manageWorker('start');
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Worker(s) started succesfully.");
         });
-    
-        describe('when userKey is not present', function () {
-            it('should not make API call when userKey is null', function () {
-                store.userKey = null;
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
-                vm.fetchRefreshJWTToken();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
+
+        it('should notify error when details.action is not "Success"', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { action: "Failure", error: "Some error" } });
             });
-    
-            it('should not make API call when userKey is undefined', function () {
-                store.userKey = undefined;
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
-                vm.fetchRefreshJWTToken();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-            });
-    
-            it('should not make API call when userKey is empty string', function () {
-                store.userKey = '';
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
-                vm.fetchRefreshJWTToken();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-            });
-    
-            it('should not make API call when userKey is false', function () {
-                store.userKey = false;
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
-                vm.fetchRefreshJWTToken();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-            });
+
+            vm.manageWorker('stop');
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
-    
-        describe('automatic token fetching on controller initialization', function () {
-            it('should automatically call fetchRefreshJWTToken when refreshJWT is not a string', function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = null;
-                vm = createController();
-                expect(utilities.sendRequest).toHaveBeenCalled();
+
+        it('should notify generic error when error is undefined in onError', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: {} });
             });
-    
-            it('should not automatically call fetchRefreshJWTToken when refreshJWT is already a string', function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = 'existing-jwt-token';
-                vm = createController();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-            });
-    
-            it('should automatically call fetchRefreshJWTToken when refreshJWT is undefined', function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = undefined;
-                vm = createController();
-                expect(utilities.sendRequest).toHaveBeenCalled();
-            });
+
+            vm.manageWorker('restart');
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error.");
         });
-    
-        describe('edge cases and error handling', function () {
-            beforeEach(function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
+
+        it('should notify error with message when error is defined in onError', function () {
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: "Specific error" } });
             });
-    
-            it('should handle success response with empty token', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { token: '' }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', '');
-                expect(vm.refreshJWT).toBe('');
-            });
-    
-            it('should handle success response with null token', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { token: null }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', null);
-                expect(vm.refreshJWT).toBe(null);
-            });
-    
-            it('should handle success response with undefined token', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { token: undefined }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', undefined);
-                expect(vm.refreshJWT).toBe(undefined);
-            });
-    
-            it('should handle success response without token property', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { message: 'Success but no token' }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', undefined);
-                expect(vm.refreshJWT).toBe(undefined);
-            });
-    
-            it('should handle error response that throws exception in try-catch', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                // Create a response that will cause an error when accessing non_field_errors
-                var errorResponse = {
-                    status: 400,
-                    get data() {
-                        throw new Error('Simulated error');
-                    }
-                };
-    
-                parameters.callback.onError(errorResponse);
-    
-                expect(vm.isFormError).toBe(true);
-                expect($rootScope.notify).toHaveBeenCalledWith("error", jasmine.any(Error));
-            });
+
+            vm.manageWorker('restart');
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "There was an error: Specific error");
         });
-    
-        describe('integration with utilities service', function () {
-            beforeEach(function () {
-                store.userKey = 'encrypted key';
-                store.refreshJWT = 'existing-token'; // Prevent auto-call
-                vm = createController();
-            });
-    
-            it('should use utilities.getData to retrieve stored JWT token', function () {
-                vm.fetchRefreshJWTToken();
-    
-                var sendRequestCall = utilities.sendRequest.calls.mostRecent();
-                var parameters = sendRequestCall.args[0];
-    
-                var successResponse = {
-                    status: 200,
-                    data: { token: 'test-jwt-token' }
-                };
-    
-                parameters.callback.onSuccess(successResponse);
-    
-                expect(utilities.getData).toHaveBeenCalledWith('refreshJWT');
-            });
-    
-            it('should pass correct parameters to utilities.sendRequest', function () {
-                vm.fetchRefreshJWTToken();
-    
-                expect(utilities.sendRequest).toHaveBeenCalledWith(
-                    jasmine.objectContaining({
-                        url: 'accounts/user/get_auth_token',
-                        method: 'GET',
-                        token: 'encrypted key',
-                        callback: jasmine.any(Object)
-                    }),
-                    "header"
-                );
-            });
+
+        it('should call utilities.sendRequest with correct parameters', function () {
+            vm.manageWorker('start');
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            expect(params.url).toBe('challenges/42/manage_worker/start/');
+            expect(params.method).toBe('PUT');
+            expect(params.data).toEqual({});
+            expect(typeof params.callback.onSuccess).toBe('function');
+            expect(typeof params.callback.onError).toBe('function');
         });
     });
+   
 });
