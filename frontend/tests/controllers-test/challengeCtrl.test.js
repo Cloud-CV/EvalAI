@@ -5159,16 +5159,33 @@ describe('Unit tests for challenge controller', function () {
             $rootScope = _$rootScope_;
             $q = _$q_;
             $scope = $rootScope.$new();
-    
+        
             // Mock utilities
             utilities = {
                 sendRequest: jasmine.createSpy('sendRequest'),
-                getData: function() { return null; } // <-- Add this line
+                getData: function() { return null; }
             };
-    
+        
             // Mock $rootScope.notify
             spyOn($rootScope, 'notify');
-    
+        
+            // Mock moment with tz.guess and tz.zone
+            var mockMoment = function() {
+                return {
+                    utcOffset: function() { return 0; },
+                    tz: {
+                        guess: function() { return 'UTC'; },
+                        zone: function() { return { abbr: function() { return 'UTC'; } }; }
+                    },
+                    format: function() { return "Jan 1, 2020 12:00:00 AM"; },
+                    valueOf: function() { return 0; }
+                };
+            };
+            mockMoment.tz = {
+                guess: function() { return 'UTC'; },
+                zone: function() { return { abbr: function() { return 'UTC'; } }; }
+            };
+        
             // Instantiate controller
             vm = $controller('ChallengeCtrl', {
                 $scope: $scope,
@@ -5179,7 +5196,7 @@ describe('Unit tests for challenge controller', function () {
                 $stateParams: {},
                 $interval: {},
                 $mdDialog: {},
-                moment: {},
+                moment: mockMoment, // <-- use the mock
                 $location: {},
                 $anchorScroll: {},
                 $timeout: {}
