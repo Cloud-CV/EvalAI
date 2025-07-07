@@ -5152,25 +5152,31 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $controller, $rootScope, $scope, utilities, vm, parameters;
+        var $interval, $controller, $rootScope, $scope, utilities, vm, parameters, $httpBackend;
     
-        beforeEach(inject(function (_$controller_, _$interval_, _$rootScope_, _utilities_) {
+        beforeEach(inject(function (_$controller_, _$interval_, _$rootScope_, _utilities_, _$httpBackend_) {
             $controller = _$controller_;
             $interval = _$interval_;
             $rootScope = _$rootScope_;
             utilities = _utilities_;
             $scope = $rootScope.$new();
+            $httpBackend = _$httpBackend_;
+            // Ignore the auth token request
+            $httpBackend.whenGET('http://localhost:8000/api/accounts/user/get_auth_token').respond(200, {});
             vm = $controller('ChallengeCtrl', { $scope: $scope });
             parameters = {};
             spyOn(utilities, 'sendRequest');
         }));
     
         afterEach(function () {
-            // Cancel any intervals to avoid leaks
             if (vm.logs_poller) {
                 $interval.cancel(vm.logs_poller);
             }
+            try { $httpBackend.flush(); } catch (e) {}
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
         });
+    
     
         it('should push evaluation_module_error to workerLogs if set', function () {
             vm.evaluation_module_error = "Some error";
