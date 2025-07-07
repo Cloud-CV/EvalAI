@@ -3405,6 +3405,67 @@ class TestCloudWatchLogRetention(TestCase):
         # Verify logging
         mock_logger.exception.assert_called()
 
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.logger")
+    def test_set_cloudwatch_log_retention_with_model_override(
+        self,
+        mock_logger,
+        mock_get_log_group_name,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+    ):
+        """Challenge has log_retention_days_override set; function should honor it even without --days param"""
+        from datetime import timedelta
+
+        from challenges.aws_utils import set_cloudwatch_log_retention
+        from challenges.models import ChallengePhase
+        from django.utils import timezone
+
+        # Override retention days on the model
+        self.challenge.log_retention_days_override = 150
+        self.challenge.save()
+
+        mock_get_log_group_name.return_value = (
+            f"/aws/ecs/challenge-{self.challenge.pk}"
+        )
+        mock_get_aws_credentials.return_value = {
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "aws_region": "us-east-1",
+        }
+        mock_logs_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_logs_client
+        mock_logs_client.put_retention_policy.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": 200}
+        }
+
+        # Create challenge phase to have an end date
+        ChallengePhase.objects.create(
+            name="Test Phase",
+            description="Test Phase Description",
+            leaderboard_public=True,
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() - timedelta(days=2),
+            challenge=self.challenge,
+            test_annotation="test_annotation.txt",
+            is_public=False,
+            max_submissions_per_day=5,
+            max_submissions_per_month=50,
+            max_submissions=100,
+        )
+
+        result = set_cloudwatch_log_retention(self.challenge.pk)
+
+        self.assertTrue(result["success"])
+        # 150 maps directly to 150 (valid AWS value)
+        self.assertEqual(result["retention_days"], 150)
+        mock_logs_client.put_retention_policy.assert_called_once_with(
+            logGroupName=f"/aws/ecs/challenge-{self.challenge.pk}",
+            retentionInDays=150,
+        )
+
 
 class TestLogRetentionCallbacks(TestCase):
     """Test log retention callback functions"""
