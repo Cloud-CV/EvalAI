@@ -5159,17 +5159,18 @@ describe('Unit tests for challenge controller', function () {
             $rootScope = _$rootScope_;
             $q = _$q_;
             $scope = $rootScope.$new();
-        
-            // Mock utilities
+    
+            // ✅ Correctly mock utilities with getEnvironment
             utilities = {
                 sendRequest: jasmine.createSpy('sendRequest'),
-                getData: function() { return null; }
+                getData: function() { return null; },
+                getEnvironment: jasmine.createSpy('getEnvironment').and.returnValue('HOSTED')  // ✅ Important fix
             };
-        
-            // Mock $rootScope.notify
+    
+            // ✅ Mock $rootScope.notify
             spyOn($rootScope, 'notify');
-        
-            // Mock moment with tz.guess and tz.zone
+    
+            // ✅ Mock moment with tz.guess and tz.zone
             var mockMoment = function() {
                 return {
                     utcOffset: function() { return 0; },
@@ -5185,8 +5186,8 @@ describe('Unit tests for challenge controller', function () {
                 guess: function() { return 'UTC'; },
                 zone: function() { return { abbr: function() { return 'UTC'; } }; }
             };
-        
-            // Instantiate controller
+    
+            // ✅ Instantiate controller
             vm = $controller('ChallengeCtrl', {
                 $scope: $scope,
                 utilities: utilities,
@@ -5196,7 +5197,7 @@ describe('Unit tests for challenge controller', function () {
                 $stateParams: {},
                 $interval: {},
                 $mdDialog: {},
-                moment: mockMoment, // <-- use the mock
+                moment: mockMoment,
                 $location: {},
                 $anchorScroll: {},
                 $timeout: {}
@@ -5205,15 +5206,18 @@ describe('Unit tests for challenge controller', function () {
     
         it('should set vm.prizes on successful API call', function() {
             var fakeResponse = { data: [{ name: 'Prize 1' }, { name: 'Prize 2' }] };
-            // Find the callback
-            var callback;
+    
+            // ✅ Set required flags and IDs
+            vm.challengeId = 123;
+            vm.hasPrizes = true;
+    
+            // ✅ Simulate the request and callback
             utilities.sendRequest.and.callFake(function(params) {
-                callback = params.callback;
+                params.callback.onSuccess(fakeResponse);
             });
     
-            // Simulate the code under test
-            vm.challengeId = 123;
-            // Simulate the code block
+            // ✅ Trigger the prize fetching logic
+            vm.prizes = [];
             var parameters = {
                 url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
                 method: 'GET',
@@ -5229,23 +5233,21 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             utilities.sendRequest(parameters);
-    
-            // Simulate API success
-            parameters.callback.onSuccess(fakeResponse);
     
             expect(vm.prizes).toEqual(fakeResponse.data);
         });
     
         it('should call $rootScope.notify on API error', function() {
             var fakeError = { data: 'Some error' };
-            // Find the callback
-            var callback;
+    
+            vm.challengeId = 123;
+            vm.hasPrizes = true;
+    
             utilities.sendRequest.and.callFake(function(params) {
-                callback = params.callback;
+                params.callback.onError(fakeError);
             });
     
-            // Simulate the code under test
-            vm.challengeId = 123;
+            vm.prizes = [];
             var parameters = {
                 url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
                 method: 'GET',
@@ -5261,9 +5263,6 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             utilities.sendRequest(parameters);
-    
-            // Simulate API error
-            parameters.callback.onError(fakeError);
     
             expect($rootScope.notify).toHaveBeenCalledWith("error", fakeError.data);
         });
