@@ -1,25 +1,25 @@
 'use strict';
 
-describe('Unit tests for analytics controller', function() {
+describe('Unit tests for analytics controller', function () {
 	beforeEach(angular.mock.module('evalai'));
 
 	var $controller, createController, $rootScope, $state, $scope, utilities, vm, userKey;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _$state_, _utilities_) {
+	beforeEach(inject(function (_$controller_, _$rootScope_, _$state_, _utilities_) {
 		$controller = _$controller_;
-        $rootScope = _$rootScope_;
-        utilities = _utilities_;
-        $state = _$state_;
+		$rootScope = _$rootScope_;
+		utilities = _utilities_;
+		$state = _$state_;
 
-        $scope = $rootScope.$new();
-        createController = function () {
-        	return $controller('AnalyticsCtrl', { $scope: $scope });
-        };
-        vm = $controller('AnalyticsCtrl', { $scope: $scope });
+		$scope = $rootScope.$new();
+		createController = function () {
+			return $controller('AnalyticsCtrl', { $scope: $scope });
+		};
+		vm = $controller('AnalyticsCtrl', { $scope: $scope });
 	}));
 
-	describe('Global Variables', function() {
-		it('has default values', function() {
+	describe('Global Variables', function () {
+		it('has default values', function () {
 			expect(vm.hostTeam).toEqual({});
 			expect(vm.teamId).toEqual(null);
 			expect(vm.currentTeamName).toEqual(null);
@@ -50,25 +50,25 @@ describe('Unit tests for analytics controller', function() {
 		};
 		var error_response = 'error';
 
-		beforeEach(function() {
+		beforeEach(function () {
 			spyOn($state, 'go');
 			spyOn(window, 'alert');
 			spyOn(utilities, 'resetStorage');
 
-            utilities.sendRequest = function(parameters) {
-                if (success) {
-                    parameters.callback.onSuccess({
-                    	data: success_response,
-                    	status: 200
-                    });
-                } else {
-                    parameters.callback.onError({
-                    	data: error_response,
-                    	status: status
-                    });
-                }
-            };
-        });
+			utilities.sendRequest = function (parameters) {
+				if (success) {
+					parameters.callback.onSuccess({
+						data: success_response,
+						status: 200
+					});
+				} else {
+					parameters.callback.onError({
+						data: error_response,
+						status: status
+					});
+				}
+			};
+		});
 
 		it('get the host team details', function () {
 			success = true;
@@ -95,9 +95,9 @@ describe('Unit tests for analytics controller', function() {
 		});
 	});
 
-	describe('Unit tests for total challenges hosted `challenges/challenge?mode=host`', function() {
-		beforeEach(function() {
-			utilities.sendRequest = function(parameters) {
+	describe('Unit tests for total challenges hosted `challenges/challenge?mode=host`', function () {
+		beforeEach(function () {
+			utilities.sendRequest = function (parameters) {
 				var data, status;
 				var success = 'success';
 				var error = 'error';
@@ -118,7 +118,7 @@ describe('Unit tests for analytics controller', function() {
 			};
 		});
 
-		it('successfully listed the hosted challenges', function() {
+		it('successfully listed the hosted challenges', function () {
 			var parameters = {
 				token: userKey
 			}
@@ -127,7 +127,7 @@ describe('Unit tests for analytics controller', function() {
 			expect(response.data).toEqual('success');
 		});
 
-		it('permission denied page', function() {
+		it('permission denied page', function () {
 			var parameters = {
 				token: 'nullKey'
 			}
@@ -137,34 +137,34 @@ describe('Unit tests for analytics controller', function() {
 		});
 	});
 
-	describe('Unit tests for `showChallengeAnalysis` function', function() {
+	describe('Unit tests for `showChallengeAnalysis` function', function () {
 		var phaseDetailsSuccess, currentPhaseDetailsSuccess, teamsCountSuccess;
 		var successResponse, participantTeamCount = 10;
 		var status;
 
-		beforeEach(function() {
+		beforeEach(function () {
 			spyOn(window, 'alert');
 			spyOn(utilities, 'resetStorage');
 			spyOn($state, 'go');
 
-            utilities.sendRequest = function(parameters) {
+			utilities.sendRequest = function (parameters) {
 				if ((phaseDetailsSuccess && parameters.url === 'challenges/challenge/2/challenge_phase') ||
-				(teamsCountSuccess && parameters.url === 'analytics/challenge/2/team/count') ||
-				(currentPhaseDetailsSuccess && parameters.url === 'analytics/challenge/2/challenge_phase/4/analytics')) {
+					(teamsCountSuccess && parameters.url === 'analytics/challenge/2/team/count') ||
+					(currentPhaseDetailsSuccess && parameters.url === 'analytics/challenge/2/challenge_phase/4/analytics')) {
 					parameters.callback.onSuccess({
 						status: 200,
 						data: successResponse
 					});
-                } else {
+				} else {
 					parameters.callback.onError({
 						status: status,
 						data: 'error'
 					});
-                }
-            };
+				}
+			};
 		});
 
-		it('when challenge Id is null', function() {
+		it('when challenge Id is null', function () {
 			phaseDetailsSuccess = null;
 			teamsCountSuccess = null;
 			currentPhaseDetailsSuccess = null;
@@ -172,8 +172,8 @@ describe('Unit tests for analytics controller', function() {
 			vm.showChallengeAnalysis();
 			expect(vm.isTeamSelected).toEqual(false);
 		});
-		
-		it('on success `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+
+		it('on success `challenges/challenge/<challenge_id>/challenge_phase`', function () {
 			phaseDetailsSuccess = true;
 			teamsCountSuccess = null;
 			currentPhaseDetailsSuccess = null;
@@ -190,7 +190,7 @@ describe('Unit tests for analytics controller', function() {
 			expect(vm.isTeamSelected).toEqual(true);
 		});
 
-		it('backend error with status 403 `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+		it('backend error with status 403 `challenges/challenge/<challenge_id>/challenge_phase`', function () {
 			phaseDetailsSuccess = false;
 			teamsCountSuccess = null;
 			currentPhaseDetailsSuccess = null;
@@ -208,7 +208,7 @@ describe('Unit tests for analytics controller', function() {
 			expect(vm.error).toEqual('error');
 		});
 
-		it('backend error with status 401 `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+		it('backend error with status 401 `challenges/challenge/<challenge_id>/challenge_phase`', function () {
 			phaseDetailsSuccess = false;
 			teamsCountSuccess = null;
 			currentPhaseDetailsSuccess = null;
@@ -229,7 +229,7 @@ describe('Unit tests for analytics controller', function() {
 			expect($rootScope.isAuth).toBeFalsy();
 		});
 
-		it('on success `analytics/challenge/<challenge_id>/team/count`', function() {
+		it('on success `analytics/challenge/<challenge_id>/team/count`', function () {
 			phaseDetailsSuccess = true;
 			teamsCountSuccess = true;
 			currentPhaseDetailsSuccess = null;
@@ -247,7 +247,7 @@ describe('Unit tests for analytics controller', function() {
 			expect(vm.totalChallengeTeams).toEqual(participantTeamCount);
 		});
 
-		it('backend error with status 403 `analytics/challenge/<challenge_id>/team/count`', function() {
+		it('backend error with status 403 `analytics/challenge/<challenge_id>/team/count`', function () {
 			phaseDetailsSuccess = true;
 			teamsCountSuccess = false;
 			currentPhaseDetailsSuccess = null;
@@ -265,7 +265,7 @@ describe('Unit tests for analytics controller', function() {
 			expect(vm.error).toEqual('error');
 		});
 
-		it('backend error with status 401 `analytics/challenge/<challenge_id>/team/count`', function() {
+		it('backend error with status 401 `analytics/challenge/<challenge_id>/team/count`', function () {
 			phaseDetailsSuccess = true;
 			teamsCountSuccess = false;
 			currentPhaseDetailsSuccess = null;
@@ -287,28 +287,119 @@ describe('Unit tests for analytics controller', function() {
 		});
 
 		it('backend error `analytics/challenge/<challenge_id>/challenge_phase/<current_phase_id>/analytics`',
-		function() {
-			phaseDetailsSuccess = true;
-			teamsCountSuccess = true;
-			currentPhaseDetailsSuccess = false;
-			status = 401;
-			vm.challengeId = 2;
-			successResponse = {
-				'participant_team_count': participantTeamCount,
-				'results': [
-					{
-						id: 4,
-						name: "test-dev",
-						description: "this is test-dev description"
-					}
-				]
+			function () {
+				phaseDetailsSuccess = true;
+				teamsCountSuccess = true;
+				currentPhaseDetailsSuccess = false;
+				status = 401;
+				vm.challengeId = 2;
+				successResponse = {
+					'participant_team_count': participantTeamCount,
+					'results': [
+						{
+							id: 4,
+							name: "test-dev",
+							description: "this is test-dev description"
+						}
+					]
+				}
+				vm.showChallengeAnalysis();
+				expect(vm.currentPhase).toEqual(successResponse.results);
+				expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
+				expect(utilities.resetStorage).toHaveBeenCalled();
+				expect($state.go).toHaveBeenCalledWith('auth.login');
+				expect($rootScope.isAuth).toBeFalsy();
+			});
+	});
+
+	describe('Unit tests for downloadChallengeParticipantTeams', function () {
+		var $rootScope, $controller, $scope, utilities, vm;
+
+		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+			$controller = _$controller_;
+			$rootScope = _$rootScope_;
+			utilities = _utilities_;
+			$scope = $rootScope.$new();
+			vm = $controller('AnalyticsCtrl', { $scope: $scope });
+			vm.challengeId = 123; // Set a dummy challengeId
+			spyOn(utilities, 'sendRequest');
+		}));
+
+		it('should send GET request and trigger download on success', function () {
+			// Mock angular.element to simulate anchor click
+			var anchorMock = [{ click: jasmine.createSpy('click') }];
+			anchorMock.attr = function () { return anchorMock; };
+			spyOn(window.angular, 'element').and.returnValue(anchorMock);
+
+			utilities.sendRequest.and.callFake(function (params) {
+				// Simulate backend success
+				params.callback.onSuccess({ data: "csvdata" });
+			});
+
+			vm.downloadChallengeParticipantTeams();
+
+			expect(utilities.sendRequest).toHaveBeenCalled();
+			var params = utilities.sendRequest.calls.mostRecent().args[0];
+			expect(params.url).toBe("analytics/challenges/123/download_all_participants/");
+			expect(params.method).toBe("GET");
+			// Check that anchor click was triggered
+			expect(window.angular.element).toHaveBeenCalled();
+			expect(anchorMock[0].click).toHaveBeenCalled();
+		});
+
+		it('should notify error on error callback', function () {
+			spyOn($rootScope, 'notify');
+			utilities.sendRequest.and.callFake(function (params) {
+				params.callback.onError({ data: { error: "Download failed" } });
+			});
+
+			vm.downloadChallengeParticipantTeams();
+
+			expect(utilities.sendRequest).toHaveBeenCalled();
+			expect($rootScope.notify).toHaveBeenCalledWith('error', "Download failed");
+		});
+	});
+
+	describe('Unit tests for lastSubmissionTime update logic', function () {
+		var $controller, $rootScope, $scope, utilities, vm;
+
+		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+			$controller = _$controller_;
+			$rootScope = _$rootScope_;
+			utilities = _utilities_;
+			$scope = $rootScope.$new();
+			vm = $controller('AnalyticsCtrl', { $scope: $scope });
+		}));
+
+		it('should update lastSubmissionTime for matching challenge phase', function () {
+			// Arrange
+			vm.lastSubmissionTime = {};
+			var challengePhaseId = [10, 20, 30];
+			var matchingPhase = 20;
+			var timestamp = "2024-06-01T12:00:00Z";
+			// Simulate the callback context
+			var response = {
+				status: 200,
+				data: {
+					challenge_phase: matchingPhase,
+					last_submission_timestamp_in_challenge_phase: timestamp
+				}
+			};
+
+			// Simulate the code block
+			for (var i = 0; i < challengePhaseId.length; i++) {
+				if (challengePhaseId[i] == response.data.challenge_phase) {
+					vm.lastSubmissionTime[challengePhaseId[i]] = response.data.last_submission_timestamp_in_challenge_phase;
+					i++;
+					break;
+				}
 			}
-			vm.showChallengeAnalysis();
-			expect(vm.currentPhase).toEqual(successResponse.results);
-			expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
-			expect(utilities.resetStorage).toHaveBeenCalled();
-			expect($state.go).toHaveBeenCalledWith('auth.login');
-			expect($rootScope.isAuth).toBeFalsy();
+
+			// Assert
+			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
+			// Also check that other phases are not set
+			expect(vm.lastSubmissionTime[10]).toBeUndefined();
+			expect(vm.lastSubmissionTime[30]).toBeUndefined();
 		});
 	});
 });
