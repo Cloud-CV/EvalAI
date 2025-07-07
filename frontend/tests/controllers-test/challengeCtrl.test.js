@@ -5162,7 +5162,8 @@ describe('Unit tests for challenge controller', function () {
     
             // Mock utilities
             utilities = {
-                sendRequest: jasmine.createSpy('sendRequest')
+                sendRequest: jasmine.createSpy('sendRequest'),
+                getData: function() { return null; } // <-- Add this line
             };
     
             // Mock $rootScope.notify
