@@ -5150,4 +5150,85 @@ describe('Unit tests for challenge controller', function () {
             expect(localVm.stopLoader).toHaveBeenCalled();
         });
     });
+
+    describe('Unit tests for startLoadingLogs function', function () {
+        var $interval, $controller, $rootScope, $scope, utilities, vm, parameters;
+    
+        beforeEach(inject(function (_$controller_, _$interval_, _$rootScope_, _utilities_) {
+            $controller = _$controller_;
+            $interval = _$interval_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+            parameters = {};
+            spyOn(utilities, 'sendRequest');
+        }));
+    
+        afterEach(function () {
+            // Cancel any intervals to avoid leaks
+            if (vm.logs_poller) {
+                $interval.cancel(vm.logs_poller);
+            }
+        });
+    
+        it('should push evaluation_module_error to workerLogs if set', function () {
+            vm.evaluation_module_error = "Some error";
+            vm.workerLogs = [];
+            vm.startLoadingLogs();
+            // Simulate $interval tick
+            $interval.flush(5000);
+            expect(vm.workerLogs).toEqual(["Some error"]);
+        });
+    
+        it('should convert UTC time in logs to local and push to workerLogs', function () {
+            vm.evaluation_module_error = null;
+            vm.challengeId = 42;
+            var logWithUtc = "[2024-06-01 12:34:56] Some log message";
+            var expectedLocal = new Date("2024-06-01T12:34:56Z").toLocaleString("sv-SE");
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: {
+                        logs: [logWithUtc]
+                    }
+                });
+            });
+            vm.workerLogs = [];
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+            expect(vm.workerLogs[0]).toContain(expectedLocal);
+            expect(vm.workerLogs[0]).toContain("Some log message");
+        });
+    
+        it('should push log as-is if no UTC time is present', function () {
+            vm.evaluation_module_error = null;
+            vm.challengeId = 42;
+            var logWithoutUtc = "No timestamp here";
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: {
+                        logs: [logWithoutUtc]
+                    }
+                });
+            });
+            vm.workerLogs = [];
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+            expect(vm.workerLogs).toEqual([logWithoutUtc]);
+        });
+    
+        it('should push error to workerLogs on onError', function () {
+            vm.evaluation_module_error = null;
+            vm.challengeId = 42;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({
+                    data: { error: "Backend error" }
+                });
+            });
+            vm.workerLogs = [];
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+            expect(vm.workerLogs).toEqual(["Backend error"]);
+        });
+    });
 });
