@@ -360,7 +360,7 @@ describe('Unit tests for analytics controller', function() {
 		});
 	});
 
-	describe('Unit tests for lastSubmissionTime update logic (real coverage)', function () {
+	describe('Unit tests for lastSubmissionTime update logic', function () {
 		var $controller, $rootScope, $scope, utilities, vm;
 	
 		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
