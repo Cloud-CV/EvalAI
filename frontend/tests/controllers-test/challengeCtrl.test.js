@@ -4975,7 +4975,7 @@ describe('Unit tests for challenge controller', function () {
     }); 
 
     describe('Unit tests for load function (submissions pagination)', function () {
-        var localVm, $http, $scope, $controller;
+        var localVm, $http, $scope, $controller, getHandler;
     
         beforeEach(inject(function (_$controller_, _$rootScope_, _$http_) {
             $controller = _$controller_;
@@ -4984,9 +4984,9 @@ describe('Unit tests for challenge controller', function () {
             localVm = $controller('ChallengeCtrl', { $scope: $scope });
             localVm.startLoader = jasmine.createSpy('startLoader');
             localVm.stopLoader = jasmine.createSpy('stopLoader');
+            getHandler = null;
             spyOn($http, 'get').and.callFake(function () {
-                var deferred = $injector.get('$q').defer();
-                return deferred.promise;
+                return getHandler.apply(this, arguments);
             });
         }));
     
@@ -4998,7 +4998,7 @@ describe('Unit tests for challenge controller', function () {
                 count: 300,
                 results: []
             };
-            spyOn($http, 'get').and.callFake(function (reqUrl, opts) {
+            getHandler = function (reqUrl, opts) {
                 expect(reqUrl).toBe(url);
                 expect(opts.headers.Authorization).toBe("Token encrypted key");
                 return {
@@ -5006,9 +5006,8 @@ describe('Unit tests for challenge controller', function () {
                         cb({ data: responseData });
                     }
                 };
-            });
+            };    
     
-            // Define the load function manually to match the implementation
             localVm.load = function(url) {
                 localVm.startLoader("Loading Submissions");
                 if (url !== null) {
@@ -5060,13 +5059,13 @@ describe('Unit tests for challenge controller', function () {
                 count: 150,
                 results: []
             };
-            spyOn($http, 'get').and.callFake(function (reqUrl, opts) {
+            getHandler = function (reqUrl, opts) {
                 return {
                     then: function (cb) {
                         cb({ data: responseData });
                     }
                 };
-            });
+            };
     
             localVm.load = function(url) {
                 localVm.startLoader("Loading Submissions");
@@ -5110,6 +5109,10 @@ describe('Unit tests for challenge controller', function () {
         });
     
         it('should call stopLoader if url is null', function () {
+            getHandler = function () {
+                // Should not be called
+                throw new Error('Should not call $http.get when url is null');
+            };
             localVm.load = function(url) {
                 localVm.startLoader("Loading Submissions");
                 if (url !== null) {
