@@ -5154,8 +5154,6 @@ describe('Unit tests for challenge controller', function () {
     describe('ChallengeCtrl - Prizes API', function() {
         var $controller, $rootScope, $q, utilities, vm, $scope;
     
-        beforeEach(module('evalai'));
-    
         beforeEach(inject(function(_$controller_, _$rootScope_, _$q_) {
             $controller = _$controller_;
             $rootScope = _$rootScope_;
