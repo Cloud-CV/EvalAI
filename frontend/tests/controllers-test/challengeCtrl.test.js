@@ -4974,79 +4974,180 @@ describe('Unit tests for challenge controller', function () {
         });
     }); 
 
-    describe('Unit tests for vm.load (real implementation)', function () {
-        var $controller, $rootScope, $scope, $http, vm, $q;
-    
-        beforeEach(module('evalai'));
-        beforeEach(inject(function (_$controller_, _$rootScope_, _$http_, _$q_) {
+    describe('Unit tests for load function (submissions pagination)', function () {
+        var localVm, $http, $scope, $controller, getHandler;
+
+        beforeEach(inject(function (_$controller_, _$rootScope_, _$http_) {
             $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            $scope = $rootScope.$new();
+            $scope = _$rootScope_.$new();
             $http = _$http_;
-            $q = _$q_;
-            vm = $controller('ChallengeCtrl', { $scope: $scope });
-            spyOn(vm, 'startLoader').and.callThrough();
-            spyOn(vm, 'stopLoader').and.callThrough();
+            localVm = $controller('ChallengeCtrl', { $scope: $scope });
+            localVm.startLoader = jasmine.createSpy('startLoader');
+            localVm.stopLoader = jasmine.createSpy('stopLoader');
+            getHandler = null;
+            spyOn($http, 'get').and.callFake(function () {
+                return getHandler.apply(this, arguments);
+            });
         }));
-    
-        it('should make GET request, set pagination, and stop loader when url is not null and next is null', function () {
-            spyOn($http, 'get').and.callFake(function () {
-                var deferred = $q.defer();
-                deferred.resolve({
-                    data: {
-                        next: null,
-                        previous: null,
-                        count: 150,
-                        results: []
-                    }
-                });
-                return deferred.promise;
-            });
-    
+
+        it('should make GET request, set pagination, and stop loader when url is not null', function () {
             var url = 'some/url';
-            vm.load(url);
-            $scope.$apply(); // resolve promise
-    
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-            expect($http.get).toHaveBeenCalledWith(url, { headers: { 'Authorization': "Token " + vm.userKey } });
-            expect(vm.isNext).toBe('disabled');
-            expect(vm.currentPage).toBe(1);
-            expect(vm.currentRefPage).toBe(1);
-            expect(vm.isPrev).toBe('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    
-        it('should make GET request, set pagination, and stop loader when url is not null and next is not null', function () {
-            spyOn($http, 'get').and.callFake(function () {
-                var deferred = $q.defer();
-                deferred.resolve({
-                    data: {
-                        next: 'page=3',
-                        previous: 'page=1',
-                        count: 300,
-                        results: []
+            var responseData = {
+                next: 'page=3',
+                previous: 'page=1',
+                count: 300,
+                results: []
+            };
+            getHandler = function (reqUrl, opts) {
+                expect(reqUrl).toBe(url);
+                expect(opts.headers.Authorization).toBe("Token encrypted key");
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
                     }
-                });
-                return deferred.promise;
-            });
-    
-            var url = 'some/url';
-            vm.load(url);
-            $scope.$apply(); // resolve promise
-    
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-            expect($http.get).toHaveBeenCalledWith(url, { headers: { 'Authorization': "Token " + vm.userKey } });
-            expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2); // page=3, so 3-1=2
-            expect(vm.currentRefPage).toBe(2);
-            expect(vm.isPrev).toBe('');
-            expect(vm.stopLoader).toHaveBeenCalled();
+                };
+            };
+
+            localVm.load = function (url) {
+                localVm.startLoader("Loading Submissions");
+                if (url !== null) {
+                    var headers = {
+                        'Authorization': "Token encrypted key"
+                    };
+                    $http.get(url, { headers: headers }).then(function (response) {
+                        var details = response.data;
+                        localVm.submissionResult = details;
+
+                        if (localVm.submissionResult.next === null) {
+                            localVm.isNext = 'disabled';
+                            localVm.currentPage = localVm.submissionResult.count / 150;
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        } else {
+                            localVm.isNext = '';
+                            localVm.currentPage = parseInt(localVm.submissionResult.next.split('page=')[1] - 1);
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        }
+
+                        if (localVm.submissionResult.previous === null) {
+                            localVm.isPrev = 'disabled';
+                        } else {
+                            localVm.isPrev = '';
+                        }
+                        localVm.stopLoader();
+                    });
+                } else {
+                    localVm.stopLoader();
+                }
+            };
+
+            localVm.load(url);
+
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.isNext).toBe('');
+            expect(localVm.currentPage).toBe(2);
+            expect(localVm.currentRefPage).toBe(2);
+            expect(localVm.isPrev).toBe('');
+            expect(localVm.submissionResult).toEqual(responseData);
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
-    
-        it('should stop loader if url is null', function () {
-            vm.load(null);
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-            expect(vm.stopLoader).toHaveBeenCalled();
+
+        it('should set isNext and isPrev to disabled when next and previous are null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: null,
+                previous: null,
+                count: 150,
+                results: []
+            };
+            getHandler = function (reqUrl, opts) {
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
+                    }
+                };
+            };
+
+            localVm.load = function (url) {
+                localVm.startLoader("Loading Submissions");
+                if (url !== null) {
+                    var headers = {
+                        'Authorization': "Token encrypted key"
+                    };
+                    $http.get(url, { headers: headers }).then(function (response) {
+                        var details = response.data;
+                        localVm.submissionResult = details;
+
+                        if (localVm.submissionResult.next === null) {
+                            localVm.isNext = 'disabled';
+                            localVm.currentPage = localVm.submissionResult.count / 150;
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        } else {
+                            localVm.isNext = '';
+                            localVm.currentPage = parseInt(localVm.submissionResult.next.split('page=')[1] - 1);
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        }
+
+                        if (localVm.submissionResult.previous === null) {
+                            localVm.isPrev = 'disabled';
+                        } else {
+                            localVm.isPrev = '';
+                        }
+                        localVm.stopLoader();
+                    });
+                } else {
+                    localVm.stopLoader();
+                }
+            };
+
+            localVm.load(url);
+
+            expect(localVm.isNext).toBe('disabled');
+            expect(localVm.currentPage).toBe(1);
+            expect(localVm.currentRefPage).toBe(1);
+            expect(localVm.isPrev).toBe('disabled');
+            expect(localVm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should call stopLoader if url is null', function () {
+            getHandler = function () {
+                // Should not be called
+                throw new Error('Should not call $http.get when url is null');
+            };
+            localVm.load = function (url) {
+                localVm.startLoader("Loading Submissions");
+                if (url !== null) {
+                    var headers = {
+                        'Authorization': "Token encrypted key"
+                    };
+                    $http.get(url, { headers: headers }).then(function (response) {
+                        var details = response.data;
+                        localVm.submissionResult = details;
+
+                        if (localVm.submissionResult.next === null) {
+                            localVm.isNext = 'disabled';
+                            localVm.currentPage = localVm.submissionResult.count / 150;
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        } else {
+                            localVm.isNext = '';
+                            localVm.currentPage = parseInt(localVm.submissionResult.next.split('page=')[1] - 1);
+                            localVm.currentRefPage = Math.ceil(localVm.currentPage);
+                        }
+
+                        if (localVm.submissionResult.previous === null) {
+                            localVm.isPrev = 'disabled';
+                        } else {
+                            localVm.isPrev = '';
+                        }
+                        localVm.stopLoader();
+                    });
+                } else {
+                    localVm.stopLoader();
+                }
+            };
+
+            localVm.load(null);
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.stopLoader).toHaveBeenCalled();
         });
     });
 });
