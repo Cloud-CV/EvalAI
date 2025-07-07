@@ -213,4 +213,186 @@ describe('Unit tests for featured challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
+
+    describe('Unit tests for leaderboard submission__submitted_at formatting', function () {
+        var $controller, $rootScope, $scope, utilities, vm, moment;
+    
+        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _moment_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            moment = _moment_;
+            $scope = $rootScope.$new();
+            vm = $controller('FeaturedChallengeCtrl', { $scope: $scope });
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn(angular, 'element');
+        }));
+    
+        function leaderboardWithSubmissionAt(date) {
+            return {
+                results: {
+                    results: [
+                        { id: 1, submission__submitted_at: date }
+                    ]
+                }
+            };
+        }
+    
+        it('should set timeSpan to "year" for 1 year ago', function () {
+            var oneYearAgo = moment().subtract(1, 'years').toDate();
+            var response = leaderboardWithSubmissionAt(oneYearAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('year');
+        });
+    
+        it('should set timeSpan to "years" for 2 years ago', function () {
+            var twoYearsAgo = moment().subtract(2, 'years').toDate();
+            var response = leaderboardWithSubmissionAt(twoYearsAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('years');
+        });
+    
+        it('should set timeSpan to "month" for 1 month ago', function () {
+            var oneMonthAgo = moment().subtract(1, 'months').toDate();
+            var response = leaderboardWithSubmissionAt(oneMonthAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('month');
+        });
+    
+        it('should set timeSpan to "months" for 3 months ago', function () {
+            var threeMonthsAgo = moment().subtract(3, 'months').toDate();
+            var response = leaderboardWithSubmissionAt(threeMonthsAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('months');
+        });
+    
+        it('should set timeSpan to "day" for 1 day ago', function () {
+            var oneDayAgo = moment().subtract(1, 'days').toDate();
+            var response = leaderboardWithSubmissionAt(oneDayAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('day');
+        });
+    
+        it('should set timeSpan to "days" for 5 days ago', function () {
+            var fiveDaysAgo = moment().subtract(5, 'days').toDate();
+            var response = leaderboardWithSubmissionAt(fiveDaysAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('days');
+        });
+    
+        it('should set timeSpan to "hour" for 1 hour ago', function () {
+            var oneHourAgo = moment().subtract(1, 'hours').toDate();
+            var response = leaderboardWithSubmissionAt(oneHourAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('hour');
+        });
+    
+        it('should set timeSpan to "hours" for 10 hours ago', function () {
+            var tenHoursAgo = moment().subtract(10, 'hours').toDate();
+            var response = leaderboardWithSubmissionAt(tenHoursAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('hours');
+        });
+    
+        it('should set timeSpan to "minute" for 1 minute ago', function () {
+            var oneMinuteAgo = moment().subtract(1, 'minutes').toDate();
+            var response = leaderboardWithSubmissionAt(oneMinuteAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('minute');
+        });
+    
+        it('should set timeSpan to "minutes" for 30 minutes ago', function () {
+            var thirtyMinutesAgo = moment().subtract(30, 'minutes').toDate();
+            var response = leaderboardWithSubmissionAt(thirtyMinutesAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('minutes');
+        });
+    
+        it('should set timeSpan to "second" for 1 second ago', function () {
+            var oneSecondAgo = moment().subtract(1, 'seconds').toDate();
+            var response = leaderboardWithSubmissionAt(oneSecondAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('second');
+        });
+    
+        it('should set timeSpan to "seconds" for 45 seconds ago', function () {
+            var fortyFiveSecondsAgo = moment().subtract(45, 'seconds').toDate();
+            var response = leaderboardWithSubmissionAt(fortyFiveSecondsAgo);
+    
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onSuccess({ data: response.results });
+            };
+    
+            vm.getLeaderboard(1);
+    
+            expect(vm.leaderboard[0].timeSpan).toBe('seconds');
+        });
+    });
 });
