@@ -5153,7 +5153,13 @@ describe('Unit tests for challenge controller', function () {
 
 
     describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
-        var $interval, $rootScope, utilities, vm, $controller, $scope, $injector;
+        var $interval, $rootScope, utilities, vm, $controller, $scope, $injector, $httpBackend;
+    
+        // Mock all GET requests to avoid "Unexpected request" errors
+        beforeEach(inject(function(_$httpBackend_) {
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET(/.*/).respond(200, {});
+        }));
     
         beforeEach(inject(function (_$controller_, _$rootScope_, _$interval_, _utilities_, _$injector_) {
             $controller = _$controller_;
@@ -5164,6 +5170,11 @@ describe('Unit tests for challenge controller', function () {
             $scope = $rootScope.$new();
             vm = $controller('ChallengeCtrl', { $scope: $scope });
         }));
+    
+        afterEach(function() {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
     
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
