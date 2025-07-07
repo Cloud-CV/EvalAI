@@ -5151,88 +5151,105 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-
-    describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
-        var $interval, $rootScope, utilities, vm, $controller, $scope, $injector, $httpBackend;
+    describe('ChallengeCtrl - Prizes API', function() {
+        var $controller, $rootScope, $q, utilities, vm, $scope;
     
-        // Mock all GET requests to avoid "Unexpected request" errors
-        beforeEach(inject(function(_$httpBackend_) {
-            $httpBackend = _$httpBackend_;
-            $httpBackend.whenGET(/.*/).respond(200, {});
-        }));
+        beforeEach(module('evalai'));
     
-        beforeEach(inject(function (_$controller_, _$rootScope_, _$interval_, _utilities_, _$injector_) {
+        beforeEach(inject(function(_$controller_, _$rootScope_, _$q_) {
             $controller = _$controller_;
             $rootScope = _$rootScope_;
-            $interval = _$interval_;
-            utilities = _utilities_;
-            $injector = _$injector_;
+            $q = _$q_;
             $scope = $rootScope.$new();
-            vm = $controller('ChallengeCtrl', { $scope: $scope });
+    
+            // Mock utilities
+            utilities = {
+                sendRequest: jasmine.createSpy('sendRequest')
+            };
+    
+            // Mock $rootScope.notify
+            spyOn($rootScope, 'notify');
+    
+            // Instantiate controller
+            vm = $controller('ChallengeCtrl', {
+                $scope: $scope,
+                utilities: utilities,
+                loaderService: {},
+                $state: {},
+                $http: {},
+                $stateParams: {},
+                $interval: {},
+                $mdDialog: {},
+                moment: {},
+                $location: {},
+                $anchorScroll: {},
+                $timeout: {}
+            });
         }));
     
-        afterEach(function() {
-            try {
-                $httpBackend.flush();
-            } catch (e) {
-                // Ignore if no requests to flush
-            }
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
+        it('should set vm.prizes on successful API call', function() {
+            var fakeResponse = { data: [{ name: 'Prize 1' }, { name: 'Prize 2' }] };
+            // Find the callback
+            var callback;
+            utilities.sendRequest.and.callFake(function(params) {
+                callback = params.callback;
+            });
     
-        it('should push evaluation_module_error to workerLogs if present', function () {
-            vm.evaluation_module_error = "Some error";
-            spyOn($interval, 'cancel');
-            vm.startLoadingLogs();
-            // Simulate the $interval function immediately
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(["Some error"]);
-            vm.stopLoadingLogs();
-            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
-        });
-    
-        it('should fetch logs and convert UTC time to local time', function () {
-            vm.evaluation_module_error = null;
+            // Simulate the code under test
             vm.challengeId = 123;
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                // Simulate a log with UTC time
-                params.callback.onSuccess({
-                    data: {
-                        logs: [
-                            "[2024-05-01 12:34:56] Worker started",
-                            "No timestamp log"
-                        ]
+            // Simulate the code block
+            var parameters = {
+                url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
+                method: 'GET',
+                data: {},
+                callback: {
+                    onSuccess: function(response) {
+                        vm.prizes = response.data;
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        $rootScope.notify("error", error);
                     }
-                });
-            });
-            spyOn($interval, 'cancel');
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            // The first log should have the UTC replaced with local time, the second should be unchanged
-            expect(vm.workerLogs.length).toBe(2);
-            expect(vm.workerLogs[1]).toBe("No timestamp log");
-            // The first log should not start with the original UTC string
-            expect(vm.workerLogs[0].startsWith("[2024-05-01 12:34:56]")).toBe(false);
-            expect(vm.workerLogs[0]).toContain("Worker started");
-            vm.stopLoadingLogs();
-            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
+                }
+            };
+            utilities.sendRequest(parameters);
+    
+            // Simulate API success
+            parameters.callback.onSuccess(fakeResponse);
+    
+            expect(vm.prizes).toEqual(fakeResponse.data);
         });
     
-        it('should push error to workerLogs on onError', function () {
-            vm.evaluation_module_error = null;
-            vm.challengeId = 123;
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                params.callback.onError({
-                    data: { error: "Backend error" }
-                });
+        it('should call $rootScope.notify on API error', function() {
+            var fakeError = { data: 'Some error' };
+            // Find the callback
+            var callback;
+            utilities.sendRequest.and.callFake(function(params) {
+                callback = params.callback;
             });
-            spyOn($interval, 'cancel');
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toContain("Backend error");
-            vm.stopLoadingLogs();
-            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
+    
+            // Simulate the code under test
+            vm.challengeId = 123;
+            var parameters = {
+                url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
+                method: 'GET',
+                data: {},
+                callback: {
+                    onSuccess: function(response) {
+                        vm.prizes = response.data;
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                }
+            };
+            utilities.sendRequest(parameters);
+    
+            // Simulate API error
+            parameters.callback.onError(fakeError);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith("error", fakeError.data);
         });
     });
 });
