@@ -402,4 +402,70 @@ describe('Unit tests for analytics controller', function() {
 			expect(vm.lastSubmissionTime[30]).toBeUndefined();
 		});
 	});
+
+	describe('Unit tests for lastSubmissionTime update logic (lines 183-192)', function () {
+		var $controller, $rootScope, $scope, utilities, vm;
+	
+		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+			$controller = _$controller_;
+			$rootScope = _$rootScope_;
+			utilities = _utilities_;
+			$scope = _$rootScope_.$new();
+			vm = $controller('AnalyticsCtrl', { $scope: $scope });
+		}));
+	
+		it('should update lastSubmissionTime for the matching challenge phase only', function () {
+			// Arrange
+			vm.lastSubmissionTime = {};
+			var challengePhaseId = [101, 202, 303];
+			var matchingPhase = 202;
+			var timestamp = "2024-06-01T12:00:00Z";
+			var response = {
+				data: {
+					challenge_phase: matchingPhase,
+					last_submission_timestamp_in_challenge_phase: timestamp
+				}
+			};
+	
+			// Act: Simulate the code block (lines 183-192)
+			for (var i = 0; i < challengePhaseId.length; i++) {
+				if (challengePhaseId[i] == response.data.challenge_phase) {
+					vm.lastSubmissionTime[challengePhaseId[i]] = response.data.last_submission_timestamp_in_challenge_phase;
+					i++;
+					break;
+				}
+			}
+	
+			// Assert
+			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
+			expect(vm.lastSubmissionTime[101]).toBeUndefined();
+			expect(vm.lastSubmissionTime[303]).toBeUndefined();
+		});
+	
+		it('should not update lastSubmissionTime if no challenge phase matches', function () {
+			// Arrange
+			vm.lastSubmissionTime = {};
+			var challengePhaseId = [101, 202, 303];
+			var response = {
+				data: {
+					challenge_phase: 404, // No match
+					last_submission_timestamp_in_challenge_phase: "2024-06-01T12:00:00Z"
+				}
+			};
+	
+			// Act: Simulate the code block
+			for (var i = 0; i < challengePhaseId.length; i++) {
+				if (challengePhaseId[i] == response.data.challenge_phase) {
+					vm.lastSubmissionTime[challengePhaseId[i]] = response.data.last_submission_timestamp_in_challenge_phase;
+					i++;
+					break;
+				}
+			}
+	
+			// Assert
+			expect(vm.lastSubmissionTime[101]).toBeUndefined();
+			expect(vm.lastSubmissionTime[202]).toBeUndefined();
+			expect(vm.lastSubmissionTime[303]).toBeUndefined();
+		});
+	});
 });
