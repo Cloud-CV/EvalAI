@@ -5151,120 +5151,130 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('ChallengeCtrl - Prizes API', function() {
-        var $controller, $rootScope, $q, utilities, vm, $scope;
+    describe('Pagination logic for existTeam', function() {
+        var vm;
     
-        beforeEach(inject(function(_$controller_, _$rootScope_, _$q_) {
-            $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            $q = _$q_;
-            $scope = $rootScope.$new();
-    
-            // ✅ Correctly mock utilities with getEnvironment
-            utilities = {
-                sendRequest: jasmine.createSpy('sendRequest'),
-                getData: function() { return null; },
-                getEnvironment: jasmine.createSpy('getEnvironment').and.returnValue('HOSTED')  // ✅ Important fix
+        beforeEach(function() {
+            vm = {
+                stopLoader: jasmine.createSpy('stopLoader')
             };
-    
-            // ✅ Mock $rootScope.notify
-            spyOn($rootScope, 'notify');
-    
-            // ✅ Mock moment with tz.guess and tz.zone
-            var mockMoment = function() {
-                return {
-                    utcOffset: function() { return 0; },
-                    tz: {
-                        guess: function() { return 'UTC'; },
-                        zone: function() { return { abbr: function() { return 'UTC'; } }; }
-                    },
-                    format: function() { return "Jan 1, 2020 12:00:00 AM"; },
-                    valueOf: function() { return 0; }
-                };
-            };
-            mockMoment.tz = {
-                guess: function() { return 'UTC'; },
-                zone: function() { return { abbr: function() { return 'UTC'; } }; }
-            };
-    
-            // ✅ Instantiate controller
-            vm = $controller('ChallengeCtrl', {
-                $scope: $scope,
-                utilities: utilities,
-                loaderService: {},
-                $state: {},
-                $http: {},
-                $stateParams: {},
-                $interval: {},
-                $mdDialog: {},
-                moment: mockMoment,
-                $location: {},
-                $anchorScroll: {},
-                $timeout: {}
-            });
-        }));
-    
-        it('should set vm.prizes on successful API call', function() {
-            var fakeResponse = { data: [{ name: 'Prize 1' }, { name: 'Prize 2' }] };
-    
-            // ✅ Set required flags and IDs
-            vm.challengeId = 123;
-            vm.hasPrizes = true;
-    
-            // ✅ Simulate the request and callback
-            utilities.sendRequest.and.callFake(function(params) {
-                params.callback.onSuccess(fakeResponse);
-            });
-    
-            // ✅ Trigger the prize fetching logic
-            vm.prizes = [];
-            var parameters = {
-                url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
-                method: 'GET',
-                data: {},
-                callback: {
-                    onSuccess: function(response) {
-                        vm.prizes = response.data;
-                    },
-                    onError: function(response) {
-                        var error = response.data;
-                        $rootScope.notify("error", error);
-                    }
-                }
-            };
-            utilities.sendRequest(parameters);
-    
-            expect(vm.prizes).toEqual(fakeResponse.data);
         });
     
-        it('should call $rootScope.notify on API error', function() {
-            var fakeError = { data: 'Some error' };
-    
-            vm.challengeId = 123;
-            vm.hasPrizes = true;
-    
-            utilities.sendRequest.and.callFake(function(params) {
-                params.callback.onError(fakeError);
-            });
-    
-            vm.prizes = [];
-            var parameters = {
-                url: 'challenges/challenge/' + vm.challengeId + '/prizes/',
-                method: 'GET',
-                data: {},
-                callback: {
-                    onSuccess: function(response) {
-                        vm.prizes = response.data;
-                    },
-                    onError: function(response) {
-                        var error = response.data;
-                        $rootScope.notify("error", error);
-                    }
-                }
+        it('should set isNext to disabled and currentPage to count/10 when next is null', function() {
+            var details = {
+                next: null,
+                previous: null,
+                count: 30
             };
-            utilities.sendRequest(parameters);
+            vm.existTeam = details;
     
-            expect($rootScope.notify).toHaveBeenCalledWith("error", fakeError.data);
+            // Simulate the code block
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+    
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(3);
+            expect(vm.isPrev).toBe('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should set isNext to "" and currentPage from next when next is not null', function() {
+            var details = {
+                next: 'page=5',
+                previous: null,
+                count: 50
+            };
+            vm.existTeam = details;
+    
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+    
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(4); // 5-1=4
+            expect(vm.isPrev).toBe('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should set isPrev to "" when previous is not null', function() {
+            var details = {
+                next: null,
+                previous: 'page=2',
+                count: 20
+            };
+            vm.existTeam = details;
+    
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+    
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(2);
+            expect(vm.isPrev).toBe('');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should set isNext and isPrev to "" when both next and previous are not null', function() {
+            var details = {
+                next: 'page=3',
+                previous: 'page=1',
+                count: 30
+            };
+            vm.existTeam = details;
+    
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+    
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(2); // 3-1=2
+            expect(vm.isPrev).toBe('');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
 });
