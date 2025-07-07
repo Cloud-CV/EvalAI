@@ -372,29 +372,57 @@ describe('Unit tests for analytics controller', function() {
 		}));
 	
 		it('should update lastSubmissionTime for matching challenge phase via real controller code', function () {
+			// Arrange
 			vm.lastSubmissionTime = {};
-			var challengePhaseId = [10, 20, 30];
+			vm.challengeId = 42;
+			vm.challengeList = [{id: 42}];
+	
 			var matchingPhase = 20;
 			var timestamp = "2024-06-01T12:00:00Z";
-			var response = {
-				status: 200,
-				data: {
-					challenge_phase: matchingPhase,
-					last_submission_timestamp_in_challenge_phase: timestamp
-				}
-			};
-		
+	
+			var callCount = 0;
 			spyOn(utilities, 'sendRequest').and.callFake(function(params) {
-				// Simulate backend success
-				params.callback.onSuccess(response);
+				callCount++;
+				if (callCount === 1) {
+					// /challenge/<id>/challenge_phase
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							results: [{id: matchingPhase}]
+						}
+					});
+				} else if (callCount === 2) {
+					// /team/count
+					params.callback.onSuccess({
+						status: 200,
+						data: {participant_team_count: 1}
+					});
+				} else if (callCount === 3) {
+					// /challenge_phase/<id>/analytics
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							challenge_phase: matchingPhase,
+							total_submissions: 0,
+							participant_team_count: 0
+						}
+					});
+				} else if (callCount === 4) {
+					// /challenge_phase/<id>/last_submission_datetime_analysis/
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							challenge_phase: matchingPhase,
+							last_submission_timestamp_in_challenge_phase: timestamp
+						}
+					});
+				}
 			});
-		
-			// Set up any other required state for the method
-			vm.challengePhaseId = challengePhaseId; // if needed
-		
-			// Call the real method
+	
+			// Act
 			vm.showChallengeAnalysis();
-		
+	
+			// Assert
 			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
 		});
 	});
