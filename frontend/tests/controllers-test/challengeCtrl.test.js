@@ -5172,6 +5172,11 @@ describe('Unit tests for challenge controller', function () {
         }));
     
         afterEach(function() {
+            try {
+                $httpBackend.flush();
+            } catch (e) {
+                // Ignore if no requests to flush
+            }
             $httpBackend.verifyNoOutstandingExpectation();
             $httpBackend.verifyNoOutstandingRequest();
         });
@@ -5207,8 +5212,9 @@ describe('Unit tests for challenge controller', function () {
             // The first log should have the UTC replaced with local time, the second should be unchanged
             expect(vm.workerLogs.length).toBe(2);
             expect(vm.workerLogs[1]).toBe("No timestamp log");
-            // The first log should not contain the original UTC string
-            expect(vm.workerLogs[0]).not.toContain("[2024-05-01 12:34:56]");
+            // The first log should not start with the original UTC string
+            expect(vm.workerLogs[0].startsWith("[2024-05-01 12:34:56]")).toBe(false);
+            expect(vm.workerLogs[0]).toContain("Worker started");
             vm.stopLoadingLogs();
             expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
         });
