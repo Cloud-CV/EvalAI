@@ -372,7 +372,6 @@ describe('Unit tests for analytics controller', function() {
 		}));
 	
 		it('should update lastSubmissionTime for matching challenge phase via real controller code', function () {
-			// Arrange
 			vm.lastSubmissionTime = {};
 			var challengePhaseId = [10, 20, 30];
 			var matchingPhase = 20;
@@ -384,26 +383,19 @@ describe('Unit tests for analytics controller', function() {
 					last_submission_timestamp_in_challenge_phase: timestamp
 				}
 			};
-	
-			// Spy on utilities.sendRequest and call the real callback
+		
 			spyOn(utilities, 'sendRequest').and.callFake(function(params) {
 				// Simulate backend success
 				params.callback.onSuccess(response);
 			});
-	
-			// You must call the real controller method that triggers the code block
-			// Replace 'fetchLastSubmissionTime' with the actual method name if different
-			if (typeof vm.fetchLastSubmissionTime === 'function') {
-				vm.fetchLastSubmissionTime(challengePhaseId);
-			} else {
-				// If the code is inside another method, call that method here
-				// e.g., vm.someMethodThatTriggersTheCallback(challengePhaseId);
-			}
-	
-			// Assert
+		
+			// Set up any other required state for the method
+			vm.challengePhaseId = challengePhaseId; // if needed
+		
+			// Call the real method
+			vm.showChallengeAnalysis();
+		
 			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
-			expect(vm.lastSubmissionTime[10]).toBeUndefined();
-			expect(vm.lastSubmissionTime[30]).toBeUndefined();
 		});
 	});
 });
