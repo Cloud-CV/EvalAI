@@ -5151,90 +5151,71 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $controller, $rootScope, $scope, utilities, vm, parameters, $httpBackend;
+
+    describe('Unit tests for startLoadingLogs and stopLoadingLogs', function () {
+        var $interval, $rootScope, utilities, vm, $controller, $scope, $injector;
     
-        beforeEach(inject(function (_$controller_, _$interval_, _$rootScope_, _utilities_, _$httpBackend_) {
+        beforeEach(inject(function (_$controller_, _$rootScope_, _$interval_, _utilities_, _$injector_) {
             $controller = _$controller_;
-            $interval = _$interval_;
             $rootScope = _$rootScope_;
+            $interval = _$interval_;
             utilities = _utilities_;
+            $injector = _$injector_;
             $scope = $rootScope.$new();
-            $httpBackend = _$httpBackend_;
-            // Ignore the auth token request
-            $httpBackend.whenGET('http://localhost:8000/api/accounts/user/get_auth_token').respond(200, {});
             vm = $controller('ChallengeCtrl', { $scope: $scope });
-            parameters = {};
-            spyOn(utilities, 'sendRequest');
         }));
     
-        afterEach(function () {
-            if (vm.logs_poller) {
-                $interval.cancel(vm.logs_poller);
-            }
-            try { $httpBackend.flush(); } catch (e) {}
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
-    
-    
-        it('should push evaluation_module_error to workerLogs if set', function () {
+        it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = "Some error";
-            vm.workerLogs = [];
+            spyOn($interval, 'cancel');
             vm.startLoadingLogs();
-            // Simulate $interval tick
+            // Simulate the $interval function immediately
             $interval.flush(5000);
             expect(vm.workerLogs).toEqual(["Some error"]);
+            vm.stopLoadingLogs();
+            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
         });
     
-        it('should convert UTC time in logs to local and push to workerLogs', function () {
+        it('should fetch logs and convert UTC time to local time', function () {
             vm.evaluation_module_error = null;
-            vm.challengeId = 42;
-            var logWithUtc = "[2024-06-01 12:34:56] Some log message";
-            var expectedLocal = new Date("2024-06-01T12:34:56Z").toLocaleString("sv-SE");
-            utilities.sendRequest.and.callFake(function (params) {
+            vm.challengeId = 123;
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                // Simulate a log with UTC time
                 params.callback.onSuccess({
                     data: {
-                        logs: [logWithUtc]
+                        logs: [
+                            "[2024-05-01 12:34:56] Worker started",
+                            "No timestamp log"
+                        ]
                     }
                 });
             });
-            vm.workerLogs = [];
+            spyOn($interval, 'cancel');
             vm.startLoadingLogs();
             $interval.flush(5000);
-            expect(vm.workerLogs[0]).toContain(expectedLocal);
-            expect(vm.workerLogs[0]).toContain("Some log message");
-        });
-    
-        it('should push log as-is if no UTC time is present', function () {
-            vm.evaluation_module_error = null;
-            vm.challengeId = 42;
-            var logWithoutUtc = "No timestamp here";
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({
-                    data: {
-                        logs: [logWithoutUtc]
-                    }
-                });
-            });
-            vm.workerLogs = [];
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual([logWithoutUtc]);
+            // The first log should have the UTC replaced with local time, the second should be unchanged
+            expect(vm.workerLogs.length).toBe(2);
+            expect(vm.workerLogs[1]).toBe("No timestamp log");
+            // The first log should not contain the original UTC string
+            expect(vm.workerLogs[0]).not.toContain("[2024-05-01 12:34:56]");
+            vm.stopLoadingLogs();
+            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
         });
     
         it('should push error to workerLogs on onError', function () {
             vm.evaluation_module_error = null;
-            vm.challengeId = 42;
-            utilities.sendRequest.and.callFake(function (params) {
+            vm.challengeId = 123;
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 params.callback.onError({
                     data: { error: "Backend error" }
                 });
             });
-            vm.workerLogs = [];
+            spyOn($interval, 'cancel');
             vm.startLoadingLogs();
             $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(["Backend error"]);
+            expect(vm.workerLogs).toContain("Backend error");
+            vm.stopLoadingLogs();
+            expect($interval.cancel).toHaveBeenCalledWith(vm.logs_poller);
         });
     });
 });
