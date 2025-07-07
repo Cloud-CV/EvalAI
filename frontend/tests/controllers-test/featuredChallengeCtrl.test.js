@@ -214,7 +214,7 @@ describe('Unit tests for featured challenge controller', function () {
         });
     });
 
-    escribe('Unit tests for leaderboard submission__submitted_at formatting', function () {
+    describe('Unit tests for leaderboard submission__submitted_at formatting', function () {
         var $controller, $rootScope, $scope, utilities, vm, moment;
     
         beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _moment_) {
