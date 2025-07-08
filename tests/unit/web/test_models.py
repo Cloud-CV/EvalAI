@@ -1,6 +1,6 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-from web.models import Contact, Team
+from web.models import Contact, Subscribers, Team
 
 
 class ContactTestCase(TestCase):
@@ -44,3 +44,14 @@ class TeamTestCase(TestCase):
 
     def test__str__(self):
         self.assertEqual(self.team.name, self.team.__str__())
+
+
+class SubscribersTestCase(TestCase):
+    def setUp(self):
+        super(SubscribersTestCase, self).setUp()
+        self.subscriber = Subscribers.objects.create(
+            email="subscriber@domain.com"
+        )
+
+    def test__str__(self):
+        self.assertEqual(str(self.subscriber), "subscriber@domain.com")
