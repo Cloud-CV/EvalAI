@@ -2851,9 +2851,13 @@ describe('Unit tests for challenge controller', function () {
         });
     });
     describe('Unit tests for publishChallenge function', function () {
-        var ev, deferred;
+        var ev, deferred, $httpBackend;
     
-        beforeEach(function () {
+        beforeEach(inject(function(_$httpBackend_, $injector) {
+            $httpBackend = _$httpBackend_;
+            // Mock the auth token request
+            $httpBackend.whenGET('http://localhost:8000/api/accounts/user/get_auth_token').respond(200, {});
+    
             spyOn($mdDialog, 'hide');
             spyOn($state, 'go');
             spyOn($rootScope, 'notify');
@@ -2871,46 +2875,42 @@ describe('Unit tests for challenge controller', function () {
             vm.tempDesc = 'temp desc';
             vm.isPublished = false;
             vm.toggleChallengeState = 'public';
+        }));
+    
+        afterEach(function() {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
         });
     
         it('should send PATCH request and handle success', function () {
-            // Arrange
             utilities.sendRequest.and.callFake(function (params) {
-                // Simulate success callback
                 params.callback.onSuccess({ status: 200 });
             });
     
-            // Act
             vm.publishChallenge(ev);
-            deferred.resolve(); // Simulate user confirming dialog
-            $rootScope.$apply(); // Flush $q promise
+            deferred.resolve();
+            $rootScope.$apply();
     
-            // Assert
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", jasmine.any(String));
         });
     
         it('should send PATCH request and handle error', function () {
-            // Arrange
             utilities.sendRequest.and.callFake(function (params) {
-                // Simulate error callback
                 params.callback.onError({ data: 'Some error' });
             });
     
-            // Act
             vm.publishChallenge(ev);
-            deferred.resolve(); // Simulate user confirming dialog
-            $rootScope.$apply(); // Flush $q promise
+            deferred.resolve();
+            $rootScope.$apply();
     
-            // Assert
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
             expect(vm.page.description).toBe(vm.tempDesc);
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
     });
-
     describe('Unit tests for showConfirmation function', function () {
         it('show confirmation message', function () {
             spyOn($rootScope, 'notify');
