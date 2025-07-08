@@ -484,7 +484,6 @@ describe('Unit tests for teams controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
-
     describe('Unit tests for remove self from participant team', function () {
         var participantTeamId = 1;
         var userKey = 'user-key';
@@ -505,7 +504,7 @@ describe('Unit tests for teams controller', function () {
             utilities.getData = function () { return userKey; };
         });
     
-        it('successfully removes self from team and refreshes team list', function (done) {
+        it('successfully removes self from team and refreshes team list', function () {
             // Mock sendRequest for both delete and get
             var callCount = 0;
             utilities.sendRequest.and.callFake(function (parameters) {
@@ -527,20 +526,18 @@ describe('Unit tests for teams controller', function () {
             });
     
             vm.confirmDelete(ev, participantTeamId);
+            $scope.$apply(); // <-- This flushes the promise queue
     
-            setTimeout(function () {
-                expect(vm.startLoader).toHaveBeenCalled();
-                expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
-                expect(utilities.sendRequest.calls.count()).toBe(2);
-                expect(vm.existTeam.count).toBe(0);
-                expect(vm.showPagination).toBe(false);
-                expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
-                expect(vm.stopLoader).toHaveBeenCalled();
-                done();
-            }, 0);
+            expect(vm.startLoader).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
+            expect(utilities.sendRequest.calls.count()).toBe(2);
+            expect(vm.existTeam.count).toBe(0);
+            expect(vm.showPagination).toBe(false);
+            expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
     
-        it('shows error notification if remove self fails', function (done) {
+        it('shows error notification if remove self fails', function () {
             utilities.sendRequest.and.callFake(function (parameters) {
                 parameters.callback.onError({
                     data: { error: 'Remove failed' }
@@ -548,12 +545,10 @@ describe('Unit tests for teams controller', function () {
             });
     
             vm.confirmDelete(ev, participantTeamId);
+            $scope.$apply(); // <-- This flushes the promise queue
     
-            setTimeout(function () {
-                expect(vm.stopLoader).toHaveBeenCalled();
-                expect($rootScope.notify).toHaveBeenCalledWith("error", "Remove failed");
-                done();
-            }, 0);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Remove failed");
         });
     });
 
