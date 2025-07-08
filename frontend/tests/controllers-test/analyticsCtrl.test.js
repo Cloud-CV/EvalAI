@@ -321,18 +321,18 @@ describe('Unit tests for analytics controller', function() {
 			utilities = _utilities_;
 			$scope = $rootScope.$new();
 			vm = $controller('AnalyticsCtrl', { $scope: $scope });
-			vm.challengeId = 123; // Set a dummy challengeId
+			vm.challengeId = 123; 
 			spyOn(utilities, 'sendRequest');
 		}));
 
 		it('should send GET request and trigger download on success', function () {
-			// Mock angular.element to simulate anchor click
+			
 			var anchorMock = [{ click: jasmine.createSpy('click') }];
 			anchorMock.attr = function () { return anchorMock; };
 			spyOn(window.angular, 'element').and.returnValue(anchorMock);
 
 			utilities.sendRequest.and.callFake(function (params) {
-				// Simulate backend success
+				
 				params.callback.onSuccess({ data: "csvdata" });
 			});
 
@@ -342,7 +342,7 @@ describe('Unit tests for analytics controller', function() {
 			var params = utilities.sendRequest.calls.mostRecent().args[0];
 			expect(params.url).toBe("analytics/challenges/123/download_all_participants/");
 			expect(params.method).toBe("GET");
-			// Check that anchor click was triggered
+			
 			expect(window.angular.element).toHaveBeenCalled();
 			expect(anchorMock[0].click).toHaveBeenCalled();
 		});
@@ -372,7 +372,7 @@ describe('Unit tests for analytics controller', function() {
 		}));
 	
 		it('should update lastSubmissionTime for matching challenge phase via real controller code', function () {
-			// Arrange
+			
 			vm.lastSubmissionTime = {};
 			vm.challengeId = 42;
 			vm.challengeList = [{id: 42}];
@@ -384,7 +384,7 @@ describe('Unit tests for analytics controller', function() {
 			spyOn(utilities, 'sendRequest').and.callFake(function(params) {
 				callCount++;
 				if (callCount === 1) {
-					// /challenge/<id>/challenge_phase
+					
 					params.callback.onSuccess({
 						status: 200,
 						data: {
@@ -392,13 +392,13 @@ describe('Unit tests for analytics controller', function() {
 						}
 					});
 				} else if (callCount === 2) {
-					// /team/count
+					
 					params.callback.onSuccess({
 						status: 200,
 						data: {participant_team_count: 1}
 					});
 				} else if (callCount === 3) {
-					// /challenge_phase/<id>/analytics
+					
 					params.callback.onSuccess({
 						status: 200,
 						data: {
@@ -408,7 +408,7 @@ describe('Unit tests for analytics controller', function() {
 						}
 					});
 				} else if (callCount === 4) {
-					// /challenge_phase/<id>/last_submission_datetime_analysis/
+					
 					params.callback.onSuccess({
 						status: 200,
 						data: {
@@ -419,10 +419,10 @@ describe('Unit tests for analytics controller', function() {
 				}
 			});
 	
-			// Act
+			
 			vm.showChallengeAnalysis();
 	
-			// Assert
+			
 			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
 		});
 	});
