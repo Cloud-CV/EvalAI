@@ -486,21 +486,28 @@ describe('Unit tests for teams controller', function () {
     });
 
     describe('vm.load', function () {
-        let vm, $q, $rootScope, $http;
+        let vm, $q, $rootScope, $http, $httpBackend;
     
-        beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_) {
+        beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_, _$httpBackend_) {
             $rootScope = _$rootScope_;
             $http = _$http_;
             $q = _$q_;
-            // Corrected: call the onSuccess method, not params.callback as a function
+            $httpBackend = _$httpBackend_;
+    
+            // Mock the initial GET request made by the controller on instantiation
+            $httpBackend.expectGET('participants/participant_team').respond(200, {next: null, previous: null, count: 0});
+    
+            // Mock utilities.sendRequest to immediately call onSuccess
             spyOn(utilities, 'sendRequest').and.callFake(function(params) {
                 if (params.callback && typeof params.callback.onSuccess === 'function') {
                     params.callback.onSuccess({status: 200, data: {next: null, previous: null, count: 0}});
                 }
             });
+    
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
+            $httpBackend.flush(); // Respond to the initial GET request
         }));
     
         it('should set pagination variables when next is null', function () {
