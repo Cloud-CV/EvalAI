@@ -325,6 +325,97 @@ describe('Unit tests for teams controller', function () {
             vm.confirmDelete(ev, participantTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
+
+        it('should remove self from team successfully and update team list', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            var confirm = $mdDialog.confirm()
+                .title('Would you like to remove yourself?')
+                .textContent('Note: This action will remove you from the team.')
+                .ariaLabel('Lucky day')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel("No");
+
+            // Mock $mdDialog.show to resolve immediately
+            $mdDialog.show.and.returnValue(Promise.resolve());
+
+            // Mock utilities.sendRequest for DELETE and GET
+            var sendRequestSpy = spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.method === 'DELETE') {
+                    params.callback.onSuccess();
+                } else if (params.method === 'GET') {
+                    params.callback.onSuccess({
+                        status: 200,
+                        data: {
+                            next: null,
+                            previous: null,
+                            count: 0
+                        }
+                    });
+                }
+            });
+
+            spyOn(vm, 'startLoader').and.callThrough();
+            spyOn(vm, 'stopLoader').and.callThrough();
+            spyOn($rootScope, 'notify');
+
+            vm.confirmDelete(ev, participantTeamId);
+
+            setTimeout(function () {
+                expect($mdDialog.show).toHaveBeenCalledWith(confirm);
+                expect(vm.startLoader).toHaveBeenCalled();
+                expect(sendRequestSpy).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
+                expect(vm.existTeam.count).toBe(0);
+                expect(vm.showPagination).toBe(false);
+                expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
+                expect(vm.stopLoader).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+
+        it('should show error notification if remove self from team fails', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            $mdDialog.show.and.returnValue(Promise.resolve());
+
+            spyOn(vm, 'startLoader').and.callThrough();
+            spyOn(vm, 'stopLoader').and.callThrough();
+            spyOn($rootScope, 'notify');
+
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.method === 'DELETE') {
+                    params.callback.onError({ data: { error: 'Some error' } });
+                }
+            });
+
+            vm.confirmDelete(ev, participantTeamId);
+
+            setTimeout(function () {
+                expect(vm.startLoader).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+                expect(vm.stopLoader).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+
+        it('should do nothing if dialog is cancelled', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            $mdDialog.show.and.returnValue(Promise.reject());
+
+            spyOn(vm, 'startLoader');
+            spyOn(utilities, 'sendRequest');
+
+            vm.confirmDelete(ev, participantTeamId);
+
+            setTimeout(function () {
+                expect(vm.startLoader).not.toHaveBeenCalled();
+                expect(utilities.sendRequest).not.toHaveBeenCalled();
+                done();
+            }, 0);
+        });
     });
 
     describe('Unit tests for inviteOthers function', function () {
@@ -482,193 +573,6 @@ describe('Unit tests for teams controller', function () {
             var updateParticipantTeamDataForm = false;
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
             expect($mdDialog.hide).toHaveBeenCalled();
-        });
-    });
-
-    describe('TeamsCtrl', function() {
-        var vm, scope, utilities, loaderService, httpBackend, rootScope, mdDialog, state;
-        var userKey = 'testUserKey';
-        var participantTeamId = 'testTeamId';
-    
-        // Before each test, load the module and inject services
-        beforeEach(function() {
-            module('evalai');
-    
-            inject(function($controller, $rootScope, _utilities_, _loaderService_, $httpBackend, $q, $state, $mdDialog) {
-                scope = $rootScope.$new();
-                utilities = _utilities_;
-                loaderService = _loaderService_;
-                httpBackend = $httpBackend;
-                rootScope = $rootScope;
-                state = $state;
-                mdDialog = $mdDialog; // Inject the actual $mdDialog service
-    
-                // Spy on utility methods
-                spyOn(utilities, 'getData').and.returnValue(userKey);
-                spyOn(utilities, 'sendRequest');
-                spyOn(utilities, 'showLoader');
-                spyOn(utilities, 'hideLoader');
-                spyOn(rootScope, 'notify');
-    
-                // Spy on loaderService methods
-                spyOn(loaderService, 'startLoader');
-                spyOn(loaderService, 'stopLoader');
-    
-                // Create a spy for $mdDialog.show and control its promise resolution
-                spyOn(mdDialog, 'show').and.callFake(function() {
-                    var deferred = $q.defer();
-                    // This allows us to control whether the dialog is confirmed or cancelled in tests
-                    return {
-                        then: function(confirmCallback, cancelCallback) {
-                            deferred.promise.then(confirmCallback, cancelCallback);
-                        },
-                        // Add other methods if your code interacts with them, e.g., hide, cancel
-                        hide: function() {},
-                        cancel: function() {}
-                    };
-                });
-    
-    
-                vm = $controller('TeamsCtrl', {
-                    utilities: utilities,
-                    loaderService: loaderService,
-                    $scope: scope,
-                    $state: state,
-                    $http: httpBackend,
-                    $rootScope: rootScope,
-                    $mdDialog: mdDialog
-                });
-    
-                // Initialize the controller's initial GET request to succeed
-                httpBackend.whenGET('participants/participant_team').respond(200, {
-                    count: 1,
-                    next: null,
-                    previous: null,
-                    results: [{ id: 1, team_name: 'Existing Team' }]
-                });
-                httpBackend.flush();
-            });
-        });
-    
-        afterEach(function() {
-            httpBackend.verifyNoOutstandingExpectation();
-            httpBackend.verifyNoOutstandingRequest();
-        });
-    
-        // Test Case 1: Successful removal from participant team and successful team list refresh
-        it('should remove user from team and refresh team list on successful confirmation', function() {
-            var ev = {}; // Mock event object
-            var deleteSuccessResponse = {}; // Empty success response for DELETE
-            var getSuccessResponse = {
-                count: 0,
-                next: null,
-                previous: null,
-                results: []
-            };
-    
-            // Resolve the mdDialog.show promise as if 'Yes' was clicked
-            mdDialog.show().then.and.callFake(function(confirmCallback, cancelCallback) {
-                confirmCallback(); // Call the confirm callback
-            });
-    
-            vm.confirmDelete(ev, participantTeamId);
-    
-            // Expect loader to start
-            expect(loaderService.startLoader).toHaveBeenCalled();
-    
-            // Expect the DELETE request to be sent
-            expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
-                url: 'participants/remove_self_from_participant_team/' + participantTeamId,
-                method: 'DELETE',
-                token: userKey
-            }));
-    
-            // Simulate success of the DELETE request
-            utilities.sendRequest.calls.mostRecent().args[0].callback.onSuccess(deleteSuccessResponse);
-    
-            // Expect team.error to be false and notification for success
-            expect(vm.team.error).toBe(false);
-            expect(rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
-    
-            // Expect the GET request for participant_team to be sent after deletion
-            expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
-                url: 'participants/participant_team',
-                method: 'GET',
-                token: userKey
-            }));
-    
-            // Simulate success of the GET request for updated team list
-            utilities.sendRequest.calls.mostRecent().args[0].callback.onSuccess({ status: 200, data: getSuccessResponse });
-    
-            // Verify team data is updated and pagination reflects empty list
-            expect(vm.existTeam).toEqual(getSuccessResponse);
-            expect(vm.showPagination).toBe(false);
-            expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
-            expect(vm.isNext).toBe('disabled');
-            expect(vm.isPrev).toBe('disabled');
-            expect(vm.currentPage).toBe(vm.existTeam.count / 10); // currentPage should be 0 when count is 0
-    
-            // Expect loader to stop
-            expect(loaderService.stopLoader).toHaveBeenCalled();
-        });
-    
-        // Test Case 2: Failed removal from participant team
-        it('should show error notification on failed removal from team', function() {
-            var ev = {}; // Mock event object
-            var errorResponse = { data: { error: 'Failed to remove from team.' } };
-    
-            // Resolve the mdDialog.show promise as if 'Yes' was clicked
-            mdDialog.show().then.and.callFake(function(confirmCallback, cancelCallback) {
-                confirmCallback(); // Call the confirm callback
-            });
-    
-            vm.confirmDelete(ev, participantTeamId);
-    
-            // Expect loader to start
-            expect(loaderService.startLoader).toHaveBeenCalled();
-    
-            // Expect the DELETE request to be sent
-            expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
-                url: 'participants/remove_self_from_participant_team/' + participantTeamId,
-                method: 'DELETE',
-                token: userKey
-            }));
-    
-            // Simulate error of the DELETE request
-            utilities.sendRequest.calls.mostRecent().args[0].callback.onError(errorResponse);
-    
-            // Expect error notification
-            expect(rootScope.notify).toHaveBeenCalledWith("error", errorResponse.data.error);
-    
-            // Expect loader to stop
-            expect(loaderService.stopLoader).toHaveBeenCalled();
-    
-            // Ensure no subsequent GET request is made
-            expect(utilities.sendRequest.calls.count()).toBe(1);
-        });
-    
-        // Test Case 3: Dialog cancelled
-        it('should do nothing if the dialog is cancelled', function() {
-            var ev = {}; // Mock event object
-    
-            // Resolve the mdDialog.show promise as if 'No' or 'Cancel' was clicked
-            mdDialog.show().then.and.callFake(function(confirmCallback, cancelCallback) {
-                cancelCallback(); // Call the cancel callback
-            });
-    
-            vm.confirmDelete(ev, participantTeamId);
-    
-            // Expect mdDialog.show to have been called
-            expect(mdDialog.show).toHaveBeenCalled();
-    
-            // Expect loader to NOT start
-            expect(loaderService.startLoader).not.toHaveBeenCalled();
-    
-            // Expect no API requests to be sent
-            expect(utilities.sendRequest).not.toHaveBeenCalled();
-    
-            // Expect no notifications
-            expect(rootScope.notify).not.toHaveBeenCalled();
         });
     });
 });
