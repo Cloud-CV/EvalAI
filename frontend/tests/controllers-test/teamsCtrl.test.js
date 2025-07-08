@@ -5,18 +5,18 @@ describe('Unit tests for teams controller', function () {
 
     var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_, ) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $mdDialog = _$mdDialog_;
-        $state =_$state_;
+        $state = _$state_;
         $http = _$http_;
         $injector = _$injector_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('TeamsCtrl', {$scope: $scope});
+            return $controller('TeamsCtrl', { $scope: $scope });
         };
         vm = $controller('TeamsCtrl', { $scope: $scope });
     }));
@@ -172,7 +172,7 @@ describe('Unit tests for teams controller', function () {
                 // team pagination response
                 next: 'page=4',
                 previous: 'page=2',
-            };        
+            };
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -186,7 +186,7 @@ describe('Unit tests for teams controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
 
         it('backend error for the global function \
@@ -200,6 +200,60 @@ describe('Unit tests for teams controller', function () {
             expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
+        });
+
+        it('should set pagination variables correctly when next and previous are null in load()', function (done) {
+            var response = {
+                data: {
+                    next: null,
+                    previous: null,
+                    count: 20
+                }
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($http, 'get').and.callFake(function () {
+                return {
+                    then: function (cb) {
+                        cb(response);
+                        expect(vm.existTeam).toEqual(response.data);
+                        expect(vm.isNext).toBe('disabled');
+                        expect(vm.currentPage).toBe(2); // 20/10
+                        expect(vm.isPrev).toBe('disabled');
+                        expect(vm.stopLoader).toHaveBeenCalled();
+                        done();
+                    }
+                };
+            });
+            vm.load('someurl');
+        });
+
+        it('should set pagination variables correctly when next and previous are present in load()', function (done) {
+            var response = {
+                data: {
+                    next: 'someurl?page=3',
+                    previous: 'someurl?page=1',
+                    count: 30
+                }
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($http, 'get').and.callFake(function () {
+                return {
+                    then: function (cb) {
+                        cb(response);
+                        expect(vm.existTeam).toEqual(response.data);
+                        expect(vm.isNext).toBe('');
+                        expect(vm.currentPage).toBe(2); // 3-1
+                        expect(vm.isPrev).toBe('');
+                        expect(vm.stopLoader).toHaveBeenCalled();
+                        done();
+                    }
+                };
+            });
+            vm.load('someurl');
         });
     });
 
@@ -254,7 +308,8 @@ describe('Unit tests for teams controller', function () {
 
         teamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
-            `participants/participant_team`', function () {;
+            `participants/participant_team`', function () {
+                ;
                 success = true;
                 successResponse = response;
                 vm.team.teamName = "Team Name";
@@ -598,7 +653,7 @@ describe('Unit tests for teams controller', function () {
             success = false;
             errorResponse = {
                 team_name: 'team name error',
-                error: 'error'	
+                error: 'error'
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name);
@@ -608,7 +663,7 @@ describe('Unit tests for teams controller', function () {
             var updateParticipantTeamDataForm = true;
             success = false;
             errorResponse = {
-                error: 'error'	
+                error: 'error'
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
