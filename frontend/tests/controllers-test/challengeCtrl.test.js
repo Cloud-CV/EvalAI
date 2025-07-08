@@ -5244,4 +5244,58 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
+
+    describe('Unit tests for startLoadingLogs function', function () {
+        var $interval, $rootScope, utilities, vm, $controller, $scope;
+
+        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$interval_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            $interval = _$interval_;
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+            spyOn(utilities, 'sendRequest');
+        }));
+
+        it('should push evaluation_module_error to workerLogs if present', function () {
+            vm.evaluation_module_error = 'Some error';
+            vm.workerLogs = [];
+            spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 123; });
+            vm.startLoadingLogs();
+            expect(vm.workerLogs).toEqual(['Some error']);
+        });
+
+        it('should process logs with UTC time and convert to local', function () {
+            vm.evaluation_module_error = null;
+            var logWithUtc = '[2023-07-09 12:34:56] Worker started';
+            var logWithoutUtc = 'No UTC time here';
+            var logs = [logWithUtc, logWithoutUtc];
+            spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 123; });
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onSuccess({ data: { logs: logs } });
+            });
+            vm.challengeId = 1;
+            vm.workerLogs = [];
+            vm.startLoadingLogs();
+            // Should have two logs, first with replaced time, second as is
+            expect(vm.workerLogs.length).toBe(2);
+            expect(vm.workerLogs[1]).toBe(logWithoutUtc);
+            // The first log should have a local time string in place of the UTC time
+            expect(vm.workerLogs[0]).not.toBe(logWithUtc);
+            expect(vm.workerLogs[0]).toContain('Worker started');
+        });
+
+        it('should push error to workerLogs on error callback', function () {
+            vm.evaluation_module_error = null;
+            spyOn(window, 'setInterval').and.callFake(function (fn) { fn(); return 123; });
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ data: { error: 'Backend error' } });
+            });
+            vm.workerLogs = [];
+            vm.challengeId = 1;
+            vm.startLoadingLogs();
+            expect(vm.workerLogs).toContain('Backend error');
+        });
+    });
 });
