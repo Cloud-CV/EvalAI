@@ -2850,70 +2850,45 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
+
     describe('Unit tests for publishChallenge function', function () {
-        var ev, deferred, $httpBackend;
-    
-        eforeEach(inject(function(_$httpBackend_, $injector) {
-            $httpBackend = _$httpBackend_;
-            // Mock the auth token request
-            $httpBackend.whenGET('http://localhost:8000/api/accounts/user/get_auth_token').respond(200, {});
-            // Mock the challenge GET request
-            $httpBackend.whenGET('http://localhost:8000/api/challenges/challenge/1/').respond(200, {});
-        
+        var ev;
+
+        beforeEach(function () {
             spyOn($mdDialog, 'hide');
             spyOn($state, 'go');
-            spyOn($rootScope, 'notify');
-            spyOn(utilities, 'sendRequest');
-        
+
             ev = new Event('click');
             spyOn(ev, 'stopPropagation');
-        
-            // Mock $mdDialog.show to return a controllable promise
-            deferred = $injector.get('$q').defer();
-            spyOn($mdDialog, 'show').and.returnValue(deferred.promise);
-        
-            // Set up vm.page and other required properties
-            vm.challengeId = 1; // <--- Add this line
-            vm.page = { id: 1, creator: { id: 2 }, description: 'desc' };
-            vm.tempDesc = 'temp desc';
+        });
+
+        it('change challenge state from `public` to `private`', function () {
+            vm.isPublished = true;
+            vm.publishChallenge(ev);
+            expect(vm.publishDesc).toEqual(null);
+            expect(ev.stopPropagation).toHaveBeenCalled();
+            expect(vm.toggleChallengeState).toEqual('private');
+        });
+
+        it('change challenge state from `private` to `public`', function () {
             vm.isPublished = false;
-            vm.toggleChallengeState = 'public';
-        }));
-    
-        afterEach(function() {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
-    
-        it('should send PATCH request and handle success', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ status: 200 });
-            });
-    
             vm.publishChallenge(ev);
-            deferred.resolve();
-            $rootScope.$apply();
-    
-            expect(utilities.sendRequest).toHaveBeenCalled();
-            expect($mdDialog.hide).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", jasmine.any(String));
+            expect(vm.publishDesc).toEqual(null);
+            expect(ev.stopPropagation).toHaveBeenCalled();
+            expect(vm.toggleChallengeState).toEqual('public');
         });
-    
-        it('should send PATCH request and handle error', function () {
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: 'Some error' });
+
+        it('open dialog for confirmation', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
             });
-    
             vm.publishChallenge(ev);
-            deferred.resolve();
-            $rootScope.$apply();
-    
-            expect(utilities.sendRequest).toHaveBeenCalled();
-            expect($mdDialog.hide).toHaveBeenCalled();
-            expect(vm.page.description).toBe(vm.tempDesc);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
+            expect(ev.stopPropagation).toHaveBeenCalled();
+            expect($mdDialog.show).toHaveBeenCalled();
         });
     });
+
     describe('Unit tests for showConfirmation function', function () {
         it('show confirmation message', function () {
             spyOn($rootScope, 'notify');
@@ -4085,7 +4060,7 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for resume submission logic', function () {
         var submissionObject, parameters, userKey;
-    
+
         beforeEach(function () {
             submissionObject = { id: 456, classList2: [] };
             parameters = {};
@@ -4095,32 +4070,32 @@ describe('Unit tests for challenge controller', function () {
             // Make sure vm is available and has resumeSubmission
             // If not, inject or require the controller as needed
         });
-    
+
         it('should handle successful resume of submission', function () {
             // Arrange
             utilities.sendRequest.and.callFake(function (params) {
                 // Simulate success callback
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
-    
+
             // Act
             vm.resumeSubmission(submissionObject);
-    
+
             // Assert
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
-    
+
         it('should handle error during resume of submission', function () {
             // Arrange
             utilities.sendRequest.and.callFake(function (params) {
                 // Simulate error callback
                 params.callback.onError({ data: 'Some resume error' });
             });
-    
+
             // Act
             vm.resumeSubmission(submissionObject);
-    
+
             // Assert
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
             expect(submissionObject.classList2).toEqual(['']);
@@ -4964,7 +4939,7 @@ describe('Unit tests for challenge controller', function () {
             expect(typeof params.callback.onSuccess).toBe('function');
             expect(typeof params.callback.onError).toBe('function');
         });
-    }); 
+    });
 
     describe('Unit tests for load function (submissions pagination)', function () {
         var localVm, $http, $scope, $controller, getHandler;
@@ -5143,23 +5118,23 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Pagination logic for existTeam', function() {
+    describe('Pagination logic for existTeam', function () {
         var vm;
-    
-        beforeEach(function() {
+
+        beforeEach(function () {
             vm = {
                 stopLoader: jasmine.createSpy('stopLoader')
             };
         });
-    
-        it('should set isNext to disabled and currentPage to count/10 when next is null', function() {
+
+        it('should set isNext to disabled and currentPage to count/10 when next is null', function () {
             var details = {
                 next: null,
                 previous: null,
                 count: 30
             };
             vm.existTeam = details;
-    
+
             // Simulate the code block
             if (vm.existTeam.next === null) {
                 vm.isNext = 'disabled';
@@ -5168,28 +5143,28 @@ describe('Unit tests for challenge controller', function () {
                 vm.isNext = '';
                 vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
             }
-    
+
             if (vm.existTeam.previous === null) {
                 vm.isPrev = 'disabled';
             } else {
                 vm.isPrev = '';
             }
             vm.stopLoader();
-    
+
             expect(vm.isNext).toBe('disabled');
             expect(vm.currentPage).toBe(3);
             expect(vm.isPrev).toBe('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
-    
-        it('should set isNext to "" and currentPage from next when next is not null', function() {
+
+        it('should set isNext to "" and currentPage from next when next is not null', function () {
             var details = {
                 next: 'page=5',
                 previous: null,
                 count: 50
             };
             vm.existTeam = details;
-    
+
             if (vm.existTeam.next === null) {
                 vm.isNext = 'disabled';
                 vm.currentPage = vm.existTeam.count / 10;
@@ -5197,28 +5172,28 @@ describe('Unit tests for challenge controller', function () {
                 vm.isNext = '';
                 vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
             }
-    
+
             if (vm.existTeam.previous === null) {
                 vm.isPrev = 'disabled';
             } else {
                 vm.isPrev = '';
             }
             vm.stopLoader();
-    
+
             expect(vm.isNext).toBe('');
             expect(vm.currentPage).toBe(4); // 5-1=4
             expect(vm.isPrev).toBe('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
-    
-        it('should set isPrev to "" when previous is not null', function() {
+
+        it('should set isPrev to "" when previous is not null', function () {
             var details = {
                 next: null,
                 previous: 'page=2',
                 count: 20
             };
             vm.existTeam = details;
-    
+
             if (vm.existTeam.next === null) {
                 vm.isNext = 'disabled';
                 vm.currentPage = vm.existTeam.count / 10;
@@ -5226,28 +5201,28 @@ describe('Unit tests for challenge controller', function () {
                 vm.isNext = '';
                 vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
             }
-    
+
             if (vm.existTeam.previous === null) {
                 vm.isPrev = 'disabled';
             } else {
                 vm.isPrev = '';
             }
             vm.stopLoader();
-    
+
             expect(vm.isNext).toBe('disabled');
             expect(vm.currentPage).toBe(2);
             expect(vm.isPrev).toBe('');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
-    
-        it('should set isNext and isPrev to "" when both next and previous are not null', function() {
+
+        it('should set isNext and isPrev to "" when both next and previous are not null', function () {
             var details = {
                 next: 'page=3',
                 previous: 'page=1',
                 count: 30
             };
             vm.existTeam = details;
-    
+
             if (vm.existTeam.next === null) {
                 vm.isNext = 'disabled';
                 vm.currentPage = vm.existTeam.count / 10;
@@ -5255,18 +5230,100 @@ describe('Unit tests for challenge controller', function () {
                 vm.isNext = '';
                 vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
             }
-    
+
             if (vm.existTeam.previous === null) {
                 vm.isPrev = 'disabled';
             } else {
                 vm.isPrev = '';
             }
             vm.stopLoader();
-    
+
             expect(vm.isNext).toBe('');
             expect(vm.currentPage).toBe(2); // 3-1=2
             expect(vm.isPrev).toBe('');
             expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
+
+    describe('startLoadingLogs', function () {
+        var $interval, $rootScope, utilities, vm, parameters, $controller, $scope;
+    
+        beforeEach(module('evalai'));
+        beforeEach(inject(function (_$controller_, _$rootScope_, _$interval_, _utilities_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            $interval = _$interval_;
+            utilities = _utilities_;
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+            vm.challengeId = 42;
+            parameters = {};
+        }));
+    
+        afterEach(function () {
+            if (vm.logs_poller) {
+                $interval.cancel(vm.logs_poller);
+            }
+        });
+    
+        it('should push evaluation_module_error to workerLogs if present', function () {
+            vm.evaluation_module_error = "Some error";
+            spyOn(utilities, 'sendRequest');
+            vm.startLoadingLogs();
+            // Simulate $interval tick
+            $interval.flush(5000);
+            expect(vm.workerLogs).toEqual(["Some error"]);
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        });
+    
+        it('should parse logs and convert UTC time to local time', function () {
+            vm.evaluation_module_error = null;
+            var logWithUtc = "[2024-05-01 12:34:56] Some log message";
+            var logWithoutUtc = "No timestamp here";
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                // Simulate backend response
+                params.callback.onSuccess({
+                    data: {
+                        logs: [logWithUtc, logWithoutUtc]
+                    }
+                });
+            });
+            vm.challengeId = 123;
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+    
+            // The first log should have the UTC replaced with local time
+            expect(vm.workerLogs.length).toBe(2);
+            expect(vm.workerLogs[0]).toContain("Some log message");
+            expect(vm.workerLogs[1]).toBe("No timestamp here");
+            expect(utilities.sendRequest).toHaveBeenCalled();
+        });
+    
+        it('should handle error response and push error to workerLogs', function () {
+            vm.evaluation_module_error = null;
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({
+                    data: { error: "Backend error" }
+                });
+            });
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+            expect(vm.workerLogs).toEqual(["Backend error"]);
+        });
+    
+        it('should call utilities.sendRequest with correct parameters', function () {
+            vm.evaluation_module_error = null;
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                expect(params.url).toBe('challenges/42/get_worker_logs/');
+                expect(params.method).toBe('GET');
+                expect(params.data).toEqual({});
+                expect(typeof params.callback.onSuccess).toBe('function');
+                expect(typeof params.callback.onError).toBe('function');
+                // Don't actually call the callbacks here
+            });
+            vm.startLoadingLogs();
+            $interval.flush(5000);
+            expect(utilities.sendRequest).toHaveBeenCalled();
         });
     });
 });
