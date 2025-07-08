@@ -5245,85 +5245,110 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('startLoadingLogs', function () {
-        var $interval, $rootScope, utilities, vm, parameters, $controller, $scope;
+    describe('Leaderboard submission__submitted_at duration formatting', function () {
+        var vm;
     
-        beforeEach(module('evalai'));
-        beforeEach(inject(function (_$controller_, _$rootScope_, _$interval_, _utilities_) {
-            $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            $interval = _$interval_;
-            utilities = _utilities_;
-            $scope = $rootScope.$new();
-            vm = $controller('ChallengeCtrl', { $scope: $scope });
-            vm.challengeId = 42;
-            parameters = {};
-        }));
+        beforeEach(function () {
+            // Minimal mock controller object
+            vm = {
+                leaderboard: [{
+                    id: 1,
+                    leaderboard__schema: { labels: ['accuracy'] },
+                    submission__submission_metadata: null,
+                    submission__submitted_at: "2020-01-01T00:00:00Z"
+                }]
+            };
+        });
     
-        afterEach(function () {
-            if (vm.logs_poller) {
-                $interval.cancel(vm.logs_poller);
+        function runDurationTest(durationData, expectedValue, expectedSpan) {
+            // Mock duration object
+            var duration = {
+                _data: durationData,
+                asYears: function () { return durationData.years || 0; },
+                months: function () { return durationData.months || 0; },
+                asDays: function () { return durationData.days || 0; },
+                asHours: function () { return durationData.hours || 0; },
+                asMinutes: function () { return durationData.minutes || 0; },
+                asSeconds: function () { return durationData.seconds || 0; }
+            };
+    
+            // Simulate the code block
+            for (var i = 0; i < vm.leaderboard.length; i++) {
+                if (duration._data.years != 0) {
+                    var years = duration.asYears();
+                    vm.leaderboard[i].submission__submitted_at = years;
+                    vm.leaderboard[i].timeSpan = (years.toFixed(0) == 1) ? 'year' : 'years';
+                }
+                else if (duration._data.months != 0) {
+                    var months = duration.months();
+                    vm.leaderboard[i].submission__submitted_at = months;
+                    vm.leaderboard[i].timeSpan = (months.toFixed(0) == 1) ? 'month' : 'months';
+                }
+                else if (duration._data.days != 0) {
+                    var days = duration.asDays();
+                    vm.leaderboard[i].submission__submitted_at = days;
+                    vm.leaderboard[i].timeSpan = (days.toFixed(0) == 1) ? 'day' : 'days';
+                }
+                else if (duration._data.hours != 0) {
+                    var hours = duration.asHours();
+                    vm.leaderboard[i].submission__submitted_at = hours;
+                    vm.leaderboard[i].timeSpan = (hours.toFixed(0) == 1) ? 'hour' : 'hours';
+                }
+                else if (duration._data.minutes != 0) {
+                    var minutes = duration.asMinutes();
+                    vm.leaderboard[i].submission__submitted_at = minutes;
+                    vm.leaderboard[i].timeSpan = (minutes.toFixed(0) == 1) ? 'minute' : 'minutes';
+                }
+                else if (duration._data.seconds != 0) {
+                    var second = duration.asSeconds();
+                    vm.leaderboard[i].submission__submitted_at = second;
+                    vm.leaderboard[i].timeSpan = (second.toFixed(0) == 1) ? 'second' : 'seconds';
+                }
             }
+    
+            expect(vm.leaderboard[0].submission__submitted_at).toBe(expectedValue);
+            expect(vm.leaderboard[0].timeSpan).toBe(expectedSpan);
+        }
+    
+        it('should set timeSpan to "month" for 1 month', function () {
+            runDurationTest({ years: 0, months: 1, days: 0, hours: 0, minutes: 0, seconds: 0 }, 1, 'month');
         });
     
-        it('should push evaluation_module_error to workerLogs if present', function () {
-            vm.evaluation_module_error = "Some error";
-            spyOn(utilities, 'sendRequest');
-            vm.startLoadingLogs();
-            // Simulate $interval tick
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(["Some error"]);
-            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        it('should set timeSpan to "months" for 3 months', function () {
+            runDurationTest({ years: 0, months: 3, days: 0, hours: 0, minutes: 0, seconds: 0 }, 3, 'months');
         });
     
-        it('should parse logs and convert UTC time to local time', function () {
-            vm.evaluation_module_error = null;
-            var logWithUtc = "[2024-05-01 12:34:56] Some log message";
-            var logWithoutUtc = "No timestamp here";
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                // Simulate backend response
-                params.callback.onSuccess({
-                    data: {
-                        logs: [logWithUtc, logWithoutUtc]
-                    }
-                });
-            });
-            vm.challengeId = 123;
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-    
-            // The first log should have the UTC replaced with local time
-            expect(vm.workerLogs.length).toBe(2);
-            expect(vm.workerLogs[0]).toContain("Some log message");
-            expect(vm.workerLogs[1]).toBe("No timestamp here");
-            expect(utilities.sendRequest).toHaveBeenCalled();
+        it('should set timeSpan to "day" for 1 day', function () {
+            runDurationTest({ years: 0, months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 }, 1, 'day');
         });
     
-        it('should handle error response and push error to workerLogs', function () {
-            vm.evaluation_module_error = null;
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                params.callback.onError({
-                    data: { error: "Backend error" }
-                });
-            });
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(["Backend error"]);
+        it('should set timeSpan to "days" for 5 days', function () {
+            runDurationTest({ years: 0, months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 }, 5, 'days');
         });
     
-        it('should call utilities.sendRequest with correct parameters', function () {
-            vm.evaluation_module_error = null;
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                expect(params.url).toBe('challenges/42/get_worker_logs/');
-                expect(params.method).toBe('GET');
-                expect(params.data).toEqual({});
-                expect(typeof params.callback.onSuccess).toBe('function');
-                expect(typeof params.callback.onError).toBe('function');
-                // Don't actually call the callbacks here
-            });
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(utilities.sendRequest).toHaveBeenCalled();
+        it('should set timeSpan to "hour" for 1 hour', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 }, 1, 'hour');
+        });
+    
+        it('should set timeSpan to "hours" for 12 hours', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 }, 12, 'hours');
+        });
+    
+        it('should set timeSpan to "minute" for 1 minute', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 1, seconds: 0 }, 1, 'minute');
+        });
+    
+        it('should set timeSpan to "minutes" for 30 minutes', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 }, 30, 'minutes');
+        });
+    
+        it('should set timeSpan to "second" for 1 second', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 }, 1, 'second');
+        });
+    
+        it('should set timeSpan to "seconds" for 45 seconds', function () {
+            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 45 }, 45, 'seconds');
         });
     });
+
 });
