@@ -2850,42 +2850,64 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
-
     describe('Unit tests for publishChallenge function', function () {
-        var ev;
-
+        var ev, deferred;
+    
         beforeEach(function () {
             spyOn($mdDialog, 'hide');
             spyOn($state, 'go');
-
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest');
+    
             ev = new Event('click');
             spyOn(ev, 'stopPropagation');
-        });
-
-        it('change challenge state from `public` to `private`', function () {
-            vm.isPublished = true;
-            vm.publishChallenge(ev);
-            expect(vm.publishDesc).toEqual(null);
-            expect(ev.stopPropagation).toHaveBeenCalled();
-            expect(vm.toggleChallengeState).toEqual('private');
-        });
-
-        it('change challenge state from `private` to `public`', function () {
+    
+            // Mock $mdDialog.show to return a controllable promise
+            deferred = $injector.get('$q').defer();
+            spyOn($mdDialog, 'show').and.returnValue(deferred.promise);
+    
+            // Set up vm.page and other required properties
+            vm.page = { id: 1, creator: { id: 2 }, description: 'desc' };
+            vm.tempDesc = 'temp desc';
             vm.isPublished = false;
-            vm.publishChallenge(ev);
-            expect(vm.publishDesc).toEqual(null);
-            expect(ev.stopPropagation).toHaveBeenCalled();
-            expect(vm.toggleChallengeState).toEqual('public');
+            vm.toggleChallengeState = 'public';
         });
-
-        it('open dialog for confirmation', function () {
-            spyOn($mdDialog, 'show').and.callFake(function () {
-                var deferred = $injector.get('$q').defer();
-                return deferred.promise;
+    
+        it('should send PATCH request and handle success', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate success callback
+                params.callback.onSuccess({ status: 200 });
             });
+    
+            // Act
             vm.publishChallenge(ev);
-            expect(ev.stopPropagation).toHaveBeenCalled();
-            expect($mdDialog.show).toHaveBeenCalled();
+            deferred.resolve(); // Simulate user confirming dialog
+            $rootScope.$apply(); // Flush $q promise
+    
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", jasmine.any(String));
+        });
+    
+        it('should send PATCH request and handle error', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate error callback
+                params.callback.onError({ data: 'Some error' });
+            });
+    
+            // Act
+            vm.publishChallenge(ev);
+            deferred.resolve(); // Simulate user confirming dialog
+            $rootScope.$apply(); // Flush $q promise
+    
+            // Assert
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(vm.page.description).toBe(vm.tempDesc);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
     });
 
