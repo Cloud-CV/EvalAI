@@ -485,95 +485,55 @@ describe('Unit tests for teams controller', function () {
         });
     });
 
-    describe('Pagination logic in teams controller', function () {
-        let vm;
+    describe('vm.load', function () {
+        let vm, $q, $rootScope, $http;
     
-        beforeEach(function () {
+        beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_) {
+            $rootScope = _$rootScope_;
+            $http = _$http_;
+            $q = _$q_;
             vm = createController();
+            spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
-        });
+        }));
     
-        it('should set isNext and currentPage correctly when next is null', function () {
-            const response = { data: { next: null, previous: null, count: 20 } };
-            vm.existTeam = response.data;
+        it('should set pagination variables when next is null', function () {
+            const url = 'some/url';
+            const response = {
+                data: { next: null, previous: null, count: 20 }
+            };
+            spyOn($http, 'get').and.returnValue($q.resolve(response));
     
-            // Simulate the code block
-            if (vm.existTeam.next === null) {
-                vm.isNext = 'disabled';
-                vm.currentPage = vm.existTeam.count / 10;
-            } else {
-                vm.isNext = '';
-                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
-            }
+            vm.load(url);
+            $rootScope.$apply(); // resolve the promise
     
+            expect(vm.existTeam).toEqual(response.data);
             expect(vm.isNext).toBe('disabled');
             expect(vm.currentPage).toBe(2);
+            expect(vm.isPrev).toBe('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
     
-        it('should set isNext and currentPage correctly when next is not null', function () {
-            const response = { data: { next: 'page=3', previous: null, count: 30 } };
-            vm.existTeam = response.data;
+        it('should set pagination variables when next is not null', function () {
+            const url = 'some/url';
+            const response = {
+                data: { next: 'page=3', previous: 'page=1', count: 30 }
+            };
+            spyOn($http, 'get').and.returnValue($q.resolve(response));
     
-            if (vm.existTeam.next === null) {
-                vm.isNext = 'disabled';
-                vm.currentPage = vm.existTeam.count / 10;
-            } else {
-                vm.isNext = '';
-                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
-            }
+            vm.load(url);
+            $rootScope.$apply(); // resolve the promise
     
+            expect(vm.existTeam).toEqual(response.data);
             expect(vm.isNext).toBe('');
             expect(vm.currentPage).toBe(2); // 3 - 1
-        });
-    
-        it('should set isPrev correctly when previous is null', function () {
-            const response = { data: { next: null, previous: null, count: 10 } };
-            vm.existTeam = response.data;
-    
-            if (vm.existTeam.previous === null) {
-                vm.isPrev = 'disabled';
-            } else {
-                vm.isPrev = '';
-            }
-    
-            expect(vm.isPrev).toBe('disabled');
-        });
-    
-        it('should set isPrev correctly when previous is not null', function () {
-            const response = { data: { next: null, previous: 'page=1', count: 20 } };
-            vm.existTeam = response.data;
-    
-            if (vm.existTeam.previous === null) {
-                vm.isPrev = 'disabled';
-            } else {
-                vm.isPrev = '';
-            }
-    
             expect(vm.isPrev).toBe('');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
     
-        it('should call stopLoader at the end', function () {
-            const response = { data: { next: null, previous: null, count: 10 } };
-            vm.existTeam = response.data;
-    
-            // Simulate the code block
-            if (vm.existTeam.next === null) {
-                vm.isNext = 'disabled';
-                vm.currentPage = vm.existTeam.count / 10;
-            } else {
-                vm.isNext = '';
-                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
-            }
-    
-            if (vm.existTeam.previous === null) {
-                vm.isPrev = 'disabled';
-            } else {
-                vm.isPrev = '';
-            }
-            vm.stopLoader();
-    
+        it('should call stopLoader if url is null', function () {
+            vm.load(null);
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
-    
 });
