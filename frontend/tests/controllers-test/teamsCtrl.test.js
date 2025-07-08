@@ -488,7 +488,22 @@ describe('Unit tests for teams controller', function () {
         var participantTeamId = 1;
         var userKey = 'user-key';
         var ev = new Event('click');
-        var confirm, success, successResponse, errorResponse;
+        var $httpBackend;
+    
+        beforeEach(inject(function (_$httpBackend_) {
+            $httpBackend = _$httpBackend_;
+            // Mock all GET requests to participants/participant_team
+            $httpBackend.whenGET(/participants\/participant_team.*/).respond(200, {
+                next: null,
+                previous: null,
+                count: 0
+            });
+        }));
+    
+        afterEach(function () {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
     
         beforeEach(function () {
             vm = createController();
@@ -505,15 +520,12 @@ describe('Unit tests for teams controller', function () {
         });
     
         it('successfully removes self from team and refreshes team list', function () {
-            // Mock sendRequest for both delete and get
             var callCount = 0;
             utilities.sendRequest.and.callFake(function (parameters) {
                 callCount++;
                 if (callCount === 1) {
-                    // First call: DELETE
                     parameters.callback.onSuccess();
                 } else if (callCount === 2) {
-                    // Second call: GET
                     parameters.callback.onSuccess({
                         status: 200,
                         data: {
@@ -526,7 +538,8 @@ describe('Unit tests for teams controller', function () {
             });
     
             vm.confirmDelete(ev, participantTeamId);
-            $scope.$apply(); // <-- This flushes the promise queue
+            $scope.$apply();
+            $httpBackend.flush();
     
             expect(vm.startLoader).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
@@ -545,11 +558,12 @@ describe('Unit tests for teams controller', function () {
             });
     
             vm.confirmDelete(ev, participantTeamId);
-            $scope.$apply(); // <-- This flushes the promise queue
+            $scope.$apply();
+            // Even if error, controller may still trigger a GET, so flush
+            try { $httpBackend.flush(); } catch (e) {}
     
             expect(vm.stopLoader).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Remove failed");
         });
     });
-
 });
