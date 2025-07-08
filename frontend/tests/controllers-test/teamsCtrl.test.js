@@ -494,8 +494,8 @@ describe('Unit tests for teams controller', function () {
             $q = _$q_;
             $httpBackend = _$httpBackend_;
     
-            // Mock the initial GET request made by the controller on instantiation
-            $httpBackend.expectGET('participants/participant_team').respond(200, {next: null, previous: null, count: 0});
+            // Use a regex to match any host and the correct API path
+            $httpBackend.expectGET(/\/api\/participants\/participant_team$/).respond(200, {next: null, previous: null, count: 0});
     
             // Mock utilities.sendRequest to immediately call onSuccess
             spyOn(utilities, 'sendRequest').and.callFake(function(params) {
