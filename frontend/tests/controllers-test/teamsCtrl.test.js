@@ -492,6 +492,25 @@ describe('Unit tests for teams controller', function () {
             $rootScope = _$rootScope_;
             $http = _$http_;
             $q = _$q_;
+            // Mock utilities.sendRequest to immediately call onSuccess
+            spyOn(utilities, 'sendRequest').and.callFake(function(params) {
+                if (params.callback && params.callback.onSuccess) {
+                    params.callback({status: 200, data: {next: null, previous: null, count: 0}});
+                }
+            });
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+        }));beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_) {
+            $rootScope = _$rootScope_;
+            $http = _$http_;
+            $q = _$q_;
+            // Mock utilities.sendRequest to immediately call onSuccess
+            spyOn(utilities, 'sendRequest').and.callFake(function(params) {
+                if (params.callback && params.callback.onSuccess) {
+                    params.callback({status: 200, data: {next: null, previous: null, count: 0}});
+                }
+            });
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
