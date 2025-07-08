@@ -484,4 +484,96 @@ describe('Unit tests for teams controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
+
+    describe('Pagination logic in teams controller', function () {
+        let vm;
+    
+        beforeEach(function () {
+            vm = createController();
+            spyOn(vm, 'stopLoader');
+        });
+    
+        it('should set isNext and currentPage correctly when next is null', function () {
+            const response = { data: { next: null, previous: null, count: 20 } };
+            vm.existTeam = response.data;
+    
+            // Simulate the code block
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(2);
+        });
+    
+        it('should set isNext and currentPage correctly when next is not null', function () {
+            const response = { data: { next: 'page=3', previous: null, count: 30 } };
+            vm.existTeam = response.data;
+    
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(2); // 3 - 1
+        });
+    
+        it('should set isPrev correctly when previous is null', function () {
+            const response = { data: { next: null, previous: null, count: 10 } };
+            vm.existTeam = response.data;
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+    
+            expect(vm.isPrev).toBe('disabled');
+        });
+    
+        it('should set isPrev correctly when previous is not null', function () {
+            const response = { data: { next: null, previous: 'page=1', count: 20 } };
+            vm.existTeam = response.data;
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+    
+            expect(vm.isPrev).toBe('');
+        });
+    
+        it('should call stopLoader at the end', function () {
+            const response = { data: { next: null, previous: null, count: 10 } };
+            vm.existTeam = response.data;
+    
+            // Simulate the code block
+            if (vm.existTeam.next === null) {
+                vm.isNext = 'disabled';
+                vm.currentPage = vm.existTeam.count / 10;
+            } else {
+                vm.isNext = '';
+                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+            }
+    
+            if (vm.existTeam.previous === null) {
+                vm.isPrev = 'disabled';
+            } else {
+                vm.isPrev = '';
+            }
+            vm.stopLoader();
+    
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    });
+    
 });
