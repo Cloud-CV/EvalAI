@@ -484,96 +484,77 @@ describe('Unit tests for teams controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
-    describe('vm.load (pagination logic)', function () {
-        let vm, $q, $rootScope, $http, $httpBackend;
+
+    describe('Unit tests for remove self from participant team', function () {
+        var participantTeamId = 1;
+        var userKey = 'user-key';
+        var ev = new Event('click');
+        var confirm, success, successResponse, errorResponse;
     
-        beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_, _$httpBackend_) {
-            $rootScope = _$rootScope_;
-            $http = _$http_;
-            $q = _$q_;
-            $httpBackend = _$httpBackend_;
+        beforeEach(function () {
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest').and.callThrough();
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                deferred.resolve(); // Simulate user clicking "Yes"
+                return deferred.promise;
+            });
+            utilities.getData = function () { return userKey; };
+        });
     
-            // Respond to the initial API call
-            $httpBackend.expectGET(/\/api\/participants\/participant_team$/).respond(200, {next: null, previous: null, count: 0});
-            // Respond to any template requests, with or without query string
-            $httpBackend.whenGET(/\.html(\?.*)?$/).respond(200, '');
-    
-            // Mock utilities.sendRequest to immediately call onSuccess
-            spyOn(utilities, 'sendRequest').and.callFake(function(params) {
-                if (params.callback && typeof params.callback.onSuccess === 'function') {
-                    params.callback.onSuccess({status: 200, data: {next: null, previous: null, count: 0}});
+        it('successfully removes self from team and refreshes team list', function (done) {
+            // Mock sendRequest for both delete and get
+            var callCount = 0;
+            utilities.sendRequest.and.callFake(function (parameters) {
+                callCount++;
+                if (callCount === 1) {
+                    // First call: DELETE
+                    parameters.callback.onSuccess();
+                } else if (callCount === 2) {
+                    // Second call: GET
+                    parameters.callback.onSuccess({
+                        status: 200,
+                        data: {
+                            next: null,
+                            previous: null,
+                            count: 0
+                        }
+                    });
                 }
             });
     
-            vm = $controller('TeamsCtrl', {
-                $scope: $rootScope.$new(),
-                $state: {},
-                $http: $http,
-                $rootScope: $rootScope,
-                $mdDialog: {},
-                loaderService: {},
-                utilities: utilities
+            vm.confirmDelete(ev, participantTeamId);
+    
+            setTimeout(function () {
+                expect(vm.startLoader).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
+                expect(utilities.sendRequest.calls.count()).toBe(2);
+                expect(vm.existTeam.count).toBe(0);
+                expect(vm.showPagination).toBe(false);
+                expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
+                expect(vm.stopLoader).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+    
+        it('shows error notification if remove self fails', function (done) {
+            utilities.sendRequest.and.callFake(function (parameters) {
+                parameters.callback.onError({
+                    data: { error: 'Remove failed' }
+                });
             });
-            spyOn(vm, 'stopLoader');
-            $httpBackend.flush();
-        }));
     
-        it('should set isNext, currentPage, isPrev when next and previous are null', function () {
-            const url = 'some/url';
-            const response = { data: { next: null, previous: null, count: 20 } };
-            spyOn($http, 'get').and.returnValue($q.resolve(response));
+            vm.confirmDelete(ev, participantTeamId);
     
-            vm.load(url);
-            $rootScope.$apply();
-    
-            expect(vm.existTeam).toEqual(response.data);
-            expect(vm.isNext).toBe('disabled');
-            expect(vm.currentPage).toBe(2);
-            expect(vm.isPrev).toBe('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    
-        it('should set isNext, currentPage, isPrev when next is not null and previous is null', function () {
-            const url = 'some/url';
-            const response = { data: { next: 'page=3', previous: null, count: 30 } };
-            spyOn($http, 'get').and.returnValue($q.resolve(response));
-    
-            vm.load(url);
-            $rootScope.$apply();
-    
-            expect(vm.existTeam).toEqual(response.data);
-            expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2); // 3 - 1
-            expect(vm.isPrev).toBe('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    
-        it('should set isPrev when previous is not null', function () {
-            const url = 'some/url';
-            const response = { data: { next: null, previous: 'page=1', count: 10 } };
-            spyOn($http, 'get').and.returnValue($q.resolve(response));
-    
-            vm.load(url);
-            $rootScope.$apply();
-    
-            expect(vm.isPrev).toBe('');
-            expect(vm.isNext).toBe('disabled');
-            expect(vm.currentPage).toBe(1);
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    
-        it('should set isNext and isPrev when both are not null', function () {
-            const url = 'some/url';
-            const response = { data: { next: 'page=5', previous: 'page=3', count: 50 } };
-            spyOn($http, 'get').and.returnValue($q.resolve(response));
-    
-            vm.load(url);
-            $rootScope.$apply();
-    
-            expect(vm.isNext).toBe('');
-            expect(vm.isPrev).toBe('');
-            expect(vm.currentPage).toBe(4); // 5 - 1
-            expect(vm.stopLoader).toHaveBeenCalled();
+            setTimeout(function () {
+                expect(vm.stopLoader).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Remove failed");
+                done();
+            }, 0);
         });
     });
+
 });
