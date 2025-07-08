@@ -4,21 +4,26 @@ import os
 import signal
 import sys
 import unittest
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import requests
 
+import scripts.workers.remote_submission_worker as worker_mod
 from scripts.workers.remote_submission_worker import (
     CHALLENGE_DATA_BASE_DIR,
+    SUBMISSION_DATA_DIR,
+    SUBMISSION_INPUT_FILE_PATH,
     ExecutionTimeLimitExceeded,
     GracefulKiller,
     alarm_handler,
     download_and_extract_zip_file,
     extract_challenge_data,
+    extract_submission_data,
     load_challenge,
     make_request,
     process_submission_message,
     read_file_content,
+    run_submission,
     stderr_redirect,
     stdout_redirect,
 )
@@ -27,7 +32,6 @@ logger = logging.getLogger()
 
 
 class TestGracefulKiller(unittest.TestCase):
-
     def test_initial_state(self):
         killer = GracefulKiller()
         self.assertFalse(killer.kill_now, "kill_now should be False initially")
@@ -50,7 +54,6 @@ class TestGracefulKiller(unittest.TestCase):
 
 
 class TestContextManagers(unittest.TestCase):
-
     def test_stdout_redirect(self):
         with io.StringIO() as buf, stdout_redirect(buf):
             print("Hello, World!")
@@ -63,14 +66,12 @@ class TestContextManagers(unittest.TestCase):
 
 
 class TestAlarmHandler(unittest.TestCase):
-
     def test_alarm_handler(self):
         with self.assertRaises(ExecutionTimeLimitExceeded):
             alarm_handler(signum=signal.SIGALRM, frame=None)
 
 
 class TestDownloadAndExtractZipFile(unittest.TestCase):
-
     @patch("requests.get")
     @patch("builtins.open", new_callable=mock_open)
     @patch("zipfile.ZipFile")
@@ -141,7 +142,6 @@ class TestDownloadAndExtractZipFile(unittest.TestCase):
 
 
 class TestLoadChallenge(unittest.TestCase):
-
     @patch(
         "scripts.workers.remote_submission_worker.get_challenge_by_queue_name"
     )
@@ -424,3 +424,239 @@ class TestExtractChallengeData(unittest.TestCase):
         file_path = "non_existent_file.txt"
         with self.assertRaises(FileNotFoundError):
             read_file_content(file_path)
+
+
+class TestExtractSubmissionDataNoSubmission(unittest.TestCase):
+    @patch("scripts.workers.remote_submission_worker.get_submission_by_pk")
+    @patch("scripts.workers.remote_submission_worker.logger")
+    @patch("scripts.workers.remote_submission_worker.traceback")
+    def test_extract_submission_data_no_submission(
+        self, mock_traceback, mock_logger, mock_get_submission_by_pk
+    ):
+        mock_get_submission_by_pk.return_value = None
+
+        result = extract_submission_data(123)
+
+        mock_logger.critical.assert_called_once_with(
+            "Submission {} does not exist".format(123)
+        )
+        mock_traceback.print_exc.assert_called_once()
+        assert result is None
+
+
+class TestExtractSubmissionDataHappyPath(unittest.TestCase):
+    @patch(
+        "scripts.workers.remote_submission_worker.download_and_extract_file"
+    )
+    @patch(
+        "scripts.workers.remote_submission_worker.create_dir_as_python_package"
+    )
+    @patch("scripts.workers.remote_submission_worker.get_submission_by_pk")
+    def test_extract_submission_data_happy_path(
+        self, mock_get_submission_by_pk, mock_create_dir, mock_download_file
+    ):
+        submission = {"id": 42, "input_file": "/tmp/input.txt"}
+        mock_get_submission_by_pk.return_value = submission
+
+        result = extract_submission_data(42)
+
+        submission_data_directory = SUBMISSION_DATA_DIR.format(
+            submission_id=42
+        )
+        submission_input_file_name = os.path.basename("/tmp/input.txt")
+        submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
+            submission_id=42, input_file=submission_input_file_name
+        )
+
+        mock_create_dir.assert_called_once_with(submission_data_directory)
+        mock_download_file.assert_called_once_with(
+            "/tmp/input.txt", submission_input_file_path
+        )
+        assert result == submission
+
+
+class TestMakeRequestExceptions(unittest.TestCase):
+    @patch("scripts.workers.remote_submission_worker.logger")
+    @patch("scripts.workers.remote_submission_worker.requests.put")
+    def test_make_request_put_request_exception(self, mock_put, mock_logger):
+        mock_put.side_effect = requests.exceptions.RequestException()
+        with self.assertRaises(UnboundLocalError):
+            make_request("http://test-url", "PUT", data={})
+
+    @patch("scripts.workers.remote_submission_worker.logger")
+    @patch("scripts.workers.remote_submission_worker.requests.put")
+    def test_make_request_put_http_error(self, mock_put, mock_logger):
+        mock_put.side_effect = requests.exceptions.HTTPError()
+        with self.assertRaises(UnboundLocalError):
+            make_request("http://test-url", "PUT", data={})
+
+
+class TestMakeRequestPatchHttpError(unittest.TestCase):
+    @patch("scripts.workers.remote_submission_worker.logger")
+    @patch("scripts.workers.remote_submission_worker.requests.patch")
+    def test_make_request_patch_http_error(self, mock_patch, mock_logger):
+        mock_patch.side_effect = requests.exceptions.HTTPError()
+        with self.assertRaises(requests.exceptions.HTTPError):
+            make_request("http://test-url", "PATCH", data={})
+
+
+class TestRunSubmission(unittest.TestCase):
+    @patch("scripts.workers.remote_submission_worker.read_file_content")
+    @patch("scripts.workers.remote_submission_worker.update_submission_data")
+    @patch("scripts.workers.remote_submission_worker.update_submission_status")
+    @patch("scripts.workers.remote_submission_worker.create_dir")
+    @patch(
+        "scripts.workers.remote_submission_worker.open", new_callable=mock_open
+    )
+    @patch(
+        "scripts.workers.remote_submission_worker.EVALUATION_SCRIPTS",
+        new_callable=dict,
+    )
+    @patch("scripts.workers.remote_submission_worker.shutil.rmtree")
+    def test_run_submission_success(
+        self,
+        mock_rmtree,
+        mock_evaluation_scripts,
+        mock_open_func,
+        mock_create_dir,
+        mock_update_status,
+        mock_update_data,
+        mock_read_file_content,
+    ):
+        # Setup
+        challenge_pk = 1
+        phase_pk = 2
+        submission_pk = 3
+        challenge_phase = {"id": phase_pk, "codename": "phase-code"}
+        submission = {"id": submission_pk}
+        user_annotation_file_path = "/tmp/user.txt"
+        remote_evaluation = False
+
+        worker_mod.PHASE_ANNOTATION_FILE_NAME_MAP[challenge_pk] = {
+            phase_pk: "ann.txt"
+        }
+        mock_eval = MagicMock()
+        mock_eval.evaluate.return_value = {
+            "result": [1, 2, 3],
+            "submission_metadata": {"foo": "bar"},
+        }
+        worker_mod.EVALUATION_SCRIPTS[challenge_pk] = mock_eval
+
+        mock_read_file_content.return_value = "file content"
+
+        # Act
+        run_submission(
+            challenge_pk,
+            challenge_phase,
+            submission,
+            user_annotation_file_path,
+            remote_evaluation,
+        )
+
+        mock_update_status.assert_called()
+        mock_update_data.assert_called()
+        mock_rmtree.assert_called()
+
+    @patch("scripts.workers.remote_submission_worker.read_file_content")
+    @patch("scripts.workers.remote_submission_worker.update_submission_data")
+    @patch("scripts.workers.remote_submission_worker.update_submission_status")
+    @patch("scripts.workers.remote_submission_worker.create_dir")
+    @patch(
+        "scripts.workers.remote_submission_worker.open", new_callable=mock_open
+    )
+    @patch(
+        "scripts.workers.remote_submission_worker.EVALUATION_SCRIPTS",
+        new_callable=dict,
+    )
+    @patch("scripts.workers.remote_submission_worker.shutil.rmtree")
+    def test_run_submission_no_result(
+        self,
+        mock_rmtree,
+        mock_evaluation_scripts,
+        mock_open_func,
+        mock_create_dir,
+        mock_update_status,
+        mock_update_data,
+        mock_read_file_content,
+    ):
+        challenge_pk = 1
+        phase_pk = 2
+        submission_pk = 3
+        challenge_phase = {"id": phase_pk, "codename": "phase-code"}
+        submission = {"id": submission_pk}
+        user_annotation_file_path = "/tmp/user.txt"
+        remote_evaluation = False
+
+        worker_mod.PHASE_ANNOTATION_FILE_NAME_MAP[challenge_pk] = {
+            phase_pk: "ann.txt"
+        }
+        mock_eval = MagicMock()
+        mock_eval.evaluate.return_value = {"foo": "bar"}
+        worker_mod.EVALUATION_SCRIPTS[challenge_pk] = mock_eval
+
+        mock_read_file_content.return_value = "file content"
+
+        run_submission(
+            challenge_pk,
+            challenge_phase,
+            submission,
+            user_annotation_file_path,
+            remote_evaluation,
+        )
+
+        mock_update_status.assert_called()
+        mock_update_data.assert_called()
+        mock_rmtree.assert_called()
+
+    @patch("scripts.workers.remote_submission_worker.read_file_content")
+    @patch("scripts.workers.remote_submission_worker.update_submission_data")
+    @patch("scripts.workers.remote_submission_worker.update_submission_status")
+    @patch("scripts.workers.remote_submission_worker.create_dir")
+    @patch(
+        "scripts.workers.remote_submission_worker.open", new_callable=mock_open
+    )
+    @patch(
+        "scripts.workers.remote_submission_worker.EVALUATION_SCRIPTS",
+        new_callable=dict,
+    )
+    @patch("scripts.workers.remote_submission_worker.shutil.rmtree")
+    def test_run_submission_exception(
+        self,
+        mock_rmtree,
+        mock_evaluation_scripts,
+        mock_open_func,
+        mock_create_dir,
+        mock_update_status,
+        mock_update_data,
+        mock_read_file_content,
+    ):
+        challenge_pk = 1
+        phase_pk = 2
+        submission_pk = 3
+        challenge_phase = {"id": phase_pk, "codename": "phase-code"}
+        submission = {"id": submission_pk}
+        user_annotation_file_path = "/tmp/user.txt"
+        remote_evaluation = False
+
+        import scripts.workers.remote_submission_worker as worker_mod
+
+        worker_mod.PHASE_ANNOTATION_FILE_NAME_MAP[challenge_pk] = {
+            phase_pk: "ann.txt"
+        }
+        mock_eval = MagicMock()
+        mock_eval.evaluate.side_effect = Exception("Eval failed")
+        worker_mod.EVALUATION_SCRIPTS[challenge_pk] = mock_eval
+
+        mock_read_file_content.return_value = "file content"
+
+        run_submission(
+            challenge_pk,
+            challenge_phase,
+            submission,
+            user_annotation_file_path,
+            remote_evaluation,
+        )
+
+        mock_update_status.assert_called()
+        mock_update_data.assert_called()
+        mock_rmtree.assert_called()

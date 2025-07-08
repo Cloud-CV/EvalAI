@@ -1,12 +1,13 @@
 import os
 import shutil
 import signal
+import sys
 import tempfile
 import zipfile
 from datetime import timedelta
 from io import BytesIO
 from os.path import join
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 import mock
@@ -14,6 +15,7 @@ import responses
 from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
@@ -23,6 +25,8 @@ from participants.models import ParticipantTeam
 from rest_framework.test import APITestCase
 
 from scripts.workers.submission_worker import (
+    PHASE_ANNOTATION_FILE_NAME_MAP,
+    SUBMISSION_DATA_DIR,
     ExecutionTimeLimitExceeded,
     GracefulKiller,
     MultiOut,
@@ -33,18 +37,21 @@ from scripts.workers.submission_worker import (
     delete_zip_file,
     download_and_extract_file,
     download_and_extract_zip_file,
+    extract_challenge_data,
     extract_submission_data,
     extract_zip_file,
     get_or_create_sqs_queue,
     load_challenge_and_return_max_submissions,
+    main,
+    process_add_challenge_message,
     return_file_url_per_environment,
+    run_submission,
 )
 from settings.common import SQS_RETENTION_PERIOD
 
 
 class BaseAPITestClass(APITestCase):
     def setUp(self):
-
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
 
         self.SUBMISSION_DATA_DIR = join(
@@ -508,3 +515,699 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
 
         # Clean up
         shutil.rmtree(new_dir)
+
+
+class ExtractChallengeDataWorkerTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch("scripts.workers.submission_worker.download_and_extract_zip_file")
+    @patch("scripts.workers.submission_worker.create_dir")
+    @patch("scripts.workers.submission_worker.download_and_extract_file")
+    @patch("scripts.workers.submission_worker.os.path.isfile")
+    @patch("scripts.workers.submission_worker.subprocess.check_output")
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    def test_extract_challenge_data_success(
+        self,
+        mock_invalidate_caches,
+        mock_import_module,
+        mock_check_output,
+        mock_isfile,
+        mock_download_and_extract_file,
+        mock_create_dir,
+        mock_download_and_extract_zip_file,
+        mock_create_dir_as_python_package,
+    ):
+        mock_isfile.return_value = False
+        challenge = self.challenge
+        phase = self.challenge_phase
+
+        extract_challenge_data(challenge, [phase])
+
+        mock_create_dir_as_python_package.assert_called()
+        mock_download_and_extract_zip_file.assert_called()
+        mock_create_dir.assert_called()
+        mock_download_and_extract_file.assert_called()
+        mock_invalidate_caches.assert_called()
+        mock_import_module.assert_called()
+        self.assertIsNone(challenge.evaluation_module_error)
+
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch("scripts.workers.submission_worker.download_and_extract_zip_file")
+    @patch("scripts.workers.submission_worker.create_dir")
+    @patch("scripts.workers.submission_worker.download_and_extract_file")
+    @patch("scripts.workers.submission_worker.os.path.isfile")
+    @patch("scripts.workers.submission_worker.subprocess.check_output")
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    def test_extract_challenge_data_no_requirements(
+        self,
+        mock_invalidate_caches,
+        mock_import_module,
+        mock_logger_info,
+        mock_check_output,
+        mock_isfile,
+        mock_download_and_extract_file,
+        mock_create_dir,
+        mock_download_and_extract_zip_file,
+        mock_create_dir_as_python_package,
+    ):
+        mock_isfile.return_value = False
+        challenge = self.challenge
+        phase = self.challenge_phase
+
+        extract_challenge_data(challenge, [phase])
+
+        mock_logger_info.assert_any_call(
+            "No custom requirements for challenge {}".format(challenge.id)
+        )
+        mock_import_module.assert_called()
+        mock_invalidate_caches.assert_called()
+
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch("scripts.workers.submission_worker.download_and_extract_zip_file")
+    @patch("scripts.workers.submission_worker.create_dir")
+    @patch("scripts.workers.submission_worker.download_and_extract_file")
+    @patch("scripts.workers.submission_worker.os.path.isfile")
+    @patch("scripts.workers.submission_worker.subprocess.check_output")
+    @patch("scripts.workers.submission_worker.logger.error")
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    def test_extract_challenge_data_requirements_error(
+        self,
+        mock_invalidate_caches,
+        mock_import_module,
+        mock_logger_error,
+        mock_check_output,
+        mock_isfile,
+        mock_download_and_extract_file,
+        mock_create_dir,
+        mock_download_and_extract_zip_file,
+        mock_create_dir_as_python_package,
+    ):
+        mock_isfile.return_value = True
+        mock_check_output.side_effect = Exception("pip error")
+        challenge = self.challenge
+        phase = self.challenge_phase
+
+        extract_challenge_data(challenge, [phase])
+
+        mock_logger_error.assert_called()
+        mock_import_module.assert_called()
+        mock_invalidate_caches.assert_called()
+
+
+class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_run_submission_remote_evaluation_exception_with_logs(
+        self,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = True
+        submission.challenge_phase.disable_logs = False
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
+            "Eval error"
+        )
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
+            "Eval error"
+        )
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        submission.refresh_from_db()
+        assert submission.status == Submission.FAILED
+        assert submission.completed_at is not None
+
+        assert mock_open_builtin.call_count >= 4
+
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_run_submission_remote_evaluation_exception_logs_disabled(
+        self,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = True
+        submission.challenge_phase.disable_logs = True
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+
+        # Add this line to set up the annotation file name map
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
+            "Eval error"
+        )
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
+            "Eval error"
+        )
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        submission.refresh_from_db()
+        assert submission.status == Submission.FAILED
+        assert submission.completed_at is not None
+
+        assert mock_open_builtin.call_count < 4
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+
+class RunSubmissionDatasetSplitExceptionTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_run_submission_dataset_split_exception(
+        self,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = False
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 10}}]
+        }
+
+        with patch(
+            "scripts.workers.submission_worker.ChallengePhaseSplit.objects.get"
+        ) as mock_cps_get:
+            mock_cps = MagicMock()
+            type(mock_cps).dataset_split = property(
+                lambda self: (_ for _ in ()).throw(
+                    Exception("dataset_split error")
+                )
+            )
+            mock_cps_get.return_value = mock_cps
+
+            with patch(
+                "scripts.workers.submission_worker.ContentFile",
+                side_effect=lambda x: ContentFile(x),
+            ):
+                run_submission(
+                    challenge_id,
+                    challenge_phase,
+                    submission,
+                    user_annotation_file_path,
+                )
+
+        submission.refresh_from_db()
+        assert submission.status == Submission.FAILED
+        assert submission.completed_at is not None
+
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+
+class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    @patch("scripts.workers.submission_worker.LeaderboardData")
+    @patch("scripts.workers.submission_worker.ChallengePhaseSplit.objects.get")
+    def test_run_submission_leaderboard_data_success(
+        self,
+        mock_cps_get,
+        mock_leaderboard_data,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = False
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 10}}]
+        }
+
+        mock_cps = MagicMock()
+        mock_cps.leaderboard = MagicMock()
+        mock_cps.dataset_split.codename = "split_codename_1"
+        mock_cps_get.return_value = mock_cps
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        assert mock_leaderboard_data.call_count >= 1
+        submission.refresh_from_db()
+        assert submission.status in [Submission.FINISHED, Submission.FAILED]
+        assert submission.completed_at is not None
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    @patch("scripts.workers.submission_worker.LeaderboardData")
+    @patch("scripts.workers.submission_worker.ChallengePhaseSplit.objects.get")
+    def test_run_submission_leaderboard_data_with_error(
+        self,
+        mock_cps_get,
+        mock_leaderboard_data,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = False
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 10}}],
+            "error": [{"split_codename_1": {"errorkey": 1}}],
+        }
+
+        mock_cps = MagicMock()
+        mock_cps.leaderboard = MagicMock()
+        mock_cps.dataset_split.codename = "split_codename_1"
+        mock_cps_get.return_value = mock_cps
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        assert mock_leaderboard_data.call_count >= 1
+        submission.refresh_from_db()
+        assert submission.status in [Submission.FINISHED, Submission.FAILED]
+        assert submission.completed_at is not None
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+
+class ProcessAddChallengeMessageTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.extract_challenge_data")
+    @patch("scripts.workers.submission_worker.Challenge.objects.get")
+    def test_process_add_challenge_message_success(
+        self, mock_challenge_get, mock_extract_challenge_data
+    ):
+        mock_challenge = MagicMock()
+        mock_challenge.challengephase_set.all.return_value = [MagicMock()]
+        mock_challenge_get.return_value = mock_challenge
+
+        message = {"challenge_id": 123}
+        process_add_challenge_message(message)
+
+        mock_challenge_get.assert_called_with(id=123)
+        mock_extract_challenge_data.assert_called_with(
+            mock_challenge, mock_challenge.challengephase_set.all.return_value
+        )
+
+    @patch("scripts.workers.submission_worker.logger.exception")
+    @patch("scripts.workers.submission_worker.Challenge.objects.get")
+    def test_process_add_challenge_message_challenge_does_not_exist(
+        self, mock_challenge_get, mock_logger_exception
+    ):
+        mock_challenge_get.side_effect = Challenge.DoesNotExist
+        message = {"challenge_id": 999}
+        try:
+            process_add_challenge_message(message)
+        except UnboundLocalError:
+            pass
+
+        mock_challenge_get.assert_called_with(id=999)
+        mock_logger_exception.assert_called_with(
+            "{} Challenge {} does not exist".format("WORKER_LOG", 999)
+        )
+
+
+class RunSubmissionEvaluationExceptionTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_run_submission_evaluation_exception(
+        self,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = False
+        user_annotation_file_path = "dummy/path"
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+
+        # Simulate evaluate raising exception
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.side_effect = Exception(
+            "Eval error"
+        )
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        submission.refresh_from_db()
+        assert submission.status == Submission.FAILED
+        assert submission.completed_at is not None
+        mock_rmtree.assert_called_with(temp_run_dir)
+
+
+class MainFunctionTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    @patch("scripts.workers.submission_worker.GracefulKiller")
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.delete_old_temp_directories")
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch(
+        "scripts.workers.submission_worker.load_challenge_and_return_max_submissions"
+    )
+    @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
+    @patch("scripts.workers.submission_worker.process_submission_callback")
+    @patch(
+        "scripts.workers.submission_worker.increment_and_push_metrics_to_statsd"
+    )
+    @patch("scripts.workers.submission_worker.Submission")
+    def test_main_debug_limit_concurrent(
+        self,
+        mock_Submission,
+        mock_increment_and_push_metrics_to_statsd,
+        mock_process_submission_callback,
+        mock_get_or_create_sqs_queue,
+        mock_load_challenge_and_return_max_submissions,
+        mock_create_dir_as_python_package,
+        mock_delete_old_temp_directories,
+        mock_logger_info,
+        mock_GracefulKiller,
+        mock_invalidate_caches,
+        mock_import_module,
+    ):
+        with patch.object(sys, "argv", ["worker"]), patch(
+            "scripts.workers.submission_worker.settings"
+        ) as mock_settings, patch(
+            "scripts.workers.submission_worker.time.sleep", return_value=None
+        ):
+            mock_settings.DEBUG = True
+            mock_settings.TEST = False
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "True",
+                    "CHALLENGE_PK": str(self.challenge.pk),
+                },
+            ):
+                killer_instance = MagicMock()
+                killer_instance.kill_now = True
+                mock_GracefulKiller.return_value = killer_instance
+                mock_load_challenge_and_return_max_submissions.return_value = (
+                    1,
+                    self.challenge,
+                )
+                mock_queue = MagicMock()
+                mock_message = MagicMock()
+                mock_message.body = (
+                    '{"is_static_dataset_code_upload_submission": false}'
+                )
+                mock_queue.receive_messages.return_value = [mock_message]
+                mock_get_or_create_sqs_queue.return_value = mock_queue
+                mock_Submission.objects.filter.return_value.count.return_value = (
+                    0
+                )
+
+                main()
+
+                assert any(
+                    str(call_args[0][0]).startswith("WORKER_LOG Using ")
+                    for call_args in mock_logger_info.call_args_list
+                )
+                mock_delete_old_temp_directories.assert_called()
+                mock_create_dir_as_python_package.assert_any_call(mock.ANY)
+                mock_get_or_create_sqs_queue.assert_called()
+                mock_process_submission_callback.assert_called_with(
+                    mock_message.body
+                )
+                mock_increment_and_push_metrics_to_statsd.assert_called()
+
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    @patch("scripts.workers.submission_worker.GracefulKiller")
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.delete_old_temp_directories")
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch(
+        "scripts.workers.submission_worker.load_challenge_and_return_max_submissions"
+    )
+    @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
+    @patch("scripts.workers.submission_worker.process_submission_callback")
+    @patch(
+        "scripts.workers.submission_worker.increment_and_push_metrics_to_statsd"
+    )
+    @patch("scripts.workers.submission_worker.Submission")
+    def test_main_debug_no_limit_concurrent(
+        self,
+        mock_Submission,
+        mock_increment_and_push_metrics_to_statsd,
+        mock_process_submission_callback,
+        mock_get_or_create_sqs_queue,
+        mock_load_challenge_and_return_max_submissions,
+        mock_create_dir_as_python_package,
+        mock_delete_old_temp_directories,
+        mock_logger_info,
+        mock_GracefulKiller,
+        mock_invalidate_caches,
+        mock_import_module,
+    ):
+        with patch.object(sys, "argv", ["worker"]), patch(
+            "scripts.workers.submission_worker.settings"
+        ) as mock_settings, patch(
+            "scripts.workers.submission_worker.time.sleep", return_value=None
+        ), patch(
+            "scripts.workers.submission_worker.Challenge"
+        ) as mock_Challenge:
+            mock_settings.DEBUG = True
+            mock_settings.TEST = False
+            with patch.dict(
+                "os.environ",
+                {"LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "False"},
+            ):
+                killer_instance = MagicMock()
+                killer_instance.kill_now = True
+                mock_GracefulKiller.return_value = killer_instance
+                mock_challenge = MagicMock()
+                mock_Challenge.objects.filter.return_value = [mock_challenge]
+                mock_queue = MagicMock()
+                mock_message = MagicMock()
+                mock_message.body = (
+                    '{"is_static_dataset_code_upload_submission": false}'
+                )
+                mock_queue.receive_messages.return_value = [mock_message]
+                mock_get_or_create_sqs_queue.return_value = mock_queue
+
+                main()
+
+                assert any(
+                    str(call_args[0][0]).startswith("WORKER_LOG Using ")
+                    for call_args in mock_logger_info.call_args_list
+                )
+                mock_delete_old_temp_directories.assert_called()
+                mock_create_dir_as_python_package.assert_any_call(mock.ANY)
+                mock_get_or_create_sqs_queue.assert_called()
+                mock_process_submission_callback.assert_called_with(
+                    mock_message.body
+                )
+                mock_increment_and_push_metrics_to_statsd.assert_called()
+
+
+class DeleteOldTempDirectoriesTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    @patch("scripts.workers.submission_worker.os.path.getctime")
+    def test_delete_old_temp_directories_delete_error(
+        self, mock_getctime, mock_rmtree, mock_logger_info
+    ):
+        temp_dir = tempfile.gettempdir()
+        dir1 = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
+        dir2 = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
+
+        mock_getctime.side_effect = lambda path: {dir1: 100, dir2: 200}[path]
+
+        def rmtree_side_effect(path):
+            if path == dir1:
+                raise Exception("delete error")
+
+        mock_rmtree.side_effect = rmtree_side_effect
+
+        delete_old_temp_directories(prefix="tmp")
+
+        assert any(
+            f"Error deleting directory {dir1}: delete error"
+            in str(call_args[0][0])
+            for call_args in mock_logger_info.call_args_list
+        )
+
+        if os.path.exists(dir2):
+            shutil.rmtree(dir2)
+
+
+class ExtractSubmissionDataCancelledTest(BaseAPITestClass):
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.Submission.objects.get")
+    def test_extract_submission_data_cancelled(
+        self, mock_submission_get, mock_logger_info
+    ):
+        mock_submission = MagicMock()
+        mock_submission.status = Submission.CANCELLED
+        mock_submission_get.return_value = mock_submission
+
+        result = extract_submission_data(123)
+        assert result is None
+        mock_logger_info.assert_called_with(
+            "{} Submission {} was cancelled by the user".format(
+                "SUBMISSION_LOG", 123
+            )
+        )
