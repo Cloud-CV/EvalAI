@@ -2853,24 +2853,27 @@ describe('Unit tests for challenge controller', function () {
     describe('Unit tests for publishChallenge function', function () {
         var ev, deferred, $httpBackend;
     
-        beforeEach(inject(function(_$httpBackend_, $injector) {
+        eforeEach(inject(function(_$httpBackend_, $injector) {
             $httpBackend = _$httpBackend_;
             // Mock the auth token request
             $httpBackend.whenGET('http://localhost:8000/api/accounts/user/get_auth_token').respond(200, {});
-    
+            // Mock the challenge GET request
+            $httpBackend.whenGET('http://localhost:8000/api/challenges/challenge/1/').respond(200, {});
+        
             spyOn($mdDialog, 'hide');
             spyOn($state, 'go');
             spyOn($rootScope, 'notify');
             spyOn(utilities, 'sendRequest');
-    
+        
             ev = new Event('click');
             spyOn(ev, 'stopPropagation');
-    
+        
             // Mock $mdDialog.show to return a controllable promise
             deferred = $injector.get('$q').defer();
             spyOn($mdDialog, 'show').and.returnValue(deferred.promise);
-    
+        
             // Set up vm.page and other required properties
+            vm.challengeId = 1; // <--- Add this line
             vm.page = { id: 1, creator: { id: 2 }, description: 'desc' };
             vm.tempDesc = 'temp desc';
             vm.isPublished = false;
