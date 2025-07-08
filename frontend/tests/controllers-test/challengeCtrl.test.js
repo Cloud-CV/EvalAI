@@ -5244,111 +5244,103 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
-
-    describe('Leaderboard submission__submitted_at duration formatting', function () {
-        var vm;
+    describe('Leaderboard submission__submitted_at duration formatting (real code coverage)', function () {
+        var $controller, $rootScope, $scope, vm, moment, utilities;
     
-        beforeEach(function () {
-            // Minimal mock controller object
-            vm = {
-                leaderboard: [{
-                    id: 1,
-                    leaderboard__schema: { labels: ['accuracy'] },
-                    submission__submission_metadata: null,
-                    submission__submitted_at: "2020-01-01T00:00:00Z"
-                }]
-            };
-        });
+        beforeEach(module('evalai'));
+        beforeEach(inject(function (_$controller_, _$rootScope_, _moment_, _utilities_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            $scope = $rootScope.$new();
+            moment = _moment_;
+            utilities = _utilities_;
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+            vm.phaseSplitId = 1;
+            vm.orderLeaderboardBy = 'accuracy';
+            vm.showPrivateIds = [];
+            vm.initial_ranking = {};
+            vm.startLeaderboard = jasmine.createSpy('startLeaderboard');
+            vm.stopLoader = jasmine.createSpy('stopLoader');
+            vm.scrollToEntryAfterLeaderboardLoads = jasmine.createSpy('scrollToEntryAfterLeaderboardLoads');
+        }));
     
-        function runDurationTest(durationData, expectedValue, expectedSpan) {
-            // Mock duration object
-            var duration = {
-                _data: durationData,
-                asYears: function () { return durationData.years || 0; },
-                months: function () { return durationData.months || 0; },
-                asDays: function () { return durationData.days || 0; },
-                asHours: function () { return durationData.hours || 0; },
-                asMinutes: function () { return durationData.minutes || 0; },
-                asSeconds: function () { return durationData.seconds || 0; }
-            };
+        function runLeaderboardTest(durationData, expectedValue, expectedSpan) {
+            // Patch moment.duration to return custom _data
+            spyOn(moment, 'duration').and.callFake(function () {
+                return {
+                    _data: durationData,
+                    asYears: function () { return durationData.years || 0; },
+                    months: function () { return durationData.months || 0; },
+                    asDays: function () { return durationData.days || 0; },
+                    asHours: function () { return durationData.hours || 0; },
+                    asMinutes: function () { return durationData.minutes || 0; },
+                    asSeconds: function () { return durationData.seconds || 0; }
+                };
+            });
+            // Patch moment to avoid real date math
+            spyOn(window, 'moment').and.callFake(function () {
+                return {
+                    diff: function () { return 0; }
+                };
+            });
+            // Patch utilities.sendRequest to call the onSuccess callback directly
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onSuccess({
+                    data: {
+                        results: [{
+                            id: 1,
+                            leaderboard__schema: { labels: ['accuracy'] },
+                            submission__submission_metadata: null,
+                            submission__submitted_at: "2020-01-01T00:00:00Z"
+                        }]
+                    }
+                });
+            });
     
-            // Simulate the code block
-            for (var i = 0; i < vm.leaderboard.length; i++) {
-                if (duration._data.years != 0) {
-                    var years = duration.asYears();
-                    vm.leaderboard[i].submission__submitted_at = years;
-                    vm.leaderboard[i].timeSpan = (years.toFixed(0) == 1) ? 'year' : 'years';
-                }
-                else if (duration._data.months != 0) {
-                    var months = duration.months();
-                    vm.leaderboard[i].submission__submitted_at = months;
-                    vm.leaderboard[i].timeSpan = (months.toFixed(0) == 1) ? 'month' : 'months';
-                }
-                else if (duration._data.days != 0) {
-                    var days = duration.asDays();
-                    vm.leaderboard[i].submission__submitted_at = days;
-                    vm.leaderboard[i].timeSpan = (days.toFixed(0) == 1) ? 'day' : 'days';
-                }
-                else if (duration._data.hours != 0) {
-                    var hours = duration.asHours();
-                    vm.leaderboard[i].submission__submitted_at = hours;
-                    vm.leaderboard[i].timeSpan = (hours.toFixed(0) == 1) ? 'hour' : 'hours';
-                }
-                else if (duration._data.minutes != 0) {
-                    var minutes = duration.asMinutes();
-                    vm.leaderboard[i].submission__submitted_at = minutes;
-                    vm.leaderboard[i].timeSpan = (minutes.toFixed(0) == 1) ? 'minute' : 'minutes';
-                }
-                else if (duration._data.seconds != 0) {
-                    var second = duration.asSeconds();
-                    vm.leaderboard[i].submission__submitted_at = second;
-                    vm.leaderboard[i].timeSpan = (second.toFixed(0) == 1) ? 'second' : 'seconds';
-                }
-            }
+            vm.getLeaderboard(vm.phaseSplitId);
     
             expect(vm.leaderboard[0].submission__submitted_at).toBe(expectedValue);
             expect(vm.leaderboard[0].timeSpan).toBe(expectedSpan);
         }
     
         it('should set timeSpan to "month" for 1 month', function () {
-            runDurationTest({ years: 0, months: 1, days: 0, hours: 0, minutes: 0, seconds: 0 }, 1, 'month');
+            runLeaderboardTest({ years: 0, months: 1, days: 0, hours: 0, minutes: 0, seconds: 0 }, 1, 'month');
         });
     
         it('should set timeSpan to "months" for 3 months', function () {
-            runDurationTest({ years: 0, months: 3, days: 0, hours: 0, minutes: 0, seconds: 0 }, 3, 'months');
+            runLeaderboardTest({ years: 0, months: 3, days: 0, hours: 0, minutes: 0, seconds: 0 }, 3, 'months');
         });
     
         it('should set timeSpan to "day" for 1 day', function () {
-            runDurationTest({ years: 0, months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 }, 1, 'day');
+            runLeaderboardTest({ years: 0, months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 }, 1, 'day');
         });
     
         it('should set timeSpan to "days" for 5 days', function () {
-            runDurationTest({ years: 0, months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 }, 5, 'days');
+            runLeaderboardTest({ years: 0, months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 }, 5, 'days');
         });
     
         it('should set timeSpan to "hour" for 1 hour', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 }, 1, 'hour');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 }, 1, 'hour');
         });
     
         it('should set timeSpan to "hours" for 12 hours', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 }, 12, 'hours');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 }, 12, 'hours');
         });
     
         it('should set timeSpan to "minute" for 1 minute', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 1, seconds: 0 }, 1, 'minute');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 1, seconds: 0 }, 1, 'minute');
         });
     
         it('should set timeSpan to "minutes" for 30 minutes', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 }, 30, 'minutes');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 }, 30, 'minutes');
         });
     
         it('should set timeSpan to "second" for 1 second', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 }, 1, 'second');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 1 }, 1, 'second');
         });
     
         it('should set timeSpan to "seconds" for 45 seconds', function () {
-            runDurationTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 45 }, 45, 'seconds');
+            runLeaderboardTest({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 45 }, 45, 'seconds');
         });
     });
-
 });
