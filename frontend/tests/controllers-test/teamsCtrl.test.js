@@ -484,8 +484,7 @@ describe('Unit tests for teams controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
-
-    describe('vm.load', function () {
+    describe('vm.load (pagination logic)', function () {
         let vm, $q, $rootScope, $http, $httpBackend;
     
         beforeEach(inject(function(_$controller_, _$rootScope_, _$http_, _$q_, _$httpBackend_) {
@@ -494,8 +493,10 @@ describe('Unit tests for teams controller', function () {
             $q = _$q_;
             $httpBackend = _$httpBackend_;
     
-            // Use a regex to match any host and the correct API path
+            // Respond to the initial API call
             $httpBackend.expectGET(/\/api\/participants\/participant_team$/).respond(200, {next: null, previous: null, count: 0});
+            // Respond to any template requests, with or without query string
+            $httpBackend.whenGET(/\.html(\?.*)?$/).respond(200, '');
     
             // Mock utilities.sendRequest to immediately call onSuccess
             spyOn(utilities, 'sendRequest').and.callFake(function(params) {
@@ -504,21 +505,26 @@ describe('Unit tests for teams controller', function () {
                 }
             });
     
-            vm = createController();
-            spyOn(vm, 'startLoader');
+            vm = $controller('TeamsCtrl', {
+                $scope: $rootScope.$new(),
+                $state: {},
+                $http: $http,
+                $rootScope: $rootScope,
+                $mdDialog: {},
+                loaderService: {},
+                utilities: utilities
+            });
             spyOn(vm, 'stopLoader');
-            $httpBackend.flush(); // Respond to the initial GET request
+            $httpBackend.flush();
         }));
     
-        it('should set pagination variables when next is null', function () {
+        it('should set isNext, currentPage, isPrev when next and previous are null', function () {
             const url = 'some/url';
-            const response = {
-                data: { next: null, previous: null, count: 20 }
-            };
+            const response = { data: { next: null, previous: null, count: 20 } };
             spyOn($http, 'get').and.returnValue($q.resolve(response));
     
             vm.load(url);
-            $rootScope.$apply(); // resolve the promise
+            $rootScope.$apply();
     
             expect(vm.existTeam).toEqual(response.data);
             expect(vm.isNext).toBe('disabled');
@@ -527,25 +533,46 @@ describe('Unit tests for teams controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     
-        it('should set pagination variables when next is not null', function () {
+        it('should set isNext, currentPage, isPrev when next is not null and previous is null', function () {
             const url = 'some/url';
-            const response = {
-                data: { next: 'page=3', previous: 'page=1', count: 30 }
-            };
+            const response = { data: { next: 'page=3', previous: null, count: 30 } };
             spyOn($http, 'get').and.returnValue($q.resolve(response));
     
             vm.load(url);
-            $rootScope.$apply(); // resolve the promise
+            $rootScope.$apply();
     
             expect(vm.existTeam).toEqual(response.data);
             expect(vm.isNext).toBe('');
             expect(vm.currentPage).toBe(2); // 3 - 1
-            expect(vm.isPrev).toBe('');
+            expect(vm.isPrev).toBe('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     
-        it('should call stopLoader if url is null', function () {
-            vm.load(null);
+        it('should set isPrev when previous is not null', function () {
+            const url = 'some/url';
+            const response = { data: { next: null, previous: 'page=1', count: 10 } };
+            spyOn($http, 'get').and.returnValue($q.resolve(response));
+    
+            vm.load(url);
+            $rootScope.$apply();
+    
+            expect(vm.isPrev).toBe('');
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(1);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should set isNext and isPrev when both are not null', function () {
+            const url = 'some/url';
+            const response = { data: { next: 'page=5', previous: 'page=3', count: 50 } };
+            spyOn($http, 'get').and.returnValue($q.resolve(response));
+    
+            vm.load(url);
+            $rootScope.$apply();
+    
+            expect(vm.isNext).toBe('');
+            expect(vm.isPrev).toBe('');
+            expect(vm.currentPage).toBe(4); // 5 - 1
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
