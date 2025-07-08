@@ -440,6 +440,51 @@ describe('Unit tests for teams controller', function () {
             vm.inviteOthers(ev, participantTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
+
+        it('should send invite and show success notification', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            var email = 'test@email.com';
+            var message = 'Invitation sent!';
+            $mdDialog.show.and.returnValue(Promise.resolve(email));
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                expect(params.url).toContain('/invite');
+                expect(params.method).toBe('POST');
+                expect(params.data.email).toBe(email);
+                params.callback.onSuccess({ data: { message: message } });
+                expect($rootScope.notify).toHaveBeenCalledWith("success", message);
+                done();
+            });
+            spyOn($rootScope, 'notify');
+            vm.inviteOthers(ev, participantTeamId);
+        });
+
+        it('should send invite and show error notification on failure', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            var email = 'test@email.com';
+            var error = 'Some error';
+            $mdDialog.show.and.returnValue(Promise.resolve(email));
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({ data: { error: error } });
+                expect($rootScope.notify).toHaveBeenCalledWith("error", error);
+                done();
+            });
+            spyOn($rootScope, 'notify');
+            vm.inviteOthers(ev, participantTeamId);
+        });
+
+        it('should do nothing if invite dialog is cancelled', function (done) {
+            var participantTeamId = 1;
+            var ev = new Event('$click');
+            $mdDialog.show.and.returnValue(Promise.reject());
+            spyOn(utilities, 'sendRequest');
+            vm.inviteOthers(ev, participantTeamId);
+            setTimeout(function () {
+                expect(utilities.sendRequest).not.toHaveBeenCalled();
+                done();
+            }, 0);
+        });
     });
 
     describe('Unit tests for showMdDialog function `participants/participant_team/`', function () {
