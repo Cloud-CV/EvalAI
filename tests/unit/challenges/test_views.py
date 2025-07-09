@@ -1,3 +1,4 @@
+import collections
 import csv
 import io
 import json
@@ -205,11 +206,14 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
+                "github_branch": self.challenge.github_branch,
             }
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            response.data["results"], json.loads(json.dumps(expected))
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
@@ -577,6 +581,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -680,6 +685,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -809,6 +815,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -887,6 +894,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -2661,6 +2669,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
+                "github_branch": self.challenge.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -5926,10 +5935,13 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(DatasetSplit.objects.count(), 1)
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
-        
+
         # Verify github_branch is properly stored
         challenge = Challenge.objects.first()
-        self.assertEqual(challenge.github_repository, "https://github.com/yourusername/repository")
+        self.assertEqual(
+            challenge.github_repository,
+            "https://github.com/yourusername/repository",
+        )
         self.assertEqual(challenge.github_branch, "refs/heads/challenge")
 
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
@@ -5995,10 +6007,13 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
 
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json(), expected)
-        
+
         # Verify github_branch defaults to empty string when not provided
         challenge = Challenge.objects.first()
-        self.assertEqual(challenge.github_repository, "https://github.com/yourusername/repository")
+        self.assertEqual(
+            challenge.github_repository,
+            "https://github.com/yourusername/repository",
+        )
         self.assertEqual(challenge.github_branch, "")
 
 

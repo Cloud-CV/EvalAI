@@ -21,14 +21,16 @@ def reverse_fix_duplicate_github_fields(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0112_challenge_sqs_retention_period'),
+        ("challenges", "0112_challenge_sqs_retention_period"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='github_branch',
-            field=models.CharField(blank=True, default='', max_length=200, null=True),
+            model_name="challenge",
+            name="github_branch",
+            field=models.CharField(
+                blank=True, default="", max_length=200, null=True
+            ),
         ),
         migrations.RunPython(
             fix_duplicate_github_fields,
@@ -37,6 +39,6 @@ class Migration(migrations.Migration):
         # Add a partial unique constraint that only applies when both fields are not empty
         migrations.RunSQL(
             "CREATE UNIQUE INDEX challenge_github_repo_branch_partial_idx ON challenge (github_repository, github_branch) WHERE github_repository != '' AND github_branch != '';",
-            reverse_sql="DROP INDEX IF EXISTS challenge_github_repo_branch_partial_idx;"
+            reverse_sql="DROP INDEX IF EXISTS challenge_github_repo_branch_partial_idx;",
         ),
     ]
