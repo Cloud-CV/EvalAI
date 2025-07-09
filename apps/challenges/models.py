@@ -241,6 +241,7 @@ class Challenge(TimeStampedModel):
         app_label = "challenges"
         db_table = "challenge"
         ordering = ("title",)
+        unique_together = (("github_repository", "github_branch"),)
 
     def __str__(self):
         """Returns the title of Challenge"""
