@@ -5246,7 +5246,7 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $rootScope, utilities, vm, $controller, $scope, intervalFn;
+        var $interval, $rootScope, utilities, vm, $controller, $scope;
 
         beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$interval_) {
             $controller = _$controller_;
@@ -5256,27 +5256,13 @@ describe('Unit tests for challenge controller', function () {
             $scope = $rootScope.$new();
             vm = $controller('ChallengeCtrl', { $scope: $scope });
             spyOn(utilities, 'sendRequest');
-            // Spy on $interval and capture the function
-            spyOn($interval, 'cancel');
-            spyOn($interval, 'call').and.callThrough();
-            spyOn($interval, 'flush').and.callThrough();
         }));
 
         it('should push evaluation_module_error to workerLogs if present', function () {
             vm.evaluation_module_error = 'Some error';
             vm.workerLogs = [];
-            // Spy on $interval to immediately call the function
-            spyOn($interval, 'callFake').and.callFake(function (fn) { fn(); return 123; });
-            // Patch $interval to call the function immediately
-            spyOn($interval, 'call').and.callFake(function (fn) { fn(); return 123; });
-            // Actually call the poller function directly
-            var pollerFn = function () {
-                if (vm.evaluation_module_error) {
-                    vm.workerLogs = [];
-                    vm.workerLogs.push(vm.evaluation_module_error);
-                }
-            };
-            pollerFn();
+            vm.startLoadingLogs();
+            $interval.flush(5000);
             expect(vm.workerLogs).toEqual(['Some error']);
         });
 
@@ -5286,37 +5272,12 @@ describe('Unit tests for challenge controller', function () {
             var logWithoutUtc = 'No UTC time here';
             var logs = [logWithUtc, logWithoutUtc];
             vm.workerLogs = [];
-            // Patch $interval to call the function immediately
-            spyOn($interval, 'callFake').and.callFake(function (fn) { fn(); return 123; });
-            // Simulate utilities.sendRequest calling the callback
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: { logs: logs } });
             });
-            // Actually call the poller function directly
-            var pollerFn = function () {
-                parameters = {};
-                parameters.callback = {
-                    onSuccess: function (response) {
-                        var details = response.data;
-                        vm.workerLogs = [];
-                        for (var i = 0; i < details.logs.length; i++) {
-                            var log = details.logs[i];
-                            var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
-                            if (utcTime) {
-                                utcTime = utcTime[0].substring(1, 20);
-                                var date = new Date(utcTime + 'Z');
-                                var localTime = date.toLocaleString("sv-SE");
-                                var modifiedLog = log.replace(utcTime, localTime);
-                                vm.workerLogs.push(modifiedLog);
-                            } else {
-                                vm.workerLogs.push(log);
-                            }
-                        }
-                    }
-                };
-                utilities.sendRequest(parameters);
-            };
-            pollerFn();
+            vm.challengeId = 1;
+            vm.startLoadingLogs();
+            $interval.flush(5000);
             expect(vm.workerLogs.length).toBe(2);
             expect(vm.workerLogs[1]).toBe(logWithoutUtc);
             expect(vm.workerLogs[0]).not.toBe(logWithUtc);
@@ -5326,23 +5287,12 @@ describe('Unit tests for challenge controller', function () {
         it('should push error to workerLogs on error callback', function () {
             vm.evaluation_module_error = null;
             vm.workerLogs = [];
-            // Patch $interval to call the function immediately
-            spyOn($interval, 'callFake').and.callFake(function (fn) { fn(); return 123; });
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: { error: 'Backend error' } });
             });
-            // Actually call the poller function directly
-            var pollerFn = function () {
-                parameters = {};
-                parameters.callback = {
-                    onError: function (response) {
-                        var error = response.data.error;
-                        vm.workerLogs.push(error);
-                    }
-                };
-                utilities.sendRequest(parameters);
-            };
-            pollerFn();
+            vm.challengeId = 1;
+            vm.startLoadingLogs();
+            $interval.flush(5000);
             expect(vm.workerLogs).toContain('Backend error');
         });
     });
