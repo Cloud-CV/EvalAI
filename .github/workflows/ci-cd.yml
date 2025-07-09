@@ -11,6 +11,8 @@ env:
   COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
   CHROME_BIN: chromium-browser
   DISPLAY: :99.0
+  PYTHON_VERSION: '3.9'
+  AWSCLI_VERSION: '1.18.66'
 
 jobs:
   quality-check:
@@ -21,23 +23,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: System configuration
+      - name: Setup Python and dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Install dependencies and configure system
         run: |
+          pip install awscli==${{ env.AWSCLI_VERSION }}
           sudo rm -f /etc/boto.cfg
           mkdir -p $HOME/.config/pip
           echo "[build_ext]" > $HOME/.config/pip/pip.conf
           echo "parallel = 1" >> $HOME/.config/pip/pip.conf
           ulimit -u 16384
           ulimit -n 4096
-
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: pip install awscli==1.18.66
 
       - name: Run code quality checks
         run: |
@@ -66,8 +71,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup Python and dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Setup Docker environment
+        run: |
+          docker buildx create --use
+          pip install awscli==${{ env.AWSCLI_VERSION }} coveralls
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -87,15 +105,6 @@ jobs:
       - name: Build Docker images
         run: |
           docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
-
-      - name: Setup Python for backend tests
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-
-      - name: Install test dependencies
-        run: pip install awscli==1.18.66 coveralls
 
       - name: Setup display for frontend tests
         run: |
@@ -133,14 +142,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python 3.9
+      - name: Setup Python and dependencies
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install deployment dependencies
-        run: pip install awscli==1.18.66
+        run: pip install awscli==${{ env.AWSCLI_VERSION }}
 
       - name: Configure SSH
         run: |
