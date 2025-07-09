@@ -9,60 +9,17 @@ on:
 env:
   COMPOSE_BAKE: true
   COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
+  CHROME_BIN: chromium-browser
+  DISPLAY: :99.0
 
 jobs:
-  lint:
-    name: Code Linting
+  quality-check:
+    name: Code Quality & Migration Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
-      - name: Run code quality checks in Docker
-        run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
-          echo 'Installing black, flake8, pylint and isort...' &&
-          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
-          echo 'Running black check...' &&
-          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
-          echo 'Running isort check...' &&
-          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; exit 1; } &&
-          echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
-          echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
-          echo 'All code quality checks passed!'"
-
-  migration-check:
-    name: Django Migration Check
-    runs-on: ubuntu-latest
-    needs: lint
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-      
-      - name: Django Migration Checker
-        run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
-
-  build:
-    name: Docker Build
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v3
 
       - name: System configuration
         run: |
@@ -70,125 +27,148 @@ jobs:
           mkdir -p $HOME/.config/pip
           echo "[build_ext]" > $HOME/.config/pip/pip.conf
           echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-          ulimit -u 16384 # Increase process/thread limit
-          ulimit -n 4096 # Increase open file limit
-      
-      - name: Install Docker Compose
+          ulimit -u 16384
+          ulimit -n 4096
+
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install awscli==1.18.66
+
+      - name: Run code quality checks
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing linting tools...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+          echo 'Running black check...' &&
+          black --check --diff ./ &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ &&
+          echo 'All code quality checks passed!'"
+
+      - name: Django Migration Check
+        if: github.event_name == 'pull_request'
+        run: |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
+
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: quality-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Docker login
         if: github.event_name == 'push'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: docker-compose --profile worker --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
-      
-      - name: Cache Docker images
-        uses: actions/cache@v3
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-
-  frontend-test:
-    name: Frontend Tests
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Docker Compose
+      - name: Build Docker images
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
-      - name: Setup Chrome
-        run: |
-          export CHROME_BIN=chromium-browser
-      
-      - name: Setup display for browser tests
-        run: |
-          export DISPLAY=:99
-          sudo apt-get install -y xvfb
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          
-      - name: Run frontend tests
-        run: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+          docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
 
-
-  backend-test:
-    name: Backend Tests
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
-      - name: Set up Python 3.9
+      - name: Setup Python for backend tests
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9.21
+          python-version: '3.9'
+          cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install test dependencies
         run: pip install awscli==1.18.66 coveralls
+
+      - name: Setup display for frontend tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb chromium-browser
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Run frontend tests
+        run: |
+          docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
 
       - name: Run backend tests
         run: |
           docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
           docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
-          
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: false
 
-      - name: Coveralls
+      - name: Upload coverage to Coveralls
         continue-on-error: true
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          echo "Attempting to submit coverage to Coveralls..."
-          coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, but continuing workflow"
-                   
-  deploy:
-    name: Package & Deploy
-    runs-on: ubuntu-latest
-    needs: [frontend-test, backend-test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
-    steps:
-      - uses: actions/checkout@v3
+          coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, continuing..."
 
-      - name: Set up Python 3.9
+  deploy:
+    name: Deploy & Notify
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9.21
+          python-version: '3.9'
+          cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install deployment dependencies
         run: pip install awscli==1.18.66
 
-      - name: Setup SSH key for deployment
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
-          
-      - name: Run deployment scripts
+
+      - name: Deploy services
         run: |
-          export SSH_AUTH_SOCK=/tmp/ssh_agent.sock
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/deploy_key
           ./scripts/deployment/push.sh
           ./scripts/deployment/deploy.sh auto_deploy
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#ci-cd'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Notify on success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#ci-cd'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
