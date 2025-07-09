@@ -9,6 +9,7 @@ from kubernetes.client.rest import ApiException
 from scripts.workers.code_upload_submission_worker import (
     EVALAI_API_SERVER,
     GracefulKiller,
+    cleanup_submission,
     create_config_map_object,
     create_configmap,
     create_job,
@@ -25,6 +26,7 @@ from scripts.workers.code_upload_submission_worker import (
     get_job_constraints,
     get_job_object,
     get_pods_from_job,
+    get_running_jobs,
     get_submission_meta_update_curl,
     get_volume_list,
     get_volume_mount_list,
@@ -38,7 +40,6 @@ from scripts.workers.code_upload_submission_worker import (
 
 
 class TestGracefulKiller(unittest.TestCase):
-
     def test_exit_gracefully(self):
         killer = GracefulKiller()
         killer.exit_gracefully(signal.SIGINT, None)
@@ -46,7 +47,6 @@ class TestGracefulKiller(unittest.TestCase):
 
 
 class TestGetVolumeMountObject(unittest.TestCase):
-
     def test_get_volume_mount_object(self):
         mount_path = "/mnt/data"
         name = "data-volume"
@@ -1198,3 +1198,577 @@ class TestConfigFunctions(unittest.TestCase):
         # Assertions
         mock_evalai_instance.get_challenge_by_queue_name.assert_called()
         assert mock_evalai_instance.get_challenge_by_queue_name.call_count == 2
+
+
+class TestProcessSubmissionCallbackException(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    def test_process_submission_callback_logs_exception(self, MockLogger):
+        with patch(
+            "scripts.workers.code_upload_submission_worker.create_job_object",
+            side_effect=Exception("Test exception"),
+        ):
+            mock_api_instance = MagicMock()
+            mock_body = {
+                "submission_pk": 123,
+                "is_static_dataset_code_upload_submission": False,
+                "challenge_pk": 1,
+            }
+            mock_challenge_phase = {"environment_image": "test-image"}
+            mock_challenge = MagicMock()
+            mock_evalai = MagicMock()
+
+            process_submission_callback(
+                mock_api_instance,
+                mock_body,
+                mock_challenge_phase,
+                mock_challenge,
+                mock_evalai,
+            )
+
+            # Assert
+            MockLogger.exception.assert_called()
+            assert (
+                "Exception while receiving message from submission queue with error Test exception"
+                in str(MockLogger.exception.call_args[0][0])
+            )
+
+
+class TestGetRunningJobsException(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    def test_get_running_jobs_handles_apiexception(self, MockLogger):
+        mock_api_instance = MagicMock()
+        mock_api_instance.list_namespaced_job.side_effect = ApiException(
+            "API error"
+        )
+
+        with self.assertRaises(UnboundLocalError):
+            get_running_jobs(mock_api_instance)
+        MockLogger.exception.assert_called_once()
+
+
+class TestReadJobException(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    def test_read_job_handles_apiexception(self, MockLogger):
+        mock_api_instance = MagicMock()
+        mock_api_instance.read_namespaced_job.side_effect = ApiException(
+            "API error"
+        )
+
+        result = read_job(mock_api_instance, "test-job")
+        MockLogger.exception.assert_called_once()
+        logged_message = MockLogger.exception.call_args[0][0]
+        assert "Exception while reading Job with error" in logged_message
+        assert "API error" in logged_message
+        self.assertIsNone(result)
+
+
+class TestCleanupSubmissionException(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    def test_cleanup_submission_outer_exception(self, MockLogger):
+        mock_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+
+        mock_evalai.update_submission_data.side_effect = Exception(
+            "Test outer exception"
+        )
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        stderr = "stderr"
+        environment_log = "env_log"
+        message = {"receipt_handle": "abc"}
+        queue_name = "queue"
+        is_remote = False
+
+        cleanup_submission(
+            mock_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            stderr,
+            environment_log,
+            message,
+            queue_name,
+            is_remote,
+        )
+
+        MockLogger.exception.assert_called()
+        logged_message = MockLogger.exception.call_args[0][0]
+        assert (
+            "Exception while cleanup Submission 1:  Test outer exception"
+            in logged_message
+        )
+
+
+class TestCleanupSubmissionDeleteJobException(unittest.TestCase):
+    @patch(
+        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
+    )
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.delete_job")
+    def test_cleanup_submission_delete_job_exception(
+        self, MockDeleteJob, MockLogger, MockIncrementStatsd
+    ):
+        mock_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+
+        MockDeleteJob.side_effect = Exception("Delete job failed")
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        stderr = "stderr"
+        environment_log = "env_log"
+        message = {"receipt_handle": "abc"}
+        queue_name = "queue"
+        is_remote = False
+
+        cleanup_submission(
+            mock_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            stderr,
+            environment_log,
+            message,
+            queue_name,
+            is_remote,
+        )
+
+        MockLogger.exception.assert_any_call(
+            "Failed to delete submission job: Delete job failed"
+        )
+        mock_evalai.delete_message_from_sqs_queue.assert_called_once_with(
+            "abc"
+        )
+        MockIncrementStatsd.assert_called_once_with(queue_name, is_remote)
+
+
+class TestUpdateFailedJobsAndSendLogsDisableLogs(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    def test_disable_logs_sets_errors_to_none(self, mock_get_pods_from_job):
+        mock_api_instance = MagicMock()
+        mock_core_v1_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        message = {}
+        queue_name = "queue"
+        is_remote = False
+        disable_logs = True
+
+        mock_pods_list = MagicMock()
+        mock_pods_list.items = [MagicMock()]
+        mock_pods_list.items[0].status.container_statuses = [MagicMock()]
+        mock_get_pods_from_job.return_value = mock_pods_list
+
+        update_failed_jobs_and_send_logs(
+            mock_api_instance,
+            mock_core_v1_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            message,
+            queue_name,
+            is_remote,
+            disable_logs,
+        )
+
+
+class TestUpdateFailedJobsAndSendLogsPodLog(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.cleanup_submission")
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    def test_pod_log_handling(
+        self, mock_get_pods_from_job, MockLogger, mock_cleanup_submission
+    ):
+        mock_api_instance = MagicMock()
+        mock_core_v1_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        message = {}
+        queue_name = "queue"
+        is_remote = False
+        disable_logs = False
+
+        mock_container_state = MagicMock()
+        mock_container_state.terminated = MagicMock()
+        mock_container = MagicMock()
+        mock_container.name = "environment"
+        mock_container.state = mock_container_state
+
+        mock_pod_status = MagicMock()
+        mock_pod_status.container_statuses = [mock_container]
+        mock_pod_metadata = MagicMock()
+        mock_pod_metadata.name = "pod-1"
+        mock_pod_item = MagicMock()
+        mock_pod_item.status = mock_pod_status
+        mock_pod_item.metadata = mock_pod_metadata
+
+        mock_pods_list = MagicMock()
+        mock_pods_list.items = [mock_pod_item]
+        mock_get_pods_from_job.return_value = mock_pods_list
+
+        mock_pod_log_response = MagicMock()
+        mock_pod_log_response.data.decode.return_value = "log-data"
+        mock_core_v1_api_instance.read_namespaced_pod_log.return_value = (
+            mock_pod_log_response
+        )
+
+        update_failed_jobs_and_send_logs(
+            mock_api_instance,
+            mock_core_v1_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            message,
+            queue_name,
+            is_remote,
+            disable_logs,
+        )
+
+        mock_core_v1_api_instance.read_namespaced_pod_log.assert_called_once_with(
+            name="pod-1",
+            namespace="default",
+            _return_http_data_only=True,
+            _preload_content=False,
+            container="environment",
+        )
+
+
+class TestUpdateFailedJobsAndSendLogsPodLogException(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.cleanup_submission")
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    def test_pod_log_apiexception(
+        self, mock_get_pods_from_job, MockLogger, mock_cleanup_submission
+    ):
+        mock_api_instance = MagicMock()
+        mock_core_v1_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        message = {}
+        queue_name = "queue"
+        is_remote = False
+        disable_logs = False
+
+        mock_container_state = MagicMock()
+        mock_container_state.terminated = MagicMock()
+        mock_container = MagicMock()
+        mock_container.name = "environment"
+        mock_container.state = mock_container_state
+
+        mock_pod_status = MagicMock()
+        mock_pod_status.container_statuses = [mock_container]
+        mock_pod_metadata = MagicMock()
+        mock_pod_metadata.name = "pod-1"
+        mock_pod_item = MagicMock()
+        mock_pod_item.status = mock_pod_status
+        mock_pod_item.metadata = mock_pod_metadata
+
+        mock_pods_list = MagicMock()
+        mock_pods_list.items = [mock_pod_item]
+        mock_get_pods_from_job.return_value = mock_pods_list
+
+        mock_core_v1_api_instance.read_namespaced_pod_log.side_effect = (
+            ApiException("Pod log error")
+        )
+
+        update_failed_jobs_and_send_logs(
+            mock_api_instance,
+            mock_core_v1_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            message,
+            queue_name,
+            is_remote,
+            disable_logs,
+        )
+
+        logged_message = MockLogger.exception.call_args[0][0]
+        assert "Exception while reading Job logs" in logged_message
+        assert "Pod log error" in logged_message
+
+
+class TestUpdateFailedJobsAndSendLogsSubmissionError(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.cleanup_submission")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    def test_submission_error_assignment(
+        self, mock_get_pods_from_job, mock_cleanup_submission
+    ):
+        mock_api_instance = MagicMock()
+        mock_core_v1_api_instance = MagicMock()
+        mock_evalai = MagicMock()
+        job_name = "job-1"
+        submission_pk = 1
+        challenge_pk = 2
+        phase_pk = 3
+        message = {}
+        queue_name = "queue"
+        is_remote = False
+        disable_logs = False
+
+        mock_container_state = MagicMock()
+        mock_container_state.terminated = MagicMock()
+        mock_container = MagicMock()
+        mock_container.name = "submission"
+        mock_container.state = mock_container_state
+
+        mock_pod_status = MagicMock()
+        mock_pod_status.container_statuses = [mock_container]
+        mock_pod_metadata = MagicMock()
+        mock_pod_metadata.name = "pod-1"
+        mock_pod_item = MagicMock()
+        mock_pod_item.status = mock_pod_status
+        mock_pod_item.metadata = mock_pod_metadata
+
+        mock_pods_list = MagicMock()
+        mock_pods_list.items = [mock_pod_item]
+        mock_get_pods_from_job.return_value = mock_pods_list
+
+        mock_pod_log_response = MagicMock()
+        mock_pod_log_response.data.decode.return_value = "submission-log-data"
+        mock_core_v1_api_instance.read_namespaced_pod_log.return_value = (
+            mock_pod_log_response
+        )
+
+        update_failed_jobs_and_send_logs(
+            mock_api_instance,
+            mock_core_v1_api_instance,
+            mock_evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            message,
+            queue_name,
+            is_remote,
+            disable_logs,
+        )
+
+
+class TestMainQueuedSubmission(unittest.TestCase):
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
+    @patch("scripts.workers.code_upload_submission_worker.EvalAI_Interface")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_client")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_object")
+    @patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
+    def test_main_queued_submission_updates_status(
+        self,
+        mock_get_core_v1_api_object,
+        mock_get_api_object,
+        mock_get_api_client,
+        mock_evalai,
+        mock_killer,
+        mock_get_pods_from_job,
+    ):
+        # Setup
+        mock_evalai_instance = mock_evalai.return_value
+        mock_evalai_instance.get_challenge_by_queue_name.return_value = {
+            "title": "Test Challenge",
+            "remote_evaluation": 0,
+            "cpu_only_jobs": False,
+            "is_static_dataset_code_upload": False,
+            "id": 1,
+            "submission_time_limit": 100,
+        }
+        mock_evalai_instance.get_aws_eks_cluster_details.return_value = {
+            "name": "test-cluster",
+            "cluster_endpoint": "https://cluster-endpoint",
+        }
+        mock_evalai_instance.get_challenge_phase_by_pk.return_value = {
+            "disable_logs": False
+        }
+        mock_evalai_instance.get_message_from_sqs_queue.return_value = {
+            "body": {
+                "submission_pk": 1,
+                "challenge_pk": 1,
+                "phase_pk": 1,
+            },
+            "receipt_handle": "abc",
+        }
+        mock_evalai_instance.get_submission_by_pk.return_value = {
+            "status": "queued",
+            "job_name": ["job-123"],
+        }
+        mock_killer_instance = mock_killer.return_value
+        mock_killer_instance.kill_now = True
+
+        mock_container_status = MagicMock()
+        mock_pod_status = MagicMock()
+        mock_pod_status.container_statuses = [mock_container_status]
+        mock_pod_item = MagicMock()
+        mock_pod_item.status = mock_pod_status
+        mock_pods_list = MagicMock()
+        mock_pods_list.items = [mock_pod_item]
+        mock_get_pods_from_job.return_value = mock_pods_list
+
+        main()
+
+        mock_evalai_instance.update_submission_status.assert_called_once_with(
+            {
+                "submission_status": "running",
+                "submission": 1,
+                "job_name": "job-123",
+            },
+            1,
+        )
+
+
+class TestMainJobDeleteBlock(unittest.TestCase):
+    @patch(
+        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
+    )
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.delete_job")
+    @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
+    @patch("scripts.workers.code_upload_submission_worker.EvalAI_Interface")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_client")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_object")
+    @patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
+    def test_main_job_delete_block(
+        self,
+        mock_get_core_v1_api_object,
+        mock_get_api_object,
+        mock_get_api_client,
+        mock_evalai,
+        mock_killer,
+        mock_delete_job,
+        MockLogger,
+        mock_increment_statsd,
+    ):
+        mock_evalai_instance = mock_evalai.return_value
+        mock_evalai_instance.get_challenge_by_queue_name.return_value = {
+            "title": "Test Challenge",
+            "remote_evaluation": 0,
+            "cpu_only_jobs": False,
+            "is_static_dataset_code_upload": False,
+            "id": 1,
+            "submission_time_limit": 100,
+        }
+        mock_evalai_instance.get_aws_eks_cluster_details.return_value = {
+            "name": "test-cluster",
+            "cluster_endpoint": "https://cluster-endpoint",
+        }
+
+        mock_evalai_instance.get_message_from_sqs_queue.return_value = {
+            "body": {
+                "submission_pk": 1,
+                "challenge_pk": 1,
+                "phase_pk": 1,
+            },
+            "receipt_handle": "abc",
+        }
+        mock_evalai_instance.get_challenge_phase_by_pk.return_value = {
+            "disable_logs": False
+        }
+        mock_evalai_instance.get_submission_by_pk.return_value = {
+            "status": "finished",
+            "job_name": ["job-123"],
+        }
+        mock_killer_instance = mock_killer.return_value
+        mock_killer_instance.kill_now = True
+
+        main()
+
+        # Assert delete_job and message deletion were called
+        mock_delete_job.assert_called_once_with(
+            mock_get_api_object.return_value, "job-123"
+        )
+        mock_evalai_instance.delete_message_from_sqs_queue.assert_called_once_with(
+            "abc"
+        )
+        mock_increment_statsd.assert_called_once()
+
+    @patch(
+        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
+    )
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.delete_job")
+    @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
+    @patch("scripts.workers.code_upload_submission_worker.EvalAI_Interface")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_client")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_object")
+    @patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
+    def test_main_job_delete_block_exception(
+        self,
+        mock_get_core_v1_api_object,
+        mock_get_api_object,
+        mock_get_api_client,
+        mock_evalai,
+        mock_killer,
+        mock_delete_job,
+        MockLogger,
+        mock_increment_statsd,
+    ):
+        mock_evalai_instance = mock_evalai.return_value
+        mock_evalai_instance.get_challenge_by_queue_name.return_value = {
+            "title": "Test Challenge",
+            "remote_evaluation": 0,
+            "cpu_only_jobs": False,
+            "is_static_dataset_code_upload": False,
+            "id": 1,
+            "submission_time_limit": 100,
+        }
+        mock_evalai_instance.get_aws_eks_cluster_details.return_value = {
+            "name": "test-cluster",
+            "cluster_endpoint": "https://cluster-endpoint",
+        }
+
+        mock_evalai_instance.get_message_from_sqs_queue.return_value = {
+            "body": {
+                "submission_pk": 1,
+                "challenge_pk": 1,
+                "phase_pk": 1,
+            },
+            "receipt_handle": "abc",
+        }
+        mock_evalai_instance.get_challenge_phase_by_pk.return_value = {
+            "disable_logs": False
+        }
+        mock_evalai_instance.get_submission_by_pk.return_value = {
+            "status": "finished",
+            "job_name": ["job-123"],
+        }
+        mock_killer_instance = mock_killer.return_value
+        mock_killer_instance.kill_now = True
+
+        mock_delete_job.side_effect = Exception("Delete job failed")
+
+        main()
+
+        MockLogger.exception.assert_any_call(
+            "Failed to delete submission job: Delete job failed"
+        )
+
+        mock_evalai_instance.delete_message_from_sqs_queue.assert_called_with(
+            "abc"
+        )
+        mock_increment_statsd.assert_called()
