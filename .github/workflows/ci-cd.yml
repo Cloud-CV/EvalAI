@@ -11,7 +11,7 @@ env:
   COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
   CHROME_BIN: chromium-browser
   DISPLAY: :99.0
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.9.21'
   AWSCLI_VERSION: '1.18.66'
   REGISTRY: ${{ secrets.DOCKER_USERNAME }}
   IMAGE_TAG: ${{ github.sha }}
@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies and configure system
         run: |
+          pip install --upgrade pip
           pip install awscli==${{ env.AWSCLI_VERSION }}
           sudo rm -f /etc/boto.cfg
           mkdir -p $HOME/.config/pip
@@ -48,17 +49,17 @@ jobs:
 
       - name: Run code quality checks
         run: |
-          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test -e VERBOSE=1 django bash -c "
-          echo 'Installing linting tools...' &&
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, pylint and isort...' &&
           pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
           echo 'Running black check...' &&
-          black --check --diff ./ &&
+          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
           echo 'Running isort check...' &&
-          isort --check-only --diff --profile=black ./ &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; exit 1; } &&
           echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 ./ &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
           echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
           echo 'All code quality checks passed!'"
 
       - name: Django Migration Check
@@ -69,6 +70,7 @@ jobs:
   build-and-push:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
+    # REMOVED: No dependencies - runs in parallel
     outputs:
       image-digest: ${{ steps.build.outputs.digest }}
     steps:
@@ -91,6 +93,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Docker login
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -99,29 +102,19 @@ jobs:
       - name: Build and push Docker images
         id: build
         run: |
-          # Build and push images with unique tags
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            --push \
-            --tag ${{ env.REGISTRY }}/evalai:${{ env.IMAGE_TAG }} \
-            --tag ${{ env.REGISTRY }}/evalai:latest \
-            .
-          
-          # Build compose services and push
           export COMPOSE_DOCKER_CLI_BUILD=1
           export DOCKER_BUILDKIT=1
           
           docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
-          docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd push
           
-          # Clean up cache
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          if [ "${{ github.event_name }}" = "push" ]; then
+            docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd push
+          fi
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    # REMOVED: No dependencies - runs in parallel with build
     strategy:
       matrix:
         test-type: [frontend, backend]
@@ -140,20 +133,14 @@ jobs:
         with:
           version: latest
 
-      - name: Docker login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Install test dependencies
-        run: pip install awscli==${{ env.AWSCLI_VERSION }} coveralls
-
-      - name: Pull Docker images
         run: |
-          # Pull the latest images (they might be building in parallel)
-          timeout 300 bash -c 'until docker pull ${{ env.REGISTRY }}/evalai:${{ env.IMAGE_TAG }} 2>/dev/null; do echo "Waiting for image..."; sleep 10; done'
-          docker compose pull
+          pip install --upgrade pip
+          pip install awscli==${{ env.AWSCLI_VERSION }} coveralls
+
+      - name: Build images for testing (if not available)
+        run: |
+          docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
 
       - name: Setup display for frontend tests
         if: matrix.test-type == 'frontend'
@@ -175,9 +162,8 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.test-type == 'backend'
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: false
+        run: |
+          bash <(curl -s https://codecov.io/bash)
 
       - name: Upload coverage to Coveralls
         if: matrix.test-type == 'backend'
@@ -185,12 +171,12 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, continuing..."
+          coveralls --rcfile=.coveragerc
 
   deploy:
-    name: Deploy & Notify
+    name: Package & Deploy Services
     runs-on: ubuntu-latest
-    needs: [build-and-push, test, quality-check]
+    needs: [build-and-push, test, quality-check]  # Waits for ALL jobs to complete
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     environment: production
     steps:
@@ -203,10 +189,13 @@ jobs:
           cache: 'pip'
 
       - name: Install deployment dependencies
-        run: pip install awscli==${{ env.AWSCLI_VERSION }}
-
-      - name: Configure SSH
         run: |
+          pip install --upgrade pip
+          pip install awscli==${{ env.AWSCLI_VERSION }}
+
+      - name: Configure SSH and decrypt keys
+        run: |
+          eval "$(ssh-agent -s)"
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
@@ -215,10 +204,13 @@ jobs:
 
       - name: Deploy services
         run: |
-          eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/deploy_key
           ./scripts/deployment/push.sh
           ./scripts/deployment/deploy.sh auto_deploy
+
+      - name: Clean up pip cache
+        run: |
+          rm -f $HOME/.cache/pip/log/debug.log
 
       - name: Notify on failure
         if: failure()
