@@ -1,2 +1,6 @@
-sphinx_rtd_theme==0.4.3
-sphinx_markdown_tables==0.0.14
+recommonmark==0.7.1
+sphinx-autobuild==2024.10.3
+sphinx-markdown-tables==0.0.17
+sphinx-rtd-theme==3.0.2
+sphinx==8.1.3
+myst-parser>=2.0
