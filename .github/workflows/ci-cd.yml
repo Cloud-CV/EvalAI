@@ -41,7 +41,7 @@ jobs:
 
       - name: Run code quality checks
         run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test -e VERBOSE=1 django bash -c "
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test -e VERBOSE=1 django bash -c "
           echo 'Installing linting tools...' &&
           pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
           echo 'Running black check...' &&
@@ -57,7 +57,7 @@ jobs:
       - name: Django Migration Check
         if: github.event_name == 'pull_request'
         run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py makemigrations --check --dry-run
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
 
   build-and-test:
     name: Build & Test
@@ -86,7 +86,7 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
+          docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
 
       - name: Setup Python for backend tests
         uses: actions/setup-python@v4
@@ -105,12 +105,12 @@ jobs:
 
       - name: Run frontend tests
         run: |
-          docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+          docker compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
 
       - name: Run backend tests
         run: |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
