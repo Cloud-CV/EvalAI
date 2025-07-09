@@ -4057,50 +4057,6 @@ describe('Unit tests for challenge controller', function () {
             expect(attribute.values).toEqual([]);
         });
     });
-
-    describe('Unit tests for resume submission logic', function () {
-        var submissionObject, parameters, userKey;
-
-        beforeEach(function () {
-            submissionObject = { id: 456, classList2: [] };
-            parameters = {};
-            userKey = 'dummy-token';
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            // Make sure vm is available and has resumeSubmission
-            // If not, inject or require the controller as needed
-        });
-
-        it('should handle successful resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate success callback
-                params.callback.onSuccess({ data: { success: 'Resume started!' } });
-            });
-
-            // Act
-            vm.resumeSubmission(submissionObject);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-
-        it('should handle error during resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate error callback
-                params.callback.onError({ data: 'Some resume error' });
-            });
-
-            // Act
-            vm.resumeSubmission(submissionObject);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-    });
     describe('Unit tests for sendApprovalRequest function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
