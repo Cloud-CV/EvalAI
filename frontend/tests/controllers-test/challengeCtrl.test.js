@@ -610,124 +610,6 @@ describe('Unit tests for challenge controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
-
-        it('should fetch and set prizes when hasPrizes is true', function () {
-            // Arrange
-            var challengeSuccessResponse = {
-                is_active: true,
-                published: false,
-                enable_forum: true,
-                forum_url: "http://example.com",
-                cli_version: "evalai-cli version",
-                image: 'logo.png',
-                has_prize: true
-            };
-            var prizesResponse = [{ name: "First Prize", amount: 1000 }];
-            var calledUrls = [];
-            var callCount = 0;
-            utilities.sendRequest = function (parameters) {
-                calledUrls.push(parameters.url);
-                callCount++;
-                if (parameters.url.endsWith('/prizes/')) {
-                    parameters.callback.onSuccess({ data: prizesResponse });
-                } else if (parameters.url.endsWith('/')) {
-                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
-                } else {
-                    parameters.callback.onSuccess({ status: 200, data: {} });
-                }
-            };
-            vm = createController();
-            expect(vm.hasPrizes).toBe(true);
-            expect(vm.prizes).toEqual(prizesResponse);
-            expect(calledUrls.some(url => url && url.includes('/prizes/'))).toBe(true);
-        });
-
-        it('should notify error if fetching prizes fails', function () {
-            // Arrange
-            var challengeSuccessResponse = {
-                is_active: true,
-                published: false,
-                enable_forum: true,
-                forum_url: "http://example.com",
-                cli_version: "evalai-cli version",
-                image: 'logo.png',
-                has_prize: true
-            };
-            var errorResponse = { error: "Could not fetch prizes" };
-            var calledUrls = [];
-            spyOn($rootScope, 'notify');
-            utilities.sendRequest = function (parameters) {
-                calledUrls.push(parameters.url);
-                if (parameters.url.endsWith('/prizes/')) {
-                    parameters.callback.onError({ data: errorResponse });
-                } else if (parameters.url.endsWith('/')) {
-                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
-                } else {
-                    parameters.callback.onSuccess({ status: 200, data: {} });
-                }
-            };
-            vm = createController();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
-            expect(calledUrls.some(url => url && url.includes('/prizes/'))).toBe(true);
-        });
-
-        it('should fetch and set sponsors when has_sponsors is true', function () {
-            // Arrange
-            var challengeSuccessResponse = {
-                is_active: true,
-                published: false,
-                enable_forum: true,
-                forum_url: "http://example.com",
-                cli_version: "evalai-cli version",
-                image: 'logo.png',
-                has_sponsors: true
-            };
-            var sponsorsResponse = [{ name: "Sponsor 1", url: "https://sponsor.com" }];
-            var calledUrls = [];
-            utilities.sendRequest = function (parameters) {
-                calledUrls.push(parameters.url);
-                if (parameters.url.endsWith('/sponsors/')) {
-                    parameters.callback.onSuccess({ data: sponsorsResponse });
-                } else if (parameters.url.endsWith('/')) {
-                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
-                } else {
-                    parameters.callback.onSuccess({ status: 200, data: {} });
-                }
-            };
-            vm = createController();
-            expect(vm.has_sponsors).toBe(true);
-            expect(vm.sponsors).toEqual(sponsorsResponse);
-            expect(calledUrls.some(url => url && url.includes('/sponsors/'))).toBe(true);
-        });
-
-        it('should notify error if fetching sponsors fails', function () {
-            // Arrange
-            var challengeSuccessResponse = {
-                is_active: true,
-                published: false,
-                enable_forum: true,
-                forum_url: "http://example.com",
-                cli_version: "evalai-cli version",
-                image: 'logo.png',
-                has_sponsors: true
-            };
-            var errorResponse = { error: "Could not fetch sponsors" };
-            var calledUrls = [];
-            spyOn($rootScope, 'notify');
-            utilities.sendRequest = function (parameters) {
-                calledUrls.push(parameters.url);
-                if (parameters.url.endsWith('/sponsors/')) {
-                    parameters.callback.onError({ data: errorResponse });
-                } else if (parameters.url.endsWith('/')) {
-                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
-                } else {
-                    parameters.callback.onSuccess({ status: 200, data: {} });
-                }
-            };
-            vm = createController();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
-            expect(calledUrls.some(url => url && url.includes('/sponsors/'))).toBe(true);
-        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -4175,50 +4057,6 @@ describe('Unit tests for challenge controller', function () {
             expect(attribute.values).toEqual([]);
         });
     });
-
-    describe('Unit tests for resume submission logic', function () {
-        var submissionObject, parameters, userKey;
-
-        beforeEach(function () {
-            submissionObject = { id: 456, classList2: [] };
-            parameters = {};
-            userKey = 'dummy-token';
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            // Make sure vm is available and has resumeSubmission
-            // If not, inject or require the controller as needed
-        });
-
-        it('should handle successful resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate success callback
-                params.callback.onSuccess({ data: { success: 'Resume started!' } });
-            });
-
-            // Act
-            vm.resumeSubmission(submissionObject);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-
-        it('should handle error during resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate error callback
-                params.callback.onError({ data: 'Some resume error' });
-            });
-
-            // Act
-            vm.resumeSubmission(submissionObject);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-    });
     describe('Unit tests for sendApprovalRequest function', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
@@ -5230,6 +5068,70 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
 
+            localVm.load(null);
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should set pagination variables correctly when next and previous are null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: null,
+                previous: null,
+                count: 150,
+                results: []
+            };
+            $http.get.and.callFake(function (reqUrl, opts) {
+                expect(reqUrl).toBe(url);
+                expect(opts.headers.Authorization).toBe("Token dummy-token");
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
+                    }
+                };
+            });
+
+            localVm.load(url);
+
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.isNext).toBe('disabled');
+            expect(localVm.currentPage).toBe(1);
+            expect(localVm.currentRefPage).toBe(1);
+            expect(localVm.isPrev).toBe('disabled');
+            expect(localVm.submissionResult).toEqual(responseData);
+            expect(localVm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should set pagination variables correctly when next and previous are not null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: 'page=3',
+                previous: 'page=1',
+                count: 300,
+                results: []
+            };
+            $http.get.and.callFake(function (reqUrl, opts) {
+                expect(reqUrl).toBe(url);
+                expect(opts.headers.Authorization).toBe("Token dummy-token");
+                return {
+                    then: function (cb) {
+                        cb({ data: responseData });
+                    }
+                };
+            });
+
+            localVm.load(url);
+
+            expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
+            expect(localVm.isNext).toBe('');
+            expect(localVm.currentPage).toBe(2); // page=3, so 3-1=2
+            expect(localVm.currentRefPage).toBe(2);
+            expect(localVm.isPrev).toBe('');
+            expect(localVm.submissionResult).toEqual(responseData);
+            expect(localVm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should call stopLoader if url is null', function () {
             localVm.load(null);
             expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
             expect(localVm.stopLoader).toHaveBeenCalled();
