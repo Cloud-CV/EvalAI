@@ -248,8 +248,7 @@ describe('Unit tests for featured challenge controller', function () {
             };
     
             vm.getLeaderboard(1);
-    
-            // moment.duration will likely return months for 1 year ago
+                
             expect(vm.leaderboard[0].timeSpan).toBe('months');
         });
     
@@ -275,8 +274,7 @@ describe('Unit tests for featured challenge controller', function () {
             };
     
             vm.getLeaderboard(1);
-    
-            // moment.duration will likely return days for 1 month ago
+             
             expect(vm.leaderboard[0].timeSpan).toBe('days');
         });
     
