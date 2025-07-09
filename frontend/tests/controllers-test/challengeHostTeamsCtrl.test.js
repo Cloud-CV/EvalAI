@@ -525,6 +525,115 @@ describe('Unit tests for challenge host team controller', function () {
         });
     });
 
+    describe('Unit tests for inviteOthers function', function () {
+        beforeEach(function () {
+           spyOn($mdDialog, 'show').and.callFake(function () {
+               var deferred = $injector.get('$q').defer();
+               return deferred.promise;
+           });
+       });
+
+        it('open dialog to invite others', function () {
+           var hostId = 1;
+           var ev = new Event('$click');
+           var confirm = $mdDialog.prompt()
+               .title('Add other members to your team')
+               .textContent('Enter the email address of the person')
+               .placeholder('email')
+               .ariaLabel('')
+               .targetEvent(ev)
+               .ok('Add')
+               .cancel('Cancel');
+           vm.inviteOthers(ev, hostId);
+           expect($mdDialog.show).toHaveBeenCalledWith(confirm);
+       });
+
+       it('should successfully invite a new member to the team', function (done) {
+           var hostId = 1;
+           var ev = new Event('$click');
+           var invitedEmail = 'test@example.com';
+           $mdDialog.show.and.returnValue(Promise.resolve(invitedEmail));
+
+           spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+               parameters.callback.onSuccess();
+           });
+           spyOn($rootScope, 'notify');
+           spyOn(utilities, 'getData').and.returnValue('userKey');
+
+           vm.inviteOthers(ev, hostId);
+
+           setTimeout(function () {
+               expect($mdDialog.show).toHaveBeenCalled();
+               expect(utilities.getData).toHaveBeenCalledWith('userKey');
+               expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
+                   url: 'hosts/challenge_host_teams/' + hostId + '/invite',
+                   method: 'POST',
+                   data: {
+                       "email": invitedEmail
+                   },
+                   token: 'userKey'
+               }));
+               expect($rootScope.notify).toHaveBeenCalledWith("success", invitedEmail + " has been added successfully");
+               done();
+           }, 0);
+       });
+
+       it('should show error notification if inviting a new member fails', function (done) {
+           var hostId = 1;
+           var ev = new Event('$click');
+           var invitedEmail = 'test@example.com';
+           var errorMessage = 'Email already exists';
+           $mdDialog.show.and.returnValue(Promise.resolve(invitedEmail));
+
+           spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+               parameters.callback.onError({
+                   data: {
+                       error: errorMessage
+                   }
+               });
+           });
+           spyOn($rootScope, 'notify');
+           spyOn(utilities, 'getData').and.returnValue('userKey');
+
+           vm.inviteOthers(ev, hostId);
+
+           setTimeout(function () {
+               expect($mdDialog.show).toHaveBeenCalled();
+               expect(utilities.getData).toHaveBeenCalledWith('userKey');
+               expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
+                   url: 'hosts/challenge_host_teams/' + hostId + '/invite',
+                   method: 'POST',
+                   data: {
+                       "email": invitedEmail
+                   },
+                   token: 'userKey'
+               }));
+               expect($rootScope.notify).toHaveBeenCalledWith("error", errorMessage);
+               done();
+           }, 0);
+       });
+
+       it('should do nothing if dialog is cancelled when inviting others', function (done) {
+           var hostId = 1;
+           var ev = new Event('$click');
+           $mdDialog.show.and.returnValue(Promise.reject()); // Simulate dialog cancellation
+
+           spyOn(utilities, 'sendRequest');
+           spyOn($rootScope, 'notify');
+           spyOn(utilities, 'getData');
+
+           vm.inviteOthers(ev, hostId);
+
+           setTimeout(function () {
+               expect($mdDialog.show).toHaveBeenCalled();
+               expect(utilities.sendRequest).not.toHaveBeenCalled();
+               expect($rootScope.notify).not.toHaveBeenCalled();
+               expect(utilities.getData).not.toHaveBeenCalled();
+               done();
+           }, 0);
+       });
+   });
+
     describe('Unit tests for storeChallengeHostTeamId function', function () {
         beforeEach(function (){
             spyOn(utilities, 'storeData');
