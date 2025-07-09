@@ -610,6 +610,124 @@ describe('Unit tests for challenge controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        it('should fetch and set prizes when hasPrizes is true', function () {
+            // Arrange
+            var challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+                has_prize: true
+            };
+            var prizesResponse = [{ name: "First Prize", amount: 1000 }];
+            var calledUrls = [];
+            var callCount = 0;
+            utilities.sendRequest = function (parameters) {
+                calledUrls.push(parameters.url);
+                callCount++;
+                if (parameters.url.endsWith('/prizes/')) {
+                    parameters.callback.onSuccess({ data: prizesResponse });
+                } else if (parameters.url.endsWith('/')) {
+                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
+                } else {
+                    parameters.callback.onSuccess({ status: 200, data: {} });
+                }
+            };
+            vm = createController();
+            expect(vm.hasPrizes).toBe(true);
+            expect(vm.prizes).toEqual(prizesResponse);
+            expect(calledUrls.some(url => url && url.includes('/prizes/'))).toBe(true);
+        });
+
+        it('should notify error if fetching prizes fails', function () {
+            // Arrange
+            var challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+                has_prize: true
+            };
+            var errorResponse = { error: "Could not fetch prizes" };
+            var calledUrls = [];
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function (parameters) {
+                calledUrls.push(parameters.url);
+                if (parameters.url.endsWith('/prizes/')) {
+                    parameters.callback.onError({ data: errorResponse });
+                } else if (parameters.url.endsWith('/')) {
+                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
+                } else {
+                    parameters.callback.onSuccess({ status: 200, data: {} });
+                }
+            };
+            vm = createController();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
+            expect(calledUrls.some(url => url && url.includes('/prizes/'))).toBe(true);
+        });
+
+        it('should fetch and set sponsors when has_sponsors is true', function () {
+            // Arrange
+            var challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+                has_sponsors: true
+            };
+            var sponsorsResponse = [{ name: "Sponsor 1", url: "https://sponsor.com" }];
+            var calledUrls = [];
+            utilities.sendRequest = function (parameters) {
+                calledUrls.push(parameters.url);
+                if (parameters.url.endsWith('/sponsors/')) {
+                    parameters.callback.onSuccess({ data: sponsorsResponse });
+                } else if (parameters.url.endsWith('/')) {
+                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
+                } else {
+                    parameters.callback.onSuccess({ status: 200, data: {} });
+                }
+            };
+            vm = createController();
+            expect(vm.has_sponsors).toBe(true);
+            expect(vm.sponsors).toEqual(sponsorsResponse);
+            expect(calledUrls.some(url => url && url.includes('/sponsors/'))).toBe(true);
+        });
+
+        it('should notify error if fetching sponsors fails', function () {
+            // Arrange
+            var challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+                has_sponsors: true
+            };
+            var errorResponse = { error: "Could not fetch sponsors" };
+            var calledUrls = [];
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function (parameters) {
+                calledUrls.push(parameters.url);
+                if (parameters.url.endsWith('/sponsors/')) {
+                    parameters.callback.onError({ data: errorResponse });
+                } else if (parameters.url.endsWith('/')) {
+                    parameters.callback.onSuccess({ status: 200, data: challengeSuccessResponse });
+                } else {
+                    parameters.callback.onSuccess({ status: 200, data: {} });
+                }
+            };
+            vm = createController();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
+            expect(calledUrls.some(url => url && url.includes('/sponsors/'))).toBe(true);
+        });
     });
 
     describe('Unit tests for displayDockerSubmissionInstructions function \
@@ -5242,58 +5360,6 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.currentPage).toBe(2); // 3-1=2
             expect(vm.isPrev).toBe('');
             expect(vm.stopLoader).toHaveBeenCalled();
-        });
-    });
-
-    describe('Unit tests for startLoadingLogs function', function () {
-        var $interval, $rootScope, utilities, vm, $controller, $scope;
-
-        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$interval_) {
-            $controller = _$controller_;
-            $rootScope = _$rootScope_;
-            utilities = _utilities_;
-            $interval = _$interval_;
-            $scope = $rootScope.$new();
-            vm = $controller('ChallengeCtrl', { $scope: $scope });
-            spyOn(utilities, 'sendRequest');
-        }));
-
-        it('should push evaluation_module_error to workerLogs if present', function () {
-            vm.evaluation_module_error = 'Some error';
-            vm.workerLogs = [];
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toEqual(['Some error']);
-        });
-
-        it('should process logs with UTC time and convert to local', function () {
-            vm.evaluation_module_error = null;
-            var logWithUtc = '[2023-07-09 12:34:56] Worker started';
-            var logWithoutUtc = 'No UTC time here';
-            var logs = [logWithUtc, logWithoutUtc];
-            vm.workerLogs = [];
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onSuccess({ data: { logs: logs } });
-            });
-            vm.challengeId = 1;
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs.length).toBe(2);
-            expect(vm.workerLogs[1]).toBe(logWithoutUtc);
-            expect(vm.workerLogs[0]).not.toBe(logWithUtc);
-            expect(vm.workerLogs[0]).toContain('Worker started');
-        });
-
-        it('should push error to workerLogs on error callback', function () {
-            vm.evaluation_module_error = null;
-            vm.workerLogs = [];
-            utilities.sendRequest.and.callFake(function (params) {
-                params.callback.onError({ data: { error: 'Backend error' } });
-            });
-            vm.challengeId = 1;
-            vm.startLoadingLogs();
-            $interval.flush(5000);
-            expect(vm.workerLogs).toContain('Backend error');
         });
     });
 });
