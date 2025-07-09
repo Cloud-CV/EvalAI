@@ -3979,6 +3979,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
+                            "github_branch": request.data.get(
+                                "GITHUB_REF_NAME", ""
+                            ),
                             "worker_image_url": worker_image_url,
                         },
                     )
