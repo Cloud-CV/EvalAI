@@ -29,7 +29,7 @@ describe('Unit tests for update profile controller', function () {
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 params.callback.onSuccess({ status: 200, data: testUser });
             });
-            // Re-instantiate controller to trigger GET
+            
             var localVm = $controller('updateProfileCtrl', { $scope: $scope });
             expect(localVm.user).toEqual(testUser);
         });
@@ -39,7 +39,7 @@ describe('Unit tests for update profile controller', function () {
                 params.callback.onError();
             });
             spyOn($rootScope, 'notify');
-            // Re-instantiate controller to trigger GET
+            
             $controller('updateProfileCtrl', { $scope: $scope });
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Error in loading profile, please try again later !");
         });
