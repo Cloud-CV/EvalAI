@@ -175,6 +175,73 @@ describe('Unit tests for challenge host team controller', function () {
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });
+
+        it('should set pagination variables correctly when next and previous are null in load()', function () {
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            var url = 'hosts/challenge_host_team/page=2';
+            var response = {
+                data: {
+                    next: null,
+                    previous: null,
+                    count: 20
+                }
+            };
+            spyOn($http, 'get').and.callFake(function () {
+                var $q = $injector.get('$q');
+                var deferred = $q.defer();
+                deferred.resolve(response);
+                return deferred.promise;
+            });
+            vm.load(url);
+            $scope.$apply(); // resolve promise
+            setTimeout(function () {
+                expect(vm.existTeam).toEqual(response.data);
+                expect(vm.isNext).toBe('disabled');
+                expect(vm.currentPage).toBe(2); // 20/10
+                expect(vm.isPrev).toBe('disabled');
+                expect(vm.stopLoader).toHaveBeenCalled();
+            }, 0);
+        });
+
+        it('should set pagination variables correctly when next and previous are not null in load()', function () {
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            var url = 'hosts/challenge_host_team/page=2';
+            var response = {
+                data: {
+                    next: 'page=5',
+                    previous: 'page=1',
+                    count: 50
+                }
+            };
+            spyOn($http, 'get').and.callFake(function () {
+                var $q = $injector.get('$q');
+                var deferred = $q.defer();
+                deferred.resolve(response);
+                return deferred.promise;
+            });
+            vm.load(url);
+            $scope.$apply(); // resolve promise
+            setTimeout(function () {
+                expect(vm.existTeam).toEqual(response.data);
+                expect(vm.isNext).toBe('');
+                expect(vm.currentPage).toBe(parseInt(response.data.next.split('page=')[1] - 1));
+                expect(vm.isPrev).toBe('');
+                expect(vm.stopLoader).toHaveBeenCalled();
+            }, 0);
+        });
+
+        it('should call stopLoader if url is null in load()', function () {
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            vm.load(null);
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for showMdDialog function `hosts/challenge_host_team/<host_team_id>`', function () {
@@ -426,6 +493,78 @@ describe('Unit tests for challenge host team controller', function () {
                 .cancel("No");
             vm.confirmDelete(ev, hostTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
+        });
+
+        it('should remove self from host team successfully and update team list', function (done) {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            // Mock $mdDialog.show to resolve immediately
+            $mdDialog.show.and.returnValue(Promise.resolve());
+            // Mock utilities.sendRequest for DELETE and GET
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.method === 'DELETE') {
+                    params.callback.onSuccess();
+                } else if (params.method === 'GET') {
+                    params.callback.onSuccess({
+                        status: 200,
+                        data: {
+                            next: null,
+                            previous: null,
+                            count: 0
+                        }
+                    });
+                }
+            });
+            spyOn(vm, 'startLoader').and.callThrough();
+            spyOn(vm, 'stopLoader').and.callThrough();
+            spyOn($rootScope, 'notify');
+            vm.confirmDelete(ev, hostTeamId);
+            setTimeout(function () {
+                expect($mdDialog.show).toHaveBeenCalled();
+                expect(vm.startLoader).toHaveBeenCalled();
+                expect(utilities.sendRequest).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
+                expect(vm.existTeam.count).toBe(0);
+                expect(vm.showPagination).toBe(false);
+                expect(vm.paginationMsg).toBe("No team exists for now, start by creating a new team!");
+                expect(vm.stopLoader).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+
+        it('should show error notification if remove self from host team fails', function (done) {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            $mdDialog.show.and.returnValue(Promise.resolve());
+            spyOn(vm, 'startLoader').and.callThrough();
+            spyOn(vm, 'stopLoader').and.callThrough();
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.method === 'DELETE') {
+                    params.callback.onError();
+                }
+            });
+            vm.confirmDelete(ev, hostTeamId);
+            setTimeout(function () {
+                expect(vm.startLoader).toHaveBeenCalled();
+                expect($rootScope.notify).toHaveBeenCalledWith("error", "Couldn't remove you from the challenge");
+                expect(vm.stopLoader).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+
+        it('should do nothing if dialog is cancelled', function (done) {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            $mdDialog.show.and.returnValue(Promise.reject());
+            spyOn(vm, 'startLoader');
+            spyOn(utilities, 'sendRequest');
+            vm.confirmDelete(ev, hostTeamId);
+            setTimeout(function () {
+                expect(vm.startLoader).not.toHaveBeenCalled();
+                expect(utilities.sendRequest).not.toHaveBeenCalled();
+                done();
+            }, 0);
         });
     });
 
