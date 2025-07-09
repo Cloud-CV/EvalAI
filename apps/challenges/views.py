@@ -3898,9 +3898,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Get branch name with default fallback
-    github_branch = request.data.get("GITHUB_REF_NAME", "challenge")
-    if not github_branch:
-        github_branch = "challenge"
+    github_branch = request.data.get("GITHUB_REF_NAME", "")
     
     challenge_queryset = Challenge.objects.filter(
         github_repository=request.data["GITHUB_REPOSITORY"],

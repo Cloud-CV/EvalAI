@@ -6,41 +6,16 @@ import uuid
 
 def fix_duplicate_github_fields(apps, schema_editor):
     """
-    Fix duplicate empty github_repository and github_branch combinations
-    by assigning unique values to challenges that don't have GitHub info.
+    No data migration needed since we're using a partial unique constraint.
     """
-    Challenge = apps.get_model('challenges', 'Challenge')
-    
-    # Find challenges with empty github_repository and github_branch
-    challenges_with_empty_github = Challenge.objects.filter(
-        github_repository__in=['', None],
-        github_branch__in=['', None]
-    )
-    
-    # Update each challenge to have unique github fields
-    for challenge in challenges_with_empty_github:
-        # For non-GitHub challenges, create a unique identifier
-        unique_id = str(uuid.uuid4())[:8]
-        challenge.github_repository = f"local-challenge-{challenge.id}-{unique_id}"
-        challenge.github_branch = "main"
-        challenge.save()
+    pass
 
 
 def reverse_fix_duplicate_github_fields(apps, schema_editor):
     """
-    Reverse the fix by setting github fields back to empty for local challenges.
+    No reverse migration needed.
     """
-    Challenge = apps.get_model('challenges', 'Challenge')
-    
-    # Find challenges that were created as local challenges
-    local_challenges = Challenge.objects.filter(
-        github_repository__startswith='local-challenge-'
-    )
-    
-    for challenge in local_challenges:
-        challenge.github_repository = ''
-        challenge.github_branch = ''
-        challenge.save()
+    pass
 
 
 class Migration(migrations.Migration):
@@ -59,8 +34,9 @@ class Migration(migrations.Migration):
             fix_duplicate_github_fields,
             reverse_fix_duplicate_github_fields,
         ),
-        migrations.AlterUniqueTogether(
-            name='challenge',
-            unique_together={('github_repository', 'github_branch')},
+        # Add a partial unique constraint that only applies when both fields are not empty
+        migrations.RunSQL(
+            "CREATE UNIQUE INDEX challenge_github_repo_branch_partial_idx ON challenge (github_repository, github_branch) WHERE github_repository != '' AND github_branch != '';",
+            reverse_sql="DROP INDEX IF EXISTS challenge_github_repo_branch_partial_idx;"
         ),
     ]
