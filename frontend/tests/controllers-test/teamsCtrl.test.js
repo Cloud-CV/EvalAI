@@ -219,7 +219,7 @@ describe('Unit tests for teams controller', function () {
                         cb(response);
                         expect(vm.existTeam).toEqual(response.data);
                         expect(vm.isNext).toBe('disabled');
-                        expect(vm.currentPage).toBe(2); // 20/10
+                        expect(vm.currentPage).toBe(2); 
                         expect(vm.isPrev).toBe('disabled');
                         expect(vm.stopLoader).toHaveBeenCalled();
                         done();
@@ -246,7 +246,7 @@ describe('Unit tests for teams controller', function () {
                         cb(response);
                         expect(vm.existTeam).toEqual(response.data);
                         expect(vm.isNext).toBe('');
-                        expect(vm.currentPage).toBe(2); // 3-1
+                        expect(vm.currentPage).toBe(2); 
                         expect(vm.isPrev).toBe('');
                         expect(vm.stopLoader).toHaveBeenCalled();
                         done();
@@ -392,10 +392,10 @@ describe('Unit tests for teams controller', function () {
                 .ok('Yes')
                 .cancel("No");
 
-            // Mock $mdDialog.show to resolve immediately
+            
             $mdDialog.show.and.returnValue(Promise.resolve());
 
-            // Mock utilities.sendRequest for DELETE and GET
+            
             var sendRequestSpy = spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 if (params.method === 'DELETE') {
                     params.callback.onSuccess();
