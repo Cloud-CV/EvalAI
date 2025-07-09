@@ -67,7 +67,7 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    needs: quality-check
+    # REMOVED: needs: quality-check  <-- This enables parallel execution
     steps:
       - uses: actions/checkout@v4
 
@@ -136,7 +136,7 @@ jobs:
   deploy:
     name: Deploy & Notify
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build-and-test, quality-check]  # MODIFIED: Now depends on both jobs
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     environment: production
     steps:
@@ -176,7 +176,7 @@ jobs:
 
       - name: Notify on success
         if: success()
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slug@v3
         with:
           status: success
           channel: '#ci-cd'
