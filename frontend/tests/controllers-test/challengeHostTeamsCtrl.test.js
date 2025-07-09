@@ -177,6 +177,8 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         it('should set pagination variables correctly when next and previous are null in load()', function () {
+            var $httpBackend = $injector.get('$httpBackend');
+            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { next: null, previous: null, count: 0});
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
@@ -206,6 +208,8 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         it('should set pagination variables correctly when next and previous are not null in load()', function () {
+            var $httpBackend = $injector.get('$httpBackend');
+            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { next: null, previous: null, count: 0});
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
@@ -235,6 +239,8 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         it('should call stopLoader if url is null in load()', function () {
+            var $httpBackend = $injector.get('$httpBackend');
+            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { next: null, previous: null, count: 0});
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
