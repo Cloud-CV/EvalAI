@@ -22,6 +22,27 @@ describe('Unit tests for update profile controller', function () {
             expect(vm.user).toEqual({});
             expect(vm.isFormError).toBeFalsy();
         });
+
+        it('should set vm.user on successful profile GET', function () {
+            var testUser = { username: "testuser" };
+            var parameters = {};
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onSuccess({ status: 200, data: testUser });
+            });
+            // Re-instantiate controller to trigger GET
+            var localVm = $controller('updateProfileCtrl', { $scope: $scope });
+            expect(localVm.user).toEqual(testUser);
+        });
+
+        it('should notify error on failed profile GET', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError();
+            });
+            spyOn($rootScope, 'notify');
+            // Re-instantiate controller to trigger GET
+            $controller('updateProfileCtrl', { $scope: $scope });
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Error in loading profile, please try again later !");
+        });
     });
 
     describe('Validate helper functions', function () {
