@@ -175,78 +175,101 @@ describe('Unit tests for challenge host team controller', function () {
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });
-
         it('should set pagination variables correctly when next and previous are null in load()', function () {
             var $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { status: 200, data: { next: null, previous: null, count: 0 } });
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            var url = 'hosts/challenge_host_team/page=2';
-            var response = {
+            var initialResponse = {
+                status: 200,
                 data: {
                     next: null,
                     previous: null,
-                    count: 20
+                    count: 0
                 }
             };
-            spyOn($http, 'get').and.callFake(function () {
-                var $q = $injector.get('$q');
-                var deferred = $q.defer();
-                deferred.resolve(response);
-                return deferred.promise;
-            });
+
+            var loadResponse = {
+                next: null,
+                previous: null,
+                count: 20
+            };
+
+            $httpBackend.expectGET(/\/api\/hosts\/challenge_host_team\/?/).respond(200, initialResponse);
+
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+
+            var url = 'hosts/challenge_host_team/page=2';
+            $httpBackend.expectGET(url).respond(200, loadResponse);
+
             vm.load(url);
-            $scope.$apply(); // resolve promise
-            setTimeout(function () {
-                expect(vm.existTeam).toEqual(response.data);
-                expect(vm.isNext).toBe('disabled');
-                expect(vm.currentPage).toBe(2); // 20/10
-                expect(vm.isPrev).toBe('disabled');
-                expect(vm.stopLoader).toHaveBeenCalled();
-            }, 0);
+            $httpBackend.flush();
+
+            expect(vm.existTeam).toEqual(loadResponse);
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(2); // Manually calculated
+            expect(vm.isPrev).toBe('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
 
         it('should set pagination variables correctly when next and previous are not null in load()', function () {
             var $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { status: 200, data: { next: null, previous: null, count: 0 } });
+            var initialResponse = {
+                status: 200,
+                data: {
+                    next: null,
+                    previous: null,
+                    count: 0
+                }
+            };
+
+            var loadResponse = {
+                next: 'page=5',
+                previous: 'page=1',
+                count: 50
+            };
+
+            $httpBackend.expectGET(/\/api\/hosts\/challenge_host_team\/?/).respond(200, initialResponse);
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
+
             var url = 'hosts/challenge_host_team/page=2';
-            var response = {
-                data: {
-                    next: 'page=5',
-                    previous: 'page=1',
-                    count: 50
-                }
-            };
-            spyOn($http, 'get').and.callFake(function () {
-                var $q = $injector.get('$q');
-                var deferred = $q.defer();
-                deferred.resolve(response);
-                return deferred.promise;
-            });
+            $httpBackend.expectGET(url).respond(200, loadResponse);
+
             vm.load(url);
-            $scope.$apply(); // resolve promise
-            setTimeout(function () {
-                expect(vm.existTeam).toEqual(response.data);
-                expect(vm.isNext).toBe('');
-                expect(vm.currentPage).toBe(parseInt(response.data.next.split('page=')[1] - 1));
-                expect(vm.isPrev).toBe('');
-                expect(vm.stopLoader).toHaveBeenCalled();
-            }, 0);
+            $httpBackend.flush();
+
+            expect(vm.existTeam).toEqual(loadResponse);
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(parseInt(loadResponse.next.split('page=')[1]) - 1);
+            expect(vm.isPrev).toBe('');
+            expect(vm.stopLoader).toHaveBeenCalled();
         });
 
         it('should call stopLoader if url is null in load()', function () {
             var $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.expectGET('/api/hosts/challenge_host_team/').respond(200, { status: 200, data: { next: null, previous: null, count: 0 } });
+            var initialResponse = {
+                status: 200,
+                data: {
+                    next: null,
+                    previous: null,
+                    count: 0
+                }
+            };
+
+            $httpBackend.expectGET(/\/api\/hosts\/challenge_host_team\/?/).respond(200, initialResponse);
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
+
             vm.load(null);
+
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
             expect(vm.stopLoader).toHaveBeenCalled();
+
+            $httpBackend.flush(); // for the controller initialization call
         });
     });
 
