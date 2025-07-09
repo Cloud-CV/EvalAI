@@ -3163,82 +3163,6 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
-    describe('Unit tests for resume submission logic', function () {
-        var submissionObject, parameters, userKey;
-
-        beforeEach(function () {
-            submissionObject = { id: 456, classList2: [] };
-            parameters = {};
-            userKey = 'dummy-token';
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-        });
-
-        it('should handle successful resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate success callback
-                params.callback.onSuccess({ data: { success: 'Resume started!' } });
-            });
-
-            // Simulate the controller logic
-            submissionObject.classList2 = ['progress-indicator'];
-            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
-            parameters.method = 'POST';
-            parameters.token = userKey;
-            parameters.callback = {
-                onSuccess: function (response) {
-                    $rootScope.notify("success", response.data.success);
-                    submissionObject.classList2 = [''];
-                },
-                onError: function (response) {
-                    var error = response.data;
-                    $rootScope.notify("error", error);
-                    submissionObject.classList2 = [''];
-                }
-            };
-
-            // Act
-            utilities.sendRequest(parameters);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-
-        it('should handle error during resume of submission', function () {
-            // Arrange
-            utilities.sendRequest.and.callFake(function (params) {
-                // Simulate error callback
-                params.callback.onError({ data: 'Some resume error' });
-            });
-
-            // Simulate the controller logic
-            submissionObject.classList2 = ['progress-indicator'];
-            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
-            parameters.method = 'POST';
-            parameters.token = userKey;
-            parameters.callback = {
-                onSuccess: function (response) {
-                    $rootScope.notify("success", response.data.success);
-                    submissionObject.classList2 = [''];
-                },
-                onError: function (response) {
-                    var error = response.data;
-                    $rootScope.notify("error", error);
-                    submissionObject.classList2 = [''];
-                }
-            };
-
-            // Act
-            utilities.sendRequest(parameters);
-
-            // Assert
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
-            expect(submissionObject.classList2).toEqual(['']);
-        });
-    });
-
     describe('Unit tests for toggleShowLeaderboardByLatest function', function () {
         beforeEach(function () {
             // Set up initial state
@@ -4055,6 +3979,50 @@ describe('Unit tests for challenge controller', function () {
             var attribute = { values: [7] };
             vm.toggleSelection(attribute, 7);
             expect(attribute.values).toEqual([]);
+        });
+    });
+
+    describe('Unit tests for resume submission', function () {
+        var submissionObject, parameters, userKey;
+
+        beforeEach(function () {
+            submissionObject = { id: 456, classList2: [] };
+            parameters = {};
+            userKey = 'dummy-token';
+            spyOn(utilities, 'sendRequest');
+            spyOn($rootScope, 'notify');
+            // Make sure vm is available and has resumeSubmission
+            // If not, inject or require the controller as needed
+        });
+
+        it('should handle successful resume of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate success callback
+                params.callback.onSuccess({ data: { success: 'Resume started!' } });
+            });
+
+            // Act
+            vm.resumeSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
+            expect(submissionObject.classList2).toEqual(['']);
+        });
+
+        it('should handle error during resume of submission', function () {
+            // Arrange
+            utilities.sendRequest.and.callFake(function (params) {
+                // Simulate error callback
+                params.callback.onError({ data: 'Some resume error' });
+            });
+
+            // Act
+            vm.resumeSubmission(submissionObject);
+
+            // Assert
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some resume error");
+            expect(submissionObject.classList2).toEqual(['']);
         });
     });
     describe('Unit tests for sendApprovalRequest function', function () {
