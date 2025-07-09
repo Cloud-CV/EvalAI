@@ -176,5 +176,35 @@ describe('Unit tests for update profile controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Form fields are not valid!");
             expect(vm.stopLoader).toHaveBeenCalled();
         });
+
+        it('should set form error if github_url is too long', function () {
+            var resetconfirmFormValid = true;
+            vm.user.github_url = 'a'.repeat(201); 
+            vm.user.google_scholar_url = '';
+            vm.user.linkedin_url = '';
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("Github URL length should not be greater than 200!");
+        });
+
+        it('should set form error if google_scholar_url is too long', function () {
+            var resetconfirmFormValid = true;
+            vm.user.github_url = ''; 
+            vm.user.google_scholar_url = 'b'.repeat(201); 
+            vm.user.linkedin_url = '';
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("Google Scholar URL length should not be greater than 200!");
+        });
+
+        it('should set form error if linkedin_url is too long', function () {
+            var resetconfirmFormValid = true;
+            vm.user.github_url = ''; 
+            vm.user.google_scholar_url = ''; 
+            vm.user.linkedin_url = 'c'.repeat(201); 
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("LinkedIn URL length should not be greater than 200!");
+        });
     });
 });
