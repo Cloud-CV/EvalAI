@@ -587,8 +587,8 @@ class ValidateChallengeConfigUtil:
                         "GITHUB_REPOSITORY"
                     ],
                     "github_branch": self.request.data.get(
-                        "GITHUB_REF_NAME", ""
-                    ),
+                        "GITHUB_REF_NAME", "challenge"
+                    ) or "challenge",
                 },
             )
             if not serializer.is_valid():
