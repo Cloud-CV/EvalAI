@@ -126,7 +126,6 @@ class SubmissionAdminTest(BaseAPITestClass):
         self.app_admin = SubmissionAdmin(Submission, AdminSite())
 
     def test_submit_job_to_worker(self):
-
         Submission.objects.filter(status=self.submission.status).update(
             status="finished"
         )
@@ -137,7 +136,6 @@ class SubmissionAdminTest(BaseAPITestClass):
         )
 
     def test_make_submission_public(self):
-
         # make all submissions private before test
         Submission.objects.filter(is_public=self.submission.is_public).update(
             is_public=False
@@ -147,9 +145,48 @@ class SubmissionAdminTest(BaseAPITestClass):
         self.assertEqual(Submission.objects.filter(is_public=True).count(), 1)
 
     def test_make_submission_private(self):
-
         # make all submissions public before test
         Submission.objects.filter(is_public=False).update(is_public=True)
         queryset = Submission.objects.filter(is_public=True)
         self.app_admin.make_submission_private(request, queryset)
         self.assertEqual(Submission.objects.filter(is_public=False).count(), 1)
+
+    def test_change_submission_status_to_cancel(self):
+        Submission.objects.all().update(status="submitted")
+        queryset = Submission.objects.filter(status="submitted")
+        self.app_admin.change_submission_status_to_cancel(request, queryset)
+        self.assertEqual(
+            Submission.objects.filter(status=Submission.CANCELLED).count(),
+            queryset.count(),
+        )
+
+    def test_change_submission_status_to_cancel_only_selected(self):
+        other_submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="finished",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Other Method",
+            method_description="Other Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=False,
+        )
+        other_submission.status = "finished"
+        other_submission.save()
+        queryset = Submission.objects.filter(id=self.submission.id)
+        self.app_admin.change_submission_status_to_cancel(request, queryset)
+        self.assertEqual(
+            Submission.objects.get(id=self.submission.id).status,
+            Submission.CANCELLED,
+        )
+        self.assertEqual(
+            Submission.objects.get(id=other_submission.id).status,
+            "finished",
+        )
+
+    def test_get_challenge_name_and_id(self):
+        result = self.app_admin.get_challenge_name_and_id(self.submission)
+        expected = f"{self.challenge.title} - {self.challenge.id}"
+        self.assertEqual(result, expected)
