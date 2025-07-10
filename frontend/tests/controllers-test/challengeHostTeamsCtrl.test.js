@@ -176,6 +176,22 @@ describe('Unit tests for challenge host team controller', function () {
             };
             expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
+
+        it('should set currentPage to count/10 when next is null', function () {
+            success = true;
+            successResponse = {
+                next: null,
+                previous: null,
+                count: 30 // Example: 3 pages if 10 per page
+            };
+            spyOn(vm, 'stopLoader');
+            vm = createController();
+            expect(vm.existTeam).toEqual(successResponse);
+            expect(vm.isNext).toEqual('disabled');
+            expect(vm.currentPage).toEqual(successResponse.count / 10);
+            expect(vm.isPrev).toEqual('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for showMdDialog function `hosts/challenge_host_team/<host_team_id>`', function () {
