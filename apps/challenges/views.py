@@ -3335,6 +3335,34 @@ def get_worker_logs(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_worker_configuration(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access the worker configuration for this challenge."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        challenge = get_challenge_model(challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": "Challenge not found!"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    config = {
+        "vcpu": f"{int(challenge.worker_cpu_cores / 1024)} vCPU",
+        "memory": f"{challenge.worker_memory} MB",
+        "processes": challenge.workers,
+        "queue": challenge.queue,
+    }
+
+    return Response(config, status=status.HTTP_200_OK)
+
+
 @api_view(["PUT"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
