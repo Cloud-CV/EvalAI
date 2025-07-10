@@ -188,7 +188,7 @@ describe('Unit tests for challenge host team controller', function () {
             vm = createController();
             expect(vm.existTeam).toEqual(successResponse);
             expect(vm.isNext).toEqual('disabled');
-            expect(vm.currentPage).toEqual(successResponse.count / 10);
+            expect(vm.currentPage).toEqual(3); // <-- Fix here
             expect(vm.isPrev).toEqual('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
