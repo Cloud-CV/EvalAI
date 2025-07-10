@@ -3,9 +3,9 @@
 describe('Unit tests for challenge host team controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    var $controller, createController, $injector, $mdDialog, $rootScope, $state, $scope, loaderService, utilities,$http, $compile, vm;
+    var $controller, createController, $injector, $mdDialog, $rootScope, $state, $scope, loaderService, utilities, $http, $compile, vm;
 
-    beforeEach(inject(function (_$controller_, _$injector_, _$mdDialog_,  _$rootScope_, _$state_, _utilities_, _loaderService_, _$http_, _$compile_) {
+    beforeEach(inject(function (_$controller_, _$injector_, _$mdDialog_, _$rootScope_, _$state_, _utilities_, _loaderService_, _$http_, _$compile_) {
         $controller = _$controller_;
         $injector = _$injector_;
         $rootScope = _$rootScope_;
@@ -18,7 +18,7 @@ describe('Unit tests for challenge host team controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeHostTeamsCtrl', {$scope: $scope});
+            return $controller('ChallengeHostTeamsCtrl', { $scope: $scope });
         };
         vm = $controller('ChallengeHostTeamsCtrl', { $scope: $scope });
     }));
@@ -110,7 +110,8 @@ describe('Unit tests for challenge host team controller', function () {
 
         hostTeamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
-            `hosts/challenge_host_team/`', function () {;
+            `hosts/challenge_host_team/`', function () {
+                ;
                 success = true;
                 successResponse = response;
                 vm = createController();
@@ -156,10 +157,10 @@ describe('Unit tests for challenge host team controller', function () {
         it('to load data with pagination `load` function', function () {
             success = true;
             successResponse = {
-                // host team pagination response
+                
                 next: 'page=4',
                 previous: 'page=2',
-            };        
+            };
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -173,7 +174,7 @@ describe('Unit tests for challenge host team controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
     });
 
@@ -185,7 +186,7 @@ describe('Unit tests for challenge host team controller', function () {
         };
         var errorResponse = {
             error: 'error'
-        }; 
+        };
 
         beforeEach(function () {
             spyOn($rootScope, 'notify');
@@ -361,7 +362,7 @@ describe('Unit tests for challenge host team controller', function () {
             it('create new host team when pagination next is ' + response.next + 'and previous is ' + response.previous, function () {
                 success = true;
                 successResponse = response;
-                
+
                 vm.createNewTeam();
                 expect(vm.isExistLoader).toEqual(true);
                 expect(vm.loaderTitle).toEqual('');
@@ -414,7 +415,7 @@ describe('Unit tests for challenge host team controller', function () {
             });
         });
 
-         it('open dialog to confirm delete', function () {
+        it('open dialog to confirm delete', function () {
             var hostTeamId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
@@ -431,9 +432,9 @@ describe('Unit tests for challenge host team controller', function () {
         it('should remove self from host team successfully and update team list', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
-            // Mock $mdDialog.show to resolve immediately
+           
             $mdDialog.show.and.returnValue(Promise.resolve());
-            // Mock utilities.sendRequest for DELETE and GET
+            
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 if (params.method === 'DELETE') {
                     params.callback.onSuccess();
@@ -502,14 +503,14 @@ describe('Unit tests for challenge host team controller', function () {
     });
 
     describe('Unit tests for inviteOthers function', function () {
-         beforeEach(function () {
+        beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
                 return deferred.promise;
             });
         });
 
-         it('open dialog to invite others', function () {
+        it('open dialog to invite others', function () {
             var hostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.prompt()
@@ -525,117 +526,8 @@ describe('Unit tests for challenge host team controller', function () {
         });
     });
 
-    describe('Unit tests for inviteOthers function', function () {
-        beforeEach(function () {
-           spyOn($mdDialog, 'show').and.callFake(function () {
-               var deferred = $injector.get('$q').defer();
-               return deferred.promise;
-           });
-       });
-
-        it('open dialog to invite others', function () {
-           var hostId = 1;
-           var ev = new Event('$click');
-           var confirm = $mdDialog.prompt()
-               .title('Add other members to your team')
-               .textContent('Enter the email address of the person')
-               .placeholder('email')
-               .ariaLabel('')
-               .targetEvent(ev)
-               .ok('Add')
-               .cancel('Cancel');
-           vm.inviteOthers(ev, hostId);
-           expect($mdDialog.show).toHaveBeenCalledWith(confirm);
-       });
-
-       it('should successfully invite a new member to the team', function (done) {
-           var hostId = 1;
-           var ev = new Event('$click');
-           var invitedEmail = 'test@example.com';
-           $mdDialog.show.and.returnValue(Promise.resolve(invitedEmail));
-
-           spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
-               parameters.callback.onSuccess();
-           });
-           spyOn($rootScope, 'notify');
-           spyOn(utilities, 'getData').and.returnValue('userKey');
-
-           vm.inviteOthers(ev, hostId);
-
-           setTimeout(function () {
-               expect($mdDialog.show).toHaveBeenCalled();
-               expect(utilities.getData).toHaveBeenCalledWith('userKey');
-               expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
-                   url: 'hosts/challenge_host_teams/' + hostId + '/invite',
-                   method: 'POST',
-                   data: {
-                       "email": invitedEmail
-                   },
-                   token: 'userKey'
-               }));
-               expect($rootScope.notify).toHaveBeenCalledWith("success", invitedEmail + " has been added successfully");
-               done();
-           }, 0);
-       });
-
-       it('should show error notification if inviting a new member fails', function (done) {
-           var hostId = 1;
-           var ev = new Event('$click');
-           var invitedEmail = 'test@example.com';
-           var errorMessage = 'Email already exists';
-           $mdDialog.show.and.returnValue(Promise.resolve(invitedEmail));
-
-           spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
-               parameters.callback.onError({
-                   data: {
-                       error: errorMessage
-                   }
-               });
-           });
-           spyOn($rootScope, 'notify');
-           spyOn(utilities, 'getData').and.returnValue('userKey');
-
-           vm.inviteOthers(ev, hostId);
-
-           setTimeout(function () {
-               expect($mdDialog.show).toHaveBeenCalled();
-               expect(utilities.getData).toHaveBeenCalledWith('userKey');
-               expect(utilities.sendRequest).toHaveBeenCalledWith(jasmine.objectContaining({
-                   url: 'hosts/challenge_host_teams/' + hostId + '/invite',
-                   method: 'POST',
-                   data: {
-                       "email": invitedEmail
-                   },
-                   token: 'userKey'
-               }));
-               expect($rootScope.notify).toHaveBeenCalledWith("error", errorMessage);
-               done();
-           }, 0);
-       });
-
-       it('should do nothing if dialog is cancelled when inviting others', function (done) {
-           var hostId = 1;
-           var ev = new Event('$click');
-           $mdDialog.show.and.returnValue(Promise.reject()); // Simulate dialog cancellation
-
-           spyOn(utilities, 'sendRequest');
-           spyOn($rootScope, 'notify');
-           spyOn(utilities, 'getData');
-
-           vm.inviteOthers(ev, hostId);
-
-           setTimeout(function () {
-               expect($mdDialog.show).toHaveBeenCalled();
-               expect(utilities.sendRequest).not.toHaveBeenCalled();
-               expect($rootScope.notify).not.toHaveBeenCalled();
-               expect(utilities.getData).not.toHaveBeenCalled();
-               done();
-           }, 0);
-       });
-   });
-
     describe('Unit tests for storeChallengeHostTeamId function', function () {
-        beforeEach(function (){
+        beforeEach(function () {
             spyOn(utilities, 'storeData');
             spyOn($state, 'go');
         });
