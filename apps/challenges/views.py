@@ -3352,12 +3352,17 @@ def get_worker_configuration(request, challenge_pk):
         return Response(
             {"error": "Challenge not found!"}, status=status.HTTP_404_NOT_FOUND
         )
+    
+    vcpu_cores = challenge.worker_cpu_cores or 0
+    memory = challenge.worker_memory or 0
+    processes = challenge.workers if challenge.workers is not None else 0
+    queue = challenge.queue or "N/A"
 
     config = {
-        "vcpu": f"{int(challenge.worker_cpu_cores / 1024)} vCPU",
-        "memory": f"{challenge.worker_memory} MB",
-        "processes": challenge.workers,
-        "queue": challenge.queue,
+            "vcpu": f"{int(vcpu_cores / 1024)} vCPU",
+            "memory": f"{memory} MB",
+            "processes": processes,
+            "queue": queue,
     }
 
     return Response(config, status=status.HTTP_200_OK)

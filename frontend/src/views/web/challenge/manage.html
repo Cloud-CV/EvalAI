@@ -1,9 +1,24 @@
-<section class="ev-sm-container ev-view challenge-container" ng-init="challenge.startLoadingLogs();">
+<section class="ev-sm-container ev-view challenge-container" ng-init="challenge.startLoadingLogs(); challenge.getWorkerConfiguration();">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view" ng-if="!challenge.isRemoteChallenge">
         <div class="row margin-bottom-cancel">
             <div class="col s12 m12 l12">
-                <div class="w-300 fs-16"><strong>Note: </strong>We have auto-scaling and auto-allocation features in place which assess the resource requirement for your challenge based on previous submissions.
-                    Ideally, you should not need any manual intervention for scaling the worker. However, in case your evaluation requires additional resources or you face any issues, please email us at <a href="mailto:admin@cloudcv.org" class="blue-text">admin@cloudcv.org</a>.
+                <div class="w-300 fs-16" ng-init="challenge.getWorkerConfiguration()">
+                    <div ng-if="challenge.isFetchingWorkerConfig">
+                        <em>Loading worker configuration...</em>
+                    </div>
+                    <div ng-if="challenge.workerConfigError">
+                        <span class="red-text">{{challenge.workerConfigError}}</span>
+                    </div>
+                    <div ng-if="challenge.workerConfig">
+                        <h5 class="w-300">Worker Configuration</h5>
+                        <ul class="browser-default">
+                            <li><strong>CPUs:</strong> {{ challenge.workerConfig.vcpu }}</li>
+                            <li><strong>RAM:</strong> {{ challenge.workerConfig.memory }}</li>
+                            <li><strong>Processes:</strong> {{ challenge.workerConfig.processes }}</li>
+                            <li><strong>Queue:</strong> {{ challenge.workerConfig.queue }}</li>
+                        </ul><br>
+                        <p>If you need assistance, please contact <a href="mailto:team@eval.ai" class="blue-text">team@eval.ai</a>.</p>
+                    </div>
                 </div>
             </div>
         </div>
