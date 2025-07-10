@@ -543,6 +543,17 @@ describe('Unit tests for challenge host team controller', function () {
 
     describe('vm.load', function () {
         beforeEach(function () {
+            // Mock the initial backend call so vm.load is defined
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onSuccess({
+                    status: 200,
+                    data: {
+                        next: null,
+                        previous: null,
+                        count: 0
+                    }
+                });
+            });
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(loaderService, 'stopLoader');
