@@ -163,7 +163,7 @@ class TestCreateServiceByChallengePk:
                     "awsvpcConfiguration": {
                         "subnets": ["subnet-1", "subnet-2"],
                         "securityGroups": ["sg-1"],
-                        "assignPublicIp": "ENABLED"
+                        "assignPublicIp": "ENABLED",
                     }
                 },
                 "schedulingStrategy": "REPLICA",
@@ -171,11 +171,11 @@ class TestCreateServiceByChallengePk:
                 "deploymentConfiguration": {
                     "deploymentCircuitBreaker": {
                         "enable": True,
-                        "rollback": False
+                        "rollback": False,
                     }
-                }
+                },
             }
-            
+
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
             )
@@ -201,7 +201,9 @@ class TestCreateServiceByChallengePk:
 
         with patch(
             "challenges.aws_utils.register_task_def_by_challenge_pk",
-            return_value={"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}},
+            return_value={
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+            },
         ), patch("json.loads") as mock_json_loads:
             # Mock json.loads to return a valid dict instead of parsing the template
             mock_json_loads.return_value = {
@@ -216,7 +218,7 @@ class TestCreateServiceByChallengePk:
                     "awsvpcConfiguration": {
                         "subnets": ["subnet-1", "subnet-2"],
                         "securityGroups": ["sg-1"],
-                        "assignPublicIp": "ENABLED"
+                        "assignPublicIp": "ENABLED",
                     }
                 },
                 "schedulingStrategy": "REPLICA",
@@ -224,11 +226,11 @@ class TestCreateServiceByChallengePk:
                 "deploymentConfiguration": {
                     "deploymentCircuitBreaker": {
                         "enable": True,
-                        "rollback": False
+                        "rollback": False,
                     }
-                }
+                },
             }
-            
+
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
             )
@@ -357,9 +359,9 @@ def test_delete_service_success_when_workers_zero(mock_challenge, mock_client):
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         mock_client.delete_service.return_value = response_metadata_ok
         # Mock the deregister_task_definition call to return success
         mock_client.deregister_task_definition.return_value = (
@@ -392,9 +394,9 @@ def test_delete_service_success_when_workers_not_zero(
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         with patch(
             "challenges.aws_utils.update_service_by_challenge_pk",
             return_value=response_metadata_ok,
@@ -429,9 +431,9 @@ def test_update_service_failure(mock_challenge, mock_client):
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         with patch(
             "challenges.aws_utils.update_service_by_challenge_pk",
             return_value=response_metadata_error,
@@ -462,9 +464,9 @@ def test_delete_service_failure(mock_challenge, mock_client):
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         mock_client.delete_service.return_value = response_metadata_error
 
         response = delete_service_by_challenge_pk(mock_challenge)
@@ -492,9 +494,9 @@ def test_deregister_task_definition_failure(mock_challenge, mock_client):
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         mock_client.delete_service.return_value = response_metadata_ok
         mock_client.deregister_task_definition.side_effect = ClientError(
             error_response={
@@ -526,9 +528,9 @@ def test_delete_service_client_error(mock_challenge, mock_client):
         mock_json_loads.return_value = {
             "cluster": "cluster",
             "service": "test_queue_service",
-            "force": True
+            "force": True,
         }
-        
+
         mock_client.delete_service.side_effect = ClientError(
             error_response={
                 "Error": {"Code": "DeleteServiceError"},
@@ -3253,20 +3255,31 @@ class TestCloudWatchRetention(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_log_group_name")
-    def test_set_log_retention_resource_not_found(self, mock_log_group, mock_creds, mock_client):
+    def test_set_log_retention_resource_not_found(
+        self, mock_log_group, mock_creds, mock_client
+    ):
         """Test AWS ResourceNotFoundException is handled"""
-        from challenges.aws_utils import set_cloudwatch_log_retention
         from botocore.exceptions import ClientError
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
         mock_logs_client = MagicMock()
         # Simulate AWS ResourceNotFoundException
-        error_response = {"Error": {"Code": "ResourceNotFoundException", "Message": "Log group not found"}}
+        error_response = {
+            "Error": {
+                "Code": "ResourceNotFoundException",
+                "Message": "Log group not found",
+            }
+        }
         client_error = ClientError(error_response, "PutRetentionPolicy")
         mock_logs_client.put_retention_policy.side_effect = client_error
         mock_client.return_value = mock_logs_client
-        with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
-             patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
             mock_challenge.return_value.log_retention_days_override = None
             mock_phase = MagicMock()
             mock_phase.end_date = timezone.now() + timedelta(days=10)
@@ -3276,23 +3289,31 @@ class TestCloudWatchRetention(TestCase):
             mock_phases.return_value = mock_phases_qs
             result = set_cloudwatch_log_retention(123, retention_days=30)
             self.assertIn("error", result)
-            self.assertIn("Log group not found", result["error"]) 
+            self.assertIn("Log group not found", result["error"])
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_log_group_name")
     @patch("challenges.aws_utils.logger")
-    def test_set_log_retention_unexpected_exception(self, mock_logger, mock_log_group, mock_creds, mock_client):
+    def test_set_log_retention_unexpected_exception(
+        self, mock_logger, mock_log_group, mock_creds, mock_client
+    ):
         """Test unexpected exception is handled"""
         from challenges.aws_utils import set_cloudwatch_log_retention
+
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
         mock_logs_client = MagicMock()
         # Simulate generic Exception
-        mock_logs_client.put_retention_policy.side_effect = Exception("Some error")
+        mock_logs_client.put_retention_policy.side_effect = Exception(
+            "Some error"
+        )
         mock_client.return_value = mock_logs_client
-        with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
-             patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
             mock_challenge.return_value.log_retention_days_override = None
             mock_phase = MagicMock()
             mock_phase.end_date = timezone.now() + timedelta(days=10)
@@ -3308,15 +3329,21 @@ class TestCloudWatchRetention(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_log_group_name")
-    def test_set_log_retention_model_override(self, mock_log_group, mock_creds, mock_client):
+    def test_set_log_retention_model_override(
+        self, mock_log_group, mock_creds, mock_client
+    ):
         """Test model override for retention days is used"""
         from challenges.aws_utils import set_cloudwatch_log_retention
+
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
         mock_logs_client = MagicMock()
         mock_client.return_value = mock_logs_client
-        with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
-             patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
             mock_challenge.return_value.log_retention_days_override = 90
             mock_phase = MagicMock()
             mock_phase.end_date = timezone.now() + timedelta(days=10)
@@ -3332,15 +3359,25 @@ class TestCloudWatchRetention(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_log_group_name")
-    def test_set_log_retention_calculated_days(self, mock_log_group, mock_creds, mock_client):
+    def test_set_log_retention_calculated_days(
+        self, mock_log_group, mock_creds, mock_client
+    ):
         """Test calculated retention days is used when no override or CLI arg"""
-        from challenges.aws_utils import set_cloudwatch_log_retention, calculate_retention_period_days, map_retention_days_to_aws_values
+        from challenges.aws_utils import (
+            calculate_retention_period_days,
+            map_retention_days_to_aws_values,
+            set_cloudwatch_log_retention,
+        )
+
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
         mock_logs_client = MagicMock()
         mock_client.return_value = mock_logs_client
-        with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
-             patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
             mock_challenge.return_value.log_retention_days_override = None
             mock_phase = MagicMock()
             mock_phase.end_date = timezone.now() + timedelta(days=5)
@@ -3348,7 +3385,9 @@ class TestCloudWatchRetention(TestCase):
             mock_phases_qs.exists.return_value = True
             mock_phases_qs.__iter__.return_value = iter([mock_phase])
             mock_phases.return_value = mock_phases_qs
-            expected_days = calculate_retention_period_days(mock_phase.end_date)
+            expected_days = calculate_retention_period_days(
+                mock_phase.end_date
+            )
             expected_aws_days = map_retention_days_to_aws_values(expected_days)
             result = set_cloudwatch_log_retention(123)
             self.assertTrue(result["success"])
@@ -3407,21 +3446,23 @@ class TestUtilityFunctions(TestCase):
     def test_log_group_name_generation(self):
         """Test log group name format"""
         from challenges.aws_utils import get_log_group_name
+
         import apps.challenges.aws_utils as aws_utils
+
         with patch.object(aws_utils.settings, "ENVIRONMENT", "test"):
             result = get_log_group_name(123)
             expected = "challenge-pk-123-test-workers"
             self.assertEqual(result, expected)
 
     @patch("challenges.aws_utils.set_cloudwatch_log_retention")
-    def test_retention_callback_functions(
-        self, mock_set_retention
-    ):
+    def test_retention_callback_functions(self, mock_set_retention):
         """Test retention callback functions"""
         from challenges.aws_utils import (
             update_challenge_log_retention_on_approval,
         )
+
         import apps.challenges.aws_utils as aws_utils
+
         mock_challenge = MagicMock()
         mock_challenge.pk = 123
 

@@ -6221,15 +6221,15 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
     def test_update_challenge_approval_when_challenge_exists(
         self, mock_set_log_retention
     ):
-        from django.db.models.signals import post_save
         from challenges.models import Challenge
-        
+        from django.db.models.signals import post_save
+
         # Temporarily disconnect post_save signals to prevent side effects
         post_save_receivers = []
         for receiver in post_save._live_receivers(sender=Challenge):
             post_save_receivers.append(receiver)
             post_save.disconnect(receiver, sender=Challenge)
-        
+
         try:
             self.user.is_staff = True
             self.user.save()
@@ -6252,7 +6252,7 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
 
             # Note: set_cloudwatch_log_retention is not called because we disconnected the signals
             # to prevent side effects. The test focuses on the view functionality.
-        
+
         finally:
             # Reconnect the post_save signals
             for receiver in post_save_receivers:
@@ -6283,15 +6283,15 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
     def test_update_challenge_attributes_when_challenge_exists(
         self, mock_set_log_retention
     ):
-        from django.db.models.signals import post_save
         from challenges.models import Challenge
-        
+        from django.db.models.signals import post_save
+
         # Temporarily disconnect post_save signals to prevent side effects
         post_save_receivers = []
         for receiver in post_save._live_receivers(sender=Challenge):
             post_save_receivers.append(receiver)
             post_save.disconnect(receiver, sender=Challenge)
-        
+
         try:
             self.url = reverse_lazy("challenges:update_challenge_attributes")
             self.user.is_staff = True
@@ -6324,7 +6324,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
 
             # Note: set_cloudwatch_log_retention is not called because we disconnected the signals
             # to prevent side effects. The test focuses on the view functionality.
-        
+
         finally:
             # Reconnect the post_save signals
             for receiver in post_save_receivers:
