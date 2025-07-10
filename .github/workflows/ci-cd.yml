@@ -1,0 +1,229 @@
+name: EvalAI CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  COMPOSE_BAKE: true
+  COMPOSE_BAKE_ARGS: "--build-arg PIP_NO_CACHE_DIR=1"
+  CHROME_BIN: chromium-browser
+  DISPLAY: :99.0
+  PYTHON_VERSION: '3.9.21'
+  AWSCLI_VERSION: '1.18.66'
+  REGISTRY: ${{ secrets.DOCKER_USERNAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  quality-check:
+    name: Code Quality & Migration Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Install dependencies and configure system
+        run: |
+          pip install --upgrade pip
+          pip install awscli==${{ env.AWSCLI_VERSION }}
+          sudo rm -f /etc/boto.cfg
+          mkdir -p $HOME/.config/pip
+          echo "[build_ext]" > $HOME/.config/pip/pip.conf
+          echo "parallel = 1" >> $HOME/.config/pip/pip.conf
+          ulimit -u 16384
+          ulimit -n 4096
+
+      - name: Run code quality checks
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, pylint and isort...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+          echo 'Running black check...' &&
+          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; exit 1; } &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
+          echo 'All code quality checks passed!'"
+
+      - name: Django Migration Check
+        if: github.event_name == 'pull_request'
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
+
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    # REMOVED: No dependencies - runs in parallel
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Docker login
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker images
+        id: build
+        run: |
+          export COMPOSE_DOCKER_CLI_BUILD=1
+          export DOCKER_BUILDKIT=1
+          
+          docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
+          
+          if [ "${{ github.event_name }}" = "push" ]; then
+            docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd push
+          fi
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    # REMOVED: No dependencies - runs in parallel with build
+    strategy:
+      matrix:
+        test-type: [frontend, backend]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Install test dependencies
+        run: |
+          pip install --upgrade pip
+          pip install awscli==${{ env.AWSCLI_VERSION }} coveralls
+
+      - name: Build images for testing (if not available)
+        run: |
+          docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build ${{ env.COMPOSE_BAKE_ARGS }}
+
+      - name: Setup display for frontend tests
+        if: matrix.test-type == 'frontend'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb chromium-browser
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Run frontend tests
+        if: matrix.test-type == 'frontend'
+        run: |
+          docker compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+
+      - name: Run backend tests
+        if: matrix.test-type == 'backend'
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+
+      - name: Upload coverage to Codecov
+        if: matrix.test-type == 'backend'
+        run: |
+          bash <(curl -s https://codecov.io/bash)
+
+      - name: Upload coverage to Coveralls
+        if: matrix.test-type == 'backend'
+        continue-on-error: true
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          coveralls --rcfile=.coveragerc
+
+  deploy:
+    name: Package & Deploy Services
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test, quality-check]  # Waits for ALL jobs to complete
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install deployment dependencies
+        run: |
+          pip install --upgrade pip
+          pip install awscli==${{ env.AWSCLI_VERSION }}
+
+      - name: Configure SSH and decrypt keys
+        run: |
+          eval "$(ssh-agent -s)"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy services
+        run: |
+          ssh-add ~/.ssh/deploy_key
+          ./scripts/deployment/push.sh
+          ./scripts/deployment/deploy.sh auto_deploy
+
+      - name: Clean up pip cache
+        run: |
+          rm -f $HOME/.cache/pip/log/debug.log
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#ci-cd'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Notify on success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#ci-cd'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
