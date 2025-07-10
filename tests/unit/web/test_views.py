@@ -1,3 +1,6 @@
+from smtplib import SMTPException
+from unittest.mock import patch
+
 import responses
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -272,3 +275,15 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(html.endswith(""))
         self.assertTrue(response)
         self.assertEqual(request.status_code, 200)
+
+    @patch(
+        "web.views.EmailMessage.send", side_effect=SMTPException("Email error")
+    )
+    def test_notify_users_smtp_exception(self, mock_send):
+        self.client.login(username="superuser", password="secret_password")
+
+        response = self.client.post(self.url, self.email_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "notification_email_data.html")
+        self.assertIn("errors", response.context)
