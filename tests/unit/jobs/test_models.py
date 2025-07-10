@@ -225,11 +225,15 @@ class SubmissionRetentionModelTests(TestCase):
 
     def setUp(self):
         """Set up test data"""
+        from hosts.models import ChallengeHostTeam
+        from django.contrib.auth.models import User
+        self.user = User.objects.create(username="hostuser", email="host@test.com", password="password")
+        self.challenge_host_team = ChallengeHostTeam.objects.create(team_name="Test Host Team", created_by=self.user)
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             start_date=timezone.now() - timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30),
-            # ... other required fields
+            creator=self.challenge_host_team,
         )
 
         self.challenge_phase = ChallengePhase.objects.create(
@@ -270,9 +274,16 @@ class SubmissionRetentionModelTests(TestCase):
 
     def test_submission_retention_fields_default(self):
         """Test default values for retention fields"""
+        from participants.models import ParticipantTeam
+        from django.contrib.auth.models import User
+        user = User.objects.create(username="participantuser", email="participant@test.com", password="password")
+        participant_team = ParticipantTeam.objects.create(team_name="Test Participant Team", created_by=user)
         submission = Submission.objects.create(
             challenge_phase=self.challenge_phase,
-            # ... other required fields
+            participant_team=participant_team,
+            created_by=user,
+            status="submitted",
+            is_public=True,
         )
 
         self.assertIsNone(submission.retention_eligible_date)

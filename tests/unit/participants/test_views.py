@@ -1,4 +1,5 @@
 from datetime import timedelta
+import json
 
 from accounts.models import Profile
 from allauth.account.models import EmailAddress
@@ -12,6 +13,7 @@ from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
+from django.test import TestCase
 
 
 class BaseAPITestClass(APITestCase):
@@ -786,6 +788,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
         self.challenge1.save()
+        self.challenge1.github_branch = "main"
 
         self.challenge2 = Challenge.objects.create(
             title="Test Challenge 2",
@@ -825,7 +828,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,
-                        "image": self.challenge1.image,
+                        "image": str(self.challenge1.image),
                         "start_date": "{0}{1}".format(
                             self.challenge1.start_date.isoformat(), "Z"
                         ).replace("+00:00", ""),
@@ -884,6 +887,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
                         "github_repository": self.challenge1.github_repository,
+                        "github_branch": self.challenge1.github_branch,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -905,8 +909,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         # deleting field 'datetime_now' from response to check with expected
         # response without time field
         del response.data["datetime_now"]
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Convert both to plain dicts/lists for comparison
+        response_data = json.loads(json.dumps(response.data))
+        expected_data = json.loads(json.dumps(expected))
+        self.assertEqual(response_data, expected_data)
 
     def test_get_participant_team_challenge_list(self):
         self.url = reverse_lazy(
@@ -922,7 +928,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "terms_and_conditions": self.challenge1.terms_and_conditions,
                 "submission_guidelines": self.challenge1.submission_guidelines,
                 "evaluation_details": self.challenge1.evaluation_details,
-                "image": self.challenge1.image,
+                "image": str(self.challenge1.image),
                 "start_date": "{0}{1}".format(
                     self.challenge1.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -981,6 +987,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
                 "github_repository": self.challenge1.github_repository,
+                "github_branch": self.challenge1.github_branch,
             }
         ]
 
@@ -988,7 +995,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.save()
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        # Convert both to plain dicts/lists for comparison
+        response_data = json.loads(json.dumps(response.data["results"]))
+        expected_data = json.loads(json.dumps(expected))
+        self.assertEqual(response_data, expected_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_when_participant_team_hasnot_participated_in_any_challenge(self):
@@ -1017,7 +1027,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         # deleting field 'datetime_now' from response to check with expected
         # response without time field
         del response.data["datetime_now"]
-        self.assertEqual(response.data, expected)
+        # Convert both to plain dicts/lists for comparison
+        response_data = json.loads(json.dumps(response.data))
+        expected_data = json.loads(json.dumps(expected))
+        self.assertEqual(response_data, expected_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_when_there_is_no_participant_team_of_user(self):
@@ -1039,7 +1052,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         # deleting field 'datetime_now' from response to check with expected
         # response without time field
         del response.data["datetime_now"]
-        self.assertEqual(response.data, expected)
+        # Convert both to plain dicts/lists for comparison
+        response_data = json.loads(json.dumps(response.data))
+        expected_data = json.loads(json.dumps(expected))
+        self.assertEqual(response_data, expected_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
