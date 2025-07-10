@@ -15,6 +15,7 @@ describe('Unit tests for challenge host team controller', function () {
         $http = _$http_;
         $mdDialog = _$mdDialog_;
         $compile = _$compile_;
+        $httpBackend = _$httpBackend_;
 
         $scope = $rootScope.$new();
         createController = function () {
@@ -200,194 +201,169 @@ describe('Unit tests for challenge host team controller', function () {
             expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
 
-        // Add these new test cases to cover lines 103-124
-        it('should handle pagination when next is null and previous is not null', function () {
-            success = true;
-            successResponse = {
-                next: null,
-                previous: 'page=2',
-                count: 25
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var deferred = $injector.get('$q').defer();
-            spyOn($http, 'get').and.returnValue(deferred.promise);
-            
-            var url = 'hosts/challenge_host_team/page=3';
-            vm.load(url);
-            
-            // Simulate successful response
-            deferred.resolve({
-                data: {
+             // Add these new test cases to cover lines 103-124
+             it('should handle pagination when next is null and previous is not null', function () {
+                success = true;
+                successResponse = {
                     next: null,
                     previous: 'page=2',
                     count: 25
-                }
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                // Mock the HTTP backend for the load function call
+                $httpBackend.expectGET('hosts/challenge_host_team/page=3').respond(200, {
+                    next: null,
+                    previous: 'page=2',
+                    count: 25
+                });
+                
+                var url = 'hosts/challenge_host_team/page=3';
+                vm.load(url);
+                
+                $httpBackend.flush();
+                
+                expect(vm.isNext).toEqual('disabled');
+                expect(vm.currentPage).toEqual(2.5); // count / 10 = 25 / 10 = 2.5
+                expect(vm.isPrev).toEqual('');
+                expect(vm.stopLoader).toHaveBeenCalled();
             });
-            
-            $rootScope.$digest();
-            
-            expect(vm.isNext).toEqual('disabled');
-            expect(vm.currentPage).toEqual(2.5); // count / 10 = 25 / 10 = 2.5
-            expect(vm.isPrev).toEqual('');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('should handle pagination when next is not null and previous is null', function () {
-            success = true;
-            successResponse = {
-                next: 'page=4',
-                previous: null,
-                count: 15
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var deferred = $injector.get('$q').defer();
-            spyOn($http, 'get').and.returnValue(deferred.promise);
-            
-            var url = 'hosts/challenge_host_team/page=3';
-            vm.load(url);
-            
-            // Simulate successful response
-            deferred.resolve({
-                data: {
+    
+            it('should handle pagination when next is not null and previous is null', function () {
+                success = true;
+                successResponse = {
                     next: 'page=4',
                     previous: null,
                     count: 15
-                }
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                // Mock the HTTP backend for the load function call
+                $httpBackend.expectGET('hosts/challenge_host_team/page=3').respond(200, {
+                    next: 'page=4',
+                    previous: null,
+                    count: 15
+                });
+                
+                var url = 'hosts/challenge_host_team/page=3';
+                vm.load(url);
+                
+                $httpBackend.flush();
+                
+                expect(vm.isNext).toEqual('');
+                expect(vm.currentPage).toEqual(3); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 4 - 1 = 3
+                expect(vm.isPrev).toEqual('disabled');
+                expect(vm.stopLoader).toHaveBeenCalled();
             });
-            
-            $rootScope.$digest();
-            
-            expect(vm.isNext).toEqual('');
-            expect(vm.currentPage).toEqual(3); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 4 - 1 = 3
-            expect(vm.isPrev).toEqual('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('should handle pagination when both next and previous are not null', function () {
-            success = true;
-            successResponse = {
-                next: 'page=5',
-                previous: 'page=3',
-                count: 50
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var deferred = $injector.get('$q').defer();
-            spyOn($http, 'get').and.returnValue(deferred.promise);
-            
-            var url = 'hosts/challenge_host_team/page=4';
-            vm.load(url);
-            
-            // Simulate successful response
-            deferred.resolve({
-                data: {
+    
+            it('should handle pagination when both next and previous are not null', function () {
+                success = true;
+                successResponse = {
                     next: 'page=5',
                     previous: 'page=3',
                     count: 50
-                }
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                // Mock the HTTP backend for the load function call
+                $httpBackend.expectGET('hosts/challenge_host_team/page=4').respond(200, {
+                    next: 'page=5',
+                    previous: 'page=3',
+                    count: 50
+                });
+                
+                var url = 'hosts/challenge_host_team/page=4';
+                vm.load(url);
+                
+                $httpBackend.flush();
+                
+                expect(vm.isNext).toEqual('');
+                expect(vm.currentPage).toEqual(4); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 5 - 1 = 4
+                expect(vm.isPrev).toEqual('');
+                expect(vm.stopLoader).toHaveBeenCalled();
             });
-            
-            $rootScope.$digest();
-            
-            expect(vm.isNext).toEqual('');
-            expect(vm.currentPage).toEqual(4); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 5 - 1 = 4
-            expect(vm.isPrev).toEqual('');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('should handle pagination when both next and previous are null', function () {
-            success = true;
-            successResponse = {
-                next: null,
-                previous: null,
-                count: 5
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var deferred = $injector.get('$q').defer();
-            spyOn($http, 'get').and.returnValue(deferred.promise);
-            
-            var url = 'hosts/challenge_host_team/page=1';
-            vm.load(url);
-            
-            // Simulate successful response
-            deferred.resolve({
-                data: {
+    
+            it('should handle pagination when both next and previous are null', function () {
+                success = true;
+                successResponse = {
                     next: null,
                     previous: null,
                     count: 5
-                }
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                // Mock the HTTP backend for the load function call
+                $httpBackend.expectGET('hosts/challenge_host_team/page=1').respond(200, {
+                    next: null,
+                    previous: null,
+                    count: 5
+                });
+                
+                var url = 'hosts/challenge_host_team/page=1';
+                vm.load(url);
+                
+                $httpBackend.flush();
+                
+                expect(vm.isNext).toEqual('disabled');
+                expect(vm.currentPage).toEqual(0.5); // count / 10 = 5 / 10 = 0.5
+                expect(vm.isPrev).toEqual('disabled');
+                expect(vm.stopLoader).toHaveBeenCalled();
             });
-            
-            $rootScope.$digest();
-            
-            expect(vm.isNext).toEqual('disabled');
-            expect(vm.currentPage).toEqual(0.5); // count / 10 = 5 / 10 = 0.5
-            expect(vm.isPrev).toEqual('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('should handle load function when url is null', function () {
-            success = true;
-            successResponse = {
-                next: 'page=4',
-                previous: 'page=2',
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var url = null;
-            vm.load(url);
-            
-            expect(vm.isExistLoader).toBeTruthy();
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('should handle load function with complex page number parsing', function () {
-            success = true;
-            successResponse = {
-                next: 'page=10',
-                previous: 'page=8',
-                count: 100
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            
-            var deferred = $injector.get('$q').defer();
-            spyOn($http, 'get').and.returnValue(deferred.promise);
-            
-            var url = 'hosts/challenge_host_team/page=9';
-            vm.load(url);
-            
-            // Simulate successful response
-            deferred.resolve({
-                data: {
+    
+            it('should handle load function when url is null', function () {
+                success = true;
+                successResponse = {
+                    next: 'page=4',
+                    previous: 'page=2',
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                var url = null;
+                vm.load(url);
+                
+                expect(vm.isExistLoader).toBeTruthy();
+                expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+                expect(vm.stopLoader).toHaveBeenCalled();
+            });
+    
+            it('should handle load function with complex page number parsing', function () {
+                success = true;
+                successResponse = {
                     next: 'page=10',
                     previous: 'page=8',
                     count: 100
-                }
+                };
+                vm = createController();
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                
+                // Mock the HTTP backend for the load function call
+                $httpBackend.expectGET('hosts/challenge_host_team/page=9').respond(200, {
+                    next: 'page=10',
+                    previous: 'page=8',
+                    count: 100
+                });
+                
+                var url = 'hosts/challenge_host_team/page=9';
+                vm.load(url);
+                
+                $httpBackend.flush();
+                
+                expect(vm.isNext).toEqual('');
+                expect(vm.currentPage).toEqual(9); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 10 - 1 = 9
+                expect(vm.isPrev).toEqual('');
+                expect(vm.stopLoader).toHaveBeenCalled();
             });
-            
-            $rootScope.$digest();
-            
-            expect(vm.isNext).toEqual('');
-            expect(vm.currentPage).toEqual(9); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 10 - 1 = 9
-            expect(vm.isPrev).toEqual('');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
 
     });
 
