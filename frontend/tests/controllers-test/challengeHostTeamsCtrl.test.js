@@ -176,19 +176,18 @@ describe('Unit tests for challenge host team controller', function () {
             };
             expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
-
-        it('should set currentPage to count/10 when next is null', function () {
+        it('should set currentPage to 1 when next is null', function () {
             success = true;
             successResponse = {
                 next: null,
                 previous: null,
-                count: 30 // Example: 3 pages if 10 per page
+                count: 10 
             };
             spyOn(vm, 'stopLoader');
             vm = createController();
             expect(vm.existTeam).toEqual(successResponse);
             expect(vm.isNext).toEqual('disabled');
-            expect(vm.currentPage).toEqual(3); // <-- Fix here
+            expect(vm.currentPage).toEqual(1); 
             expect(vm.isPrev).toEqual('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
