@@ -1492,6 +1492,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1576,6 +1577,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1660,6 +1662,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
+                "github_branch": self.challenge4.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1744,6 +1747,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
+                "github_branch": self.challenge4.github_branch,
             },
             {
                 "id": self.challenge3.pk,
@@ -1812,6 +1816,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -1880,6 +1885,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2020,6 +2026,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2185,6 +2192,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
             "github_repository": self.challenge3.github_repository,
+            "github_branch": self.challenge3.github_branch,
         }
 
         response = self.client.get(self.url, {})
@@ -2277,6 +2285,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
             "github_repository": self.challenge4.github_repository,
+            "github_branch": self.challenge4.github_branch,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2431,6 +2440,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2511,6 +2521,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2591,6 +2602,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2738,6 +2750,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             },
         ]
 
@@ -5920,7 +5933,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_REF_NAME": "refs/heads/challenge",
+                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -6082,7 +6095,7 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_REF_NAME": "refs/heads/challenge",
+                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
