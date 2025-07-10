@@ -232,6 +232,7 @@ class Challenge(TimeStampedModel):
         max_length=200, blank=True, null=True, default=""
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
+    disable_private_submission = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

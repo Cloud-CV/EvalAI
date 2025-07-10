@@ -56,6 +56,18 @@
                                 <strong class="text-light-black">Not Published </strong>
                                 <i class="fa fa-eye red-text" aria-hidden="true"></i>
                             </a>
+                        </span><br>
+                        <span ng-if="challenge.disable_private_submission">
+                            <a class="pointer" ng-click="challenge.toggleDisablePrivateSubmission($event)">
+                                <strong class="text-light-black">Private Submissions Disabled </strong>
+                                <i class="fa fa-lock red-text" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                        <span ng-if="!challenge.disable_private_submission">
+                            <a class="pointer" ng-click="challenge.toggleDisablePrivateSubmission($event)">
+                                <strong class="text-light-black">Private Submissions Allowed </strong>
+                                <i class="fa fa-unlock green-text" aria-hidden="true"></i>
+                            </a>
                         </span>
                     </span>
                     <br>

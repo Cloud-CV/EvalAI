@@ -95,6 +95,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "worker_instance_type",
             "sqs_retention_period",
             "github_repository",
+            "disable_private_submission",
         )
 
 
@@ -312,6 +313,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "evaluation_module_error",
             "worker_image_url",
             "sqs_retention_period",
+            "disable_private_submission",
         )
 
 
