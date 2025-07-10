@@ -527,7 +527,7 @@ class SubmissionRetentionSignalTest(TestCase):
         )
 
     def test_initial_retention_set_on_create(self):
-        end_date = timezone.now() - timedelta(days=5)
+        end_date = timezone.now() + timedelta(days=5)
         phase = self._create_phase(end_date=end_date, is_public=False)
         sub = self._create_submission(phase)
         sub.refresh_from_db()

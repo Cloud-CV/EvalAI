@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 import random
 import string
@@ -285,7 +286,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 **updated_settings,
                 **challenge_aws_keys,
             )
-        definition = eval(definition)
+        definition = json.loads(definition)
         if not challenge.task_def_arn:
             try:
                 response = client.register_task_definition(**definition)
@@ -359,7 +360,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             client_token=client_token,
             **VPC_DICT,
         )
-        definition = eval(definition)
+        definition = json.loads(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -404,10 +405,10 @@ def update_service_by_challenge_pk(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
         task_def_arn=task_def_arn,
-        force_new_deployment=force_new_deployment,
+        force_new_deployment=str(force_new_deployment).lower(),
         num_of_tasks=num_of_tasks,
     )
-    kwargs = eval(kwargs)
+    kwargs = json.loads(kwargs)
 
     try:
         response = client.update_service(**kwargs)
@@ -440,9 +441,9 @@ def delete_service_by_challenge_pk(challenge):
     kwargs = delete_service_args.format(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
-        force=True,
+        force=str(True).lower(),
     )
-    kwargs = eval(kwargs)
+    kwargs = json.loads(kwargs)
     try:
         if challenge.workers != 0:
             response = update_service_by_challenge_pk(
@@ -1072,7 +1073,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         **updated_settings,
         **challenge_aws_keys,
     )
-    task_def = eval(task_def)
+    task_def = json.loads(task_def)
 
     try:
         response = client.register_task_definition(**task_def)
@@ -1091,9 +1092,9 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
                 service_name=service_name,
                 task_def_arn=task_def_arn,
                 num_of_tasks=num_of_tasks,
-                force_new_deployment=force_new_deployment,
+                force_new_deployment=str(force_new_deployment).lower(),
             )
-            kwargs = eval(kwargs)
+            kwargs = json.loads(kwargs)
             response = client.update_service(**kwargs)
         return response
     except ClientError as e:
@@ -1394,7 +1395,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
     # starting the code-upload-worker
-    client = get_boto3_client("ecs", aws_keys)
+    client = get_boto3_client("ecs", challenge_aws_keys)
     client_token = client_token_generator(challenge_obj.pk)
     create_service_by_challenge_pk(client, challenge_obj, client_token)
 
@@ -1505,6 +1506,7 @@ def setup_eks_cluster(challenge):
                 "node_group_arn_role": node_group_arn_role,
                 "ecr_all_access_policy_arn": ecr_all_access_policy_arn,
             },
+            context={"challenge": challenge_obj},
             partial=True,
         )
         if serializer.is_valid():
@@ -1900,12 +1902,16 @@ def calculate_retention_period_days(challenge_end_date):
     now = timezone.now()
     if challenge_end_date > now:
         # Challenge is still active, retain until end date + 30 days
-        days_until_end = (challenge_end_date - now).days
-        return days_until_end + 30
+        # Round up to the nearest day to avoid flakiness
+        seconds_until_end = (challenge_end_date - now).total_seconds()
+        days_until_end = math.ceil(seconds_until_end / (24 * 3600.0))
+        return int(days_until_end) + 30
     else:
         # Challenge has ended, retain for 30 more days
-        days_since_end = (now - challenge_end_date).days
-        return max(30 - days_since_end, 1)  # At least 1 day
+        # Round down to match original behavior of .days
+        seconds_since_end = (now - challenge_end_date).total_seconds()
+        days_since_end = math.floor(seconds_since_end / (24 * 3600.0))
+        return max(30 - int(days_since_end), 1)  # At least 1 day
 
 
 def map_retention_days_to_aws_values(days):
@@ -2462,7 +2468,7 @@ def update_challenge_log_retention_on_approval(challenge):
     if not settings.DEBUG:
         try:
             result = set_cloudwatch_log_retention(challenge.pk)
-            if result.get("success"):
+            if "error" not in result:
                 logger.info(
                     f"Updated log retention for approved challenge {challenge.pk}"
                 )

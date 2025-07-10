@@ -136,6 +136,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.queue = "test_queue"
 
         response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
         mock_client.create_service.return_value = {
@@ -159,6 +160,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.queue = "test_queue"
 
         mock_client.create_service.side_effect = ClientError(
             error_response={
@@ -187,6 +189,7 @@ class TestCreateServiceByChallengePk:
         self, mock_client, mock_challenge, client_token
     ):
         mock_challenge.workers = 1
+        mock_challenge.queue = "test_queue"
 
         response = create_service_by_challenge_pk(
             mock_client, mock_challenge, client_token
@@ -205,6 +208,7 @@ class TestCreateServiceByChallengePk:
         mock_challenge.task_def_arn = (
             None  # Simulate task definition is not yet registered
         )
+        mock_challenge.queue = "test_queue"
 
         register_task_response = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
@@ -288,6 +292,7 @@ def test_delete_service_success_when_workers_zero(mock_challenge, mock_client):
     mock_challenge.task_def_arn = (
         "valid_task_def_arn"  # Ensure task_def_arn is set to a valid string
     )
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
@@ -311,6 +316,7 @@ def test_delete_service_success_when_workers_not_zero(
 ):
     mock_challenge.workers = 3
     mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
@@ -335,6 +341,7 @@ def test_delete_service_success_when_workers_not_zero(
 
 def test_update_service_failure(mock_challenge, mock_client):
     mock_challenge.workers = 3
+    mock_challenge.queue = "test_queue"
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
     }
@@ -357,6 +364,7 @@ def test_update_service_failure(mock_challenge, mock_client):
 
 def test_delete_service_failure(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.queue = "test_queue"
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
     }
@@ -377,6 +385,7 @@ def test_delete_service_failure(mock_challenge, mock_client):
 
 def test_deregister_task_definition_failure(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
@@ -406,6 +415,7 @@ def test_deregister_task_definition_failure(mock_challenge, mock_client):
 
 def test_delete_service_client_error(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.queue = "test_queue"
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
@@ -1857,22 +1867,20 @@ class TestScaleResources(unittest.TestCase):
         challenge.task_def_arn = "some_task_def_arn"
         challenge.worker_cpu_cores = 2
         challenge.worker_memory = 4096
+        challenge.worker_image_url = "some_image_url"
+        challenge.queue = "queue_name"
+        challenge.ephemeral_storage = 50
+        challenge.pk = 123
+        challenge.workers = 10
         # Mock other dependencies
         with patch(
-            "challenges.aws_utils.get_aws_credentials_for_challenge"
+            "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
             "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+        ) as mock_task_definition:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            mock_task_definition.return_value = '{"family": "worker_queue_name", "containerDefinitions": [{"name": "worker_queue_name"}]}'
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -1952,20 +1960,16 @@ class TestScaleResources(unittest.TestCase):
 
         # Mock other dependencies
         with patch(
-            "challenges.aws_utils.get_aws_credentials_for_challenge"
+            "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
             "challenges.aws_utils.task_definition", new_callable=MagicMock
         ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+            "challenges.aws_utils.update_service_args", new_callable=MagicMock
+        ) as mock_update_service_args:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            mock_task_definition.return_value = '{"family": "worker_queue_name", "containerDefinitions": [{"name": "worker_queue_name"}]}'
+            mock_update_service_args.return_value = '{"cluster": "evalai-prod-cluster", "service": "queue_name_service"}'
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -2014,38 +2018,38 @@ class TestScaleResources(unittest.TestCase):
 
         # Mock other dependencies
         with patch(
-            "challenges.aws_utils.get_aws_credentials_for_challenge"
+            "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
             "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+        ) as mock_task_definition:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            mock_task_definition.return_value = '''
+            {{
+                "family": "worker_queue_name",
+                "containerDefinitions": [
+                    {{
+                        "name": "worker_queue_name"
+                    }}
+                ]
+            }}
+            '''
 
-            # Mock register_task_definition response with error
-            mock_client.register_task_definition.return_value = {
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-                "Error": "Failed to register task definition",
-            }
-
-            # Call the function
-            result = scale_resources(
-                challenge, worker_cpu_cores=4, worker_memory=8192
+            # Mock register_task_definition to raise ClientError
+            mock_client.register_task_definition.side_effect = ClientError(
+                {"Error": {"Message": "Failed to register task definition"}},
+                "RegisterTaskDefinition",
             )
 
-            # Expected result
-            expected_result = {
-                "Error": "Failed to register task definition",
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-            }
-            self.assertEqual(result, expected_result)
+            # Call the function
+            response = scale_resources(challenge, 4, 8192)
+
+            # Verify the response
+            self.assertEqual(response["Error"]["Message"], "Failed to register task definition")
+            mock_client.register_task_definition.assert_called_once()
+            mock_client.deregister_task_definition.assert_called_once_with(
+                taskDefinition="some_task_def_arn"
+            )
 
 
 class TestDeleteWorkers(TestCase):
@@ -2610,7 +2614,7 @@ class TestGetLogsFromCloudwatch(TestCase):
 class TestCreateEKSNodegroup(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.logger")
@@ -2679,7 +2683,7 @@ class TestCreateEKSNodegroup(unittest.TestCase):
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.logger")
@@ -2767,7 +2771,7 @@ class TestCreateEKSNodegroup(unittest.TestCase):
 
 
 class TestSetupEksCluster(TestCase):
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
@@ -2808,7 +2812,7 @@ class TestSetupEksCluster(TestCase):
         # Ensure an exception was logged
         mock_logger.exception.assert_called_once()
 
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.logger")
@@ -2836,7 +2840,7 @@ class TestSetupEksCluster(TestCase):
         mock_logger.exception.assert_called_once()
         self.assertTrue(mock_client.create_role.called)
 
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.logger")
@@ -2864,7 +2868,7 @@ class TestSetupEksCluster(TestCase):
         mock_logger.exception.assert_called_once()
         self.assertTrue(mock_client.attach_role_policy.called)
 
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.logger")
@@ -2892,7 +2896,7 @@ class TestSetupEksCluster(TestCase):
         mock_logger.exception.assert_called_once()
         self.assertTrue(mock_client.create_policy.called)
 
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.logger")
@@ -2929,7 +2933,7 @@ class TestSetupEksCluster(TestCase):
         self.assertTrue(mock_serializer.return_value.is_valid.called)
         mock_logger.exception.assert_called_once()
 
-    @patch("challenges.aws_utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.serializers.deserialize")
     @patch("challenges.aws_utils.logger")
@@ -3241,6 +3245,7 @@ class TestCloudWatchLogRetention(TestCase):
         self.assertEqual(result["retention_days"], 150)
 
 
+@pytest.mark.django_db
 class TestLogRetentionCallbacks(TestCase):
     """Test log retention callback functions"""
 
@@ -3306,6 +3311,7 @@ class TestGetLogGroupName(TestCase):
             self.assertEqual(actual_name, expected_name)
 
 
+@pytest.mark.django_db
 class TestSubmissionRetentionCalculation(TestCase):
     """Test submission retention calculation functions"""
 

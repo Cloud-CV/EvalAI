@@ -97,17 +97,18 @@ def update_submission_retention_on_phase_change(
 
 
 @receiver(post_save, sender=Submission)
-def set_initial_retention_date(sender, instance, created, **kwargs):
+def set_submission_retention_on_create(sender, instance, created, **kwargs):
     """
-    Set initial retention date for new submissions based on their challenge phase.
+    Set initial retention date when a new submission is created.
     """
     if created and not instance.retention_eligible_date:
-        retention_date = calculate_submission_retention_date(
-            instance.challenge_phase
-        )
+        retention_date = calculate_submission_retention_date(instance.challenge_phase)
         if retention_date:
             instance.retention_eligible_date = retention_date
-            instance.save(update_fields=["retention_eligible_date"])
-            logger.debug(
+            instance.save(update_fields=['retention_eligible_date'])
+            logger.info(
                 f"Set initial retention date {retention_date} for new submission {instance.pk}"
             )
+
+
+
