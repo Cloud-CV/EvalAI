@@ -46,7 +46,7 @@ jobs:
 
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
-        - ` || travis_terminate 1;
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
 
         # Check Code Quality
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
