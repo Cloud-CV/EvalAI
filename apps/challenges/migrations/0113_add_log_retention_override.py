@@ -18,4 +18,4 @@ class Migration(migrations.Migration):
                 help_text="Override CloudWatch log retention period in days for this challenge.",
             ),
         ),
-    ] 
+    ]

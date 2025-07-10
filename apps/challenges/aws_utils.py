@@ -1965,8 +1965,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
     Returns:
         dict: Response containing success/error status
     """
-    from .models import ChallengePhase
-    from .models import Challenge
+    from .models import Challenge, ChallengePhase
     from .utils import get_aws_credentials_for_challenge
 
     try:
@@ -1988,7 +1987,9 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
             if challenge_obj.log_retention_days_override is not None:
                 retention_days = challenge_obj.log_retention_days_override
             else:
-                retention_days = calculate_retention_period_days(latest_end_date)
+                retention_days = calculate_retention_period_days(
+                    latest_end_date
+                )
 
         # Map to valid AWS retention period
         aws_retention_days = map_retention_days_to_aws_values(retention_days)

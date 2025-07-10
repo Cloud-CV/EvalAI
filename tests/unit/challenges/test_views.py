@@ -6217,9 +6217,20 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_approval_when_challenge_exists(self):
+    @mock.patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    def test_update_challenge_approval_when_challenge_exists(
+        self, mock_set_log_retention
+    ):
         self.user.is_staff = True
         self.user.save()
+
+        # Mock the log retention function to return success
+        mock_set_log_retention.return_value = {
+            "success": True,
+            "retention_days": 30,
+            "message": "Retention policy set successfully",
+        }
+
         self.url = reverse_lazy("challenges:update_challenge_approval")
         expected = {"message": "Challenge updated successfully!"}
         response = self.client.post(
@@ -6228,6 +6239,9 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the log retention function was called
+        mock_set_log_retention.assert_called_once_with(self.challenge.pk)
 
     def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")
@@ -6250,10 +6264,20 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_attributes_when_challenge_exists(self):
+    @mock.patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    def test_update_challenge_attributes_when_challenge_exists(
+        self, mock_set_log_retention
+    ):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
         self.user.is_staff = True
         self.user.save()
+
+        # Mock the log retention function to return success
+        mock_set_log_retention.return_value = {
+            "success": True,
+            "retention_days": 30,
+            "message": "Retention policy set successfully",
+        }
 
         expected = {
             "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
@@ -6272,6 +6296,9 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the log retention function was called
+        mock_set_log_retention.assert_called_once_with(self.challenge.pk)
 
     def test_update_challenge_attributes_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")

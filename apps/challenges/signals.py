@@ -96,19 +96,33 @@ def update_submission_retention_on_phase_change(
                 )
 
 
-@receiver(post_save, sender=Submission)
-def set_submission_retention_on_create(sender, instance, created, **kwargs):
+@receiver(pre_save, sender="jobs.Submission")
+def set_submission_retention_on_create(sender, instance, **kwargs):
     """
     Set initial retention date when a new submission is created.
+    This uses pre_save to avoid recursive save calls.
     """
-    if created and not instance.retention_eligible_date:
-        retention_date = calculate_submission_retention_date(instance.challenge_phase)
+    print(f"SIGNAL FIRED: PRE_SAVE on Submission {instance.pk}")
+    logger.info(
+        f"PRE_SAVE signal: instance.pk={instance.pk}, "
+        f"retention_eligible_date={instance.retention_eligible_date}, "
+        f"phase.is_public={instance.challenge_phase.is_public}, "
+        f"phase.end_date={instance.challenge_phase.end_date}"
+    )
+
+    # Only act on the first save (when pk is not set)
+    if not instance.pk and not instance.retention_eligible_date:
+        retention_date = calculate_submission_retention_date(
+            instance.challenge_phase
+        )
+        logger.info(f"Calculated retention date: {retention_date}")
         if retention_date:
             instance.retention_eligible_date = retention_date
-            instance.save(update_fields=['retention_eligible_date'])
             logger.info(
-                f"Set initial retention date {retention_date} for new submission {instance.pk}"
+                f"Set initial retention date {retention_date} for new submission "
+                f"(phase.is_public={instance.challenge_phase.is_public}, "
+                f"phase.end_date={instance.challenge_phase.end_date})"
             )
 
 
-
+print("SUBMISSION RETENTION SIGNAL REGISTERED")
