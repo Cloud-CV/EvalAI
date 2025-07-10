@@ -177,6 +177,218 @@ describe('Unit tests for challenge host team controller', function () {
             expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
 
+        it('to load data with pagination `load` function', function () {
+            success = true;
+            successResponse = {
+                
+                next: 'page=4',
+                previous: 'page=2',
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn($http, 'get').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+            var url = 'participants/participant_team/page=2';
+            vm.load(url);
+            expect(vm.isExistLoader).toBeTruthy();
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+            var headers = {
+                'Authorization': "Token " + utilities.getData('userKey')
+            };
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
+        });
+
+        // Add these new test cases to cover lines 103-124
+        it('should handle pagination when next is null and previous is not null', function () {
+            success = true;
+            successResponse = {
+                next: null,
+                previous: 'page=2',
+                count: 25
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var deferred = $injector.get('$q').defer();
+            spyOn($http, 'get').and.returnValue(deferred.promise);
+            
+            var url = 'hosts/challenge_host_team/page=3';
+            vm.load(url);
+            
+            // Simulate successful response
+            deferred.resolve({
+                data: {
+                    next: null,
+                    previous: 'page=2',
+                    count: 25
+                }
+            });
+            
+            $rootScope.$digest();
+            
+            expect(vm.isNext).toEqual('disabled');
+            expect(vm.currentPage).toEqual(2.5); // count / 10 = 25 / 10 = 2.5
+            expect(vm.isPrev).toEqual('');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle pagination when next is not null and previous is null', function () {
+            success = true;
+            successResponse = {
+                next: 'page=4',
+                previous: null,
+                count: 15
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var deferred = $injector.get('$q').defer();
+            spyOn($http, 'get').and.returnValue(deferred.promise);
+            
+            var url = 'hosts/challenge_host_team/page=3';
+            vm.load(url);
+            
+            // Simulate successful response
+            deferred.resolve({
+                data: {
+                    next: 'page=4',
+                    previous: null,
+                    count: 15
+                }
+            });
+            
+            $rootScope.$digest();
+            
+            expect(vm.isNext).toEqual('');
+            expect(vm.currentPage).toEqual(3); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 4 - 1 = 3
+            expect(vm.isPrev).toEqual('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle pagination when both next and previous are not null', function () {
+            success = true;
+            successResponse = {
+                next: 'page=5',
+                previous: 'page=3',
+                count: 50
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var deferred = $injector.get('$q').defer();
+            spyOn($http, 'get').and.returnValue(deferred.promise);
+            
+            var url = 'hosts/challenge_host_team/page=4';
+            vm.load(url);
+            
+            // Simulate successful response
+            deferred.resolve({
+                data: {
+                    next: 'page=5',
+                    previous: 'page=3',
+                    count: 50
+                }
+            });
+            
+            $rootScope.$digest();
+            
+            expect(vm.isNext).toEqual('');
+            expect(vm.currentPage).toEqual(4); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 5 - 1 = 4
+            expect(vm.isPrev).toEqual('');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle pagination when both next and previous are null', function () {
+            success = true;
+            successResponse = {
+                next: null,
+                previous: null,
+                count: 5
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var deferred = $injector.get('$q').defer();
+            spyOn($http, 'get').and.returnValue(deferred.promise);
+            
+            var url = 'hosts/challenge_host_team/page=1';
+            vm.load(url);
+            
+            // Simulate successful response
+            deferred.resolve({
+                data: {
+                    next: null,
+                    previous: null,
+                    count: 5
+                }
+            });
+            
+            $rootScope.$digest();
+            
+            expect(vm.isNext).toEqual('disabled');
+            expect(vm.currentPage).toEqual(0.5); // count / 10 = 5 / 10 = 0.5
+            expect(vm.isPrev).toEqual('disabled');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle load function when url is null', function () {
+            success = true;
+            successResponse = {
+                next: 'page=4',
+                previous: 'page=2',
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var url = null;
+            vm.load(url);
+            
+            expect(vm.isExistLoader).toBeTruthy();
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle load function with complex page number parsing', function () {
+            success = true;
+            successResponse = {
+                next: 'page=10',
+                previous: 'page=8',
+                count: 100
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var deferred = $injector.get('$q').defer();
+            spyOn($http, 'get').and.returnValue(deferred.promise);
+            
+            var url = 'hosts/challenge_host_team/page=9';
+            vm.load(url);
+            
+            // Simulate successful response
+            deferred.resolve({
+                data: {
+                    next: 'page=10',
+                    previous: 'page=8',
+                    count: 100
+                }
+            });
+            
+            $rootScope.$digest();
+            
+            expect(vm.isNext).toEqual('');
+            expect(vm.currentPage).toEqual(9); // parseInt(vm.existTeam.next.split('page=')[1] - 1) = 10 - 1 = 9
+            expect(vm.isPrev).toEqual('');
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
     });
 
     describe('Unit tests for showMdDialog function `hosts/challenge_host_team/<host_team_id>`', function () {
@@ -541,66 +753,4 @@ describe('Unit tests for challenge host team controller', function () {
         });
     });
 
-    describe('vm.load', function () {
-        beforeEach(function () {
-            // Mock the initial backend call so vm.load is defined
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                params.callback.onSuccess({
-                    status: 200,
-                    data: {
-                        next: null,
-                        previous: null,
-                        count: 0
-                    }
-                });
-            });
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(loaderService, 'stopLoader');
-        });
-    
-        it('should set pagination and currentPage when next is null', function () {
-            var url = 'some/url';
-            var responseData = {
-                next: null,
-                previous: null,
-                count: 20
-            };
-            spyOn($http, 'get').and.returnValue({
-                then: function (callback) {
-                    callback({ data: responseData });
-                }
-            });
-    
-            vm.load(url);
-    
-            expect(vm.existTeam).toEqual(responseData);
-            expect(vm.isNext).toBe('disabled');
-            expect(vm.currentPage).toBe(2); // 20/10 = 2
-            expect(vm.isPrev).toBe('disabled');
-            expect(loaderService.stopLoader).toHaveBeenCalled();
-        });
-    
-        it('should set pagination and currentPage when next is not null', function () {
-            var url = 'some/url';
-            var responseData = {
-                next: 'page=3',
-                previous: 'page=1',
-                count: 30
-            };
-            spyOn($http, 'get').and.returnValue({
-                then: function (callback) {
-                    callback({ data: responseData });
-                }
-            });
-    
-            vm.load(url);
-    
-            expect(vm.existTeam).toEqual(responseData);
-            expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2); // 3-1 = 2
-            expect(vm.isPrev).toBe('');
-            expect(loaderService.stopLoader).toHaveBeenCalled();
-        });
-    });
 });
