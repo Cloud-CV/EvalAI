@@ -6,3 +6,4 @@
 introduction
 installation
 setup/index
+pricing
