@@ -192,6 +192,7 @@ def test_get_or_create_sqs_queue_non_existent_queue(
     mock_challenge = MagicMock()
     mock_challenge.use_host_sqs = False
     mock_challenge.sqs_retention_period = "1209600"
+    mock_challenge.sqs_visibility_timeout = "600"
 
     mock_sqs = MagicMock()
     mock_boto3_resource.return_value = mock_sqs
@@ -210,7 +211,8 @@ def test_get_or_create_sqs_queue_non_existent_queue(
     mock_sqs.create_queue.assert_called_once_with(
         QueueName=queue_name,
         Attributes={
-            "MessageRetentionPeriod": mock_challenge.sqs_retention_period
+            "MessageRetentionPeriod": mock_challenge.sqs_retention_period,
+            "VisibilityTimeout": mock_challenge.sqs_visibility_timeout,
         },
     )
     assert queue == mock_created_queue

@@ -14,7 +14,7 @@ from monitoring.statsd.metrics import (
     NUM_SUBMISSIONS_IN_QUEUE,
     increment_statsd_counter,
 )
-from settings.common import SQS_RETENTION_PERIOD
+from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT
 
 from .utils import get_submission_model
 
@@ -70,9 +70,17 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
                 if challenge is None
                 else str(challenge.sqs_retention_period)
             )
+            sqs_visibility_timeout = (
+                SQS_VISIBILITY_TIMEOUT
+                if challenge is None
+                else str(challenge.sqs_visibility_timeout)
+            )
             queue = sqs.create_queue(
                 QueueName=queue_name,
-                Attributes={"MessageRetentionPeriod": sqs_retention_period},
+                Attributes={
+                    "MessageRetentionPeriod": sqs_retention_period,
+                    "VisibilityTimeout": sqs_visibility_timeout,
+                },
             )
         else:
             logger.exception("Cannot get or create Queue")
