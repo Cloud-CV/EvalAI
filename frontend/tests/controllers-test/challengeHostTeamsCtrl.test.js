@@ -176,21 +176,7 @@ describe('Unit tests for challenge host team controller', function () {
             };
             expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
-        it('should set currentPage to 1 when next is null', function () {
-            success = true;
-            successResponse = {
-                next: null,
-                previous: null,
-                count: 10 
-            };
-            spyOn(vm, 'stopLoader');
-            vm = createController();
-            expect(vm.existTeam).toEqual(successResponse);
-            expect(vm.isNext).toEqual('disabled');
-            expect(vm.currentPage).toEqual(1); 
-            expect(vm.isPrev).toEqual('disabled');
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
+
     });
 
     describe('Unit tests for showMdDialog function `hosts/challenge_host_team/<host_team_id>`', function () {
@@ -552,6 +538,58 @@ describe('Unit tests for challenge host team controller', function () {
             vm.storeChallengeHostTeamId();
             expect(utilities.storeData).toHaveBeenCalledWith('challengeHostTeamId', vm.challengeHostTeamId);
             expect($state.go).toHaveBeenCalledWith('web.challenge-create');
+        });
+    });
+
+    describe('vm.load', function () {
+        beforeEach(function () {
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(loaderService, 'stopLoader');
+        });
+    
+        it('should set pagination and currentPage when next is null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: null,
+                previous: null,
+                count: 20
+            };
+            spyOn($http, 'get').and.returnValue({
+                then: function (callback) {
+                    callback({ data: responseData });
+                }
+            });
+    
+            vm.load(url);
+    
+            expect(vm.existTeam).toEqual(responseData);
+            expect(vm.isNext).toBe('disabled');
+            expect(vm.currentPage).toBe(2); // 20/10 = 2
+            expect(vm.isPrev).toBe('disabled');
+            expect(loaderService.stopLoader).toHaveBeenCalled();
+        });
+    
+        it('should set pagination and currentPage when next is not null', function () {
+            var url = 'some/url';
+            var responseData = {
+                next: 'page=3',
+                previous: 'page=1',
+                count: 30
+            };
+            spyOn($http, 'get').and.returnValue({
+                then: function (callback) {
+                    callback({ data: responseData });
+                }
+            });
+    
+            vm.load(url);
+    
+            expect(vm.existTeam).toEqual(responseData);
+            expect(vm.isNext).toBe('');
+            expect(vm.currentPage).toBe(2); // 3-1 = 2
+            expect(vm.isPrev).toBe('');
+            expect(loaderService.stopLoader).toHaveBeenCalled();
         });
     });
 });
