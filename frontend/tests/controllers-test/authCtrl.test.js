@@ -12,7 +12,7 @@ describe('Unit tests for auth controller', function () {
         utilities = _utilities_;
 
         $scope = $rootScope.$new();
-        vm = $controller('AuthCtrl', {$scope: $scope});
+        vm = $controller('AuthCtrl', { $scope: $scope });
     }));
 
     describe('Global Variables', function () {
@@ -149,7 +149,264 @@ describe('Unit tests for auth controller', function () {
             vm.userSignUp(false);
             expect($rootScope.isLoader).toEqual(false);
         });
+
+        it('should handle successful signup and auto-login', function () {
+            // Mock utilities.sendRequest for signup and login
+            var signupCalled = false, loginCalled = false;
+            utilities.sendRequest = function (parameters, header) {
+                if (parameters.url === 'auth/registration/') {
+                    signupCalled = true;
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    loginCalled = true;
+                    parameters.callback.onSuccess({ status: 200, data: { token: 'testtoken' } });
+                }
+            };
+            spyOn($state, 'go');
+            spyOn(utilities, 'storeData');
+            vm.regUser = { name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com' };
+            vm.userSignUp(true);
+            expect(signupCalled).toBe(true);
+            expect(loginCalled).toBe(true);
+            expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'testtoken');
+            expect($state.go).toHaveBeenCalledWith('web.dashboard');
+        });
+
+        it('should handle login error after signup', function () {
+            utilities.sendRequest = function (parameters, header) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onError({ status: 400, data: { non_field_errors: ['Invalid credentials'] } });
+                }
+            };
+            vm.regUser = { name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com' };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Invalid credentials');
+        });
+
+        it('should handle signup error with non_field_errors', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { non_field_errors: ['Signup error'] } });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Signup error');
+        });
+
+        it('should handle signup error with username error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { username: ['Username error'] } });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Username error');
+        });
+
+        it('should handle signup error with email error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { email: ['Email error'] } });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Email error');
+        });
+
+        it('should handle signup error with password1 error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { password1: ['Password1 error'] } });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Password1 error');
+        });
+
+        it('should handle signup error with password2 error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { password2: ['Password2 error'] } });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Password2 error');
+        });
+
+        it('should redirect to previousState after successful signup and login', function () {
+            var signupCalled = false, loginCalled = false;
+            $rootScope.previousState = 'web.profile';
+            spyOn($state, 'go');
+            spyOn(utilities, 'storeData');
+            utilities.sendRequest = function (parameters, header) {
+                if (parameters.url === 'auth/registration/') {
+                    signupCalled = true;
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    loginCalled = true;
+                    parameters.callback.onSuccess({ status: 200, data: { token: 'testtoken' } });
+                }
+            };
+            vm.regUser = { name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com' };
+            vm.userSignUp(true);
+            expect(signupCalled).toBe(true);
+            expect(loginCalled).toBe(true);
+            expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'testtoken');
+            expect($state.go).toHaveBeenCalledWith('web.profile');
+        });
+
+        it('should alert if login after signup returns non-200', function () {
+            utilities.sendRequest = function (parameters, header) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onSuccess({ status: 500 });
+                }
+            };
+            spyOn(window, 'alert');
+            vm.regUser = { name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com' };
+            vm.userSignUp(true);
+            expect(window.alert).toHaveBeenCalledWith('Something went wrong');
+        });
+
+        it('should handle login error after signup with exception', function () {
+            utilities.sendRequest = function (parameters, header) {
+                if (parameters.url === 'auth/registration/') {
+                    parameters.callback.onSuccess({ status: 201 });
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onError({ status: 400, data: null });
+                }
+            };
+            spyOn($rootScope, 'notify');
+            vm.regUser = { name: 'ford', password: 'dontpanic', confirm_password: 'dontpanic', email: 'ford@galaxy.com' };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect($rootScope.notify).toHaveBeenCalled();
+        });
+
+
+        it('should set FormError for non_field_errors on signup error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { non_field_errors: ['A non-field error occurred'] }
+                });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('A non-field error occurred');
+        });
+
+        it('should set FormError for username error on signup error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { username: ['Username already exists'] }
+                });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Username already exists');
+        });
+
+        it('should set FormError for email error on signup error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { email: ['Email already exists'] }
+                });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Email already exists');
+        });
+
+        it('should set FormError for password1 error on signup error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { password1: ['Password too short'] }
+                });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Password too short');
+        });
+
+        it('should set FormError for password2 error on signup error', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: { password2: ['Passwords do not match'] }
+                });
+            };
+            vm.userSignUp(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Passwords do not match');
+        });
+
+        it('should notify on signup error exception', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({
+                    status: 400,
+                    data: null
+                });
+            };
+            spyOn($rootScope, 'notify');
+            vm.userSignUp(true);
+            expect($rootScope.notify).toHaveBeenCalled();
+        });
+
+
+
+
+
     });
+
+    describe('Unit tests for setRefreshJWT function `accounts/user/get_auth_token`', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'getData').and.returnValue('dummyUserKey');
+        });
+
+        it('should store refreshJWT on success', function () {
+            spyOn(utilities, 'storeData');
+            utilities.sendRequest = function (parameters, header) {
+                expect(parameters.url).toBe('accounts/user/get_auth_token');
+                expect(parameters.method).toBe('GET');
+                expect(parameters.token).toBe('dummyUserKey');
+                parameters.callback.onSuccess({ status: 200, data: { token: 'refreshToken' } });
+            };
+            vm.setRefreshJWT();
+            expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'refreshToken');
+        });
+
+        it('should alert on non-200 status', function () {
+            spyOn(window, 'alert');
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onSuccess({ status: 500 });
+            };
+            vm.setRefreshJWT();
+            expect(window.alert).toHaveBeenCalledWith('Could not fetch Auth Token');
+        });
+
+        it('should handle 400 error with non_field_errors', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { non_field_errors: ['Some error'] } });
+            };
+            vm.setRefreshJWT();
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Some error');
+        });
+
+        it('should handle 400 error with exception', function () {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: null });
+            };
+            vm.setRefreshJWT();
+            expect(vm.isFormError).toBe(true);
+            expect($rootScope.notify).toHaveBeenCalled();
+        });
+    });
+
 
     describe('Unit tests for userLogin function `auth/login/`', function () {
         var nonFieldErrors, token;
@@ -209,6 +466,63 @@ describe('Unit tests for auth controller', function () {
             vm.userLogin(false);
             expect($rootScope.isLoader).toEqual(false);
         });
+
+        it('should handle successful login and redirect to previousState', function () {
+            spyOn(utilities, 'storeData');
+            spyOn(vm, 'setRefreshJWT');
+            spyOn($state, 'go');
+            $rootScope.previousState = 'web.somewhere';
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onSuccess({ status: 200, data: { token: 'userToken' } });
+            };
+            vm.getUser = { name: 'ford', password: 'dontpanic' };
+            vm.userLogin(true);
+            expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'userToken');
+            expect(vm.setRefreshJWT).toHaveBeenCalled();
+            expect($state.go).toHaveBeenCalledWith('web.somewhere');
+        });
+
+        it('should handle successful login and redirect to dashboard if no previousState', function () {
+            spyOn(utilities, 'storeData');
+            spyOn(vm, 'setRefreshJWT');
+            spyOn($state, 'go');
+            $rootScope.previousState = null;
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onSuccess({ status: 200, data: { token: 'userToken' } });
+            };
+            vm.getUser = { name: 'ford', password: 'dontpanic' };
+            vm.userLogin(true);
+            expect($state.go).toHaveBeenCalledWith('web.dashboard');
+        });
+
+        it('should alert on non-200 login response', function () {
+            spyOn(window, 'alert');
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onSuccess({ status: 500 });
+            };
+            vm.userLogin(true);
+            expect(window.alert).toHaveBeenCalledWith('Something went wrong');
+        });
+
+        it('should handle login error with non_field_errors', function () {
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: { non_field_errors: ['Login error'] } });
+            };
+            vm.userLogin(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('Login error');
+        });
+
+        it('should handle login error with exception', function () {
+            spyOn($rootScope, 'notify');
+            utilities.sendRequest = function (parameters, header) {
+                parameters.callback.onError({ status: 400, data: null });
+            };
+            vm.userLogin(true);
+            expect(vm.isFormError).toBe(true);
+            expect($rootScope.notify).toHaveBeenCalled();
+        });
+
     });
 
     describe('Unit tests for checkPasswordStrength', function () {
@@ -280,6 +594,27 @@ describe('Unit tests for auth controller', function () {
                 expect(passwordStrength[1]).toEqual(passWord.expectedColor);
             });
         });
+
+        it('should set showPasswordStrength to true and update message/color when password is provided', function () {
+            utilities.passwordStrength = function (password) {
+                return ['Strong', 'green'];
+            };
+            vm.checkStrength('somePassword');
+            expect(vm.showPasswordStrength).toBe(true);
+            expect(vm.message).toBe('Strong');
+            expect(vm.color).toBe('green');
+        });
+
+        it('should set showPasswordStrength to false and update message/color when password is empty', function () {
+            utilities.passwordStrength = function (password) {
+                return ['Weak', 'red'];
+            };
+            vm.checkStrength('');
+            expect(vm.showPasswordStrength).toBe(false);
+            expect(vm.message).toBe('Weak');
+            expect(vm.color).toBe('red');
+        });
+
     });
 
     describe('Unit tests for verifyEmail function `auth/registration/account-confirm-email/<email_conf_key>/`', function () {
@@ -306,6 +641,18 @@ describe('Unit tests for auth controller', function () {
             vm.verifyEmail();
             expect(vm.email_verify_msg).toEqual('Something went wrong!! Please try again.');
         });
+
+        it('should start loader and set correct parameters when verifyEmail is called', function () {
+            spyOn(vm, 'startLoader');
+            spyOn(utilities, 'sendRequest');
+            $state.params.email_conf_key = 'abc123';
+            vm.verifyEmail();
+            expect(vm.startLoader).toHaveBeenCalledWith('Verifying Your Email');
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            var params = utilities.sendRequest.calls.mostRecent().args[0];
+            expect(params.url).toBe('auth/registration/account-confirm-email/abc123/');
+            expect(params.method).toBe('GET');
+        });
     });
 
     describe('Unit tests for resetPassword function `auth/password/reset/`', function () {
@@ -322,7 +669,7 @@ describe('Unit tests for auth controller', function () {
                         }
                     });
                 } else {
-                    parameters.callback.onError({status: 400, data: {details: inactiveResponse}});
+                    parameters.callback.onError({ status: 400, data: { details: inactiveResponse } });
                 }
             };
         });
@@ -385,6 +732,52 @@ describe('Unit tests for auth controller', function () {
         it('invalid details', function () {
             vm.resetPasswordConfirm(false);
             expect($rootScope.isLoader).toEqual(false);
+        });
+
+        it('should set FormError for expired/used token', function () {
+            $state.params.user_id = 42;
+            $state.params.reset_token = 'secure';
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onError({
+                    data: {
+                        token: ['Token is invalid or expired']
+                    }
+                });
+            };
+            vm.resetPasswordConfirm(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe('this link has been already used or expired.');
+        });
+
+        it('should set FormError for new_password1 error', function () {
+            $state.params.user_id = 42;
+            $state.params.reset_token = 'secure';
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onError({
+                    data: {
+                        new_password1: { error1: 'Too short', error2: 'No number' }
+                    }
+                });
+            };
+            vm.resetPasswordConfirm(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toContain('Too short');
+            expect(vm.FormError).toContain('No number');
+        });
+
+        it('should set FormError for new_password2 error', function () {
+            $state.params.user_id = 42;
+            $state.params.reset_token = 'secure';
+            utilities.sendRequest = function (parameters) {
+                parameters.callback.onError({
+                    data: {
+                        new_password2: { error1: 'Passwords do not match' }
+                    }
+                });
+            };
+            vm.resetPasswordConfirm(true);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toContain('Passwords do not match');
         });
     });
 });
