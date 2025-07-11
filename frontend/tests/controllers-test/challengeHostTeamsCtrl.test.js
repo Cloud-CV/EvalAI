@@ -538,7 +538,7 @@ describe('Unit tests for challenge host team controller', function () {
                 expect(params.data.email).toBe(email);
                 expect(params.token).toBe(utilities.getData('userKey'));
                 
-                // Simulate successful response
+                
                 params.callback.onSuccess();
             });
             
@@ -567,7 +567,7 @@ describe('Unit tests for challenge host team controller', function () {
                 expect(params.data.email).toBe(email);
                 expect(params.token).toBe(utilities.getData('userKey'));
                 
-                // Simulate error response
+                
                 params.callback.onError({
                     data: {
                         error: errorMessage
