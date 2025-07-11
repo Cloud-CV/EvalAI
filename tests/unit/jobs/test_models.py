@@ -1,7 +1,6 @@
 import os
 import shutil
 from datetime import timedelta
-from unittest.mock import patch
 
 import pytest
 import rest_framework

@@ -1,7 +1,6 @@
 import unittest
 from datetime import timedelta
 from http import HTTPStatus
-from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
@@ -42,8 +41,8 @@ from hosts.models import ChallengeHostTeam
 
 
 class AWSUtilsTestCase(TestCase):
-    @mock.patch("challenges.models.ChallengeEvaluationCluster.objects.get")
-    @mock.patch("challenges.utils.get_challenge_model")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_challenge_model")
     def test_get_code_upload_setup_meta_for_challenge_with_host_credentials(
         self, mock_get_challenge_model, mock_get_cluster
     ):
@@ -76,8 +75,8 @@ class AWSUtilsTestCase(TestCase):
         self.assertEqual(result, expected_result)
         mock_get_cluster.assert_called_once_with(challenge=mock_challenge)
 
-    @mock.patch("challenges.utils.get_challenge_model")
-    @mock.patch(
+    @patch("challenges.utils.get_challenge_model")
+    @patch(
         "challenges.aws_utils.VPC_DICT",
         {
             "SUBNET_1": "vpc_subnet1",
@@ -85,7 +84,7 @@ class AWSUtilsTestCase(TestCase):
             "SUBNET_SECURITY_GROUP": "vpc_sg",
         },
     )
-    @mock.patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.settings")
     def test_get_code_upload_setup_meta_for_challenge_without_host_credentials(
         self, mock_settings, mock_get_challenge_model
     ):

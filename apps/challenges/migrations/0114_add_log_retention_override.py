@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("challenges", "0112_challenge_sqs_retention_period"),
+        ("challenges", "0113_add_github_branch_field_and_unique_constraint"),
     ]
 
     operations = [

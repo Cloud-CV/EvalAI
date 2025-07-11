@@ -207,8 +207,12 @@ class TestExtractChallengeData(unittest.TestCase):
     @patch(
         "scripts.workers.remote_submission_worker.create_dir_as_python_package"
     )
+    @patch(
+        "scripts.workers.remote_submission_worker.download_and_extract_zip_file"
+    )
     def test_extract_challenge_data_import_exception(
         self,
+        mock_download_zip,
         mock_create_dir_as_pkg,
         mock_create_dir,
         mock_import_module,
@@ -222,6 +226,10 @@ class TestExtractChallengeData(unittest.TestCase):
         mock_phases = [
             {"id": 1, "test_annotation": "http://example.com/annotation.txt"}
         ]
+
+        # Mock the download functions to prevent actual HTTP requests
+        mock_download_zip.return_value = None
+        mock_download_file.return_value = None
 
         # Simulate an exception during import
         mock_import_module.side_effect = ImportError("Import failed")
@@ -238,6 +246,7 @@ class TestExtractChallengeData(unittest.TestCase):
             os.path.join(CHALLENGE_DATA_BASE_DIR, "challenge_1")
         )
 
+        mock_download_zip.assert_called_once()
         mock_download_file.assert_called_once()
 
     @patch(
