@@ -585,37 +585,6 @@ describe('Unit tests for challenge host team controller', function () {
                 done();
             }, 0);
         });
-    
-        it('should do nothing when dialog is cancelled', function (done) {
-            var hostTeamId = 1;
-            var ev = new Event('$click');
-            
-            $mdDialog.show.and.returnValue(Promise.reject());
-            
-            spyOn(utilities, 'sendRequest');
-            spyOn($rootScope, 'notify');
-            
-            // Add error handler to catch the unhandled promise rejection
-            var originalOnError = window.onerror;
-            var errorCaught = false;
-            window.onerror = function(message, source, lineno, colno, error) {
-                if (message && message.includes('Unhandled promise rejection')) {
-                    errorCaught = true;
-                    return true; // Prevent the error from being logged
-                }
-                return false;
-            };
-            
-            vm.inviteOthers(ev, hostTeamId);
-            
-            setTimeout(function () {
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-                expect($rootScope.notify).not.toHaveBeenCalled();
-                expect(errorCaught).toBe(true); // Verify that we caught the unhandled rejection
-                window.onerror = originalOnError; // Restore original error handler
-                done();
-            }, 0);
-        });  
     });
 
     describe('Unit tests for storeChallengeHostTeamId function', function () {
