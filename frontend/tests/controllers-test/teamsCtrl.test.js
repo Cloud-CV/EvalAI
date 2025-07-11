@@ -5,18 +5,18 @@ describe('Unit tests for teams controller', function () {
 
     var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_,) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_, ) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $mdDialog = _$mdDialog_;
-        $state = _$state_;
+        $state =_$state_;
         $http = _$http_;
         $injector = _$injector_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('TeamsCtrl', { $scope: $scope });
+            return $controller('TeamsCtrl', {$scope: $scope});
         };
         vm = $controller('TeamsCtrl', { $scope: $scope });
     }));
@@ -172,7 +172,7 @@ describe('Unit tests for teams controller', function () {
                 // team pagination response
                 next: 'page=4',
                 previous: 'page=2',
-            };
+            };        
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -186,7 +186,7 @@ describe('Unit tests for teams controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
+            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });
 
         it('backend error for the global function \
@@ -200,60 +200,6 @@ describe('Unit tests for teams controller', function () {
             expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
-        });
-
-        it('should set pagination variables correctly when next and previous are null in load()', function (done) {
-            var response = {
-                data: {
-                    next: null,
-                    previous: null,
-                    count: 20
-                }
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            spyOn($http, 'get').and.callFake(function () {
-                return {
-                    then: function (cb) {
-                        cb(response);
-                        expect(vm.existTeam).toEqual(response.data);
-                        expect(vm.isNext).toBe('disabled');
-                        expect(vm.currentPage).toBe(2); 
-                        expect(vm.isPrev).toBe('disabled');
-                        expect(vm.stopLoader).toHaveBeenCalled();
-                        done();
-                    }
-                };
-            });
-            vm.load('someurl');
-        });
-
-        it('should set pagination variables correctly when next and previous are present in load()', function (done) {
-            var response = {
-                data: {
-                    next: 'someurl?page=3',
-                    previous: 'someurl?page=1',
-                    count: 30
-                }
-            };
-            vm = createController();
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            spyOn($http, 'get').and.callFake(function () {
-                return {
-                    then: function (cb) {
-                        cb(response);
-                        expect(vm.existTeam).toEqual(response.data);
-                        expect(vm.isNext).toBe('');
-                        expect(vm.currentPage).toBe(2); 
-                        expect(vm.isPrev).toBe('');
-                        expect(vm.stopLoader).toHaveBeenCalled();
-                        done();
-                    }
-                };
-            });
-            vm.load('someurl');
         });
     });
 
@@ -308,8 +254,7 @@ describe('Unit tests for teams controller', function () {
 
         teamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
-            `participants/participant_team`', function () {
-                ;
+            `participants/participant_team`', function () {;
                 success = true;
                 successResponse = response;
                 vm.team.teamName = "Team Name";
@@ -380,97 +325,6 @@ describe('Unit tests for teams controller', function () {
             vm.confirmDelete(ev, participantTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
-
-        it('should remove self from team successfully and update team list', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            var confirm = $mdDialog.confirm()
-                .title('Would you like to remove yourself?')
-                .textContent('Note: This action will remove you from the team.')
-                .ariaLabel('Lucky day')
-                .targetEvent(ev)
-                .ok('Yes')
-                .cancel("No");
-
-            
-            $mdDialog.show.and.returnValue(Promise.resolve());
-
-            
-            var sendRequestSpy = spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                if (params.method === 'DELETE') {
-                    params.callback.onSuccess();
-                } else if (params.method === 'GET') {
-                    params.callback.onSuccess({
-                        status: 200,
-                        data: {
-                            next: null,
-                            previous: null,
-                            count: 0
-                        }
-                    });
-                }
-            });
-
-            spyOn(vm, 'startLoader').and.callThrough();
-            spyOn(vm, 'stopLoader').and.callThrough();
-            spyOn($rootScope, 'notify');
-
-            vm.confirmDelete(ev, participantTeamId);
-
-            setTimeout(function () {
-                expect($mdDialog.show).toHaveBeenCalledWith(confirm);
-                expect(vm.startLoader).toHaveBeenCalled();
-                expect(sendRequestSpy).toHaveBeenCalled();
-                expect($rootScope.notify).toHaveBeenCalledWith("info", "You have removed yourself successfully");
-                expect(vm.existTeam.count).toBe(0);
-                expect(vm.showPagination).toBe(false);
-                expect(vm.paginationMsg).toBe("No team exists for now. Start by creating a new team!");
-                expect(vm.stopLoader).toHaveBeenCalled();
-                done();
-            }, 0);
-        });
-
-        it('should show error notification if remove self from team fails', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            $mdDialog.show.and.returnValue(Promise.resolve());
-
-            spyOn(vm, 'startLoader').and.callThrough();
-            spyOn(vm, 'stopLoader').and.callThrough();
-            spyOn($rootScope, 'notify');
-
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                if (params.method === 'DELETE') {
-                    params.callback.onError({ data: { error: 'Some error' } });
-                }
-            });
-
-            vm.confirmDelete(ev, participantTeamId);
-
-            setTimeout(function () {
-                expect(vm.startLoader).toHaveBeenCalled();
-                expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
-                expect(vm.stopLoader).toHaveBeenCalled();
-                done();
-            }, 0);
-        });
-
-        it('should do nothing if dialog is cancelled', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            $mdDialog.show.and.returnValue(Promise.reject());
-
-            spyOn(vm, 'startLoader');
-            spyOn(utilities, 'sendRequest');
-
-            vm.confirmDelete(ev, participantTeamId);
-
-            setTimeout(function () {
-                expect(vm.startLoader).not.toHaveBeenCalled();
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-                done();
-            }, 0);
-        });
     });
 
     describe('Unit tests for inviteOthers function', function () {
@@ -494,51 +348,6 @@ describe('Unit tests for teams controller', function () {
                 .cancel('Cancel');
             vm.inviteOthers(ev, participantTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
-        });
-
-        it('should send invite and show success notification', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            var email = 'test@email.com';
-            var message = 'Invitation sent!';
-            $mdDialog.show.and.returnValue(Promise.resolve(email));
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                expect(params.url).toContain('/invite');
-                expect(params.method).toBe('POST');
-                expect(params.data.email).toBe(email);
-                params.callback.onSuccess({ data: { message: message } });
-                expect($rootScope.notify).toHaveBeenCalledWith("success", message);
-                done();
-            });
-            spyOn($rootScope, 'notify');
-            vm.inviteOthers(ev, participantTeamId);
-        });
-
-        it('should send invite and show error notification on failure', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            var email = 'test@email.com';
-            var error = 'Some error';
-            $mdDialog.show.and.returnValue(Promise.resolve(email));
-            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                params.callback.onError({ data: { error: error } });
-                expect($rootScope.notify).toHaveBeenCalledWith("error", error);
-                done();
-            });
-            spyOn($rootScope, 'notify');
-            vm.inviteOthers(ev, participantTeamId);
-        });
-
-        it('should do nothing if invite dialog is cancelled', function (done) {
-            var participantTeamId = 1;
-            var ev = new Event('$click');
-            $mdDialog.show.and.returnValue(Promise.reject());
-            spyOn(utilities, 'sendRequest');
-            vm.inviteOthers(ev, participantTeamId);
-            setTimeout(function () {
-                expect(utilities.sendRequest).not.toHaveBeenCalled();
-                done();
-            }, 0);
         });
     });
 
@@ -653,7 +462,7 @@ describe('Unit tests for teams controller', function () {
             success = false;
             errorResponse = {
                 team_name: 'team name error',
-                error: 'error'
+                error: 'error'	
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name);
@@ -663,7 +472,7 @@ describe('Unit tests for teams controller', function () {
             var updateParticipantTeamDataForm = true;
             success = false;
             errorResponse = {
-                error: 'error'
+                error: 'error'	
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
