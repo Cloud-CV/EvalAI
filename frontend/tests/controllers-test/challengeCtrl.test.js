@@ -3,6 +3,7 @@
 describe('Unit tests for challenge controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
+
     beforeEach(function () {
         angular.mock.inject(function ($controller) {
             $controller.prototype.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
@@ -1217,15 +1218,15 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should handle submission GET callback and set flags and showUpdate correctly', function () {
-           
+            // Arrange: set up initial state
             vm.submissionResult = { results: [{ id: 1, status: 'finished' }] };
             vm.currentPage = 1;
             vm.challengeId = 42;
             vm.phaseId = 99;
 
-            
+            // Spy on utilities.sendRequest to immediately call the callback
             spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
-               
+                // Simulate the real callback with a mock response
                 parameters.callback.onSuccess({
                     data: {
                         count: 2,
@@ -1239,10 +1240,10 @@ describe('Unit tests for challenge controller', function () {
                 });
             });
 
-           
+            // Act: call the real controller method
             vm.refreshSubmissionData();
 
-           
+            // Assert: check that the flags are set
             expect(vm.submissionVisibility[1]).toBe(true);
             expect(vm.submissionVisibility[2]).toBe(false);
             expect(vm.baselineStatus[1]).toBe(false);
@@ -1250,19 +1251,19 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.verifiedStatus[1]).toBe(true);
             expect(vm.verifiedStatus[2]).toBe(false);
 
-            
+            // showUpdate should be true because the lengths differ
             expect(vm.showUpdate).toBe(false);
         });
 
         it('should set pagination variables correctly when next and previous are null', function () {
-           
+            // Arrange
             var details = {
                 count: 150,
                 next: null,
                 previous: null,
                 results: []
             };
-            
+            // Simulate the callback logic
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
                 vm.isNext = 'disabled';
@@ -1280,7 +1281,7 @@ describe('Unit tests for challenge controller', function () {
             }
             vm.stopLoader();
 
-           
+            // Assert
             expect(vm.isNext).toBe('disabled');
             expect(vm.currentPage).toBe(1);
             expect(vm.currentRefPage).toBe(1);
@@ -1289,14 +1290,14 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should set pagination variables correctly when next and previous are not null', function () {
-            
+            // Arrange
             var details = {
                 count: 300,
                 next: 'page=3',
                 previous: 'page=1',
                 results: []
             };
-            
+            // Simulate the callback logic
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
                 vm.isNext = 'disabled';
@@ -1314,9 +1315,9 @@ describe('Unit tests for challenge controller', function () {
             }
             vm.stopLoader();
 
-            
+            // Assert
             expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2); 
+            expect(vm.currentPage).toBe(2); // page=3, so 3-1=2
             expect(vm.currentRefPage).toBe(2);
             expect(vm.isPrev).toBe('');
             expect(vm.stopLoader).toHaveBeenCalled();
@@ -1326,7 +1327,7 @@ describe('Unit tests for challenge controller', function () {
         var details, submissionResult;
 
         beforeEach(function () {
-            
+            // Setup a minimal vm and submissionResult
             vm.submissionVisibility = {};
             vm.baselineStatus = {};
             vm.verifiedStatus = {};
@@ -1341,7 +1342,7 @@ describe('Unit tests for challenge controller', function () {
                     { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false }
                 ]
             };
-            
+            // Simulate callback logic
             for (var i = 0; i < details.results.length; i++) {
                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
@@ -3173,27 +3174,33 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
         });
 
-        it('should PATCH and on success update selectedPhaseSplit, call getLeaderboard, and set sortLeaderboardTextOption', function () {         
+        it('should PATCH and on success update selectedPhaseSplit, call getLeaderboard, and set sortLeaderboardTextOption', function () {
+            
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({
                     data: { show_leaderboard_by_latest_submission: true, id: 123 }
                 });
             });
-           
+
+            
             vm.toggleShowLeaderboardByLatest();
 
+            
             expect(vm.selectedPhaseSplit.show_leaderboard_by_latest_submission).toBe(true);
             expect(vm.getLeaderboard).toHaveBeenCalledWith(123);
             expect(vm.sortLeaderboardTextOption).toBe("Sort by best");
         });
 
-        it('should call stopLoader and notify on error', function () {          
+        it('should call stopLoader and notify on error', function () {
+            
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onError({ data: "Some error" });
             });
+
             
             vm.toggleShowLeaderboardByLatest();
-          
+
+            
             expect(vm.stopLoader).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error");
         });
@@ -3225,9 +3232,11 @@ describe('Unit tests for challenge controller', function () {
                     data: { results: leaderboardData }
                 });
             });
+
             
             vm.getAllEntriesOnPublicLeaderboard(123);
-          
+
+            
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toBe(true);
             expect(vm.phaseSplitId).toBe(123);
@@ -3302,11 +3311,11 @@ describe('Unit tests for challenge controller', function () {
             vm.setWorkerResources();
 
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resources scaled!");
-            expect(vm.team).toEqual({}); // <-- fix here
+            expect(vm.team).toEqual({}); 
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        // ... rest unchanged
+        
     });
 
     describe('Unit tests for load function (submissions pagination)', function () {
@@ -3467,16 +3476,16 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should set approved_teams and call activateCollapsible on success', function () {
-            // Arrange
+            
             var fakeTeams = [{ id: 1, name: 'Team A' }];
             utilities.sendRequest.and.callFake(function (params) {
                 params.callback.onSuccess({ data: fakeTeams });
             });
 
-            // Act
+            
             vm.team_approval_list();
 
-            // Assert
+            
             expect(vm.approved_teams).toEqual(fakeTeams);
             expect(vm.activateCollapsible).toHaveBeenCalled();
         });
@@ -3496,6 +3505,7 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
+            
             var anchorMock = [{ click: jasmine.createSpy('click') }];
             anchorMock.attr = function () { return anchorMock; };
             spyOn(angular, 'element').and.returnValue(anchorMock);
@@ -3672,7 +3682,7 @@ describe('Unit tests for challenge controller', function () {
                 preserveScope: true,
                 templateUrl: 'dist/views/web/challenge/cancel-submission.html'
             });
-
+           
             vm.allowCancelRunningSubmissions = false;
             vm.showCancelSubmissionDialog(789, "submitted");
             expect(vm.submissionId).toBe(789);
@@ -3795,7 +3805,6 @@ describe('Unit tests for challenge controller', function () {
                 params.callback.onSuccess({ status: 200 });
             });
 
-            
             jasmine.clock().install();
             vm.deregister(true);
 
@@ -3804,7 +3813,6 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($state.go).toHaveBeenCalledWith('web.challenge-main.challenge-page.overview');
 
-            // Fast-forward the setTimeout
             jasmine.clock().tick(101);
             expect($state.reload).toHaveBeenCalled();
             jasmine.clock().uninstall();
@@ -3852,7 +3860,6 @@ describe('Unit tests for challenge controller', function () {
             vm.openLeaderboardDropdown();
             expect(vm.chosenMetrics).toEqual(['foo', 'bar']);
             expect(vm.leaderboardDropdown).toBe(true);
-
             vm.openLeaderboardDropdown();
             expect(vm.leaderboardDropdown).toBe(false);
         });
@@ -3894,7 +3901,6 @@ describe('Unit tests for challenge controller', function () {
 
         it('should do nothing if metaAttributesforCurrentSubmission is null', function () {
             vm.metaAttributesforCurrentSubmission = null;
-            // Should not throw
             expect(function () { vm.clearMetaAttributeValues(); }).not.toThrow();
         });
     });
@@ -3978,21 +3984,16 @@ describe('Unit tests for challenge controller', function () {
             userKey = 'dummy-token';
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
-            
-            
         });
 
         it('should handle successful resume of submission', function () {
-            
             utilities.sendRequest.and.callFake(function (params) {
                 
                 params.callback.onSuccess({ data: { success: 'Resume started!' } });
             });
 
-            
             vm.resumeSubmission(submissionObject);
 
-            
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Resume started!");
             expect(submissionObject.classList2).toEqual(['']);
         });
@@ -4156,7 +4157,7 @@ describe('Unit tests for challenge controller', function () {
             details = {
                 count: 1,
                 results: [{
-                    id: 102,
+                    id: 102,  
                     leaderboard_public: false
                 }]
             };
@@ -4269,6 +4270,8 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(inject(function (_moment_) {
             moment = _moment_;
             vm.leaderboard = [];
+
+            
             duration = {
                 _data: {},
                 months: function () { return this._data.months; },
@@ -4321,7 +4324,7 @@ describe('Unit tests for challenge controller', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 1, hours: 0, minutes: 0, seconds: 0 };
 
-           
+            
             if (duration._data.months != 0) {
                 
             } else if (duration._data.days != 0) {
@@ -4342,8 +4345,9 @@ describe('Unit tests for challenge controller', function () {
             vm.leaderboard[0] = {};
             duration._data = { months: 0, days: 5, hours: 0, minutes: 0, seconds: 0 };
 
+            
             if (duration._data.months != 0) {
-               
+                
             } else if (duration._data.days != 0) {
                 var days = duration.asDays();
                 vm.leaderboard[0].submission__submitted_at = days;
@@ -4364,9 +4368,9 @@ describe('Unit tests for challenge controller', function () {
 
             
             if (duration._data.months != 0) {
-               
+                
             } else if (duration._data.days != 0) {
-               
+                
             } else if (duration._data.hours != 0) {
                 var hours = duration.asHours();
                 vm.leaderboard[0].submission__submitted_at = hours;
@@ -4414,7 +4418,7 @@ describe('Unit tests for challenge controller', function () {
             } else if (duration._data.days != 0) {
                 
             } else if (duration._data.hours != 0) {
-                
+               
             } else if (duration._data.minutes != 0) {
                 var minutes = duration.asMinutes();
                 vm.leaderboard[0].submission__submitted_at = minutes;
@@ -4462,7 +4466,7 @@ describe('Unit tests for challenge controller', function () {
             if (duration._data.months != 0) {
                 
             } else if (duration._data.days != 0) {
-               
+                
             } else if (duration._data.hours != 0) {
                 
             } else if (duration._data.minutes != 0) {
@@ -4487,7 +4491,7 @@ describe('Unit tests for challenge controller', function () {
 
             
             if (duration._data.months != 0) {
-                
+               
             } else if (duration._data.days != 0) {
                 
             } else if (duration._data.hours != 0) {
@@ -4513,7 +4517,6 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'hide');
             vm.termsAndConditions = false;
-           
             vm.selectExistTeam = jasmine.createSpy('selectExistTeam');
         });
 
@@ -4534,7 +4537,7 @@ describe('Unit tests for challenge controller', function () {
             vm.acceptTermsAndConditions(acceptTermsAndConditionsForm);
 
             expect(vm.selectExistTeam).not.toHaveBeenCalled();
-            expect($mdDialog.hide).not.toHaveBeenCalled(); 
+            expect($mdDialog.hide).not.toHaveBeenCalled();
         });
 
         it('should hide dialog when form is invalid', function () {
@@ -4584,7 +4587,7 @@ describe('Unit tests for challenge controller', function () {
         beforeEach(function () {
             submissionObject = { id: 123, classList: [] };
             parameters = {};
-            userKey = 'encrypted key'; 
+            userKey = 'encrypted key';
             spyOn(utilities, 'sendRequest');
             spyOn($rootScope, 'notify');
         });
@@ -4682,12 +4685,11 @@ describe('Unit tests for challenge controller', function () {
                 classList: ['existing-class', 'another-class']
             };
             utilities.sendRequest.and.callFake(function (params) {
-                // Check immediately after calling reRunSubmission
                 expect(submissionWithExistingClasses.classList).toEqual(['spin', 'progress-indicator']);
                 params.callback.onSuccess({ data: { success: 'Success' } });
             });
             vm.reRunSubmission(submissionWithExistingClasses);
-            // After callback
+            
             expect(submissionWithExistingClasses.classList).toEqual(['']);
         });
 
@@ -4795,7 +4797,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn($rootScope, 'notify');
 
             vm = $controller('ChallengeCtrl', { $scope: $scope, $rootScope: $rootScope, utilities: utilities });
-            vm.challengeId = 42; 
+            vm.challengeId = 42;
         }));
 
         it('should notify success when details.action is "Success"', function () {
@@ -5084,7 +5086,7 @@ describe('Unit tests for challenge controller', function () {
             vm.stopLoader();
 
             expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(4);
+            expect(vm.currentPage).toBe(4); 
             expect(vm.isPrev).toBe('disabled');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
