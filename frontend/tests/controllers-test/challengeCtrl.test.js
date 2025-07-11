@@ -1218,15 +1218,15 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should handle submission GET callback and set flags and showUpdate correctly', function () {
-            // Arrange: set up initial state
+           
             vm.submissionResult = { results: [{ id: 1, status: 'finished' }] };
             vm.currentPage = 1;
             vm.challengeId = 42;
             vm.phaseId = 99;
 
-            // Spy on utilities.sendRequest to immediately call the callback
+            
             spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
-                // Simulate the real callback with a mock response
+                
                 parameters.callback.onSuccess({
                     data: {
                         count: 2,
@@ -1240,10 +1240,10 @@ describe('Unit tests for challenge controller', function () {
                 });
             });
 
-            // Act: call the real controller method
+            
             vm.refreshSubmissionData();
 
-            // Assert: check that the flags are set
+            
             expect(vm.submissionVisibility[1]).toBe(true);
             expect(vm.submissionVisibility[2]).toBe(false);
             expect(vm.baselineStatus[1]).toBe(false);
@@ -1251,19 +1251,19 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.verifiedStatus[1]).toBe(true);
             expect(vm.verifiedStatus[2]).toBe(false);
 
-            // showUpdate should be true because the lengths differ
+            
             expect(vm.showUpdate).toBe(false);
         });
 
         it('should set pagination variables correctly when next and previous are null', function () {
-            // Arrange
+            
             var details = {
                 count: 150,
                 next: null,
                 previous: null,
                 results: []
             };
-            // Simulate the callback logic
+            
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
                 vm.isNext = 'disabled';
@@ -1281,7 +1281,7 @@ describe('Unit tests for challenge controller', function () {
             }
             vm.stopLoader();
 
-            // Assert
+            
             expect(vm.isNext).toBe('disabled');
             expect(vm.currentPage).toBe(1);
             expect(vm.currentRefPage).toBe(1);
@@ -1290,14 +1290,14 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('should set pagination variables correctly when next and previous are not null', function () {
-            // Arrange
+            
             var details = {
                 count: 300,
                 next: 'page=3',
                 previous: 'page=1',
                 results: []
             };
-            // Simulate the callback logic
+            
             vm.submissionResult = details;
             if (vm.submissionResult.next === null) {
                 vm.isNext = 'disabled';
@@ -1315,9 +1315,9 @@ describe('Unit tests for challenge controller', function () {
             }
             vm.stopLoader();
 
-            // Assert
+            
             expect(vm.isNext).toBe('');
-            expect(vm.currentPage).toBe(2); // page=3, so 3-1=2
+            expect(vm.currentPage).toBe(2); 
             expect(vm.currentRefPage).toBe(2);
             expect(vm.isPrev).toBe('');
             expect(vm.stopLoader).toHaveBeenCalled();
@@ -1327,7 +1327,7 @@ describe('Unit tests for challenge controller', function () {
         var details, submissionResult;
 
         beforeEach(function () {
-            // Setup a minimal vm and submissionResult
+            
             vm.submissionVisibility = {};
             vm.baselineStatus = {};
             vm.verifiedStatus = {};
@@ -1342,7 +1342,7 @@ describe('Unit tests for challenge controller', function () {
                     { id: 2, is_public: false, is_baseline: true, is_verified_by_host: false }
                 ]
             };
-            // Simulate callback logic
+            
             for (var i = 0; i < details.results.length; i++) {
                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
