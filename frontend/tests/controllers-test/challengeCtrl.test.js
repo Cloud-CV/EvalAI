@@ -4915,7 +4915,6 @@ describe('Unit tests for challenge controller', function () {
             };
 
             localVm.load(url);
-
             expect(localVm.startLoader).toHaveBeenCalledWith("Loading Submissions");
             expect(localVm.isNext).toBe('');
             expect(localVm.currentPage).toBe(2);
