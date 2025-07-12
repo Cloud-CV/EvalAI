@@ -247,8 +247,6 @@ class Command(BaseCommand):
             help="Limit number of results (default: 50)",
         )
 
-
-
         # Check consent status
         subparsers.add_parser(
             "check-consent",
@@ -335,7 +333,9 @@ class Command(BaseCommand):
 
         now = timezone.now()
         eligible_submissions = Submission.objects.filter(
-            retention_eligible_date__lte=now, is_artifact_deleted=False
+            retention_eligible_date__lte=now,
+            retention_eligible_date__isnull=False,  # Exclude indefinite retention
+            is_artifact_deleted=False,
         ).select_related("challenge_phase__challenge")
 
         if not eligible_submissions.exists():
@@ -527,11 +527,11 @@ class Command(BaseCommand):
         else:
             self.stdout.write(
                 self.style.WARNING(
-                    "❌ HOST HAS NOT CONSENTED - 90-DAY SAFETY RETENTION APPLIED"
+                    "❌ HOST HAS NOT CONSENTED - INDEFINITE RETENTION APPLIED"
                 )
             )
             self.stdout.write(
-                f"   Retention policy: 90-day safety retention (default)"
+                f"   Retention policy: Indefinite retention (no automatic cleanup)"
             )
             self.stdout.write(
                 f"   Action needed: Host must provide consent for 30-day retention"
@@ -578,9 +578,18 @@ class Command(BaseCommand):
                     f"  Retention eligible date: {retention_date}"
                 )
             else:
-                self.stdout.write(
-                    "  Retention not applicable (phase still public or no end date)"
-                )
+                if phase.is_public:
+                    self.stdout.write(
+                        "  Retention not applicable (phase still public)"
+                    )
+                elif not phase.end_date:
+                    self.stdout.write(
+                        "  Retention not applicable (no end date)"
+                    )
+                else:
+                    self.stdout.write(
+                        "  Retention: Indefinite (no host consent)"
+                    )
 
             submissions = Submission.objects.filter(challenge_phase=phase)
             total_submissions = submissions.count()
@@ -630,6 +639,7 @@ class Command(BaseCommand):
         ).count()
         eligible_submissions = Submission.objects.filter(
             retention_eligible_date__lte=timezone.now(),
+            retention_eligible_date__isnull=False,  # Exclude indefinite retention
             is_artifact_deleted=False,
         ).count()
 
@@ -650,7 +660,7 @@ class Command(BaseCommand):
             f"With consent (30-day retention): {consented_challenges}"
         )
         self.stdout.write(
-            f"Without consent (90-day retention): {non_consented_challenges}"
+            f"Without consent (indefinite retention): {non_consented_challenges}"
         )
 
         if non_consented_challenges > 0:
@@ -671,6 +681,7 @@ class Command(BaseCommand):
         upcoming_submissions = Submission.objects.filter(
             retention_eligible_date__lte=upcoming_date,
             retention_eligible_date__gt=timezone.now(),
+            retention_eligible_date__isnull=False,  # Exclude indefinite retention
             is_artifact_deleted=False,
         ).select_related("challenge_phase__challenge")
 
@@ -694,7 +705,7 @@ class Command(BaseCommand):
                 consent_status = (
                     "✅ 30-day"
                     if challenge_data["has_consent"]
-                    else "❌ 90-day"
+                    else "❌ Indefinite"
                 )
                 self.stdout.write(
                     f"  - {challenge_data['name']}: {challenge_data['count']} submissions ({consent_status})"
@@ -902,7 +913,7 @@ class Command(BaseCommand):
                     "retention_policy": (
                         "30-day"
                         if challenge.retention_policy_consent
-                        else "90-day safety"
+                        else "indefinite"
                     ),
                 },
                 "admin_override": {
@@ -964,6 +975,7 @@ class Command(BaseCommand):
             challenge_data["submissions"]["eligible"] = (
                 challenge_submissions.filter(
                     retention_eligible_date__lte=now,
+                    retention_eligible_date__isnull=False,  # Exclude indefinite retention
                     is_artifact_deleted=False,
                 ).count()
             )
@@ -1160,14 +1172,18 @@ class Command(BaseCommand):
                 f"Found {orphaned_submissions} submissions without challenge phases"
             )
 
-        # Check 3: Submissions with missing retention dates
+        # Check 3: Submissions with missing retention dates (excluding indefinite retention)
+        # Only count submissions that should have retention dates but don't
         missing_retention_dates = Submission.objects.filter(
             retention_eligible_date__isnull=True,
             is_artifact_deleted=False,
+            challenge_phase__end_date__isnull=False,  # Has end date
+            challenge_phase__is_public=False,  # Phase is not public
+            challenge_phase__challenge__retention_policy_consent=True,  # Has consent
         ).count()
         if missing_retention_dates > 0:
             health_status["warnings"].append(
-                f"Found {missing_retention_dates} submissions without retention dates"
+                f"Found {missing_retention_dates} submissions without retention dates (should have 30-day retention)"
             )
 
         # Check 4: Recent errors (if verbose)
@@ -1352,8 +1368,6 @@ class Command(BaseCommand):
 
     # NEW: Consent management methods
 
-
-
     def handle_check_consent(self, options):
         """Handle checking consent status for challenges"""
         self.stdout.write("Checking retention policy consent status:")
@@ -1369,7 +1383,7 @@ class Command(BaseCommand):
                 status = "✅ CONSENTED (30-day retention allowed)"
             else:
                 consent_stats["without_consent"] += 1
-                status = "❌ NO CONSENT (90-day retention for safety)"
+                status = "❌ NO CONSENT (indefinite retention for safety)"
 
             self.stdout.write(
                 f"Challenge {challenge.pk}: {challenge.title[:40]:<40} | {status}"
@@ -1383,7 +1397,7 @@ class Command(BaseCommand):
             f"With consent (30-day retention allowed): {consent_stats['with_consent']}"
         )
         self.stdout.write(
-            f"Without consent (90-day retention for safety): {consent_stats['without_consent']}"
+            f"Without consent (indefinite retention for safety): {consent_stats['without_consent']}"
         )
 
         if consent_stats["without_consent"] > 0:

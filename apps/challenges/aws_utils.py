@@ -1914,20 +1914,16 @@ def calculate_retention_period_days(challenge_end_date, challenge=None):
             # Default 30-day retention when host has consented
             return 30
 
-    # No host consent - use conservative default (longer retention)
-    # Default retention calculation (90 days after challenge ends for safety)
+    # No host consent - use indefinite retention (no automatic cleanup)
+    # Without consent, data is retained indefinitely for safety
     if challenge_end_date > now:
-        # Challenge is still active, retain until end date + 90 days
-        # Round up to the nearest day to avoid flakiness
-        seconds_until_end = (challenge_end_date - now).total_seconds()
-        days_until_end = math.ceil(seconds_until_end / (24 * 3600.0))
-        return int(days_until_end) + 90
+        # Challenge is still active, retain indefinitely
+        # Return a very large number to effectively make it indefinite
+        return 3653  # Maximum AWS CloudWatch retention period (10 years)
     else:
-        # Challenge has ended, retain for 90 more days
-        # Round down to match original behavior of .days
-        seconds_since_end = (now - challenge_end_date).total_seconds()
-        days_since_end = math.floor(seconds_since_end / (24 * 3600.0))
-        return max(90 - int(days_since_end), 1)  # At least 1 day
+        # Challenge has ended, retain indefinitely
+        # Return maximum retention period
+        return 3653  # Maximum AWS CloudWatch retention period (10 years)
 
 
 def map_retention_days_to_aws_values(days):
@@ -1993,7 +1989,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
             return {
                 "error": f"Challenge {challenge_pk} host has not consented to retention policy. "
                 "Please obtain consent before applying retention policies. "
-                "Without consent, data is retained for 90 days for safety.",
+                "Without consent, data is retained indefinitely for safety.",
                 "requires_consent": True,
                 "challenge_id": challenge_pk,
             }
@@ -2045,7 +2041,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
             "retention_days": aws_retention_days,
             "log_group": log_group_name,
             "message": f"Retention policy set to {aws_retention_days} days "
-            f"({'30-day policy applied' if challenge_obj.retention_policy_consent else '90-day safety retention'})",
+            f"({'30-day policy applied' if challenge_obj.retention_policy_consent else 'indefinite retention (no consent)'})",
             "host_consent": challenge_obj.retention_policy_consent,
         }
 
@@ -2076,7 +2072,7 @@ def calculate_submission_retention_date(challenge_phase):
         challenge_phase: ChallengePhase object
 
     Returns:
-        datetime: Date when submission artifacts can be deleted
+        datetime: Date when submission artifacts can be deleted, or None if indefinite retention
     """
     from datetime import timedelta
 
@@ -2092,17 +2088,14 @@ def calculate_submission_retention_date(challenge_phase):
 
     # Check if challenge has host consent
     if challenge.retention_policy_consent:
-        # Use challenge-level retention policy
+        # Use challenge-level retention policy (30 days)
         retention_days = calculate_retention_period_days(
             challenge_phase.end_date, challenge
         )
+        return challenge_phase.end_date + timedelta(days=retention_days)
     else:
-        # No host consent, use default retention period
-        retention_days = calculate_retention_period_days(
-            challenge_phase.end_date, challenge
-        )
-
-    return challenge_phase.end_date + timedelta(days=retention_days)
+        # No host consent - indefinite retention (no automatic cleanup)
+        return None
 
 
 def delete_submission_files_from_storage(submission):
@@ -2209,7 +2202,9 @@ def cleanup_expired_submission_artifacts():
     # Find submissions eligible for cleanup
     now = timezone.now()
     eligible_submissions = Submission.objects.filter(
-        retention_eligible_date__lte=now, is_artifact_deleted=False
+        retention_eligible_date__lte=now,
+        retention_eligible_date__isnull=False,  # Exclude indefinite retention
+        is_artifact_deleted=False,
     ).select_related("challenge_phase__challenge")
 
     cleanup_stats = {
@@ -2307,36 +2302,26 @@ def update_submission_retention_dates():
 
         for phase in ended_phases:
             try:
-                # Process submissions by type
-                for submission_type in [
-                    "participant",
-                    "host",
-                    "baseline",
-                    "evaluation_output",
-                ]:
-                    retention_date = calculate_submission_retention_date(
-                        phase, submission_type
-                    )
-                    if retention_date:
-                        # Update submissions for this phase and type
-                        submissions_updated = Submission.objects.filter(
-                            challenge_phase=phase,
-                            submission_type=submission_type,
-                            retention_eligible_date__isnull=True,
-                            is_artifact_deleted=False,
-                        ).update(retention_eligible_date=retention_date)
+                retention_date = calculate_submission_retention_date(phase)
+                if retention_date:
+                    # Update submissions for this phase
+                    submissions_updated = Submission.objects.filter(
+                        challenge_phase=phase,
+                        retention_eligible_date__isnull=True,
+                        is_artifact_deleted=False,
+                    ).update(retention_eligible_date=retention_date)
 
-                        updated_count += submissions_updated
+                    updated_count += submissions_updated
 
-                        if submissions_updated > 0:
-                            logger.info(
-                                f"Updated {submissions_updated} {submission_type} submissions for phase {phase.pk} "
-                                f"({phase.challenge.title}) with retention date {retention_date}"
-                            )
-                    else:
-                        logger.debug(
-                            f"No retention date calculated for phase {phase.pk} submission type {submission_type} - phase may still be public"
+                    if submissions_updated > 0:
+                        logger.info(
+                            f"Updated {submissions_updated} submissions for phase {phase.pk} "
+                            f"({phase.challenge.title}) with retention date {retention_date}"
                         )
+                else:
+                    logger.debug(
+                        f"No retention date calculated for phase {phase.pk} - phase may still be public or indefinite retention"
+                    )
 
             except Exception as e:
                 error_msg = f"Failed to update retention dates for phase {phase.pk}: {str(e)}"
@@ -2480,6 +2465,7 @@ def weekly_retention_notifications_and_consent_log():
     warning_date = timezone.now() + timedelta(days=14)
     warning_submissions = Submission.objects.filter(
         retention_eligible_date__date=warning_date.date(),
+        retention_eligible_date__isnull=False,  # Exclude indefinite retention
         is_artifact_deleted=False,
     ).select_related("challenge_phase__challenge__creator")
 

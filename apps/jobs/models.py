@@ -162,18 +162,6 @@ class Submission(TimeStampedModel):
     )
 
     # Submission type and retention policy tracking
-    submission_type = models.CharField(
-        max_length=50,
-        choices=[
-            ("participant", "Participant Submission"),
-            ("host", "Host Submission"),
-            ("baseline", "Baseline Submission"),
-            ("evaluation_output", "Evaluation Script Output"),
-        ],
-        default="participant",
-        help_text="Type of submission for retention policy purposes",
-        db_index=True,
-    )
     retention_policy_applied = models.CharField(
         max_length=100,
         blank=True,

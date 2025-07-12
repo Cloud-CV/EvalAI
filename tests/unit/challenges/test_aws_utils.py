@@ -3167,17 +3167,17 @@ class TestRetentionCalculations(TestCase):
 
         now = timezone.now()
 
-        # Future end date: 10 days from now should give 40 days retention
+        # Future end date: 10 days from now should give indefinite retention (no consent)
         future_end = now + timedelta(days=10)
-        self.assertEqual(calculate_retention_period_days(future_end), 40)
+        self.assertEqual(calculate_retention_period_days(future_end), 3653)
 
-        # Past end date: 5 days ago should give 25 days retention
+        # Past end date: 5 days ago should give indefinite retention (no consent)
         past_end = now - timedelta(days=5)
-        self.assertEqual(calculate_retention_period_days(past_end), 25)
+        self.assertEqual(calculate_retention_period_days(past_end), 3653)
 
-        # Very old end date should give minimum 1 day
+        # Very old end date should give indefinite retention (no consent)
         old_end = now - timedelta(days=50)
-        self.assertEqual(calculate_retention_period_days(old_end), 1)
+        self.assertEqual(calculate_retention_period_days(old_end), 3653)
 
     def test_aws_retention_mapping(self):
         """Test mapping to valid AWS CloudWatch values"""
@@ -3218,7 +3218,7 @@ class TestRetentionCalculations(TestCase):
             calculate_retention_period_days(
                 end_date, challenge_without_consent
             ),
-            95,
+            3653,
         )
 
 
@@ -3748,71 +3748,6 @@ class TestCleanupExpiredSubmissionArtifacts(TestCase):
 
         result = cleanup_expired_submission_artifacts()
         self.assertEqual(result["total_processed"], 0)
-
-
-class TestUpdateSubmissionRetentionDates(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@test.com", password="testpass"
-        )
-        self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Test Host Team", created_by=self.user
-        )
-        self.challenge = Challenge.objects.create(
-            title="Test Challenge",
-            description="Test Description",
-            creator=self.challenge_host_team,
-            start_date=timezone.now() - timedelta(days=10),
-            end_date=timezone.now() + timedelta(days=5),
-        )
-        self.challenge_phase = ChallengePhase.objects.create(
-            name="Test Phase",
-            description="Test Phase Description",
-            challenge=self.challenge,
-            start_date=timezone.now() - timedelta(days=10),
-            end_date=timezone.now() - timedelta(days=1),
-            is_public=False,
-        )
-
-    def test_update_submission_retention_dates_success(self):
-        from challenges.aws_utils import update_submission_retention_dates
-        from jobs.models import Submission
-
-        participant_team = ParticipantTeam.objects.create(
-            team_name="Test Team", created_by=self.user
-        )
-        submission1 = Submission.objects.create(
-            participant_team=participant_team,
-            challenge_phase=self.challenge_phase,
-            created_by=self.user,
-            status="finished",
-            retention_eligible_date=None,
-            is_artifact_deleted=False,
-            submission_type="participant",
-        )
-        submission2 = Submission.objects.create(
-            participant_team=participant_team,
-            challenge_phase=self.challenge_phase,
-            created_by=self.user,
-            status="finished",
-            retention_eligible_date=None,
-            is_artifact_deleted=False,
-            submission_type="host",
-        )
-        result = update_submission_retention_dates()
-        self.assertEqual(result["updated_submissions"], 2)
-        submission1.refresh_from_db()
-        submission2.refresh_from_db()
-        self.assertIsNotNone(submission1.retention_eligible_date)
-        self.assertIsNotNone(submission2.retention_eligible_date)
-
-    def test_update_submission_retention_dates_no_phases(self):
-        from challenges.aws_utils import update_submission_retention_dates
-
-        self.challenge_phase.is_public = True
-        self.challenge_phase.save()
-        result = update_submission_retention_dates()
-        self.assertEqual(result["updated_submissions"], 0)
 
 
 class TestWeeklyRetentionNotificationsAndConsentLog(TestCase):

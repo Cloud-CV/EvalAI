@@ -3131,7 +3131,6 @@
 
         // Fetch retention consent status
         vm.fetchRetentionConsentStatus = function() {
-            console.log('Fetching retention consent status for challenge:', vm.challengeId);
             vm.retentionConsentLoading = true;
             vm.retentionConsentError = null;
             var parameters = {
@@ -3142,7 +3141,6 @@
                 callback: {
                     onSuccess: function(response) {
                         var data = response.data;
-                        console.log('Retention consent status received:', data);
                         vm.retentionConsentChecked = !!data.has_consent;
                         vm.retentionConsentInfo = {
                             consent_by: data.consent_by,
@@ -3150,10 +3148,8 @@
                             notes: data.retention_notes
                         };
                         vm.retentionConsentLoading = false;
-                        console.log('Updated consent status:', vm.retentionConsentChecked);
                     },
                     onError: function(response) {
-                        console.error('Error fetching retention consent status:', response);
                         vm.retentionConsentError = response.data && response.data.error ? response.data.error : 'Failed to load retention consent status.';
                         vm.retentionConsentLoading = false;
                     }
@@ -3163,7 +3159,7 @@
         };
 
         // Call on init if host
-        $scope.$watch(function() { return vm.isChallengeHost; }, function(newVal) {
+        $scope.$watch(function() { return vm.isChallengeHost }, function(newVal) {
             if (newVal) {
                 vm.fetchRetentionConsentStatus();
             }
@@ -3176,18 +3172,10 @@
 
         // Toggle retention consent with template dialog
         vm.toggleRetentionConsent = function(ev) {
-            console.log('Retention consent toggle function called!', ev);
-            console.log('Current consent status:', vm.retentionConsentChecked);
-            console.log('Loading status:', vm.retentionConsentLoading);
-            
             // Prevent action if loading
             if (vm.retentionConsentLoading) {
-                console.log('Still loading, preventing action');
                 return;
             }
-            
-            // Determine consent state for template
-            var consentState = vm.retentionConsentChecked ? 'withdraw' : 'provide';
             
             // Determine consent state and show appropriate dialog
             var consentState = vm.retentionConsentChecked ? 'withdraw' : 'provide';
@@ -3217,7 +3205,6 @@
                 actuallyToggleRetentionConsent();
             }, function() {
                 // User clicked "Cancel" - do nothing
-                console.log('User cancelled retention consent change');
             });
         };
 

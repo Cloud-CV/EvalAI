@@ -9,10 +9,22 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("challenges", "0114_add_log_retention_override"),
+        ("challenges", "0113_add_github_branch_field_and_unique_constraint"),
     ]
 
     operations = [
+        # Log retention override field (from 0114)
+        migrations.AddField(
+            model_name="challenge",
+            name="log_retention_days_override",
+            field=models.PositiveIntegerField(
+                blank=True,
+                default=None,
+                help_text="Admin override for CloudWatch log retention period in days (defaults to 30 days when host has consented)",
+                null=True,
+            ),
+        ),
+        # Retention consent fields (from 0115)
         migrations.AddField(
             model_name="challenge",
             name="retention_policy_consent",
@@ -49,16 +61,6 @@ class Migration(migrations.Migration):
             field=models.TextField(
                 blank=True,
                 help_text="Additional notes about retention policy for this challenge",
-                null=True,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="challenge",
-            name="log_retention_days_override",
-            field=models.PositiveIntegerField(
-                blank=True,
-                default=None,
-                help_text="Admin override for CloudWatch log retention period in days (defaults to 30 days when host has consented)",
                 null=True,
             ),
         ),
