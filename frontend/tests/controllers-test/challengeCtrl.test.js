@@ -2714,4 +2714,21 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialogOpened).toBe(true);
         });
     });
+
+    describe('Retention Consent Toggle', function () {
+        var $mdDialog, $rootScope, $controller, $scope, vm;
+        beforeEach(inject(function (_$mdDialog_, _$rootScope_, _$controller_) {
+            $mdDialog = _$mdDialog_;
+            $rootScope = _$rootScope_;
+            $scope = $rootScope.$new();
+            vm = _$controller_('ChallengeCtrl', { $scope: $scope });
+        }));
+
+        it('should open a dialog when retention consent toggle is clicked', function () {
+            spyOn($mdDialog, 'show').and.callThrough();
+            vm.retentionConsentChecked = false;
+            vm.toggleRetentionConsent({});
+            expect($mdDialog.show).toHaveBeenCalled();
+        });
+    });
 });

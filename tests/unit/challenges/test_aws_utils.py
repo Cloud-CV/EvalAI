@@ -3195,6 +3195,38 @@ class TestRetentionCalculations(TestCase):
         self.assertEqual(map_retention_days_to_aws_values(0), 1)
         self.assertEqual(map_retention_days_to_aws_values(5000), 3653)
 
+    def test_retention_period_with_consent_and_without_consent(self):
+        from challenges.aws_utils import calculate_retention_period_days
+        from types import SimpleNamespace
+        now = timezone.now()
+        end_date = now + timedelta(days=5)
+        # Challenge with consent
+        challenge_with_consent = SimpleNamespace(
+            retention_policy_consent=True,
+            log_retention_days_override=None
+        )
+        self.assertEqual(calculate_retention_period_days(end_date, challenge_with_consent), 30)
+        # Challenge without consent
+        challenge_without_consent = SimpleNamespace(
+            retention_policy_consent=False,
+            log_retention_days_override=None
+        )
+        self.assertEqual(calculate_retention_period_days(end_date, challenge_without_consent), 95)
+
+
+def test_set_cloudwatch_log_retention_requires_consent():
+    from challenges.aws_utils import set_cloudwatch_log_retention
+    with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
+         patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+        mock_challenge.return_value.retention_policy_consent = False
+        mock_phases.return_value.exists.return_value = True
+        mock_phase = MagicMock()
+        mock_phase.end_date = timezone.now() + timedelta(days=10)
+        mock_phases.return_value.__iter__.return_value = iter([mock_phase])
+        result = set_cloudwatch_log_retention(123)
+        assert result["requires_consent"] is True
+        assert "host has not consented" in result["error"]
+
 
 @pytest.mark.django_db
 class TestCloudWatchRetention(TestCase):

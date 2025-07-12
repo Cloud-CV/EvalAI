@@ -2453,16 +2453,17 @@ def send_retention_warning_email(
 
 
 @app.task
-def send_retention_warning_notifications():
+def weekly_retention_notifications_and_consent_log():
     """
     Send warning notifications to challenge hosts 14 days before retention cleanup.
+    Also logs a summary of retention consent changes in the last week for admin awareness.
     """
     from datetime import timedelta
-
     from django.utils import timezone
     from jobs.models import Submission
+    from .models import Challenge
 
-    logger.info("Checking for retention warning notifications")
+    logger.info("Checking for retention warning notifications and logging consent changes")
 
     # Find submissions that will be cleaned up in 14 days
     warning_date = timezone.now() + timedelta(days=14)
@@ -2473,123 +2474,140 @@ def send_retention_warning_notifications():
 
     if not warning_submissions.exists():
         logger.info("No submissions require retention warning notifications")
-        return {"notifications_sent": 0}
+    else:
+        logger.info(
+            f"Found {warning_submissions.count()} submissions requiring retention warnings"
+        )
 
-    logger.info(
-        f"Found {warning_submissions.count()} submissions requiring retention warnings"
-    )
+        # Group by challenge to send one email per challenge
+        challenges_to_notify = {}
+        for submission in warning_submissions:
+            challenge = submission.challenge_phase.challenge
+            if challenge.pk not in challenges_to_notify:
+                challenges_to_notify[challenge.pk] = {
+                    "challenge": challenge,
+                    "submission_count": 0,
+                }
+            challenges_to_notify[challenge.pk]["submission_count"] += 1
 
-    # Group by challenge to send one email per challenge
-    challenges_to_notify = {}
-    for submission in warning_submissions:
-        challenge = submission.challenge_phase.challenge
-        if challenge.pk not in challenges_to_notify:
-            challenges_to_notify[challenge.pk] = {
-                "challenge": challenge,
-                "submission_count": 0,
-            }
-        challenges_to_notify[challenge.pk]["submission_count"] += 1
+        notifications_sent = 0
+        notification_errors = []
 
-    notifications_sent = 0
-    notification_errors = []
+        for challenge_data in challenges_to_notify.values():
+            challenge = challenge_data["challenge"]
+            submission_count = challenge_data["submission_count"]
 
-    for challenge_data in challenges_to_notify.values():
-        challenge = challenge_data["challenge"]
-        submission_count = challenge_data["submission_count"]
-
-        try:
-            # Skip if challenge doesn't want host notifications
-            if not challenge.inform_hosts:
-                logger.info(
-                    f"Skipping notification for challenge {challenge.pk} - inform_hosts is False"
-                )
-                continue
-
-            # Send notification email to challenge hosts
-            if (
-                not hasattr(settings, "EVALAI_API_SERVER")
-                or not settings.EVALAI_API_SERVER
-            ):
-                logger.error(
-                    "EVALAI_API_SERVER setting is missing - cannot generate challenge URL"
-                )
-                continue
-
-            # Get challenge host emails
             try:
-                emails = challenge.creator.get_all_challenge_host_email()
-                if not emails:
-                    logger.warning(
-                        f"No host emails found for challenge {challenge.pk}"
+                # Skip if challenge doesn't want host notifications
+                if not challenge.inform_hosts:
+                    logger.info(
+                        f"Skipping notification for challenge {challenge.pk} - inform_hosts is False"
                     )
                     continue
-            except Exception as e:
-                logger.error(
-                    f"Failed to get host emails for challenge {challenge.pk}: {e}"
-                )
-                continue
 
-            # Send emails to all hosts
-            email_sent = False
-            for email in emails:
-                try:
-                    success = send_retention_warning_email(
-                        challenge=challenge,
-                        recipient_email=email,
-                        submission_count=submission_count,
-                        warning_date=warning_date,
+                # Send notification email to challenge hosts
+                if (
+                    not hasattr(settings, "EVALAI_API_SERVER")
+                    or not settings.EVALAI_API_SERVER
+                ):
+                    logger.error(
+                        "EVALAI_API_SERVER setting is missing - cannot generate challenge URL"
                     )
-                    if success:
-                        email_sent = True
-                        logger.info(
-                            f"Sent retention warning email to {email} for challenge {challenge.pk}"
+                    continue
+
+                # Get challenge host emails
+                try:
+                    emails = challenge.creator.get_all_challenge_host_email()
+                    if not emails:
+                        logger.warning(
+                            f"No host emails found for challenge {challenge.pk}"
                         )
-                    else:
+                        continue
+                except Exception as e:
+                    logger.error(
+                        f"Failed to get host emails for challenge {challenge.pk}: {e}"
+                    )
+                    continue
+
+                # Send emails to all hosts
+                email_sent = False
+                for email in emails:
+                    try:
+                        success = send_retention_warning_email(
+                            challenge=challenge,
+                            recipient_email=email,
+                            submission_count=submission_count,
+                            warning_date=warning_date,
+                        )
+                        if success:
+                            email_sent = True
+                            logger.info(
+                                f"Sent retention warning email to {email} for challenge {challenge.pk}"
+                            )
+                        else:
+                            logger.error(
+                                f"Failed to send retention warning email to {email} for challenge {challenge.pk}"
+                            )
+                            notification_errors.append(
+                                {
+                                    "challenge_id": challenge.pk,
+                                    "email": email,
+                                    "error": "Email sending failed",
+                                }
+                            )
+                    except Exception as e:
                         logger.error(
-                            f"Failed to send retention warning email to {email} for challenge {challenge.pk}"
+                            f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"
                         )
                         notification_errors.append(
                             {
                                 "challenge_id": challenge.pk,
                                 "email": email,
-                                "error": "Email sending failed",
+                                "error": str(e),
                             }
                         )
-                except Exception as e:
-                    logger.error(
-                        f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"
-                    )
-                    notification_errors.append(
-                        {
-                            "challenge_id": challenge.pk,
-                            "email": email,
-                            "error": str(e),
-                        }
+
+                if email_sent:
+                    notifications_sent += 1
+                    logger.info(
+                        f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)"
                     )
 
-            if email_sent:
-                notifications_sent += 1
-                logger.info(
-                    f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)"
+            except Exception as e:
+                logger.exception(
+                    f"Failed to send retention warning for challenge {challenge.pk}"
+                )
+                notification_errors.append(
+                    {"challenge_id": challenge.pk, "error": str(e)}
                 )
 
-        except Exception as e:
-            logger.exception(
-                f"Failed to send retention warning for challenge {challenge.pk}"
-            )
-            notification_errors.append(
-                {"challenge_id": challenge.pk, "error": str(e)}
-            )
+        logger.info(f"Sent {notifications_sent} retention warning notifications")
 
-    logger.info(f"Sent {notifications_sent} retention warning notifications")
+        if notification_errors:
+            logger.error(f"Notification errors: {notification_errors}")
 
-    if notification_errors:
-        logger.error(f"Notification errors: {notification_errors}")
+    # --- CONSENT CHANGE LOGGING SECTION ---
+    now = timezone.now()
+    one_week_ago = now - timedelta(days=7)
+    recent_consents = Challenge.objects.filter(
+        retention_policy_consent=True,
+        retention_policy_consent_date__gte=one_week_ago
+    ).order_by('-retention_policy_consent_date')
 
-    return {
-        "notifications_sent": notifications_sent,
-        "errors": notification_errors,
-    }
+    if not recent_consents.exists():
+        logger.info("[RetentionConsent] No retention consent changes in the last week.")
+    else:
+        logger.info(f"[RetentionConsent] {recent_consents.count()} consent changes in the last week:")
+        for challenge in recent_consents:
+            consent_date = challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S')
+            consent_by = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'
+            logger.info(f"[RetentionConsent] ✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}")
+            logger.info(f"[RetentionConsent]    Consent by: {consent_by}")
+            if challenge.retention_policy_notes:
+                logger.info(f"[RetentionConsent]    Notes: {challenge.retention_policy_notes}")
+        logger.info(f"[RetentionConsent] End of weekly consent change summary.")
+
+    return {"notifications_sent": notifications_sent if 'notifications_sent' in locals() else 0}
 
 
 def update_challenge_log_retention_on_approval(challenge):

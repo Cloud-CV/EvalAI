@@ -153,6 +153,25 @@ class ChallengeTestCase(BaseTestCase):
             self.challenge.end_date, self.challenge.get_end_date()
         )
 
+    def test_retention_policy_consent_fields_default(self):
+        self.assertFalse(self.challenge.retention_policy_consent)
+        self.assertIsNone(self.challenge.retention_policy_consent_date)
+        self.assertIsNone(self.challenge.retention_policy_consent_by)
+        self.assertIsNone(self.challenge.retention_policy_notes)
+
+    def test_retention_policy_consent_fields_set(self):
+        now = timezone.now()
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = now
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.retention_policy_notes = "Host consented for 30-day retention."
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.retention_policy_consent)
+        self.assertEqual(self.challenge.retention_policy_consent_date, now)
+        self.assertEqual(self.challenge.retention_policy_consent_by, self.user)
+        self.assertEqual(self.challenge.retention_policy_notes, "Host consented for 30-day retention.")
+
 
 class DatasetSplitTestCase(BaseTestCase):
     def setUp(self):

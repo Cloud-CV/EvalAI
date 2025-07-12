@@ -222,8 +222,8 @@ CELERY_BEAT_SCHEDULE = {
             hour=2, minute=0, day_of_month=1
         ),  # Monthly on the 1st at 2 AM UTC
     },
-    "send-retention-warning-notifications": {
-        "task": "challenges.aws_utils.send_retention_warning_notifications",
+    "weekly-retention-notifications-and-consent-log": {
+        "task": "challenges.aws_utils.weekly_retention_notifications_and_consent_log",
         "schedule": crontab(
             hour=10, minute=0, day_of_week=1
         ),  # Weekly on Mondays at 10 AM UTC

@@ -6416,3 +6416,67 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class TestRetentionConsentAPI(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+
+    def test_get_retention_consent_status(self):
+        url = reverse_lazy(
+            "challenges:get_retention_consent_status",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("has_consent", response.data)
+        self.assertIn("consent_by", response.data)
+        self.assertIn("consent_date", response.data)
+
+    def test_get_retention_consent_status_not_found(self):
+        url = reverse_lazy(
+            "challenges:get_retention_consent_status",
+            kwargs={"challenge_pk": 99999},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_provide_retention_consent(self):
+        url = reverse_lazy(
+            "challenges:update_retention_consent",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        data = {"consent": True}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.retention_policy_consent)
+
+    def test_withdraw_retention_consent(self):
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.retention_policy_consent_date = timezone.now()
+        self.challenge.save()
+        url = reverse_lazy(
+            "challenges:update_retention_consent",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        data = {"consent": False}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.retention_policy_consent)
+
+    def test_retention_consent_unauthorized(self):
+        other_user = User.objects.create(
+            username="otheruser",
+            email="other@test.com",
+            password="secret_password",
+        )
+        self.client.force_authenticate(user=other_user)
+        url = reverse_lazy(
+            "challenges:update_retention_consent",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        data = {"consent": True}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

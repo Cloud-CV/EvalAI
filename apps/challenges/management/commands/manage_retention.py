@@ -8,8 +8,11 @@ from challenges.aws_utils import (
     calculate_retention_period_days,
     cleanup_expired_submission_artifacts,
     delete_submission_files_from_storage,
-    send_retention_warning_notifications,
+    weekly_retention_notifications_and_consent_log,
     set_cloudwatch_log_retention,
+    record_host_retention_consent,
+    is_user_a_host_of_challenge,
+    map_retention_days_to_aws_values,
 )
 from challenges.models import Challenge, ChallengePhase
 from django.core.management.base import BaseCommand, CommandError
@@ -296,6 +299,12 @@ class Command(BaseCommand):
             help="Apply to all active challenges",
         )
 
+        # Recent consent changes
+        subparsers.add_parser(
+            "recent-consent-changes",
+            help="Show recent retention consent changes",
+        )
+
     def handle(self, *args, **options):
         action = options.get("action")
 
@@ -337,6 +346,8 @@ class Command(BaseCommand):
             self.handle_check_consent(options)
         elif action == "bulk-consent":
             self.handle_bulk_consent(options)
+        elif action == "recent-consent-changes":
+            self.handle_recent_consent_changes()
 
     def handle_cleanup(self, options):
         """Handle cleanup of expired submission artifacts"""
@@ -405,7 +416,7 @@ class Command(BaseCommand):
         """Handle sending warning notifications"""
         self.stdout.write("Sending retention warning notifications...")
 
-        result = send_retention_warning_notifications.delay()
+        result = weekly_retention_notifications_and_consent_log.delay()
         self.stdout.write(
             self.style.SUCCESS(
                 f"Notification task started with ID: {result.id}"
@@ -517,6 +528,29 @@ class Command(BaseCommand):
         )
         self.stdout.write("=" * 50)
 
+        # Show consent status prominently
+        self.stdout.write(f"\n📋 CONSENT STATUS:")
+        if challenge.retention_policy_consent:
+            self.stdout.write(
+                self.style.SUCCESS("✅ HOST HAS CONSENTED TO 30-DAY RETENTION POLICY")
+            )
+            self.stdout.write(f"   Consent provided by: {challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'}")
+            self.stdout.write(f"   Consent date: {challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S') if challenge.retention_policy_consent_date else 'Unknown'}")
+            if challenge.retention_policy_notes:
+                self.stdout.write(f"   Notes: {challenge.retention_policy_notes}")
+            self.stdout.write(f"   Retention policy: 30-day retention allowed")
+        else:
+            self.stdout.write(
+                self.style.WARNING("❌ HOST HAS NOT CONSENTED - 90-DAY SAFETY RETENTION APPLIED")
+            )
+            self.stdout.write(f"   Retention policy: 90-day safety retention (default)")
+            self.stdout.write(f"   Action needed: Host must provide consent for 30-day retention")
+
+        # Show admin override if set
+        if challenge.log_retention_days_override:
+            self.stdout.write(f"\n🔧 ADMIN OVERRIDE:")
+            self.stdout.write(f"   Log retention override: {challenge.log_retention_days_override} days")
+
         phases = ChallengePhase.objects.filter(challenge=challenge)
 
         for phase in phases:
@@ -526,7 +560,16 @@ class Command(BaseCommand):
 
             from challenges.aws_utils import (
                 calculate_submission_retention_date,
+                calculate_retention_period_days,
+                map_retention_days_to_aws_values,
             )
+
+            # Calculate retention period based on consent status
+            if phase.end_date:
+                retention_days = calculate_retention_period_days(phase.end_date, challenge)
+                aws_retention_days = map_retention_days_to_aws_values(retention_days)
+                self.stdout.write(f"  Calculated retention period: {retention_days} days")
+                self.stdout.write(f"  AWS CloudWatch retention: {aws_retention_days} days")
 
             retention_date = calculate_submission_retention_date(phase)
             if retention_date:
@@ -554,6 +597,19 @@ class Command(BaseCommand):
                 f"  Eligible for cleanup: {eligible_submissions}"
             )
 
+        # Show actionable information for admins
+        self.stdout.write(f"\n💡 ADMIN ACTIONS:")
+        if not challenge.retention_policy_consent:
+            self.stdout.write(
+                self.style.WARNING("   • Host needs to provide consent for 30-day retention")
+            )
+            self.stdout.write("   • Use: python manage.py manage_retention record-consent <challenge_id> --username <host_username>")
+        else:
+            self.stdout.write(
+                self.style.SUCCESS("   • Host has consented - 30-day retention policy can be applied")
+            )
+            self.stdout.write("   • Use: python manage.py manage_retention set-log-retention <challenge_id>")
+
     def show_overall_status(self):
         """Show overall retention status"""
         self.stdout.write("\nOverall retention status:")
@@ -571,6 +627,27 @@ class Command(BaseCommand):
         self.stdout.write(f"Total submissions: {total_submissions}")
         self.stdout.write(f"Artifacts deleted: {deleted_submissions}")
         self.stdout.write(f"Eligible for cleanup: {eligible_submissions}")
+
+        # Show consent statistics
+        total_challenges = Challenge.objects.count()
+        consented_challenges = Challenge.objects.filter(retention_policy_consent=True).count()
+        non_consented_challenges = total_challenges - consented_challenges
+
+        self.stdout.write(f"\n📋 CONSENT STATISTICS:")
+        self.stdout.write(f"Total challenges: {total_challenges}")
+        self.stdout.write(f"With consent (30-day retention): {consented_challenges}")
+        self.stdout.write(f"Without consent (90-day retention): {non_consented_challenges}")
+        
+        if non_consented_challenges > 0:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"⚠️  {non_consented_challenges} challenges need consent for 30-day retention policy!"
+                )
+            )
+        else:
+            self.stdout.write(
+                self.style.SUCCESS("🎉 All challenges have consent for 30-day retention!")
+            )
 
         # Show challenges with upcoming retention dates
         upcoming_date = timezone.now() + timedelta(days=14)
@@ -592,12 +669,14 @@ class Command(BaseCommand):
                     challenges[challenge_id] = {
                         "name": submission.challenge_phase.challenge.title,
                         "count": 0,
+                        "has_consent": submission.challenge_phase.challenge.retention_policy_consent,
                     }
                 challenges[challenge_id]["count"] += 1
 
             for challenge_data in challenges.values():
+                consent_status = "✅ 30-day" if challenge_data["has_consent"] else "❌ 90-day"
                 self.stdout.write(
-                    f"  - {challenge_data['name']}: {challenge_data['count']} submissions"
+                    f"  - {challenge_data['name']}: {challenge_data['count']} submissions ({consent_status})"
                 )
 
     # NEW FEATURE IMPLEMENTATIONS
@@ -786,6 +865,16 @@ class Command(BaseCommand):
                     if challenge.created_at
                     else None
                 ),
+                "retention_consent": {
+                    "has_consent": challenge.retention_policy_consent,
+                    "consent_date": challenge.retention_policy_consent_date.isoformat() if challenge.retention_policy_consent_date else None,
+                    "consent_by": challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else None,
+                    "notes": challenge.retention_policy_notes,
+                    "retention_policy": "30-day" if challenge.retention_policy_consent else "90-day safety",
+                },
+                "admin_override": {
+                    "log_retention_days_override": challenge.log_retention_days_override,
+                },
                 "phases": [],
                 "submissions": {
                     "total": 0,
@@ -811,9 +900,11 @@ class Command(BaseCommand):
                     "retention_eligible_date": None,
                 }
 
-                # Calculate retention date
+                # Calculate retention date using consent-aware calculation
                 if phase.end_date and not phase.is_public:
-                    retention_date = phase.end_date + timedelta(days=30)
+                    from challenges.aws_utils import calculate_retention_period_days
+                    retention_days = calculate_retention_period_days(phase.end_date, challenge)
+                    retention_date = phase.end_date + timedelta(days=retention_days)
                     phase_data["retention_eligible_date"] = (
                         retention_date.isoformat()
                     )
@@ -860,6 +951,11 @@ class Command(BaseCommand):
                 "Title",
                 "Host Team",
                 "Host Emails",
+                "Has Consent",
+                "Consent Date",
+                "Consent By",
+                "Retention Policy",
+                "Admin Override",
                 "Total Submissions",
                 "Deleted Submissions",
                 "Eligible for Cleanup",
@@ -873,6 +969,11 @@ class Command(BaseCommand):
                     challenge["title"],
                     challenge["host_team"] or "",
                     challenge["host_emails"] or "",
+                    "Yes" if challenge["retention_consent"]["has_consent"] else "No",
+                    challenge["retention_consent"]["consent_date"] or "",
+                    challenge["retention_consent"]["consent_by"] or "",
+                    challenge["retention_consent"]["retention_policy"],
+                    str(challenge["admin_override"]["log_retention_days_override"]) if challenge["admin_override"]["log_retention_days_override"] else "",
                     challenge["submissions"]["total"],
                     challenge["submissions"]["deleted"],
                     challenge["submissions"]["eligible"],
@@ -1225,7 +1326,6 @@ class Command(BaseCommand):
         )
 
         # Import the consent recording function
-        from challenges.aws_utils import record_host_retention_consent, is_user_a_host_of_challenge
 
         # Check if user is a host (unless force is used)
         if not force and not is_user_a_host_of_challenge(user, challenge_id):
@@ -1395,3 +1495,56 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS("🎉 All challenges have consent!")
             )
+
+    def handle_recent_consent_changes(self):
+        """Handle showing recent retention consent changes"""
+        self.stdout.write("Recent retention consent changes:")
+        self.stdout.write("=" * 50)
+
+        # Get challenges with consent changes in the last 30 days
+        from datetime import timedelta
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        recent_consents = Challenge.objects.filter(
+            retention_policy_consent=True,
+            retention_policy_consent_date__gte=thirty_days_ago
+        ).order_by('-retention_policy_consent_date')
+
+        if not recent_consents.exists():
+            self.stdout.write(
+                self.style.WARNING("No recent consent changes found in the last 30 days.")
+            )
+            return
+
+        self.stdout.write(f"Found {recent_consents.count()} consent changes in the last 30 days:")
+        self.stdout.write("")
+
+        for challenge in recent_consents:
+            consent_date = challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S')
+            consent_by = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'
+            
+            self.stdout.write(
+                f"✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}"
+            )
+            self.stdout.write(f"   Consent by: {consent_by}")
+            if challenge.retention_policy_notes:
+                self.stdout.write(f"   Notes: {challenge.retention_policy_notes}")
+            self.stdout.write("")
+
+        # Show summary
+        self.stdout.write("=" * 50)
+        self.stdout.write("SUMMARY:")
+        self.stdout.write(f"Total recent consents: {recent_consents.count()}")
+        
+        # Show by user
+        user_consents = {}
+        for challenge in recent_consents:
+            user = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'
+            if user not in user_consents:
+                user_consents[user] = 0
+            user_consents[user] += 1
+        
+        if user_consents:
+            self.stdout.write("Consents by user:")
+            for user, count in sorted(user_consents.items(), key=lambda x: x[1], reverse=True):
+                self.stdout.write(f"  {user}: {count} consent(s)")
