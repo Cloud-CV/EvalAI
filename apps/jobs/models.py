@@ -160,7 +160,7 @@ class Submission(TimeStampedModel):
         blank=True,
         help_text="Timestamp when submission artifacts were deleted",
     )
-    
+
     # Submission type and retention policy tracking
     submission_type = models.CharField(
         max_length=50,

@@ -3196,28 +3196,40 @@ class TestRetentionCalculations(TestCase):
         self.assertEqual(map_retention_days_to_aws_values(5000), 3653)
 
     def test_retention_period_with_consent_and_without_consent(self):
-        from challenges.aws_utils import calculate_retention_period_days
         from types import SimpleNamespace
+
+        from challenges.aws_utils import calculate_retention_period_days
+
         now = timezone.now()
         end_date = now + timedelta(days=5)
         # Challenge with consent
         challenge_with_consent = SimpleNamespace(
-            retention_policy_consent=True,
-            log_retention_days_override=None
+            retention_policy_consent=True, log_retention_days_override=None
         )
-        self.assertEqual(calculate_retention_period_days(end_date, challenge_with_consent), 30)
+        self.assertEqual(
+            calculate_retention_period_days(end_date, challenge_with_consent),
+            30,
+        )
         # Challenge without consent
         challenge_without_consent = SimpleNamespace(
-            retention_policy_consent=False,
-            log_retention_days_override=None
+            retention_policy_consent=False, log_retention_days_override=None
         )
-        self.assertEqual(calculate_retention_period_days(end_date, challenge_without_consent), 95)
+        self.assertEqual(
+            calculate_retention_period_days(
+                end_date, challenge_without_consent
+            ),
+            95,
+        )
 
 
 def test_set_cloudwatch_log_retention_requires_consent():
     from challenges.aws_utils import set_cloudwatch_log_retention
-    with patch("challenges.models.Challenge.objects.get") as mock_challenge, \
-         patch("challenges.models.ChallengePhase.objects.filter") as mock_phases:
+
+    with patch(
+        "challenges.models.Challenge.objects.get"
+    ) as mock_challenge, patch(
+        "challenges.models.ChallengePhase.objects.filter"
+    ) as mock_phases:
         mock_challenge.return_value.retention_policy_consent = False
         mock_phases.return_value.exists.return_value = True
         mock_phase = MagicMock()
@@ -3648,3 +3660,463 @@ class TestEmailFunctions(TestCase):
             template_context["CHALLENGE_IMAGE_URL"],
             "http://example.com/image.jpg",
         )
+
+
+class TestCleanupExpiredSubmissionArtifacts(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Test Phase",
+            description="Test Phase Description",
+            challenge=self.challenge,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=1),
+            is_public=False,
+        )
+
+    @patch("challenges.aws_utils.delete_submission_files_from_storage")
+    def test_cleanup_expired_submission_artifacts_success(
+        self, mock_delete_files
+    ):
+        from challenges.aws_utils import cleanup_expired_submission_artifacts
+        from jobs.models import Submission
+
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=timezone.now() - timedelta(days=1),
+            is_artifact_deleted=False,
+        )
+        mock_delete_files.return_value = {
+            "success": True,
+            "deleted_files": ["file1.txt"],
+            "failed_files": [],
+            "submission_id": submission.pk,
+        }
+        result = cleanup_expired_submission_artifacts()
+        self.assertEqual(result["total_processed"], 1)
+        self.assertEqual(result["successful_deletions"], 1)
+        submission.refresh_from_db()
+        self.assertTrue(submission.is_artifact_deleted)
+
+    @patch("challenges.aws_utils.delete_submission_files_from_storage")
+    def test_cleanup_expired_submission_artifacts_failure(
+        self, mock_delete_files
+    ):
+        from challenges.aws_utils import cleanup_expired_submission_artifacts
+        from jobs.models import Submission
+
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=timezone.now() - timedelta(days=1),
+            is_artifact_deleted=False,
+        )
+        mock_delete_files.return_value = {
+            "success": False,
+            "error": "S3 deletion failed",
+            "submission_id": submission.pk,
+        }
+        result = cleanup_expired_submission_artifacts()
+        self.assertEqual(result["failed_deletions"], 1)
+        self.assertEqual(len(result["errors"]), 1)
+
+    def test_cleanup_expired_submission_artifacts_no_eligible_submissions(
+        self,
+    ):
+        from challenges.aws_utils import cleanup_expired_submission_artifacts
+
+        result = cleanup_expired_submission_artifacts()
+        self.assertEqual(result["total_processed"], 0)
+
+
+class TestUpdateSubmissionRetentionDates(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Test Phase",
+            description="Test Phase Description",
+            challenge=self.challenge,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=1),
+            is_public=False,
+        )
+
+    def test_update_submission_retention_dates_success(self):
+        from challenges.aws_utils import update_submission_retention_dates
+        from jobs.models import Submission
+
+        participant_team = ParticipantTeam.objects.create(
+            team_name="Test Team", created_by=self.user
+        )
+        submission1 = Submission.objects.create(
+            participant_team=participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=None,
+            is_artifact_deleted=False,
+            submission_type="participant",
+        )
+        submission2 = Submission.objects.create(
+            participant_team=participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=None,
+            is_artifact_deleted=False,
+            submission_type="host",
+        )
+        result = update_submission_retention_dates()
+        self.assertEqual(result["updated_submissions"], 2)
+        submission1.refresh_from_db()
+        submission2.refresh_from_db()
+        self.assertIsNotNone(submission1.retention_eligible_date)
+        self.assertIsNotNone(submission2.retention_eligible_date)
+
+    def test_update_submission_retention_dates_no_phases(self):
+        from challenges.aws_utils import update_submission_retention_dates
+
+        self.challenge_phase.is_public = True
+        self.challenge_phase.save()
+        result = update_submission_retention_dates()
+        self.assertEqual(result["updated_submissions"], 0)
+
+
+class TestWeeklyRetentionNotificationsAndConsentLog(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+            inform_hosts=True,
+        )
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Test Phase",
+            description="Test Phase Description",
+            challenge=self.challenge,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=1),
+            is_public=False,
+        )
+
+    @patch("challenges.aws_utils.send_retention_warning_email")
+    def test_weekly_retention_notifications_and_consent_log_with_warnings(
+        self, mock_send_email
+    ):
+        from challenges.aws_utils import (
+            weekly_retention_notifications_and_consent_log,
+        )
+        from jobs.models import Submission
+
+        warning_date = timezone.now() + timedelta(days=14)
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=warning_date,
+            is_artifact_deleted=False,
+        )
+        mock_send_email.return_value = True
+        result = weekly_retention_notifications_and_consent_log()
+        self.assertEqual(result["notifications_sent"], 1)
+
+    def test_weekly_retention_notifications_and_consent_log_with_consent_changes(
+        self,
+    ):
+        from challenges.aws_utils import (
+            weekly_retention_notifications_and_consent_log,
+        )
+
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = (
+            timezone.now() - timedelta(days=3)
+        )
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.save()
+        result = weekly_retention_notifications_and_consent_log()
+        self.assertIn("notifications_sent", result)
+
+    def test_weekly_retention_notifications_and_consent_log_no_activity(self):
+        from challenges.aws_utils import (
+            weekly_retention_notifications_and_consent_log,
+        )
+
+        result = weekly_retention_notifications_and_consent_log()
+        self.assertEqual(result["notifications_sent"], 0)
+
+
+class TestRecordHostRetentionConsent(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+
+    @patch("challenges.aws_utils.is_user_a_host_of_challenge")
+    def test_record_host_retention_consent_success(self, mock_is_host):
+        from challenges.aws_utils import record_host_retention_consent
+
+        mock_is_host.return_value = True
+        result = record_host_retention_consent(
+            self.challenge.pk, self.user, "Test consent notes"
+        )
+        self.assertTrue(result["success"])
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.retention_policy_consent)
+        self.assertEqual(self.challenge.retention_policy_consent_by, self.user)
+
+    @patch("challenges.aws_utils.is_user_a_host_of_challenge")
+    def test_record_host_retention_consent_unauthorized(self, mock_is_host):
+        from challenges.aws_utils import record_host_retention_consent
+
+        mock_is_host.return_value = False
+        result = record_host_retention_consent(self.challenge.pk, self.user)
+        self.assertFalse(result["success"])
+        self.assertIn("not authorized", result["error"])
+
+    def test_record_host_retention_consent_challenge_not_found(self):
+        from challenges.aws_utils import record_host_retention_consent
+
+        result = record_host_retention_consent(99999, self.user)
+        self.assertFalse(result["success"])
+        self.assertIn("does not exist", result["error"])
+
+
+class TestIsUserAHostOfChallenge(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+
+    def test_is_user_a_host_of_challenge_true(self):
+        from challenges.aws_utils import is_user_a_host_of_challenge
+        from hosts.models import ChallengeHost
+
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        result = is_user_a_host_of_challenge(self.user, self.challenge.pk)
+        self.assertTrue(result)
+
+    def test_is_user_a_host_of_challenge_false(self):
+        from challenges.aws_utils import is_user_a_host_of_challenge
+
+        result = is_user_a_host_of_challenge(self.user, self.challenge.pk)
+        self.assertFalse(result)
+
+    def test_is_user_a_host_of_challenge_challenge_not_found(self):
+        from challenges.aws_utils import is_user_a_host_of_challenge
+
+        result = is_user_a_host_of_challenge(self.user, 99999)
+        self.assertFalse(result)
+
+
+class TestUpdateChallengeLogRetentionFunctions(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+
+    @patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    @patch("challenges.aws_utils.settings")
+    def test_update_challenge_log_retention_on_approval(
+        self, mock_settings, mock_set_retention
+    ):
+        from challenges.aws_utils import (
+            update_challenge_log_retention_on_approval,
+        )
+
+        mock_settings.DEBUG = False
+        mock_set_retention.return_value = {"success": True}
+        update_challenge_log_retention_on_approval(self.challenge)
+        mock_set_retention.assert_called_once_with(self.challenge.pk)
+
+    @patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    @patch("challenges.aws_utils.settings")
+    def test_update_challenge_log_retention_on_restart(
+        self, mock_settings, mock_set_retention
+    ):
+        from challenges.aws_utils import (
+            update_challenge_log_retention_on_restart,
+        )
+
+        mock_settings.DEBUG = False
+        mock_set_retention.return_value = {"success": True}
+        update_challenge_log_retention_on_restart(self.challenge)
+        mock_set_retention.assert_called_once_with(self.challenge.pk)
+
+    @patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    @patch("challenges.aws_utils.settings")
+    def test_update_challenge_log_retention_on_task_def_registration(
+        self, mock_settings, mock_set_retention
+    ):
+        from challenges.aws_utils import (
+            update_challenge_log_retention_on_task_def_registration,
+        )
+
+        mock_settings.DEBUG = False
+        mock_set_retention.return_value = {"success": True}
+        update_challenge_log_retention_on_task_def_registration(self.challenge)
+        mock_set_retention.assert_called_once_with(self.challenge.pk)
+
+    @patch("challenges.aws_utils.settings")
+    def test_update_challenge_log_retention_debug_mode(self, mock_settings):
+        from challenges.aws_utils import (
+            update_challenge_log_retention_on_approval,
+            update_challenge_log_retention_on_restart,
+            update_challenge_log_retention_on_task_def_registration,
+        )
+
+        mock_settings.DEBUG = True
+        update_challenge_log_retention_on_approval(self.challenge)
+        update_challenge_log_retention_on_restart(self.challenge)
+        update_challenge_log_retention_on_task_def_registration(self.challenge)
+
+
+class TestDeleteSubmissionFilesFromStorage(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Test Description",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Test Phase",
+            description="Test Phase Description",
+            challenge=self.challenge,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=1),
+            is_public=False,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_delete_submission_files_from_storage_success(
+        self, mock_get_client
+    ):
+        from challenges.aws_utils import delete_submission_files_from_storage
+        from jobs.models import Submission
+
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            is_artifact_deleted=False,
+        )
+        mock_s3_client = MagicMock()
+        mock_get_client.return_value = mock_s3_client
+        result = delete_submission_files_from_storage(submission)
+        self.assertTrue(result["success"])
+        submission.refresh_from_db()
+        self.assertTrue(submission.is_artifact_deleted)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_delete_submission_files_from_storage_s3_error(
+        self, mock_get_client
+    ):
+        from botocore.exceptions import ClientError
+        from challenges.aws_utils import delete_submission_files_from_storage
+        from jobs.models import Submission
+
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            is_artifact_deleted=False,
+        )
+        mock_s3_client = MagicMock()
+        mock_s3_client.delete_object.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied"}}, "DeleteObject"
+        )
+        mock_get_client.return_value = mock_s3_client
+        result = delete_submission_files_from_storage(submission)
+        self.assertTrue(result["success"])
+        self.assertGreater(len(result["failed_files"]), 0)

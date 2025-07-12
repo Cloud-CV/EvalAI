@@ -1904,7 +1904,7 @@ def calculate_retention_period_days(challenge_end_date, challenge=None):
     from django.utils import timezone
 
     now = timezone.now()
-    
+
     # Check if challenge has host consent for retention policy
     if challenge and challenge.retention_policy_consent:
         # Host has consented - use 30-day retention (or admin override)
@@ -1913,7 +1913,7 @@ def calculate_retention_period_days(challenge_end_date, challenge=None):
         else:
             # Default 30-day retention when host has consented
             return 30
-    
+
     # No host consent - use conservative default (longer retention)
     # Default retention calculation (90 days after challenge ends for safety)
     if challenge_end_date > now:
@@ -1987,13 +1987,13 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
     try:
         # Check if challenge has an explicit override first
         challenge_obj = Challenge.objects.get(pk=challenge_pk)
-        
+
         # Check if challenge host has consented to retention policy
         if not challenge_obj.retention_policy_consent:
             return {
                 "error": f"Challenge {challenge_pk} host has not consented to retention policy. "
-                        "Please obtain consent before applying retention policies. "
-                        "Without consent, data is retained for 90 days for safety.",
+                "Please obtain consent before applying retention policies. "
+                "Without consent, data is retained for 90 days for safety.",
                 "requires_consent": True,
                 "challenge_id": challenge_pk,
             }
@@ -2045,7 +2045,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
             "retention_days": aws_retention_days,
             "log_group": log_group_name,
             "message": f"Retention policy set to {aws_retention_days} days "
-                      f"({'30-day policy applied' if challenge_obj.retention_policy_consent else '90-day safety retention'})",
+            f"({'30-day policy applied' if challenge_obj.retention_policy_consent else '90-day safety retention'})",
             "host_consent": challenge_obj.retention_policy_consent,
         }
 
@@ -2089,7 +2089,7 @@ def calculate_submission_retention_date(challenge_phase):
 
     # Get challenge object for retention policies
     challenge = challenge_phase.challenge
-    
+
     # Check if challenge has host consent
     if challenge.retention_policy_consent:
         # Use challenge-level retention policy
@@ -2308,8 +2308,15 @@ def update_submission_retention_dates():
         for phase in ended_phases:
             try:
                 # Process submissions by type
-                for submission_type in ["participant", "host", "baseline", "evaluation_output"]:
-                    retention_date = calculate_submission_retention_date(phase, submission_type)
+                for submission_type in [
+                    "participant",
+                    "host",
+                    "baseline",
+                    "evaluation_output",
+                ]:
+                    retention_date = calculate_submission_retention_date(
+                        phase, submission_type
+                    )
                     if retention_date:
                         # Update submissions for this phase and type
                         submissions_updated = Submission.objects.filter(
@@ -2459,11 +2466,15 @@ def weekly_retention_notifications_and_consent_log():
     Also logs a summary of retention consent changes in the last week for admin awareness.
     """
     from datetime import timedelta
+
     from django.utils import timezone
     from jobs.models import Submission
+
     from .models import Challenge
 
-    logger.info("Checking for retention warning notifications and logging consent changes")
+    logger.info(
+        "Checking for retention warning notifications and logging consent changes"
+    )
 
     # Find submissions that will be cleaned up in 14 days
     warning_date = timezone.now() + timedelta(days=14)
@@ -2581,7 +2592,9 @@ def weekly_retention_notifications_and_consent_log():
                     {"challenge_id": challenge.pk, "error": str(e)}
                 )
 
-        logger.info(f"Sent {notifications_sent} retention warning notifications")
+        logger.info(
+            f"Sent {notifications_sent} retention warning notifications"
+        )
 
         if notification_errors:
             logger.error(f"Notification errors: {notification_errors}")
@@ -2591,23 +2604,43 @@ def weekly_retention_notifications_and_consent_log():
     one_week_ago = now - timedelta(days=7)
     recent_consents = Challenge.objects.filter(
         retention_policy_consent=True,
-        retention_policy_consent_date__gte=one_week_ago
-    ).order_by('-retention_policy_consent_date')
+        retention_policy_consent_date__gte=one_week_ago,
+    ).order_by("-retention_policy_consent_date")
 
     if not recent_consents.exists():
-        logger.info("[RetentionConsent] No retention consent changes in the last week.")
+        logger.info(
+            "[RetentionConsent] No retention consent changes in the last week."
+        )
     else:
-        logger.info(f"[RetentionConsent] {recent_consents.count()} consent changes in the last week:")
+        logger.info(
+            f"[RetentionConsent] {recent_consents.count()} consent changes in the last week:"
+        )
         for challenge in recent_consents:
-            consent_date = challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S')
-            consent_by = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'
-            logger.info(f"[RetentionConsent] ✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}")
+            consent_date = challenge.retention_policy_consent_date.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            consent_by = (
+                challenge.retention_policy_consent_by.username
+                if challenge.retention_policy_consent_by
+                else "Unknown"
+            )
+            logger.info(
+                f"[RetentionConsent] ✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}"
+            )
             logger.info(f"[RetentionConsent]    Consent by: {consent_by}")
             if challenge.retention_policy_notes:
-                logger.info(f"[RetentionConsent]    Notes: {challenge.retention_policy_notes}")
-        logger.info(f"[RetentionConsent] End of weekly consent change summary.")
+                logger.info(
+                    f"[RetentionConsent]    Notes: {challenge.retention_policy_notes}"
+                )
+        logger.info(
+            f"[RetentionConsent] End of weekly consent change summary."
+        )
 
-    return {"notifications_sent": notifications_sent if 'notifications_sent' in locals() else 0}
+    return {
+        "notifications_sent": (
+            notifications_sent if "notifications_sent" in locals() else 0
+        )
+    }
 
 
 def update_challenge_log_retention_on_approval(challenge):
@@ -2681,12 +2714,13 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
     Returns:
         dict: Response containing success/error status
     """
-    from .models import Challenge
     from django.utils import timezone
+
+    from .models import Challenge
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
-        
+
         # Check if user is a host of this challenge
         if not is_user_a_host_of_challenge(user, challenge_pk):
             return {
@@ -2710,7 +2744,7 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
         return {
             "success": True,
             "message": f"Retention policy consent recorded for challenge {challenge.title}. "
-                      f"EvalAI admins can now set a 30-day retention policy for this challenge.",
+            f"EvalAI admins can now set a 30-day retention policy for this challenge.",
             "consent_date": challenge.retention_policy_consent_date.isoformat(),
             "consent_by": user.username,
         }
@@ -2718,30 +2752,33 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
     except Challenge.DoesNotExist:
         return {"error": f"Challenge {challenge_pk} does not exist"}
     except Exception as e:
-        logger.exception(f"Error recording retention consent for challenge {challenge_pk}")
+        logger.exception(
+            f"Error recording retention consent for challenge {challenge_pk}"
+        )
         return {"error": str(e)}
 
 
 def is_user_a_host_of_challenge(user, challenge_pk):
     """
     Check if a user is a host of a specific challenge.
-    
+
     Args:
         user (User): User to check
         challenge_pk (int): Challenge primary key
-        
+
     Returns:
         bool: True if user is a host of the challenge
     """
-    from .models import Challenge
     from hosts.models import ChallengeHost
-    
+
+    from .models import Challenge
+
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
         return ChallengeHost.objects.filter(
             user=user,
             team_name=challenge.creator,
-            status=ChallengeHost.ACCEPTED
+            status=ChallengeHost.ACCEPTED,
         ).exists()
     except Challenge.DoesNotExist:
         return False

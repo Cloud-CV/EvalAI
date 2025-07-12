@@ -164,13 +164,98 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.retention_policy_consent = True
         self.challenge.retention_policy_consent_date = now
         self.challenge.retention_policy_consent_by = self.user
-        self.challenge.retention_policy_notes = "Host consented for 30-day retention."
+        self.challenge.retention_policy_notes = (
+            "Host consented for 30-day retention."
+        )
         self.challenge.save()
         self.challenge.refresh_from_db()
         self.assertTrue(self.challenge.retention_policy_consent)
         self.assertEqual(self.challenge.retention_policy_consent_date, now)
         self.assertEqual(self.challenge.retention_policy_consent_by, self.user)
-        self.assertEqual(self.challenge.retention_policy_notes, "Host consented for 30-day retention.")
+        self.assertEqual(
+            self.challenge.retention_policy_notes,
+            "Host consented for 30-day retention.",
+        )
+
+    def test_retention_policy_consent_fields_partial_set(self):
+        """Test setting only some retention consent fields"""
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = timezone.now()
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+
+        self.assertTrue(self.challenge.retention_policy_consent)
+        self.assertIsNotNone(self.challenge.retention_policy_consent_date)
+        self.assertIsNone(self.challenge.retention_policy_consent_by)
+        self.assertIsNone(self.challenge.retention_policy_notes)
+
+    def test_retention_policy_consent_withdrawal(self):
+        """Test withdrawing consent by setting consent to False"""
+        # First set consent
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = timezone.now()
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.retention_policy_notes = "Initial consent"
+        self.challenge.save()
+
+        # Then withdraw consent
+        self.challenge.retention_policy_consent = False
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+
+        self.assertFalse(self.challenge.retention_policy_consent)
+        # Other fields should remain unchanged
+        self.assertIsNotNone(self.challenge.retention_policy_consent_date)
+        self.assertEqual(self.challenge.retention_policy_consent_by, self.user)
+        self.assertEqual(
+            self.challenge.retention_policy_notes, "Initial consent"
+        )
+
+    def test_retention_policy_consent_notes_update(self):
+        """Test updating consent notes without changing other fields"""
+        # Set initial consent
+        initial_date = timezone.now()
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = initial_date
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.retention_policy_notes = "Initial notes"
+        self.challenge.save()
+
+        # Update only notes
+        self.challenge.retention_policy_notes = "Updated notes"
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+
+        self.assertTrue(self.challenge.retention_policy_consent)
+        self.assertEqual(
+            self.challenge.retention_policy_consent_date, initial_date
+        )
+        self.assertEqual(self.challenge.retention_policy_consent_by, self.user)
+        self.assertEqual(
+            self.challenge.retention_policy_notes, "Updated notes"
+        )
+
+    def test_retention_policy_consent_consent_by_change(self):
+        """Test changing who provided consent"""
+        other_user = User.objects.create_user(
+            username="otheruser", email="other@test.com", password="testpass"
+        )
+
+        # Set initial consent with one user
+        self.challenge.retention_policy_consent = True
+        self.challenge.retention_policy_consent_date = timezone.now()
+        self.challenge.retention_policy_consent_by = self.user
+        self.challenge.save()
+
+        # Change consent to another user
+        self.challenge.retention_policy_consent_by = other_user
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+
+        self.assertTrue(self.challenge.retention_policy_consent)
+        self.assertEqual(
+            self.challenge.retention_policy_consent_by, other_user
+        )
 
 
 class DatasetSplitTestCase(BaseTestCase):

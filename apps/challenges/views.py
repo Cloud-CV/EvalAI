@@ -102,11 +102,15 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from yaml.scanner import ScannerError
 
 from .aws_utils import (
+    calculate_retention_period_days,
     create_ec2_instance,
     delete_workers,
     describe_ec2_instance,
     get_log_group_name,
     get_logs_from_cloudwatch,
+    is_user_a_host_of_challenge,
+    map_retention_days_to_aws_values,
+    record_host_retention_consent,
     restart_ec2_instance,
     restart_workers,
     scale_resources,
@@ -115,10 +119,6 @@ from .aws_utils import (
     stop_ec2_instance,
     stop_workers,
     terminate_ec2_instance,
-    record_host_retention_consent,
-    is_user_a_host_of_challenge,
-    calculate_retention_period_days,
-    map_retention_days_to_aws_values,
 )
 from .models import (
     Challenge,
@@ -5101,7 +5101,10 @@ def provide_retention_consent(request, challenge_pk):
     Returns:
         dict: Success/error response with consent details
     """
-    from .aws_utils import record_host_retention_consent, is_user_a_host_of_challenge
+    from .aws_utils import (
+        is_user_a_host_of_challenge,
+        record_host_retention_consent,
+    )
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -5120,8 +5123,16 @@ def provide_retention_consent(request, challenge_pk):
     if challenge.retention_policy_consent:
         response_data = {
             "message": "Retention policy consent already provided",
-            "consent_date": challenge.retention_policy_consent_date.isoformat() if challenge.retention_policy_consent_date else None,
-            "consent_by": challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else None,
+            "consent_date": (
+                challenge.retention_policy_consent_date.isoformat()
+                if challenge.retention_policy_consent_date
+                else None
+            ),
+            "consent_by": (
+                challenge.retention_policy_consent_by.username
+                if challenge.retention_policy_consent_by
+                else None
+            ),
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -5141,7 +5152,9 @@ def provide_retention_consent(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
     else:
-        response_data = {"error": result.get("error", "Failed to record consent")}
+        response_data = {
+            "error": result.get("error", "Failed to record consent")
+        }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -5164,31 +5177,44 @@ def get_retention_consent_status(request, challenge_pk):
 
     # Check if user is a host of this challenge
     from .aws_utils import is_user_a_host_of_challenge
-    
+
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
-    
+
     response_data = {
         "challenge_id": challenge_pk,
         "challenge_title": challenge.title,
         "has_consent": challenge.retention_policy_consent,
         "is_host": is_host,
-        "can_provide_consent": is_host and not challenge.retention_policy_consent,
+        "can_provide_consent": is_host
+        and not challenge.retention_policy_consent,
     }
 
     if challenge.retention_policy_consent:
-        response_data.update({
-            "consent_date": challenge.retention_policy_consent_date.isoformat() if challenge.retention_policy_consent_date else None,
-            "consent_by": challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else None,
-            "retention_notes": challenge.retention_policy_notes,
-        })
+        response_data.update(
+            {
+                "consent_date": (
+                    challenge.retention_policy_consent_date.isoformat()
+                    if challenge.retention_policy_consent_date
+                    else None
+                ),
+                "consent_by": (
+                    challenge.retention_policy_consent_by.username
+                    if challenge.retention_policy_consent_by
+                    else None
+                ),
+                "retention_notes": challenge.retention_policy_notes,
+            }
+        )
 
     # Add custom retention policy information
     if challenge.retention_policy_consent:
-        response_data.update({
-            "custom_policies": {
-                "log_retention_days_override": challenge.log_retention_days_override,
+        response_data.update(
+            {
+                "custom_policies": {
+                    "log_retention_days_override": challenge.log_retention_days_override,
+                }
             }
-        })
+        )
 
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -5213,9 +5239,9 @@ def get_challenge_retention_info(request, challenge_pk):
 
     # Check if user is a host of this challenge
     from .aws_utils import is_user_a_host_of_challenge
-    
+
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
-    
+
     # Get challenge phases for retention calculation
     phases = challenge.challengephase_set.all()
     latest_end_date = None
@@ -5225,43 +5251,59 @@ def get_challenge_retention_info(request, challenge_pk):
         )
 
     # Calculate default retention periods
-    from .aws_utils import calculate_retention_period_days, map_retention_days_to_aws_values
-    
+    from .aws_utils import (
+        calculate_retention_period_days,
+        map_retention_days_to_aws_values,
+    )
+
     default_retention_days = None
     if latest_end_date:
         default_retention_days = calculate_retention_period_days(
             latest_end_date, challenge
         )
-        default_retention_days = map_retention_days_to_aws_values(default_retention_days)
+        default_retention_days = map_retention_days_to_aws_values(
+            default_retention_days
+        )
 
     response_data = {
         "challenge_id": challenge_pk,
         "challenge_title": challenge.title,
         "retention_policy": {
             "has_consent": challenge.retention_policy_consent,
-            "consent_date": challenge.retention_policy_consent_date.isoformat() if challenge.retention_policy_consent_date else None,
-            "consent_by": challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else None,
+            "consent_date": (
+                challenge.retention_policy_consent_date.isoformat()
+                if challenge.retention_policy_consent_date
+                else None
+            ),
+            "consent_by": (
+                challenge.retention_policy_consent_by.username
+                if challenge.retention_policy_consent_by
+                else None
+            ),
             "notes": challenge.retention_policy_notes,
         },
         "user_permissions": {
             "is_host": is_host,
-            "can_provide_consent": is_host and not challenge.retention_policy_consent,
-            "can_manage_retention": is_host and challenge.retention_policy_consent,
+            "can_provide_consent": is_host
+            and not challenge.retention_policy_consent,
+            "can_manage_retention": is_host
+            and challenge.retention_policy_consent,
         },
         "current_policies": {
             "log_retention_days_override": challenge.log_retention_days_override,
         },
         "calculated_retention": {
             "default_retention_days": default_retention_days,
-            "latest_phase_end_date": latest_end_date.isoformat() if latest_end_date else None,
+            "latest_phase_end_date": (
+                latest_end_date.isoformat() if latest_end_date else None
+            ),
         },
         "policy_descriptions": {
             "log_retention": "CloudWatch log retention period in days for the entire challenge",
-        }
+        },
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 
 @api_view(["POST"])
@@ -5280,7 +5322,10 @@ def update_retention_consent(request, challenge_pk):
     Returns:
         dict: Success/error response
     """
-    from .aws_utils import record_host_retention_consent, is_user_a_host_of_challenge
+    from .aws_utils import (
+        is_user_a_host_of_challenge,
+        record_host_retention_consent,
+    )
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -5304,7 +5349,9 @@ def update_retention_consent(request, challenge_pk):
 
     if consent:
         # Record consent
-        result = record_host_retention_consent(challenge_pk, request.user, notes)
+        result = record_host_retention_consent(
+            challenge_pk, request.user, notes
+        )
         if result.get("success"):
             response_data = {
                 "message": "Retention policy consent recorded successfully",
@@ -5313,7 +5360,9 @@ def update_retention_consent(request, challenge_pk):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            response_data = {"error": result.get("error", "Failed to record consent")}
+            response_data = {
+                "error": result.get("error", "Failed to record consent")
+            }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         # Remove consent (if needed for compliance)

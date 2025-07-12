@@ -6417,6 +6417,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
 class TestRetentionConsentAPI(BaseAPITestClass):
     def setUp(self):
         super().setUp()
@@ -6480,3 +6481,25 @@ class TestRetentionConsentAPI(BaseAPITestClass):
         data = {"consent": True}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_retention_consent_invalid_data(self):
+        url = reverse_lazy(
+            "challenges:update_retention_consent",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        data = {"invalid_field": True}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retention_consent_with_notes(self):
+        url = reverse_lazy(
+            "challenges:update_retention_consent",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        data = {"consent": True, "notes": "Test consent notes"}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertEqual(
+            self.challenge.retention_policy_notes, "Test consent notes"
+        )

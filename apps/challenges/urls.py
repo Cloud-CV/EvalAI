@@ -217,7 +217,6 @@ urlpatterns = [
         views.update_retention_consent,
         name="update_retention_consent",
     ),
-
     url(
         r"^(?P<challenge_pk>[0-9]+)/manage_ec2_instance/(?P<action>[\w-]+)/$",
         views.manage_ec2_instance,

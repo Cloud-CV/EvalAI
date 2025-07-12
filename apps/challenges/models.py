@@ -140,7 +140,7 @@ class Challenge(TimeStampedModel):
         default=None,
         help_text="Admin override for CloudWatch log retention period in days (defaults to 30 days when host has consented)",
     )
-    
+
     # Retention policy consent and configuration
     retention_policy_consent = models.BooleanField(
         default=False,
@@ -160,7 +160,7 @@ class Challenge(TimeStampedModel):
         related_name="retention_consent_challenges",
         help_text="User who provided retention policy consent",
     )
-    
+
     # Retention policy documentation and notes
     retention_policy_notes = models.TextField(
         blank=True,
