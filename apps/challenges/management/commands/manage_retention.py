@@ -8,13 +8,12 @@ from challenges.aws_utils import (
     calculate_retention_period_days,
     cleanup_expired_submission_artifacts,
     delete_submission_files_from_storage,
-    map_retention_days_to_aws_values,
     send_retention_warning_notifications,
     set_cloudwatch_log_retention,
 )
 from challenges.models import Challenge, ChallengePhase
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q
 from django.utils import timezone
 from jobs.models import Submission
 

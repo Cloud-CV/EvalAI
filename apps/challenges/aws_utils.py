@@ -2477,7 +2477,7 @@ def update_challenge_log_retention_on_approval(challenge):
                 logger.warning(
                     f"Failed to update log retention for challenge {challenge.pk}: {result.get('error')}"
                 )
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Error updating log retention for challenge {challenge.pk}"
             )
@@ -2495,7 +2495,7 @@ def update_challenge_log_retention_on_restart(challenge):
                 logger.info(
                     f"Updated log retention for restarted challenge {challenge.pk}"
                 )
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Error updating log retention for restarted challenge {challenge.pk}"
             )
@@ -2513,7 +2513,7 @@ def update_challenge_log_retention_on_task_def_registration(challenge):
                 logger.info(
                     f"Updated log retention for challenge {challenge.pk} task definition"
                 )
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Error updating log retention for challenge {challenge.pk} task definition"
             )
