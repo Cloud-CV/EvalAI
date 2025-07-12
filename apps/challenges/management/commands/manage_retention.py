@@ -247,28 +247,7 @@ class Command(BaseCommand):
             help="Limit number of results (default: 50)",
         )
 
-        # NEW: Host consent management commands
-        consent_parser = subparsers.add_parser(
-            "record-consent",
-            help="Record host consent for retention policy",
-        )
-        consent_parser.add_argument(
-            "challenge_id", type=int, help="Challenge ID"
-        )
-        consent_parser.add_argument(
-            "--username",
-            required=True,
-            help="Username of the host providing consent",
-        )
-        consent_parser.add_argument(
-            "--notes",
-            help="Additional notes about the consent",
-        )
-        consent_parser.add_argument(
-            "--force",
-            action="store_true",
-            help="Force consent recording even if user is not a host",
-        )
+
 
         # Check consent status
         subparsers.add_parser(
@@ -340,8 +319,6 @@ class Command(BaseCommand):
         elif action == "find-submissions":
             self.handle_find_submissions(options)
         # NEW: Consent management handlers
-        elif action == "record-consent":
-            self.handle_record_consent(options)
         elif action == "check-consent":
             self.handle_check_consent(options)
         elif action == "bulk-consent":
@@ -1375,73 +1352,7 @@ class Command(BaseCommand):
 
     # NEW: Consent management methods
 
-    def handle_record_consent(self, options):
-        """Handle recording host consent for retention policy"""
-        challenge_id = options["challenge_id"]
-        username = options["username"]
-        notes = options.get("notes")
-        force = options.get("force", False)
 
-        try:
-            challenge = Challenge.objects.get(pk=challenge_id)
-        except Challenge.DoesNotExist:
-            raise CommandError(f"Challenge {challenge_id} does not exist")
-
-        try:
-            user = get_user_model().objects.get(username=username)
-        except get_user_model().DoesNotExist:
-            raise CommandError(f"User {username} does not exist")
-
-        self.stdout.write(
-            f"Recording retention policy consent for challenge {challenge_id}: {challenge.title}"
-        )
-        self.stdout.write(f"Consent provided by: {username}")
-        self.stdout.write(
-            self.style.WARNING(
-                "Note: This consent allows EvalAI admins to set a 30-day retention policy for this challenge."
-            )
-        )
-
-        # Import the consent recording function
-
-        # Check if user is a host (unless force is used)
-        if not force and not is_user_a_host_of_challenge(user, challenge_id):
-            self.stdout.write(
-                self.style.WARNING(
-                    f"User {username} is not a host of challenge {challenge_id}"
-                )
-            )
-            if (
-                not input("Continue anyway? (yes/no): ")
-                .lower()
-                .startswith("y")
-            ):
-                self.stdout.write("Consent recording cancelled.")
-                return
-
-        # Record the consent
-        result = record_host_retention_consent(challenge_id, user, notes)
-
-        if result.get("success"):
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Successfully recorded consent: {result['message']}"
-                )
-            )
-            self.stdout.write(f"Consent date: {result['consent_date']}")
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "✅ Challenge host has consented to 30-day retention policy"
-                )
-            )
-            if notes:
-                self.stdout.write(f"Notes: {notes}")
-        else:
-            self.stdout.write(
-                self.style.ERROR(
-                    f"Failed to record consent: {result.get('error')}"
-                )
-            )
 
     def handle_check_consent(self, options):
         """Handle checking consent status for challenges"""
