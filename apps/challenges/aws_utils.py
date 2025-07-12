@@ -14,6 +14,9 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from evalai.celery import app
 
@@ -2309,6 +2312,103 @@ def update_submission_retention_dates():
     return {"updated_submissions": updated_count, "errors": errors}
 
 
+def send_template_email(
+    recipient_email,
+    subject,
+    template_name,
+    template_context,
+    sender_email=None,
+    reply_to=None,
+):
+    """
+    Send an email using Django templates instead of SendGrid.
+
+    Args:
+        recipient_email (str): Email address of the recipient
+        subject (str): Email subject line
+        template_name (str): Template name (e.g., 'challenges/retention_warning.html')
+        template_context (dict): Context data for the template
+        sender_email (str, optional): Sender email address. Defaults to CLOUDCV_TEAM_EMAIL
+        reply_to (str, optional): Reply-to email address
+
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    try:
+        # Use default sender if not provided
+        if not sender_email:
+            sender_email = settings.CLOUDCV_TEAM_EMAIL
+
+        # Render the HTML template
+        html_content = render_to_string(template_name, template_context)
+
+        # Create plain text version by stripping HTML tags
+        text_content = strip_tags(html_content)
+
+        # Create email message
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=sender_email,
+            to=[recipient_email],
+            reply_to=[reply_to] if reply_to else None,
+        )
+
+        # Attach HTML version
+        email.attach_alternative(html_content, "text/html")
+
+        # Send the email
+        email.send()
+
+        logger.info(f"Email sent successfully to {recipient_email}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to send email to {recipient_email}: {str(e)}")
+        return False
+
+
+def send_retention_warning_email(
+    challenge, recipient_email, submission_count, warning_date
+):
+    """
+    Send retention warning email using Django template.
+
+    Args:
+        challenge: Challenge object
+        recipient_email (str): Email address of the recipient
+        submission_count (int): Number of submissions affected
+        warning_date (datetime): Date when cleanup will occur
+
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    # Prepare template context
+    template_context = {
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_URL": f"{settings.EVALAI_API_SERVER}/web/challenges/challenge-page/{challenge.id}",
+        "SUBMISSION_COUNT": submission_count,
+        "RETENTION_DATE": warning_date.strftime("%B %d, %Y"),
+        "DAYS_REMAINING": 14,
+    }
+
+    # Add challenge image if available
+    if challenge.image:
+        template_context["CHALLENGE_IMAGE_URL"] = challenge.image.url
+
+    # Email subject
+    subject = f"⚠️ Retention Warning: {challenge.title} - {submission_count} submissions will be deleted in 14 days"
+
+    # Send the email
+    return send_template_email(
+        recipient_email=recipient_email,
+        subject=subject,
+        template_name="challenges/retention_warning.html",
+        template_context=template_context,
+        sender_email=settings.CLOUDCV_TEAM_EMAIL,
+    )
+
+
 @app.task
 def send_retention_warning_notifications():
     """
@@ -2372,30 +2472,6 @@ def send_retention_warning_notifications():
                 )
                 continue
 
-            challenge_url = f"{settings.EVALAI_API_SERVER}/web/challenges/challenge-page/{challenge.id}"
-
-            template_data = {
-                "CHALLENGE_NAME": challenge.title,
-                "CHALLENGE_URL": challenge_url,
-                "SUBMISSION_COUNT": submission_count,
-                "RETENTION_DATE": warning_date.strftime("%B %d, %Y"),
-                "DAYS_REMAINING": 14,
-            }
-
-            if challenge.image:
-                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
-
-            # Get template ID from settings
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES", {}).get(
-                "RETENTION_WARNING_EMAIL", None
-            )
-
-            if not template_id:
-                logger.error(
-                    "RETENTION_WARNING_EMAIL template ID not configured in settings"
-                )
-                continue
-
             # Get challenge host emails
             try:
                 emails = challenge.creator.get_all_challenge_host_email()
@@ -2414,16 +2490,28 @@ def send_retention_warning_notifications():
             email_sent = False
             for email in emails:
                 try:
-                    send_email(
-                        sender=settings.CLOUDCV_TEAM_EMAIL,
-                        recipient=email,
-                        template_id=template_id,
-                        template_data=template_data,
+                    success = send_retention_warning_email(
+                        challenge=challenge,
+                        recipient_email=email,
+                        submission_count=submission_count,
+                        warning_date=warning_date,
                     )
-                    email_sent = True
-                    logger.info(
-                        f"Sent retention warning email to {email} for challenge {challenge.pk}"
-                    )
+                    if success:
+                        email_sent = True
+                        logger.info(
+                            f"Sent retention warning email to {email} for challenge {challenge.pk}"
+                        )
+                    else:
+                        logger.error(
+                            f"Failed to send retention warning email to {email} for challenge {challenge.pk}"
+                        )
+                        notification_errors.append(
+                            {
+                                "challenge_id": challenge.pk,
+                                "email": email,
+                                "error": "Email sending failed",
+                            }
+                        )
                 except Exception as e:
                     logger.error(
                         f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"

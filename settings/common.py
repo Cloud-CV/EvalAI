@@ -383,7 +383,6 @@ SENDGRID_SETTINGS = {
         "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd",
         "CLUSTER_CREATION_TEMPLATE": "d-6de90fd760df4a41bb9bff1872eaab82",
         "WORKER_START_EMAIL": "d-debd127cab2345e789538131501ff416",
-        "RETENTION_WARNING_EMAIL": "d-placeholder-retention-warning-template",
     }
 }
 

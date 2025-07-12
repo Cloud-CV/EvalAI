@@ -3476,3 +3476,143 @@ class TestUtilityFunctions(TestCase):
         with patch.object(aws_utils.settings, "DEBUG", True):
             update_challenge_log_retention_on_approval(mock_challenge)
             mock_set_retention.assert_not_called()
+
+
+class TestEmailFunctions(TestCase):
+    """Test email utility functions"""
+
+    def setUp(self):
+        self.mock_challenge = MagicMock()
+        self.mock_challenge.title = "Test Challenge"
+        self.mock_challenge.id = 123
+        self.mock_challenge.image = None
+
+    @patch("challenges.aws_utils.EmailMultiAlternatives")
+    @patch("challenges.aws_utils.render_to_string")
+    @patch("challenges.aws_utils.settings")
+    def test_send_template_email_success(
+        self, mock_settings, mock_render, mock_email_class
+    ):
+        """Test successful template email sending"""
+        from challenges.aws_utils import send_template_email
+
+        # Setup mocks
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_render.return_value = "<html>Test email</html>"
+        mock_email_instance = MagicMock()
+        mock_email_class.return_value = mock_email_instance
+
+        # Call the function
+        result = send_template_email(
+            recipient_email="test@example.com",
+            subject="Test Subject",
+            template_name="test_template.html",
+            template_context={"key": "value"},
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        mock_email_class.assert_called_once()
+        mock_email_instance.attach_alternative.assert_called_once()
+        mock_email_instance.send.assert_called_once()
+
+    @patch("challenges.aws_utils.EmailMultiAlternatives")
+    @patch("challenges.aws_utils.render_to_string")
+    @patch("challenges.aws_utils.settings")
+    def test_send_template_email_failure(
+        self, mock_settings, mock_render, mock_email_class
+    ):
+        """Test template email sending failure"""
+        from challenges.aws_utils import send_template_email
+
+        # Setup mocks to raise exception
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_render.side_effect = Exception("Template error")
+
+        # Call the function
+        result = send_template_email(
+            recipient_email="test@example.com",
+            subject="Test Subject",
+            template_name="test_template.html",
+            template_context={"key": "value"},
+        )
+
+        # Assertions
+        self.assertFalse(result)
+
+    @patch("challenges.aws_utils.send_template_email")
+    @patch("challenges.aws_utils.settings")
+    def test_send_retention_warning_email(
+        self, mock_settings, mock_send_template
+    ):
+        """Test retention warning email sending"""
+        from challenges.aws_utils import send_retention_warning_email
+
+        # Setup
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_send_template.return_value = True
+
+        warning_date = timezone.now() + timedelta(days=14)
+        submission_count = 5
+
+        # Call the function
+        result = send_retention_warning_email(
+            challenge=self.mock_challenge,
+            recipient_email="host@example.com",
+            submission_count=submission_count,
+            warning_date=warning_date,
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        mock_send_template.assert_called_once()
+
+        # Check the call arguments
+        call_args = mock_send_template.call_args
+        self.assertEqual(call_args[1]["recipient_email"], "host@example.com")
+        self.assertEqual(
+            call_args[1]["template_name"], "challenges/retention_warning.html"
+        )
+        self.assertIn("CHALLENGE_NAME", call_args[1]["template_context"])
+        self.assertEqual(
+            call_args[1]["template_context"]["CHALLENGE_NAME"],
+            "Test Challenge",
+        )
+
+    @patch("challenges.aws_utils.send_template_email")
+    @patch("challenges.aws_utils.settings")
+    def test_send_retention_warning_email_with_image(
+        self, mock_settings, mock_send_template
+    ):
+        """Test retention warning email with challenge image"""
+        from challenges.aws_utils import send_retention_warning_email
+
+        # Setup challenge with image
+        mock_image = MagicMock()
+        mock_image.url = "http://example.com/image.jpg"
+        self.mock_challenge.image = mock_image
+
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_send_template.return_value = True
+
+        warning_date = timezone.now() + timedelta(days=14)
+        submission_count = 3
+
+        # Call the function
+        result = send_retention_warning_email(
+            challenge=self.mock_challenge,
+            recipient_email="host@example.com",
+            submission_count=submission_count,
+            warning_date=warning_date,
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        call_args = mock_send_template.call_args
+        template_context = call_args[1]["template_context"]
+        self.assertEqual(
+            template_context["CHALLENGE_IMAGE_URL"],
+            "http://example.com/image.jpg",
+        )
