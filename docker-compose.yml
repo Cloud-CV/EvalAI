@@ -11,7 +11,7 @@ services:
     hostname: sqs
     ports:
       - 9324:9324
-      
+
   django:
     hostname: django
     env_file:
