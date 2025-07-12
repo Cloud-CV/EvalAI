@@ -1890,31 +1890,44 @@ def update_sqs_retention_period_task(challenge):
     return update_sqs_retention_period(challenge_obj)
 
 
-def calculate_retention_period_days(challenge_end_date):
+def calculate_retention_period_days(challenge_end_date, challenge=None):
     """
-    Calculate retention period in days based on challenge end date.
+    Calculate retention period in days based on challenge end date and challenge-level consent.
 
     Args:
         challenge_end_date (datetime): The end date of the challenge phase
+        challenge (Challenge, optional): Challenge object for custom retention policies
 
     Returns:
-        int: Number of days for retention (30 days after challenge ends)
+        int: Number of days for retention
     """
     from django.utils import timezone
 
     now = timezone.now()
+    
+    # Check if challenge has host consent for retention policy
+    if challenge and challenge.retention_policy_consent:
+        # Host has consented - use 30-day retention (or admin override)
+        if challenge.log_retention_days_override:
+            return challenge.log_retention_days_override
+        else:
+            # Default 30-day retention when host has consented
+            return 30
+    
+    # No host consent - use conservative default (longer retention)
+    # Default retention calculation (90 days after challenge ends for safety)
     if challenge_end_date > now:
-        # Challenge is still active, retain until end date + 30 days
+        # Challenge is still active, retain until end date + 90 days
         # Round up to the nearest day to avoid flakiness
         seconds_until_end = (challenge_end_date - now).total_seconds()
         days_until_end = math.ceil(seconds_until_end / (24 * 3600.0))
-        return int(days_until_end) + 30
+        return int(days_until_end) + 90
     else:
-        # Challenge has ended, retain for 30 more days
+        # Challenge has ended, retain for 90 more days
         # Round down to match original behavior of .days
         seconds_since_end = (now - challenge_end_date).total_seconds()
         days_since_end = math.floor(seconds_since_end / (24 * 3600.0))
-        return max(30 - int(days_since_end), 1)  # At least 1 day
+        return max(90 - int(days_since_end), 1)  # At least 1 day
 
 
 def map_retention_days_to_aws_values(days):
@@ -1974,6 +1987,16 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
     try:
         # Check if challenge has an explicit override first
         challenge_obj = Challenge.objects.get(pk=challenge_pk)
+        
+        # Check if challenge host has consented to retention policy
+        if not challenge_obj.retention_policy_consent:
+            return {
+                "error": f"Challenge {challenge_pk} host has not consented to retention policy. "
+                        "Please obtain consent before applying retention policies. "
+                        "Without consent, data is retained for 90 days for safety.",
+                "requires_consent": True,
+                "challenge_id": challenge_pk,
+            }
 
         # Get challenge phases to determine end date
         phases = ChallengePhase.objects.filter(challenge_id=challenge_pk)
@@ -1991,7 +2014,7 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
                 retention_days = challenge_obj.log_retention_days_override
             else:
                 retention_days = calculate_retention_period_days(
-                    latest_end_date
+                    latest_end_date, challenge_obj
                 )
 
         # Map to valid AWS retention period
@@ -2013,14 +2036,17 @@ def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
 
         logger.info(
             f"Set CloudWatch log retention for challenge {challenge_pk} "
-            f"to {aws_retention_days} days"
+            f"to {aws_retention_days} days (host consent: {challenge_obj.retention_policy_consent}, "
+            f"30-day policy allowed: {challenge_obj.retention_policy_consent})"
         )
 
         return {
             "success": True,
             "retention_days": aws_retention_days,
             "log_group": log_group_name,
-            "message": f"Retention policy set to {aws_retention_days} days",
+            "message": f"Retention policy set to {aws_retention_days} days "
+                      f"({'30-day policy applied' if challenge_obj.retention_policy_consent else '90-day safety retention'})",
+            "host_consent": challenge_obj.retention_policy_consent,
         }
 
     except ClientError as e:
@@ -2061,8 +2087,22 @@ def calculate_submission_retention_date(challenge_phase):
     if challenge_phase.is_public:
         return None
 
-    # 30 days after challenge phase ends
-    return challenge_phase.end_date + timedelta(days=30)
+    # Get challenge object for retention policies
+    challenge = challenge_phase.challenge
+    
+    # Check if challenge has host consent
+    if challenge.retention_policy_consent:
+        # Use challenge-level retention policy
+        retention_days = calculate_retention_period_days(
+            challenge_phase.end_date, challenge
+        )
+    else:
+        # No host consent, use default retention period
+        retention_days = calculate_retention_period_days(
+            challenge_phase.end_date, challenge
+        )
+
+    return challenge_phase.end_date + timedelta(days=retention_days)
 
 
 def delete_submission_files_from_storage(submission):
@@ -2267,26 +2307,29 @@ def update_submission_retention_dates():
 
         for phase in ended_phases:
             try:
-                retention_date = calculate_submission_retention_date(phase)
-                if retention_date:
-                    # Update submissions for this phase
-                    submissions_updated = Submission.objects.filter(
-                        challenge_phase=phase,
-                        retention_eligible_date__isnull=True,
-                        is_artifact_deleted=False,
-                    ).update(retention_eligible_date=retention_date)
+                # Process submissions by type
+                for submission_type in ["participant", "host", "baseline", "evaluation_output"]:
+                    retention_date = calculate_submission_retention_date(phase, submission_type)
+                    if retention_date:
+                        # Update submissions for this phase and type
+                        submissions_updated = Submission.objects.filter(
+                            challenge_phase=phase,
+                            submission_type=submission_type,
+                            retention_eligible_date__isnull=True,
+                            is_artifact_deleted=False,
+                        ).update(retention_eligible_date=retention_date)
 
-                    updated_count += submissions_updated
+                        updated_count += submissions_updated
 
-                    if submissions_updated > 0:
-                        logger.info(
-                            f"Updated {submissions_updated} submissions for phase {phase.pk} "
-                            f"({phase.challenge.title}) with retention date {retention_date}"
+                        if submissions_updated > 0:
+                            logger.info(
+                                f"Updated {submissions_updated} {submission_type} submissions for phase {phase.pk} "
+                                f"({phase.challenge.title}) with retention date {retention_date}"
+                            )
+                    else:
+                        logger.debug(
+                            f"No retention date calculated for phase {phase.pk} submission type {submission_type} - phase may still be public"
                         )
-                else:
-                    logger.debug(
-                        f"No retention date calculated for phase {phase.pk} - phase may still be public"
-                    )
 
             except Exception as e:
                 error_msg = f"Failed to update retention dates for phase {phase.pk}: {str(e)}"
@@ -2605,3 +2648,82 @@ def update_challenge_log_retention_on_task_def_registration(challenge):
             logger.exception(
                 f"Error updating log retention for challenge {challenge.pk} task definition"
             )
+
+
+def record_host_retention_consent(challenge_pk, user, consent_notes=None):
+    """
+    Record host consent for retention policy on a challenge.
+    This consent allows EvalAI admins to set a 30-day retention policy.
+
+    Args:
+        challenge_pk (int): Challenge primary key
+        user (User): User providing consent
+        consent_notes (str, optional): Additional notes about consent
+
+    Returns:
+        dict: Response containing success/error status
+    """
+    from .models import Challenge
+    from django.utils import timezone
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+        
+        # Check if user is a host of this challenge
+        if not is_user_a_host_of_challenge(user, challenge_pk):
+            return {
+                "error": "User is not authorized to provide retention consent for this challenge",
+                "requires_authorization": True,
+            }
+
+        # Update challenge with consent information
+        challenge.retention_policy_consent = True
+        challenge.retention_policy_consent_date = timezone.now()
+        challenge.retention_policy_consent_by = user
+        if consent_notes:
+            challenge.retention_policy_notes = consent_notes
+        challenge.save()
+
+        logger.info(
+            f"Retention policy consent recorded for challenge {challenge_pk} by user {user.username} "
+            f"(allows 30-day retention policy)"
+        )
+
+        return {
+            "success": True,
+            "message": f"Retention policy consent recorded for challenge {challenge.title}. "
+                      f"EvalAI admins can now set a 30-day retention policy for this challenge.",
+            "consent_date": challenge.retention_policy_consent_date.isoformat(),
+            "consent_by": user.username,
+        }
+
+    except Challenge.DoesNotExist:
+        return {"error": f"Challenge {challenge_pk} does not exist"}
+    except Exception as e:
+        logger.exception(f"Error recording retention consent for challenge {challenge_pk}")
+        return {"error": str(e)}
+
+
+def is_user_a_host_of_challenge(user, challenge_pk):
+    """
+    Check if a user is a host of a specific challenge.
+    
+    Args:
+        user (User): User to check
+        challenge_pk (int): Challenge primary key
+        
+    Returns:
+        bool: True if user is a host of the challenge
+    """
+    from .models import Challenge
+    from hosts.models import ChallengeHost
+    
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+        return ChallengeHost.objects.filter(
+            user=user,
+            team_name=challenge.creator,
+            status=ChallengeHost.ACCEPTED
+        ).exists()
+    except Challenge.DoesNotExist:
+        return False

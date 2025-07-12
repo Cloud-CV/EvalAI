@@ -16,6 +16,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count, Q
 from django.utils import timezone
 from jobs.models import Submission
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -243,6 +244,58 @@ class Command(BaseCommand):
             help="Limit number of results (default: 50)",
         )
 
+        # NEW: Host consent management commands
+        consent_parser = subparsers.add_parser(
+            "record-consent",
+            help="Record host consent for retention policy",
+        )
+        consent_parser.add_argument(
+            "challenge_id", type=int, help="Challenge ID"
+        )
+        consent_parser.add_argument(
+            "--username",
+            required=True,
+            help="Username of the host providing consent",
+        )
+        consent_parser.add_argument(
+            "--notes",
+            help="Additional notes about the consent",
+        )
+        consent_parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Force consent recording even if user is not a host",
+        )
+
+        # Check consent status
+        subparsers.add_parser(
+            "check-consent",
+            help="Check retention policy consent status for challenges",
+        )
+
+        # Bulk consent operations
+        bulk_consent_parser = subparsers.add_parser(
+            "bulk-consent",
+            help="Bulk consent operations",
+        )
+        bulk_consent_parser.add_argument(
+            "--action",
+            choices=["check", "require"],
+            required=True,
+            help="Action to perform",
+        )
+        bulk_consent_parser.add_argument(
+            "--challenge-ids",
+            nargs="+",
+            type=int,
+            help="List of challenge IDs",
+        )
+        bulk_consent_parser.add_argument(
+            "--all-active",
+            action="store_true",
+            help="Apply to all active challenges",
+        )
+
     def handle(self, *args, **options):
         action = options.get("action")
 
@@ -277,6 +330,13 @@ class Command(BaseCommand):
             self.handle_emergency_cleanup(options)
         elif action == "find-submissions":
             self.handle_find_submissions(options)
+        # NEW: Consent management handlers
+        elif action == "record-consent":
+            self.handle_record_consent(options)
+        elif action == "check-consent":
+            self.handle_check_consent(options)
+        elif action == "bulk-consent":
+            self.handle_bulk_consent(options)
 
     def handle_cleanup(self, options):
         """Handle cleanup of expired submission artifacts"""
@@ -1133,4 +1193,205 @@ class Command(BaseCommand):
                 f"Team: {team_name[:20]:<20} | "
                 f"Status: {submission.status:<10} | "
                 f"Deleted: {submission.is_artifact_deleted}"
+            )
+
+    # NEW: Consent management methods
+
+    def handle_record_consent(self, options):
+        """Handle recording host consent for retention policy"""
+        challenge_id = options["challenge_id"]
+        username = options["username"]
+        notes = options.get("notes")
+        force = options.get("force", False)
+
+        try:
+            challenge = Challenge.objects.get(pk=challenge_id)
+        except Challenge.DoesNotExist:
+            raise CommandError(f"Challenge {challenge_id} does not exist")
+
+        try:
+            user = get_user_model().objects.get(username=username)
+        except get_user_model().DoesNotExist:
+            raise CommandError(f"User {username} does not exist")
+
+        self.stdout.write(
+            f"Recording retention policy consent for challenge {challenge_id}: {challenge.title}"
+        )
+        self.stdout.write(f"Consent provided by: {username}")
+        self.stdout.write(
+            self.style.WARNING(
+                "Note: This consent allows EvalAI admins to set a 30-day retention policy for this challenge."
+            )
+        )
+
+        # Import the consent recording function
+        from challenges.aws_utils import record_host_retention_consent, is_user_a_host_of_challenge
+
+        # Check if user is a host (unless force is used)
+        if not force and not is_user_a_host_of_challenge(user, challenge_id):
+            self.stdout.write(
+                self.style.WARNING(
+                    f"User {username} is not a host of challenge {challenge_id}"
+                )
+            )
+            if not input("Continue anyway? (yes/no): ").lower().startswith("y"):
+                self.stdout.write("Consent recording cancelled.")
+                return
+
+        # Record the consent
+        result = record_host_retention_consent(challenge_id, user, notes)
+
+        if result.get("success"):
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully recorded consent: {result['message']}"
+                )
+            )
+            self.stdout.write(f"Consent date: {result['consent_date']}")
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "✅ Challenge host has consented to 30-day retention policy"
+                )
+            )
+            if notes:
+                self.stdout.write(f"Notes: {notes}")
+        else:
+            self.stdout.write(
+                self.style.ERROR(f"Failed to record consent: {result.get('error')}")
+            )
+
+    def handle_check_consent(self, options):
+        """Handle checking consent status for challenges"""
+        self.stdout.write("Checking retention policy consent status:")
+        self.stdout.write("=" * 50)
+
+        challenges = Challenge.objects.all().order_by("id")
+        consent_stats = {"total": 0, "with_consent": 0, "without_consent": 0}
+
+        for challenge in challenges:
+            consent_stats["total"] += 1
+            if challenge.retention_policy_consent:
+                consent_stats["with_consent"] += 1
+                status = "✅ CONSENTED (30-day retention allowed)"
+            else:
+                consent_stats["without_consent"] += 1
+                status = "❌ NO CONSENT (90-day retention for safety)"
+
+            self.stdout.write(
+                f"Challenge {challenge.pk}: {challenge.title[:40]:<40} | {status}"
+            )
+
+        # Summary
+        self.stdout.write("\n" + "=" * 50)
+        self.stdout.write("SUMMARY:")
+        self.stdout.write(f"Total challenges: {consent_stats['total']}")
+        self.stdout.write(f"With consent (30-day retention allowed): {consent_stats['with_consent']}")
+        self.stdout.write(f"Without consent (90-day retention for safety): {consent_stats['without_consent']}")
+        
+        if consent_stats["without_consent"] > 0:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"⚠️  {consent_stats['without_consent']} challenges need consent for 30-day retention policy!"
+                )
+            )
+
+    def handle_bulk_consent(self, options):
+        """Handle bulk consent operations"""
+        action = options["action"]
+        challenge_ids = options.get("challenge_ids", [])
+        all_active = options.get("all_active", False)
+
+        if not challenge_ids and not all_active:
+            raise CommandError("Must specify either --challenge-ids or --all-active")
+
+        if all_active:
+            # Get all active challenges (those with phases that haven't ended)
+            active_challenges = Challenge.objects.filter(
+                phases__end_date__gt=timezone.now()
+            ).distinct()
+            challenge_ids = list(active_challenges.values_list("id", flat=True))
+
+        if action == "check":
+            self._bulk_check_consent(challenge_ids)
+        elif action == "require":
+            self._bulk_require_consent(challenge_ids)
+
+    def _bulk_check_consent(self, challenge_ids):
+        """Bulk check consent status"""
+        self.stdout.write(f"Checking consent status for {len(challenge_ids)} challenges:")
+        self.stdout.write("=" * 60)
+
+        challenges_needing_consent = []
+
+        for challenge_id in challenge_ids:
+            try:
+                challenge = Challenge.objects.get(pk=challenge_id)
+                if challenge.retention_policy_consent:
+                    status = "✅ CONSENTED"
+                else:
+                    status = "❌ NO CONSENT"
+                    challenges_needing_consent.append(challenge_id)
+
+                self.stdout.write(
+                    f"Challenge {challenge_id}: {challenge.title[:50]:<50} | {status}"
+                )
+            except Challenge.DoesNotExist:
+                self.stdout.write(f"Challenge {challenge_id}: NOT FOUND")
+
+        # Summary
+        self.stdout.write("\n" + "=" * 60)
+        self.stdout.write(f"Total checked: {len(challenge_ids)}")
+        self.stdout.write(f"Need consent: {len(challenges_needing_consent)}")
+
+        if challenges_needing_consent:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Challenges needing consent: {', '.join(map(str, challenges_needing_consent))}"
+                )
+            )
+
+    def _bulk_require_consent(self, challenge_ids):
+        """Bulk require consent (show which challenges need consent)"""
+        self.stdout.write(
+            self.style.WARNING(
+                f"⚠️  BULK CONSENT REQUIREMENT CHECK for {len(challenge_ids)} challenges"
+            )
+        )
+        self.stdout.write("=" * 60)
+
+        challenges_needing_consent = []
+
+        for challenge_id in challenge_ids:
+            try:
+                challenge = Challenge.objects.get(pk=challenge_id)
+                if not challenge.retention_policy_consent:
+                    challenges_needing_consent.append(challenge_id)
+                    self.stdout.write(
+                        f"❌ Challenge {challenge_id}: {challenge.title} - NEEDS CONSENT"
+                    )
+                else:
+                    self.stdout.write(
+                        f"✅ Challenge {challenge_id}: {challenge.title} - HAS CONSENT"
+                    )
+            except Challenge.DoesNotExist:
+                self.stdout.write(f"Challenge {challenge_id}: NOT FOUND")
+
+        # Summary
+        self.stdout.write("\n" + "=" * 60)
+        self.stdout.write(f"Total challenges: {len(challenge_ids)}")
+        self.stdout.write(f"Need consent: {len(challenges_needing_consent)}")
+
+        if challenges_needing_consent:
+            self.stdout.write(
+                self.style.ERROR(
+                    f"⚠️  URGENT: {len(challenges_needing_consent)} challenges require consent!"
+                )
+            )
+            self.stdout.write(
+                "Use 'python manage.py manage_retention record-consent <challenge_id> --username <host_username>' "
+                "to record consent for each challenge."
+            )
+        else:
+            self.stdout.write(
+                self.style.SUCCESS("🎉 All challenges have consent!")
             )

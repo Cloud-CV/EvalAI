@@ -160,6 +160,31 @@ class Submission(TimeStampedModel):
         blank=True,
         help_text="Timestamp when submission artifacts were deleted",
     )
+    
+    # Submission type and retention policy tracking
+    submission_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("participant", "Participant Submission"),
+            ("host", "Host Submission"),
+            ("baseline", "Baseline Submission"),
+            ("evaluation_output", "Evaluation Script Output"),
+        ],
+        default="participant",
+        help_text="Type of submission for retention policy purposes",
+        db_index=True,
+    )
+    retention_policy_applied = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Description of retention policy applied to this submission",
+    )
+    retention_override_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason for any retention policy override applied to this submission",
+    )
 
     def __str__(self):
         return "{}".format(self.id)
