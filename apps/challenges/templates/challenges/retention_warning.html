@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention Warning - {{ CHALLENGE_NAME }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .challenge-image {
+            max-width: 200px;
+            max-height: 120px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .warning-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        .title {
+            color: #e74c3c;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .highlight-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin: 0 10px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .cta-button:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .important-note {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            {% if CHALLENGE_IMAGE_URL %}
+            <img src="{{ CHALLENGE_IMAGE_URL }}" alt="{{ CHALLENGE_NAME }}" class="challenge-image">
+            {% endif %}
+            <div class="warning-icon">⚠️</div>
+            <div class="title">Retention Warning</div>
+            <div class="subtitle">{{ CHALLENGE_NAME }}</div>
+        </div>
+
+        <div class="content">
+            <p>Dear Challenge Host,</p>
+            
+            <p>This is an important notification regarding your challenge <strong>{{ CHALLENGE_NAME }}</strong>.</p>
+
+            <div class="important-note">
+                <strong>Action Required:</strong> Your submission artifacts will be automatically deleted in <strong>{{ DAYS_REMAINING }} days</strong> ({{ RETENTION_DATE }}) to comply with our data retention policy.
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ SUBMISSION_COUNT }}</div>
+                    <div class="stat-label">Submissions Affected</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ DAYS_REMAINING }}</div>
+                    <div class="stat-label">Days Remaining</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h3>What will be deleted?</h3>
+                <ul>
+                    <li>Submission input files</li>
+                    <li>Output files and results</li>
+                    <li>Log files and metadata</li>
+                    <li>All associated artifacts</li>
+                </ul>
+                <p><strong>Note:</strong> Challenge metadata, leaderboard data, and participant information will be preserved.</p>
+            </div>
+
+            <p>If you need to retain any of this data, please download it before the deletion date.</p>
+
+            <div style="text-align: center;">
+                <a href="{{ CHALLENGE_URL }}" class="cta-button">View Challenge</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated notification from EvalAI.</p>
+            <p>If you have any questions, please contact our support team.</p>
+            <p>© 2024 EvalAI. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

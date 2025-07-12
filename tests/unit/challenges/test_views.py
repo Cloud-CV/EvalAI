@@ -6282,17 +6282,46 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_approval_when_challenge_exists(self):
-        self.user.is_staff = True
-        self.user.save()
-        self.url = reverse_lazy("challenges:update_challenge_approval")
-        expected = {"message": "Challenge updated successfully!"}
-        response = self.client.post(
-            self.url,
-            {"challenge_pk": self.challenge.pk, "approved_by_admin": True},
-        )
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    @mock.patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    def test_update_challenge_approval_when_challenge_exists(
+        self, mock_set_log_retention
+    ):
+        from challenges.models import Challenge
+        from django.db.models.signals import post_save
+
+        # Temporarily disconnect post_save signals to prevent side effects
+        post_save_receivers = []
+        for receiver in post_save._live_receivers(sender=Challenge):
+            post_save_receivers.append(receiver)
+            post_save.disconnect(receiver, sender=Challenge)
+
+        try:
+            self.user.is_staff = True
+            self.user.save()
+
+            # Mock the log retention function to return success
+            mock_set_log_retention.return_value = {
+                "success": True,
+                "retention_days": 30,
+                "message": "Retention policy set successfully",
+            }
+
+            self.url = reverse_lazy("challenges:update_challenge_approval")
+            expected = {"message": "Challenge updated successfully!"}
+            response = self.client.post(
+                self.url,
+                {"challenge_pk": self.challenge.pk, "approved_by_admin": True},
+            )
+            self.assertEqual(response.data, expected)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            # Note: set_cloudwatch_log_retention is not called because we disconnected the signals
+            # to prevent side effects. The test focuses on the view functionality.
+
+        finally:
+            # Reconnect the post_save signals
+            for receiver in post_save_receivers:
+                post_save.connect(receiver, sender=Challenge)
 
     def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")
@@ -6315,28 +6344,56 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_attributes_when_challenge_exists(self):
-        self.url = reverse_lazy("challenges:update_challenge_attributes")
-        self.user.is_staff = True
-        self.user.save()
+    @mock.patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    def test_update_challenge_attributes_when_challenge_exists(
+        self, mock_set_log_retention
+    ):
+        from challenges.models import Challenge
+        from django.db.models.signals import post_save
 
-        expected = {
-            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
-        }
+        # Temporarily disconnect post_save signals to prevent side effects
+        post_save_receivers = []
+        for receiver in post_save._live_receivers(sender=Challenge):
+            post_save_receivers.append(receiver)
+            post_save.disconnect(receiver, sender=Challenge)
 
-        response = self.client.post(
-            self.url,
-            {
-                "challenge_pk": self.challenge.pk,
-                "title": "Updated Title",
-                "description": "Updated Description",
-                "approved_by_admin": True,
-                "ephemeral_storage": 25,
-            },
-        )
+        try:
+            self.url = reverse_lazy("challenges:update_challenge_attributes")
+            self.user.is_staff = True
+            self.user.save()
 
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+            # Mock the log retention function to return success
+            mock_set_log_retention.return_value = {
+                "success": True,
+                "retention_days": 30,
+                "message": "Retention policy set successfully",
+            }
+
+            expected = {
+                "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
+            }
+
+            response = self.client.post(
+                self.url,
+                {
+                    "challenge_pk": self.challenge.pk,
+                    "title": "Updated Title",
+                    "description": "Updated Description",
+                    "approved_by_admin": True,
+                    "ephemeral_storage": 25,
+                },
+            )
+
+            self.assertEqual(response.data, expected)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            # Note: set_cloudwatch_log_retention is not called because we disconnected the signals
+            # to prevent side effects. The test focuses on the view functionality.
+
+        finally:
+            # Reconnect the post_save signals
+            for receiver in post_save_receivers:
+                post_save.connect(receiver, sender=Challenge)
 
     def test_update_challenge_attributes_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")

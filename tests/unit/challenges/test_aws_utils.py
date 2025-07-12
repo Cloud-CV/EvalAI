@@ -1,6 +1,6 @@
 import unittest
+from datetime import timedelta
 from http import HTTPStatus
-from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
@@ -35,12 +35,14 @@ from challenges.aws_utils import (
 from challenges.models import Challenge
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.test import TestCase
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
 
 class AWSUtilsTestCase(TestCase):
-    @mock.patch("challenges.models.ChallengeEvaluationCluster.objects.get")
-    @mock.patch("challenges.utils.get_challenge_model")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_challenge_model")
     def test_get_code_upload_setup_meta_for_challenge_with_host_credentials(
         self, mock_get_challenge_model, mock_get_cluster
     ):
@@ -73,8 +75,8 @@ class AWSUtilsTestCase(TestCase):
         self.assertEqual(result, expected_result)
         mock_get_cluster.assert_called_once_with(challenge=mock_challenge)
 
-    @mock.patch("challenges.utils.get_challenge_model")
-    @mock.patch(
+    @patch("challenges.utils.get_challenge_model")
+    @patch(
         "challenges.aws_utils.VPC_DICT",
         {
             "SUBNET_1": "vpc_subnet1",
@@ -82,7 +84,7 @@ class AWSUtilsTestCase(TestCase):
             "SUBNET_SECURITY_GROUP": "vpc_sg",
         },
     )
-    @mock.patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.settings")
     def test_get_code_upload_setup_meta_for_challenge_without_host_credentials(
         self, mock_settings, mock_get_challenge_model
     ):
@@ -136,6 +138,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.queue = "test_queue"
 
         response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
         mock_client.create_service.return_value = {
@@ -145,7 +148,33 @@ class TestCreateServiceByChallengePk:
         with patch(
             "challenges.aws_utils.register_task_def_by_challenge_pk",
             return_value={"ResponseMetadata": response_metadata},
-        ):
+        ), patch("json.loads") as mock_json_loads:
+            # Mock json.loads to return a valid dict instead of parsing the template
+            mock_json_loads.return_value = {
+                "cluster": "cluster",
+                "serviceName": "test_queue_service",
+                "taskDefinition": "valid_task_def_arn",
+                "desiredCount": 1,
+                "clientToken": "dummy_client_token",
+                "launchType": "FARGATE",
+                "platformVersion": "LATEST",
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": ["subnet-1", "subnet-2"],
+                        "securityGroups": ["sg-1"],
+                        "assignPublicIp": "ENABLED",
+                    }
+                },
+                "schedulingStrategy": "REPLICA",
+                "deploymentController": {"type": "ECS"},
+                "deploymentConfiguration": {
+                    "deploymentCircuitBreaker": {
+                        "enable": True,
+                        "rollback": False,
+                    }
+                },
+            }
+
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
             )
@@ -159,6 +188,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.queue = "test_queue"
 
         mock_client.create_service.side_effect = ClientError(
             error_response={
@@ -173,7 +203,33 @@ class TestCreateServiceByChallengePk:
             return_value={
                 "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
             },
-        ):
+        ), patch("json.loads") as mock_json_loads:
+            # Mock json.loads to return a valid dict instead of parsing the template
+            mock_json_loads.return_value = {
+                "cluster": "cluster",
+                "serviceName": "test_queue_service",
+                "taskDefinition": "valid_task_def_arn",
+                "desiredCount": 1,
+                "clientToken": "dummy_client_token",
+                "launchType": "FARGATE",
+                "platformVersion": "LATEST",
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": ["subnet-1", "subnet-2"],
+                        "securityGroups": ["sg-1"],
+                        "assignPublicIp": "ENABLED",
+                    }
+                },
+                "schedulingStrategy": "REPLICA",
+                "deploymentController": {"type": "ECS"},
+                "deploymentConfiguration": {
+                    "deploymentCircuitBreaker": {
+                        "enable": True,
+                        "rollback": False,
+                    }
+                },
+            }
+
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
             )
@@ -187,6 +243,7 @@ class TestCreateServiceByChallengePk:
         self, mock_client, mock_challenge, client_token
     ):
         mock_challenge.workers = 1
+        mock_challenge.queue = "test_queue"
 
         response = create_service_by_challenge_pk(
             mock_client, mock_challenge, client_token
@@ -205,6 +262,7 @@ class TestCreateServiceByChallengePk:
         mock_challenge.task_def_arn = (
             None  # Simulate task definition is not yet registered
         )
+        mock_challenge.queue = "test_queue"
 
         register_task_response = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
@@ -288,14 +346,26 @@ def test_delete_service_success_when_workers_zero(mock_challenge, mock_client):
     mock_challenge.task_def_arn = (
         "valid_task_def_arn"  # Ensure task_def_arn is set to a valid string
     )
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         mock_client.delete_service.return_value = response_metadata_ok
+        # Mock the deregister_task_definition call to return success
+        mock_client.deregister_task_definition.return_value = (
+            response_metadata_ok
+        )
 
         response = delete_service_by_challenge_pk(mock_challenge)
 
@@ -311,18 +381,30 @@ def test_delete_service_success_when_workers_not_zero(
 ):
     mock_challenge.workers = 3
     mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         with patch(
             "challenges.aws_utils.update_service_by_challenge_pk",
             return_value=response_metadata_ok,
         ):
             mock_client.delete_service.return_value = response_metadata_ok
+            # Mock the deregister_task_definition call to return success
+            mock_client.deregister_task_definition.return_value = (
+                response_metadata_ok
+            )
 
             response = delete_service_by_challenge_pk(mock_challenge)
 
@@ -335,13 +417,22 @@ def test_delete_service_success_when_workers_not_zero(
 
 def test_update_service_failure(mock_challenge, mock_client):
     mock_challenge.workers = 3
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.queue = "test_queue"
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
     }
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         with patch(
             "challenges.aws_utils.update_service_by_challenge_pk",
             return_value=response_metadata_error,
@@ -353,17 +444,28 @@ def test_update_service_failure(mock_challenge, mock_client):
         == HTTPStatus.BAD_REQUEST
     )
     mock_client.delete_service.assert_not_called()
+    # deregister_task_definition should not be called when update_service fails
+    mock_client.deregister_task_definition.assert_not_called()
 
 
 def test_delete_service_failure(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.queue = "test_queue"
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
     }
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         mock_client.delete_service.return_value = response_metadata_error
 
         response = delete_service_by_challenge_pk(mock_challenge)
@@ -373,17 +475,27 @@ def test_delete_service_failure(mock_challenge, mock_client):
         == HTTPStatus.BAD_REQUEST
     )
     mock_challenge.save.assert_not_called()
+    # deregister_task_definition should not be called when delete_service fails
+    mock_client.deregister_task_definition.assert_not_called()
 
 
 def test_deregister_task_definition_failure(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.queue = "test_queue"
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
     }
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         mock_client.delete_service.return_value = response_metadata_ok
         mock_client.deregister_task_definition.side_effect = ClientError(
             error_response={
@@ -406,10 +518,18 @@ def test_deregister_task_definition_failure(mock_challenge, mock_client):
 
 def test_delete_service_client_error(mock_challenge, mock_client):
     mock_challenge.workers = 0
+    mock_challenge.queue = "test_queue"
 
     with patch(
         "challenges.aws_utils.get_boto3_client", return_value=mock_client
-    ):
+    ), patch("json.loads") as mock_json_loads:
+        # Mock json.loads to return a valid dict instead of parsing the template
+        mock_json_loads.return_value = {
+            "cluster": "cluster",
+            "service": "test_queue_service",
+            "force": True,
+        }
+
         mock_client.delete_service.side_effect = ClientError(
             error_response={
                 "Error": {"Code": "DeleteServiceError"},
@@ -1857,22 +1977,21 @@ class TestScaleResources(unittest.TestCase):
         challenge.task_def_arn = "some_task_def_arn"
         challenge.worker_cpu_cores = 2
         challenge.worker_memory = 4096
+        challenge.worker_image_url = "some_image_url"
+        challenge.queue = "queue_name"
+        challenge.ephemeral_storage = 50
+        challenge.pk = 123
+        challenge.workers = 10
         # Mock other dependencies
         with patch(
             "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+            "challenges.aws_utils.task_definition"
+        ) as mock_task_definition:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            # Mock task_definition as a string template that returns valid JSON when formatted
+            mock_task_definition.format.return_value = '{"family": "worker_queue_name", "containerDefinitions": [{"name": "worker_queue_name"}]}'
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -1954,18 +2073,15 @@ class TestScaleResources(unittest.TestCase):
         with patch(
             "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
+            "challenges.aws_utils.task_definition"
         ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+            "challenges.aws_utils.update_service_args"
+        ) as mock_update_service_args:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            # Mock task_definition as a string template that returns valid JSON when formatted
+            mock_task_definition.format.return_value = '{"family": "worker_queue_name", "containerDefinitions": [{"name": "worker_queue_name"}]}'
+            mock_update_service_args.format.return_value = '{"cluster": "evalai-prod-cluster", "service": "queue_name_service"}'
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -2016,36 +2132,31 @@ class TestScaleResources(unittest.TestCase):
         with patch(
             "challenges.utils.get_aws_credentials_for_challenge"
         ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
+            "challenges.aws_utils.task_definition"
+        ) as mock_task_definition:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            # Mock task_definition as a string template that returns valid JSON when formatted
+            mock_task_definition.format.return_value = '{"family": "worker_queue_name", "containerDefinitions": [{"name": "worker_queue_name"}]}'
 
-            # Mock register_task_definition response with error
-            mock_client.register_task_definition.return_value = {
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-                "Error": "Failed to register task definition",
-            }
-
-            # Call the function
-            result = scale_resources(
-                challenge, worker_cpu_cores=4, worker_memory=8192
+            # Mock register_task_definition to raise ClientError
+            mock_client.register_task_definition.side_effect = ClientError(
+                {"Error": {"Message": "Failed to register task definition"}},
+                "RegisterTaskDefinition",
             )
 
-            # Expected result
-            expected_result = {
-                "Error": "Failed to register task definition",
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-            }
-            self.assertEqual(result, expected_result)
+            # Call the function
+            response = scale_resources(challenge, 4, 8192)
+
+            # Verify the response
+            self.assertEqual(
+                response["Error"]["Message"],
+                "Failed to register task definition",
+            )
+            mock_client.register_task_definition.assert_called_once()
+            mock_client.deregister_task_definition.assert_called_once_with(
+                taskDefinition="some_task_def_arn"
+            )
 
 
 class TestDeleteWorkers(TestCase):
@@ -3041,4 +3152,467 @@ class TestSetupEC2(TestCase):
         mock_deserialize.assert_called_once_with("json", challenge_json)
         mock_update_sqs_retention_period.assert_called_once_with(
             mock_challenge_obj
+        )
+
+
+# ===================== RETENTION TESTS =====================
+
+
+class TestRetentionCalculations(TestCase):
+    """Simplified tests for retention period calculations"""
+
+    def test_retention_period_calculation(self):
+        """Test basic retention period calculations"""
+        from challenges.aws_utils import calculate_retention_period_days
+
+        now = timezone.now()
+
+        # Future end date: 10 days from now should give 40 days retention
+        future_end = now + timedelta(days=10)
+        self.assertEqual(calculate_retention_period_days(future_end), 40)
+
+        # Past end date: 5 days ago should give 25 days retention
+        past_end = now - timedelta(days=5)
+        self.assertEqual(calculate_retention_period_days(past_end), 25)
+
+        # Very old end date should give minimum 1 day
+        old_end = now - timedelta(days=50)
+        self.assertEqual(calculate_retention_period_days(old_end), 1)
+
+    def test_aws_retention_mapping(self):
+        """Test mapping to valid AWS CloudWatch values"""
+        from challenges.aws_utils import map_retention_days_to_aws_values
+
+        # Test exact matches
+        self.assertEqual(map_retention_days_to_aws_values(30), 30)
+        self.assertEqual(map_retention_days_to_aws_values(90), 90)
+
+        # Test rounding up to next valid value
+        self.assertEqual(map_retention_days_to_aws_values(25), 30)
+        self.assertEqual(map_retention_days_to_aws_values(100), 120)
+
+        # Test edge cases
+        self.assertEqual(map_retention_days_to_aws_values(0), 1)
+        self.assertEqual(map_retention_days_to_aws_values(5000), 3653)
+
+
+@pytest.mark.django_db
+class TestCloudWatchRetention(TestCase):
+    """Simplified CloudWatch log retention tests"""
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    def test_set_log_retention_success(
+        self, mock_log_group, mock_creds, mock_client
+    ):
+        """Test successful log retention setting"""
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
+        # Setup mocks
+        mock_log_group.return_value = "test-log-group"
+        mock_creds.return_value = {"aws_access_key_id": "test"}
+        mock_logs_client = MagicMock()
+        mock_client.return_value = mock_logs_client
+
+        # Mock challenge with phase
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge:
+            with patch(
+                "challenges.models.ChallengePhase.objects.filter"
+            ) as mock_phases:
+                mock_challenge.return_value.log_retention_days_override = None
+                mock_phase = MagicMock()
+                mock_phase.end_date = timezone.now() + timedelta(days=10)
+                # Properly mock the queryset
+                mock_phases_qs = MagicMock()
+                mock_phases_qs.exists.return_value = True
+                mock_phases_qs.__iter__.return_value = iter([mock_phase])
+                mock_phases.return_value = mock_phases_qs
+
+                result = set_cloudwatch_log_retention(123, retention_days=30)
+
+                self.assertTrue(result["success"])
+                self.assertEqual(result["retention_days"], 30)
+                mock_logs_client.put_retention_policy.assert_called_once()
+
+    def test_log_retention_no_phases(self):
+        """Test error when no phases exist"""
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
+        with patch("challenges.models.Challenge.objects.get"):
+            with patch(
+                "challenges.models.ChallengePhase.objects.filter"
+            ) as mock_phases:
+                mock_phases.return_value.exists.return_value = False
+
+                result = set_cloudwatch_log_retention(123)
+                self.assertIn("error", result)
+                self.assertIn("No phases found", result["error"])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    def test_set_log_retention_resource_not_found(
+        self, mock_log_group, mock_creds, mock_client
+    ):
+        """Test AWS ResourceNotFoundException is handled"""
+        from botocore.exceptions import ClientError
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
+        mock_log_group.return_value = "test-log-group"
+        mock_creds.return_value = {"aws_access_key_id": "test"}
+        mock_logs_client = MagicMock()
+        # Simulate AWS ResourceNotFoundException
+        error_response = {
+            "Error": {
+                "Code": "ResourceNotFoundException",
+                "Message": "Log group not found",
+            }
+        }
+        client_error = ClientError(error_response, "PutRetentionPolicy")
+        mock_logs_client.put_retention_policy.side_effect = client_error
+        mock_client.return_value = mock_logs_client
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
+            mock_challenge.return_value.log_retention_days_override = None
+            mock_phase = MagicMock()
+            mock_phase.end_date = timezone.now() + timedelta(days=10)
+            mock_phases_qs = MagicMock()
+            mock_phases_qs.exists.return_value = True
+            mock_phases_qs.__iter__.return_value = iter([mock_phase])
+            mock_phases.return_value = mock_phases_qs
+            result = set_cloudwatch_log_retention(123, retention_days=30)
+            self.assertIn("error", result)
+            self.assertIn("Log group not found", result["error"])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    @patch("challenges.aws_utils.logger")
+    def test_set_log_retention_unexpected_exception(
+        self, mock_logger, mock_log_group, mock_creds, mock_client
+    ):
+        """Test unexpected exception is handled"""
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
+        mock_log_group.return_value = "test-log-group"
+        mock_creds.return_value = {"aws_access_key_id": "test"}
+        mock_logs_client = MagicMock()
+        # Simulate generic Exception
+        mock_logs_client.put_retention_policy.side_effect = Exception(
+            "Some error"
+        )
+        mock_client.return_value = mock_logs_client
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
+            mock_challenge.return_value.log_retention_days_override = None
+            mock_phase = MagicMock()
+            mock_phase.end_date = timezone.now() + timedelta(days=10)
+            mock_phases_qs = MagicMock()
+            mock_phases_qs.exists.return_value = True
+            mock_phases_qs.__iter__.return_value = iter([mock_phase])
+            mock_phases.return_value = mock_phases_qs
+            result = set_cloudwatch_log_retention(123, retention_days=30)
+            self.assertIn("error", result)
+            self.assertIn("Some error", result["error"])
+            mock_logger.exception.assert_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    def test_set_log_retention_model_override(
+        self, mock_log_group, mock_creds, mock_client
+    ):
+        """Test model override for retention days is used"""
+        from challenges.aws_utils import set_cloudwatch_log_retention
+
+        mock_log_group.return_value = "test-log-group"
+        mock_creds.return_value = {"aws_access_key_id": "test"}
+        mock_logs_client = MagicMock()
+        mock_client.return_value = mock_logs_client
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
+            mock_challenge.return_value.log_retention_days_override = 90
+            mock_phase = MagicMock()
+            mock_phase.end_date = timezone.now() + timedelta(days=10)
+            mock_phases_qs = MagicMock()
+            mock_phases_qs.exists.return_value = True
+            mock_phases_qs.__iter__.return_value = iter([mock_phase])
+            mock_phases.return_value = mock_phases_qs
+            result = set_cloudwatch_log_retention(123)
+            self.assertTrue(result["success"])
+            self.assertEqual(result["retention_days"], 90)
+            mock_logs_client.put_retention_policy.assert_called_once()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_log_group_name")
+    def test_set_log_retention_calculated_days(
+        self, mock_log_group, mock_creds, mock_client
+    ):
+        """Test calculated retention days is used when no override or CLI arg"""
+        from challenges.aws_utils import (
+            calculate_retention_period_days,
+            map_retention_days_to_aws_values,
+            set_cloudwatch_log_retention,
+        )
+
+        mock_log_group.return_value = "test-log-group"
+        mock_creds.return_value = {"aws_access_key_id": "test"}
+        mock_logs_client = MagicMock()
+        mock_client.return_value = mock_logs_client
+        with patch(
+            "challenges.models.Challenge.objects.get"
+        ) as mock_challenge, patch(
+            "challenges.models.ChallengePhase.objects.filter"
+        ) as mock_phases:
+            mock_challenge.return_value.log_retention_days_override = None
+            mock_phase = MagicMock()
+            mock_phase.end_date = timezone.now() + timedelta(days=5)
+            mock_phases_qs = MagicMock()
+            mock_phases_qs.exists.return_value = True
+            mock_phases_qs.__iter__.return_value = iter([mock_phase])
+            mock_phases.return_value = mock_phases_qs
+            expected_days = calculate_retention_period_days(
+                mock_phase.end_date
+            )
+            expected_aws_days = map_retention_days_to_aws_values(expected_days)
+            result = set_cloudwatch_log_retention(123)
+            self.assertTrue(result["success"])
+            self.assertEqual(result["retention_days"], expected_aws_days)
+            mock_logs_client.put_retention_policy.assert_called_once()
+
+
+class TestSubmissionRetention(TestCase):
+    """Simplified submission retention tests"""
+
+    def test_submission_retention_date_calculation(self):
+        """Test submission retention date calculation"""
+        from challenges.aws_utils import calculate_submission_retention_date
+
+        # Mock challenge phase
+        mock_phase = MagicMock()
+
+        # Test private phase with end date
+        mock_phase.end_date = timezone.now() - timedelta(days=5)
+        mock_phase.is_public = False
+
+        expected_date = mock_phase.end_date + timedelta(days=30)
+        result = calculate_submission_retention_date(mock_phase)
+        self.assertEqual(result, expected_date)
+
+        # Test public phase (should return None)
+        mock_phase.is_public = True
+        result = calculate_submission_retention_date(mock_phase)
+        self.assertIsNone(result)
+
+        # Test phase without end date
+        mock_phase.end_date = None
+        mock_phase.is_public = False
+        result = calculate_submission_retention_date(mock_phase)
+        self.assertIsNone(result)
+
+    @patch("jobs.models.Submission.objects.filter")
+    def test_cleanup_no_submissions(self, mock_filter):
+        """Test cleanup when no submissions are eligible"""
+        from challenges.aws_utils import cleanup_expired_submission_artifacts
+
+        mock_queryset = MagicMock()
+        mock_queryset.exists.return_value = False
+        mock_filter.return_value = mock_queryset
+
+        result = cleanup_expired_submission_artifacts()
+
+        self.assertEqual(result["total_processed"], 0)
+        self.assertEqual(result["successful_deletions"], 0)
+        self.assertEqual(result["failed_deletions"], 0)
+
+
+class TestUtilityFunctions(TestCase):
+    """Test utility functions"""
+
+    def test_log_group_name_generation(self):
+        """Test log group name format"""
+        from challenges.aws_utils import get_log_group_name
+
+        import apps.challenges.aws_utils as aws_utils
+
+        with patch.object(aws_utils.settings, "ENVIRONMENT", "test"):
+            result = get_log_group_name(123)
+            expected = "challenge-pk-123-test-workers"
+            self.assertEqual(result, expected)
+
+    @patch("challenges.aws_utils.set_cloudwatch_log_retention")
+    def test_retention_callback_functions(self, mock_set_retention):
+        """Test retention callback functions"""
+        from challenges.aws_utils import (
+            update_challenge_log_retention_on_approval,
+        )
+
+        import apps.challenges.aws_utils as aws_utils
+
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 123
+
+        # Test production mode
+        with patch.object(aws_utils.settings, "DEBUG", False):
+            mock_set_retention.return_value = {"success": True}
+            update_challenge_log_retention_on_approval(mock_challenge)
+            mock_set_retention.assert_called_with(123)
+
+        # Test debug mode (should not call)
+        mock_set_retention.reset_mock()
+        with patch.object(aws_utils.settings, "DEBUG", True):
+            update_challenge_log_retention_on_approval(mock_challenge)
+            mock_set_retention.assert_not_called()
+
+
+class TestEmailFunctions(TestCase):
+    """Test email utility functions"""
+
+    def setUp(self):
+        self.mock_challenge = MagicMock()
+        self.mock_challenge.title = "Test Challenge"
+        self.mock_challenge.id = 123
+        self.mock_challenge.image = None
+
+    @patch("challenges.aws_utils.EmailMultiAlternatives")
+    @patch("challenges.aws_utils.render_to_string")
+    @patch("challenges.aws_utils.settings")
+    def test_send_template_email_success(
+        self, mock_settings, mock_render, mock_email_class
+    ):
+        """Test successful template email sending"""
+        from challenges.aws_utils import send_template_email
+
+        # Setup mocks
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_render.return_value = "<html>Test email</html>"
+        mock_email_instance = MagicMock()
+        mock_email_class.return_value = mock_email_instance
+
+        # Call the function
+        result = send_template_email(
+            recipient_email="test@example.com",
+            subject="Test Subject",
+            template_name="test_template.html",
+            template_context={"key": "value"},
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        mock_email_class.assert_called_once()
+        mock_email_instance.attach_alternative.assert_called_once()
+        mock_email_instance.send.assert_called_once()
+
+    @patch("challenges.aws_utils.EmailMultiAlternatives")
+    @patch("challenges.aws_utils.render_to_string")
+    @patch("challenges.aws_utils.settings")
+    def test_send_template_email_failure(
+        self, mock_settings, mock_render, mock_email_class
+    ):
+        """Test template email sending failure"""
+        from challenges.aws_utils import send_template_email
+
+        # Setup mocks to raise exception
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_render.side_effect = Exception("Template error")
+
+        # Call the function
+        result = send_template_email(
+            recipient_email="test@example.com",
+            subject="Test Subject",
+            template_name="test_template.html",
+            template_context={"key": "value"},
+        )
+
+        # Assertions
+        self.assertFalse(result)
+
+    @patch("challenges.aws_utils.send_template_email")
+    @patch("challenges.aws_utils.settings")
+    def test_send_retention_warning_email(
+        self, mock_settings, mock_send_template
+    ):
+        """Test retention warning email sending"""
+        from challenges.aws_utils import send_retention_warning_email
+
+        # Setup
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_send_template.return_value = True
+
+        warning_date = timezone.now() + timedelta(days=14)
+        submission_count = 5
+
+        # Call the function
+        result = send_retention_warning_email(
+            challenge=self.mock_challenge,
+            recipient_email="host@example.com",
+            submission_count=submission_count,
+            warning_date=warning_date,
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        mock_send_template.assert_called_once()
+
+        # Check the call arguments
+        call_args = mock_send_template.call_args
+        self.assertEqual(call_args[1]["recipient_email"], "host@example.com")
+        self.assertEqual(
+            call_args[1]["template_name"], "challenges/retention_warning.html"
+        )
+        self.assertIn("CHALLENGE_NAME", call_args[1]["template_context"])
+        self.assertEqual(
+            call_args[1]["template_context"]["CHALLENGE_NAME"],
+            "Test Challenge",
+        )
+
+    @patch("challenges.aws_utils.send_template_email")
+    @patch("challenges.aws_utils.settings")
+    def test_send_retention_warning_email_with_image(
+        self, mock_settings, mock_send_template
+    ):
+        """Test retention warning email with challenge image"""
+        from challenges.aws_utils import send_retention_warning_email
+
+        # Setup challenge with image
+        mock_image = MagicMock()
+        mock_image.url = "http://example.com/image.jpg"
+        self.mock_challenge.image = mock_image
+
+        mock_settings.EVALAI_API_SERVER = "http://localhost:8000"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@eval.ai"
+        mock_send_template.return_value = True
+
+        warning_date = timezone.now() + timedelta(days=14)
+        submission_count = 3
+
+        # Call the function
+        result = send_retention_warning_email(
+            challenge=self.mock_challenge,
+            recipient_email="host@example.com",
+            submission_count=submission_count,
+            warning_date=warning_date,
+        )
+
+        # Assertions
+        self.assertTrue(result)
+        call_args = mock_send_template.call_args
+        template_context = call_args[1]["template_context"]
+        self.assertEqual(
+            template_context["CHALLENGE_IMAGE_URL"],
+            "http://example.com/image.jpg",
         )

@@ -134,6 +134,12 @@ class Challenge(TimeStampedModel):
     sqs_retention_period = models.PositiveIntegerField(
         default=345600, verbose_name="SQS Retention Period"
     )
+    log_retention_days_override = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Override CloudWatch log retention period in days for this challenge.",
+    )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
     )
