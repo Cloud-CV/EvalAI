@@ -2725,8 +2725,11 @@ describe('Unit tests for challenge controller', function () {
         }));
 
         it('should open a dialog when retention consent toggle is clicked', function () {
-            spyOn($mdDialog, 'show').and.callThrough();
-            vm.retentionConsentChecked = false;
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+            vm.retentionConsentChecked = true;
             vm.toggleRetentionConsent({});
             expect($mdDialog.show).toHaveBeenCalled();
         });
