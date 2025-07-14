@@ -204,6 +204,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
             }
@@ -579,6 +580,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
         }
@@ -683,6 +685,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
         }
@@ -813,6 +816,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
         }
@@ -892,6 +896,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
         }
@@ -1490,6 +1495,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge3.sqs_visibility_timeout,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
             }
@@ -1575,6 +1581,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge2.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             }
@@ -1660,6 +1667,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge4.sqs_visibility_timeout,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
             }
@@ -1745,6 +1753,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge4.sqs_visibility_timeout,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
             },
@@ -1814,6 +1823,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge3.sqs_visibility_timeout,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
             },
@@ -1883,6 +1893,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge2.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             },
@@ -2024,6 +2035,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge3.sqs_visibility_timeout,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
             }
@@ -2190,6 +2202,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge3.sqs_visibility_timeout,
             "github_repository": self.challenge3.github_repository,
             "github_branch": self.challenge3.github_branch,
         }
@@ -2283,6 +2296,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
+            "sqs_visibility_timeout": self.challenge4.sqs_visibility_timeout,
             "github_repository": self.challenge4.github_repository,
             "github_branch": self.challenge4.github_branch,
         }
@@ -2438,6 +2452,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge2.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             }
@@ -2519,6 +2534,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge2.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             }
@@ -2600,6 +2616,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge2.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             }
@@ -2679,6 +2696,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
             },
@@ -2748,6 +2766,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "sqs_visibility_timeout": self.challenge.sqs_visibility_timeout,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
             },
