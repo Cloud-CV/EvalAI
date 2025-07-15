@@ -1,8 +1,9 @@
 import unittest
 from datetime import timedelta
 from http import HTTPStatus
-from unittest.mock import MagicMock, mock_open, patch
+from unittest import TestCase
 
+import mock
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
@@ -39,10 +40,13 @@ from django.test import TestCase
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
+# Note: This file uses unittest.TestCase for most tests, but django.test.TestCase for tests that require database operations.
+# Classes with django.test.TestCase are explicitly commented to indicate they need database access.
+
 
 class AWSUtilsTestCase(TestCase):
-    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
-    @patch("challenges.utils.get_challenge_model")
+    @mock.patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @mock.patch("challenges.utils.get_challenge_model")
     def test_get_code_upload_setup_meta_for_challenge_with_host_credentials(
         self, mock_get_challenge_model, mock_get_cluster
     ):
@@ -75,8 +79,8 @@ class AWSUtilsTestCase(TestCase):
         self.assertEqual(result, expected_result)
         mock_get_cluster.assert_called_once_with(challenge=mock_challenge)
 
-    @patch("challenges.utils.get_challenge_model")
-    @patch(
+    @mock.patch("challenges.utils.get_challenge_model")
+    @mock.patch(
         "challenges.aws_utils.VPC_DICT",
         {
             "SUBNET_1": "vpc_subnet1",
@@ -84,7 +88,7 @@ class AWSUtilsTestCase(TestCase):
             "SUBNET_SECURITY_GROUP": "vpc_sg",
         },
     )
-    @patch("challenges.aws_utils.settings")
+    @mock.patch("challenges.aws_utils.settings")
     def test_get_code_upload_setup_meta_for_challenge_without_host_credentials(
         self, mock_settings, mock_get_challenge_model
     ):
@@ -145,10 +149,10 @@ class TestCreateServiceByChallengePk:
             "ResponseMetadata": response_metadata
         }
 
-        with patch(
+        with mock.patch(
             "challenges.aws_utils.register_task_def_by_challenge_pk",
             return_value={"ResponseMetadata": response_metadata},
-        ), patch("json.loads") as mock_json_loads:
+        ), mock.patch("json.loads") as mock_json_loads:
             # Mock json.loads to return a valid dict instead of parsing the template
             mock_json_loads.return_value = {
                 "cluster": "cluster",
@@ -616,7 +620,7 @@ class TestServiceManager:
                 )
 
 
-class TestStopEc2Instance(unittest.TestCase):
+class TestStopEc2Instance(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     def test_stop_instance_success(self, mock_get_boto3_client):
         # Mocking the EC2 client
@@ -752,7 +756,7 @@ class TestStopEc2Instance(unittest.TestCase):
         )
 
 
-class TestDescribeEC2Instance(unittest.TestCase):
+class TestDescribeEC2Instance(TestCase):
     @patch(
         "challenges.aws_utils.get_boto3_client"
     )  # Mock the `get_boto3_client` function
@@ -958,7 +962,7 @@ class TestDescribeEC2Instance(unittest.TestCase):
         )
 
 
-class TestStartEC2Instance(unittest.TestCase):
+class TestStartEC2Instance(TestCase):
     @patch(
         "challenges.aws_utils.get_boto3_client"
     )  # Mock the `get_boto3_client` function
@@ -1114,7 +1118,7 @@ class TestStartEC2Instance(unittest.TestCase):
         mock_logger.exception.assert_called_once()
 
 
-class TestRestartEC2Instance(unittest.TestCase):
+class TestRestartEC2Instance(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.logger")
     def test_restart_ec2_instance_success(
@@ -1180,7 +1184,7 @@ class TestRestartEC2Instance(unittest.TestCase):
         )
 
 
-class TestTerminateEC2Instance(unittest.TestCase):
+class TestTerminateEC2Instance(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.logger")
     def test_terminate_ec2_instance_success(
@@ -1254,7 +1258,7 @@ class TestTerminateEC2Instance(unittest.TestCase):
         challenge.save.assert_not_called()
 
 
-class TestCreateEC2Instance(unittest.TestCase):
+class TestCreateEC2Instance(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     def test_existing_ec2_instance_id(self, mock_get_boto3_client):
         # Mock challenge object with existing EC2 instance ID
@@ -1371,7 +1375,7 @@ class TestCreateEC2Instance(unittest.TestCase):
         self.assertEqual(str(logged_exception), str(client_error))
 
 
-class TestUpdateSQSRetentionPeriod(unittest.TestCase):
+class TestUpdateSQSRetentionPeriod(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.logger")
     def test_update_sqs_retention_period_success(
@@ -1451,7 +1455,7 @@ class TestUpdateSQSRetentionPeriod(unittest.TestCase):
         mock_logger.exception.assert_called_once()
 
 
-class TestStartWorkers(unittest.TestCase):
+class TestStartWorkers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.service_manager")
     @patch("challenges.aws_utils.settings", DEBUG=True)
@@ -1734,7 +1738,7 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.assert_not_called()
 
 
-class TestScaleWorkers(unittest.TestCase):
+class TestScaleWorkers(TestCase):
     @patch("challenges.aws_utils.settings", DEBUG=True)
     def test_scale_workers_debug_mode(self, mock_settings):
         # Mock queryset with challenges
@@ -1910,7 +1914,7 @@ class TestScaleWorkers(unittest.TestCase):
         self.assertEqual(mock_service_manager.call_count, 2)
 
 
-class TestScaleResources(unittest.TestCase):
+class TestScaleResources(TestCase):
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
     def test_scale_resources_no_changes(
@@ -2718,7 +2722,7 @@ class TestGetLogsFromCloudwatch(TestCase):
         )
 
 
-class TestCreateEKSNodegroup(unittest.TestCase):
+class TestCreateEKSNodegroup(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -3078,7 +3082,7 @@ class TestSetupEksCluster(TestCase):
 
 
 @pytest.mark.django_db
-class TestSetupEC2(TestCase):
+class TestSetupEC2(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge models)
     def setUp(self):
         self.user = User.objects.create(
             username="someuser",
@@ -3241,7 +3245,7 @@ def test_set_cloudwatch_log_retention_requires_consent():
 
 
 @pytest.mark.django_db
-class TestCloudWatchRetention(TestCase):
+class TestCloudWatchRetention(django.test.TestCase):  # Uses Django TestCase for database operations (Challenge, ChallengePhase models)
     """Simplified CloudWatch log retention tests"""
 
     @patch("challenges.aws_utils.get_boto3_client")
@@ -3662,7 +3666,7 @@ class TestEmailFunctions(TestCase):
         )
 
 
-class TestCleanupExpiredSubmissionArtifacts(TestCase):
+class TestCleanupExpiredSubmissionArtifacts(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge, ChallengePhase, Submission models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
@@ -3750,7 +3754,7 @@ class TestCleanupExpiredSubmissionArtifacts(TestCase):
         self.assertEqual(result["total_processed"], 0)
 
 
-class TestWeeklyRetentionNotificationsAndConsentLog(TestCase):
+class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge, ChallengePhase, Submission models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
@@ -3824,7 +3828,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(TestCase):
         self.assertEqual(result["notifications_sent"], 0)
 
 
-class TestRecordHostRetentionConsent(TestCase):
+class TestRecordHostRetentionConsent(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
@@ -3870,7 +3874,7 @@ class TestRecordHostRetentionConsent(TestCase):
         self.assertIn("does not exist", result["error"])
 
 
-class TestIsUserAHostOfChallenge(TestCase):
+class TestIsUserAHostOfChallenge(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge, ChallengeHost models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
@@ -3911,7 +3915,7 @@ class TestIsUserAHostOfChallenge(TestCase):
         self.assertFalse(result)
 
 
-class TestUpdateChallengeLogRetentionFunctions(TestCase):
+class TestUpdateChallengeLogRetentionFunctions(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
@@ -3983,7 +3987,7 @@ class TestUpdateChallengeLogRetentionFunctions(TestCase):
         update_challenge_log_retention_on_task_def_registration(self.challenge)
 
 
-class TestDeleteSubmissionFilesFromStorage(TestCase):
+class TestDeleteSubmissionFilesFromStorage(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge, ChallengePhase, Submission models)
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
