@@ -1,9 +1,9 @@
 import unittest
 from datetime import timedelta
 from http import HTTPStatus
-from unittest import TestCase
+from unittest import TestCase, mock
+from unittest.mock import MagicMock, mock_open, patch
 
-import mock
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
