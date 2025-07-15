@@ -58,6 +58,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "workers",
         "task_def_arn",
         "github_repository",
+        "github_branch",
     )
     list_filter = (
         ChallengeFilter,
@@ -75,6 +76,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "creator__team_name",
         "slug",
         "github_repository",
+        "github_branch",
     )
     actions = [
         "start_selected_workers",
