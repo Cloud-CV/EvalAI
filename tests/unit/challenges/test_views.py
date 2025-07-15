@@ -205,14 +205,11 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
-                "github_branch": self.challenge.github_branch,
             }
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(
-            response.data["results"], json.loads(json.dumps(expected))
-        )
+        self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
@@ -580,7 +577,6 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
-            "github_branch": self.challenge.github_branch,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -684,7 +680,6 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
-            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -814,7 +809,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
-            "github_branch": self.challenge.github_branch,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -893,7 +887,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
-            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1491,7 +1484,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
-                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1576,7 +1568,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1661,7 +1652,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
-                "github_branch": self.challenge4.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1746,7 +1736,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
-                "github_branch": self.challenge4.github_branch,
             },
             {
                 "id": self.challenge3.pk,
@@ -1815,7 +1804,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
-                "github_branch": self.challenge3.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -1884,7 +1872,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2025,7 +2012,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
-                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2191,7 +2177,6 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
             "github_repository": self.challenge3.github_repository,
-            "github_branch": self.challenge3.github_branch,
         }
 
         response = self.client.get(self.url, {})
@@ -2284,7 +2269,6 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
             "github_repository": self.challenge4.github_repository,
-            "github_branch": self.challenge4.github_branch,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2439,7 +2423,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2520,7 +2503,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2601,7 +2583,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2680,7 +2661,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
-                "github_branch": self.challenge.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -2749,7 +2729,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
-                "github_branch": self.challenge2.github_branch,
             },
         ]
 
@@ -5932,7 +5911,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -5947,14 +5925,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(DatasetSplit.objects.count(), 1)
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
-
-        # Verify github_branch is properly stored
-        challenge = Challenge.objects.first()
-        self.assertEqual(
-            challenge.github_repository,
-            "https://github.com/yourusername/repository",
-        )
-        self.assertEqual(challenge.github_branch, "refs/heads/challenge")
 
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
@@ -5993,40 +5963,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_create_challenge_using_github_without_branch_name(self):
-        self.url = reverse_lazy(
-            "challenges:create_or_update_github_challenge",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-
-        with mock.patch("challenges.views.requests.get") as m:
-            resp = mock.Mock()
-            resp.content = self.test_zip_file.read()
-            resp.status_code = 200
-            m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "zip_configuration": self.input_zip_file,
-                },
-                format="multipart",
-            )
-            expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
-            }
-
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
-
-        # Verify github_branch defaults to empty string when not provided
-        challenge = Challenge.objects.first()
-        self.assertEqual(
-            challenge.github_repository,
-            "https://github.com/yourusername/repository",
-        )
-        self.assertEqual(challenge.github_branch, "")
 
 
 class ValidateChallengeTest(APITestCase):
@@ -6094,7 +6030,6 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
