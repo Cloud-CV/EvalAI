@@ -1,6 +1,5 @@
 import json
 import logging
-import math
 import os
 import random
 import string
@@ -14,9 +13,6 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 
 from evalai.celery import app
 
@@ -289,7 +285,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 **updated_settings,
                 **challenge_aws_keys,
             )
-        definition = json.loads(definition)
+        definition = eval(definition)
         if not challenge.task_def_arn:
             try:
                 response = client.register_task_definition(**definition)
@@ -302,12 +298,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     ]
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
-
-                    # Update CloudWatch log retention policy when task definition is registered
-                    update_challenge_log_retention_on_task_def_registration(
-                        challenge
-                    )
-
+                    # Update CloudWatch log retention policy on task definition registration
+                    update_challenge_log_retention_on_task_def_registration(challenge)
                 return response
             except ClientError as e:
                 logger.exception(e)
@@ -363,7 +355,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             client_token=client_token,
             **VPC_DICT,
         )
-        definition = json.loads(definition)
+        definition = eval(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -408,10 +400,10 @@ def update_service_by_challenge_pk(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
         task_def_arn=task_def_arn,
-        force_new_deployment=str(force_new_deployment).lower(),
+        force_new_deployment=force_new_deployment,
         num_of_tasks=num_of_tasks,
     )
-    kwargs = json.loads(kwargs)
+    kwargs = eval(kwargs)
 
     try:
         response = client.update_service(**kwargs)
@@ -444,9 +436,9 @@ def delete_service_by_challenge_pk(challenge):
     kwargs = delete_service_args.format(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
-        force=str(True).lower(),
+        force=True,
     )
-    kwargs = json.loads(kwargs)
+    kwargs = eval(kwargs)
     try:
         if challenge.workers != 0:
             response = update_service_by_challenge_pk(
@@ -1076,7 +1068,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         **updated_settings,
         **challenge_aws_keys,
     )
-    task_def = json.loads(task_def)
+    task_def = eval(task_def)
 
     try:
         response = client.register_task_definition(**task_def)
@@ -1087,6 +1079,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
             challenge.task_def_arn = task_def_arn
             challenge.save()
+            # Update CloudWatch log retention policy on resource scaling
+            update_challenge_log_retention_on_task_def_registration(challenge)
             force_new_deployment = False
             service_name = f"{queue_name}_service"
             num_of_tasks = challenge.workers
@@ -1095,9 +1089,9 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
                 service_name=service_name,
                 task_def_arn=task_def_arn,
                 num_of_tasks=num_of_tasks,
-                force_new_deployment=str(force_new_deployment).lower(),
+                force_new_deployment=force_new_deployment,
             )
-            kwargs = json.loads(kwargs)
+            kwargs = eval(kwargs)
             response = client.update_service(**kwargs)
         return response
     except ClientError as e:
@@ -1289,7 +1283,6 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                         template_id=template_id,
                         template_data=template_data,
                     )
-
             # Update CloudWatch log retention policy on restart
             update_challenge_log_retention_on_restart(challenge)
 
@@ -1398,7 +1391,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
     # starting the code-upload-worker
-    client = get_boto3_client("ecs", challenge_aws_keys)
+    client = get_boto3_client("ecs", aws_keys)
     client_token = client_token_generator(challenge_obj.pk)
     create_service_by_challenge_pk(client, challenge_obj, client_token)
 
@@ -1509,7 +1502,6 @@ def setup_eks_cluster(challenge):
                 "node_group_arn_role": node_group_arn_role,
                 "ecr_all_access_policy_arn": ecr_all_access_policy_arn,
             },
-            context={"challenge": challenge_obj},
             partial=True,
         )
         if serializer.is_valid():
@@ -1846,9 +1838,8 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                     )
                 else:
                     construct_and_send_worker_start_mail(challenge)
-
-            # Update CloudWatch log retention policy on approval
-            update_challenge_log_retention_on_approval(challenge)
+                    # Update CloudWatch log retention policy on approval
+                    update_challenge_log_retention_on_approval(challenge)
 
         if prev and not curr:
             if challenge.workers:
@@ -1888,6 +1879,7 @@ def update_sqs_retention_period_task(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     return update_sqs_retention_period(challenge_obj)
+
 
 
 def calculate_retention_period_days(challenge_end_date, challenge=None):
@@ -2742,8 +2734,6 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
             f"Error recording retention consent for challenge {challenge_pk}"
         )
         return {"error": str(e)}
-
-
 def is_user_a_host_of_challenge(user, challenge_pk):
     """
     Check if a user is a host of a specific challenge.
@@ -2768,3 +2758,5 @@ def is_user_a_host_of_challenge(user, challenge_pk):
         ).exists()
     except Challenge.DoesNotExist:
         return False
+
+
