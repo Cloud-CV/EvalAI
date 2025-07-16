@@ -4,6 +4,7 @@ from http import HTTPStatus
 from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
 
+import django
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
@@ -33,12 +34,13 @@ from challenges.aws_utils import (
     update_sqs_retention_period,
     update_sqs_retention_period_task,
 )
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.test import TestCase
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
+from participants.models import ParticipantTeam
 
 # Note: This file uses unittest.TestCase for most tests, but django.test.TestCase for tests that require database operations.
 # Classes with django.test.TestCase are explicitly commented to indicate they need database access.
@@ -3425,7 +3427,12 @@ class TestCloudWatchRetention(django.test.TestCase):  # Uses Django TestCase for
         ) as mock_challenge, patch(
             "challenges.models.ChallengePhase.objects.filter"
         ) as mock_phases:
-            mock_challenge.return_value.log_retention_days_override = None
+            # Mock challenge with consent to get 30 days retention
+            mock_challenge_obj = MagicMock()
+            mock_challenge_obj.log_retention_days_override = None
+            mock_challenge_obj.retention_policy_consent = True
+            mock_challenge.return_value = mock_challenge_obj
+            
             mock_phase = MagicMock()
             mock_phase.end_date = timezone.now() + timedelta(days=5)
             mock_phases_qs = MagicMock()
@@ -3433,7 +3440,7 @@ class TestCloudWatchRetention(django.test.TestCase):  # Uses Django TestCase for
             mock_phases_qs.__iter__.return_value = iter([mock_phase])
             mock_phases.return_value = mock_phases_qs
             expected_days = calculate_retention_period_days(
-                mock_phase.end_date
+                mock_phase.end_date, mock_challenge_obj
             )
             expected_aws_days = map_retention_days_to_aws_values(expected_days)
             result = set_cloudwatch_log_retention(123)
@@ -3445,16 +3452,23 @@ class TestCloudWatchRetention(django.test.TestCase):  # Uses Django TestCase for
 class TestSubmissionRetention(TestCase):
     """Simplified submission retention tests"""
 
-    def test_submission_retention_date_calculation(self):
+    @patch("challenges.aws_utils.calculate_retention_period_days")
+    def test_submission_retention_date_calculation(self, mock_calculate_retention):
         """Test submission retention date calculation"""
         from challenges.aws_utils import calculate_submission_retention_date
 
-        # Mock challenge phase
+        # Mock challenge phase with proper challenge object
         mock_phase = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.retention_policy_consent = True
+        mock_phase.challenge = mock_challenge
 
         # Test private phase with end date
         mock_phase.end_date = timezone.now() - timedelta(days=5)
         mock_phase.is_public = False
+
+        # Mock the retention calculation to return 30 days
+        mock_calculate_retention.return_value = 30
 
         expected_date = mock_phase.end_date + timedelta(days=30)
         result = calculate_submission_retention_date(mock_phase)
@@ -3680,6 +3694,7 @@ class TestCleanupExpiredSubmissionArtifacts(django.test.TestCase):  # Uses Djang
             creator=self.challenge_host_team,
             start_date=timezone.now() - timedelta(days=10),
             end_date=timezone.now() + timedelta(days=5),
+            retention_policy_consent=True,  # Enable retention for testing
         )
         self.challenge_phase = ChallengePhase.objects.create(
             name="Test Phase",
@@ -3707,12 +3722,19 @@ class TestCleanupExpiredSubmissionArtifacts(django.test.TestCase):  # Uses Djang
             retention_eligible_date=timezone.now() - timedelta(days=1),
             is_artifact_deleted=False,
         )
-        mock_delete_files.return_value = {
-            "success": True,
-            "deleted_files": ["file1.txt"],
-            "failed_files": [],
-            "submission_id": submission.pk,
-        }
+        
+        # Mock the function to also update the submission
+        def mock_delete_side_effect(sub):
+            sub.is_artifact_deleted = True
+            sub.save(update_fields=["is_artifact_deleted"])
+            return {
+                "success": True,
+                "deleted_files": ["file1.txt"],
+                "failed_files": [],
+                "submission_id": sub.pk,
+            }
+        
+        mock_delete_files.side_effect = mock_delete_side_effect
         result = cleanup_expired_submission_artifacts()
         self.assertEqual(result["total_processed"], 1)
         self.assertEqual(result["successful_deletions"], 1)
@@ -3742,8 +3764,10 @@ class TestCleanupExpiredSubmissionArtifacts(django.test.TestCase):  # Uses Djang
             "submission_id": submission.pk,
         }
         result = cleanup_expired_submission_artifacts()
+        self.assertEqual(result["total_processed"], 1)
         self.assertEqual(result["failed_deletions"], 1)
         self.assertEqual(len(result["errors"]), 1)
+        mock_delete_files.assert_called_once_with(submission)
 
     def test_cleanup_expired_submission_artifacts_no_eligible_submissions(
         self,
@@ -3754,8 +3778,11 @@ class TestCleanupExpiredSubmissionArtifacts(django.test.TestCase):  # Uses Djang
         self.assertEqual(result["total_processed"], 0)
 
 
-class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge, ChallengePhase, Submission models)
+class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
+    """Test the weekly retention notifications and consent logging function."""
+    
     def setUp(self):
+        """Set up test data."""
         self.user = User.objects.create_user(
             username="testuser", email="test@test.com", password="testpass"
         )
@@ -3780,15 +3807,28 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):  # Us
         )
 
     @patch("challenges.aws_utils.send_retention_warning_email")
-    def test_weekly_retention_notifications_and_consent_log_with_warnings(
-        self, mock_send_email
-    ):
-        from challenges.aws_utils import (
-            weekly_retention_notifications_and_consent_log,
-        )
+    @patch("challenges.aws_utils.settings")
+    @patch("django.utils.timezone.now")
+    def test_weekly_retention_notifications_success(self, mock_now, mock_settings, mock_send_email):
+        """Test successful retention warning notification."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
         from jobs.models import Submission
+        from datetime import timedelta, datetime
+        from django.utils import timezone
 
-        warning_date = timezone.now() + timedelta(days=14)
+        # Freeze time to a fixed datetime
+        fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+        warning_date = fixed_now + timedelta(days=14)
+
+        # Setup challenge with all required conditions
+        self.challenge.inform_hosts = True
+        self.challenge.save()
+        
+        # Mock settings
+        mock_settings.EVALAI_API_SERVER = "http://localhost"
+        
+        # Create submission with exact warning date
         submission = Submission.objects.create(
             participant_team=ParticipantTeam.objects.create(
                 team_name="Test Team", created_by=self.user
@@ -3799,33 +3839,231 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):  # Us
             retention_eligible_date=warning_date,
             is_artifact_deleted=False,
         )
+
+        # Mock email sending to succeed
         mock_send_email.return_value = True
-        result = weekly_retention_notifications_and_consent_log()
+
+        # Patch the method on the class, not the instance
+        with patch.object(ChallengeHostTeam, 'get_all_challenge_host_email', return_value=["host@test.com"]):
+            # Call the function inside the patch context
+            result = weekly_retention_notifications_and_consent_log()
+
+        # Verify the result
         self.assertEqual(result["notifications_sent"], 1)
-
-    def test_weekly_retention_notifications_and_consent_log_with_consent_changes(
-        self,
-    ):
-        from challenges.aws_utils import (
-            weekly_retention_notifications_and_consent_log,
+        
+        # Verify email was sent with correct parameters
+        mock_send_email.assert_called_once_with(
+            challenge=self.challenge,
+            recipient_email="host@test.com",
+            submission_count=1,
+            warning_date=warning_date,
         )
 
+    @patch("challenges.aws_utils.send_retention_warning_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("django.utils.timezone.now")
+    def test_weekly_retention_notifications_no_submissions(self, mock_now, mock_settings, mock_send_email):
+        """Test when no submissions require warnings."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
+        from datetime import timedelta, datetime
+        from django.utils import timezone
+
+        # Freeze time to a fixed datetime
+        fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+
+        # Mock settings
+        mock_settings.EVALAI_API_SERVER = "http://localhost"
+
+        # Call the function (no submissions created)
+        result = weekly_retention_notifications_and_consent_log()
+
+        # Verify no notifications were sent
+        self.assertEqual(result["notifications_sent"], 0)
+        mock_send_email.assert_not_called()
+
+    @patch("challenges.aws_utils.send_retention_warning_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("django.utils.timezone.now")
+    def test_weekly_retention_notifications_inform_hosts_false(self, mock_now, mock_settings, mock_send_email):
+        """Test when challenge has inform_hosts=False."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
+        from jobs.models import Submission
+        from datetime import timedelta, datetime
+        from django.utils import timezone
+
+        # Freeze time to a fixed datetime
+        fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+        warning_date = fixed_now + timedelta(days=14)
+
+        # Setup challenge with inform_hosts=False
+        self.challenge.inform_hosts = False
+        self.challenge.save()
+        
+        # Mock settings
+        mock_settings.EVALAI_API_SERVER = "http://localhost"
+
+        # Create submission with exact warning date
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=warning_date,
+            is_artifact_deleted=False,
+        )
+
+        # Mock email sending to succeed
+        mock_send_email.return_value = True
+
+        # Call the function
+        result = weekly_retention_notifications_and_consent_log()
+
+        # Verify no notifications were sent due to inform_hosts=False
+        self.assertEqual(result["notifications_sent"], 0)
+        mock_send_email.assert_not_called()
+
+    @patch("challenges.aws_utils.send_retention_warning_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("django.utils.timezone.now")
+    def test_weekly_retention_notifications_no_api_server(self, mock_now, mock_settings, mock_send_email):
+        """Test when EVALAI_API_SERVER is not set."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
+        from jobs.models import Submission
+        from datetime import timedelta, datetime
+        from django.utils import timezone
+
+        # Freeze time to a fixed datetime
+        fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+        warning_date = fixed_now + timedelta(days=14)
+
+        # Setup challenge
+        self.challenge.inform_hosts = True
+        self.challenge.save()
+        
+        # Mock settings without EVALAI_API_SERVER
+        mock_settings.EVALAI_API_SERVER = None
+
+        # Create submission with exact warning date
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=warning_date,
+            is_artifact_deleted=False,
+        )
+
+        # Mock email sending to succeed
+        mock_send_email.return_value = True
+
+        # Call the function
+        result = weekly_retention_notifications_and_consent_log()
+
+        # Verify no notifications were sent due to missing API server setting
+        self.assertEqual(result["notifications_sent"], 0)
+        mock_send_email.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_weekly_retention_notifications_with_consent_changes(self, mock_settings):
+        """Test consent change logging functionality."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Setup consent change
         self.challenge.retention_policy_consent = True
-        self.challenge.retention_policy_consent_date = (
-            timezone.now() - timedelta(days=3)
-        )
+        self.challenge.retention_policy_consent_date = timezone.now() - timedelta(days=3)
         self.challenge.retention_policy_consent_by = self.user
         self.challenge.save()
-        result = weekly_retention_notifications_and_consent_log()
-        self.assertIn("notifications_sent", result)
+        
+        # Mock settings as the notification part might still run
+        mock_settings.EVALAI_API_SERVER = "http://localhost"
 
-    def test_weekly_retention_notifications_and_consent_log_no_activity(self):
-        from challenges.aws_utils import (
-            weekly_retention_notifications_and_consent_log,
+        # Use assertLogs to capture logging from 'challenges.aws_utils'
+        with self.assertLogs("challenges.aws_utils", level="INFO") as cm:
+            result = weekly_retention_notifications_and_consent_log()
+            
+            # Verify the log output contains consent change information
+            log_output = "\n".join(cm.output)
+            self.assertIn(
+                "[RetentionConsent] 1 consent changes in the last week:",
+                log_output
+            )
+            self.assertIn(
+                "[RetentionConsent] ✅",
+                log_output
+            )
+            self.assertIn(
+                f"Challenge {self.challenge.pk}: {self.challenge.title[:50]}",
+                log_output
+            )
+            self.assertIn(
+                f"[RetentionConsent]    Consent by: {self.user.username}",
+                log_output
+            )
+
+        # Verify the original assertions are still valid
+        self.assertIn("notifications_sent", result)
+        self.assertEqual(result["notifications_sent"], 0)  # No warnings, just consent logging
+
+    @patch("challenges.aws_utils.send_retention_warning_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("django.utils.timezone.now")
+    def test_weekly_retention_notifications_email_exception(self, mock_now, mock_settings, mock_send_email):
+        """Test that the task handles exceptions during email sending."""
+        from challenges.aws_utils import weekly_retention_notifications_and_consent_log
+        from jobs.models import Submission
+        from datetime import timedelta, datetime
+        from django.utils import timezone
+
+        # Freeze time to a fixed datetime
+        fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+        warning_date = fixed_now + timedelta(days=14)
+
+        # Setup challenge with all required conditions
+        self.challenge.inform_hosts = True
+        self.challenge.save()
+        
+        # Mock settings
+        mock_settings.EVALAI_API_SERVER = "http://localhost"
+        
+        # Create submission with exact warning date
+        submission = Submission.objects.create(
+            participant_team=ParticipantTeam.objects.create(
+                team_name="Test Team", created_by=self.user
+            ),
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status="finished",
+            retention_eligible_date=warning_date,
+            is_artifact_deleted=False,
         )
 
-        result = weekly_retention_notifications_and_consent_log()
-        self.assertEqual(result["notifications_sent"], 0)
+        # Mock the email function to raise an error
+        mock_send_email.side_effect = Exception("SMTP server is down")
+
+        # Use the same patch.object fix
+        with patch.object(ChallengeHostTeam, 'get_all_challenge_host_email', return_value=["host@test.com"]):
+            with self.assertLogs("challenges.aws_utils", level="ERROR") as cm:
+                result = weekly_retention_notifications_and_consent_log()
+                
+                # Assert that no notifications were successfully sent
+                self.assertEqual(result["notifications_sent"], 0)
+                
+                # Assert that the error was logged
+                log_output = "\n".join(cm.output)
+                self.assertIn(
+                    f"Failed to send retention warning email to host@test.com for challenge {self.challenge.pk}: SMTP server is down",
+                    log_output
+                )
 
 
 class TestRecordHostRetentionConsent(django.test.TestCase):  # Uses Django TestCase for database operations (User, Challenge models)
@@ -3863,14 +4101,14 @@ class TestRecordHostRetentionConsent(django.test.TestCase):  # Uses Django TestC
 
         mock_is_host.return_value = False
         result = record_host_retention_consent(self.challenge.pk, self.user)
-        self.assertFalse(result["success"])
+        self.assertIn("error", result)
         self.assertIn("not authorized", result["error"])
 
     def test_record_host_retention_consent_challenge_not_found(self):
         from challenges.aws_utils import record_host_retention_consent
 
         result = record_host_retention_consent(99999, self.user)
-        self.assertFalse(result["success"])
+        self.assertIn("error", result)
         self.assertIn("does not exist", result["error"])
 
 
@@ -4051,6 +4289,11 @@ class TestDeleteSubmissionFilesFromStorage(django.test.TestCase):  # Uses Django
             status="finished",
             is_artifact_deleted=False,
         )
+        
+        # Mock a file field to trigger deletion attempt
+        submission.input_file = "test_file.txt"
+        submission.save()
+        
         mock_s3_client = MagicMock()
         mock_s3_client.delete_object.side_effect = ClientError(
             {"Error": {"Code": "AccessDenied"}}, "DeleteObject"

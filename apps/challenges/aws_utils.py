@@ -13,6 +13,9 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 
 from evalai.celery import app
 
@@ -2453,6 +2456,9 @@ def weekly_retention_notifications_and_consent_log():
         "Checking for retention warning notifications and logging consent changes"
     )
 
+    # Initialize notification counter
+    notifications_sent = 0
+
     # Find submissions that will be cleaned up in 14 days
     warning_date = timezone.now() + timedelta(days=14)
     warning_submissions = Submission.objects.filter(
@@ -2615,9 +2621,7 @@ def weekly_retention_notifications_and_consent_log():
         )
 
     return {
-        "notifications_sent": (
-            notifications_sent if "notifications_sent" in locals() else 0
-        )
+        "notifications_sent": notifications_sent
     }
 
 
@@ -2745,9 +2749,14 @@ def is_user_a_host_of_challenge(user, challenge_pk):
     Returns:
         bool: True if user is a host of the challenge
     """
+    from django.contrib.auth.models import AnonymousUser
     from hosts.models import ChallengeHost
 
     from .models import Challenge
+
+    # Anonymous users cannot be hosts
+    if isinstance(user, AnonymousUser) or user.is_anonymous:
+        return False
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)

@@ -238,6 +238,7 @@ class SubmissionRetentionModelTests(TestCase):
             start_date=timezone.now() - timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30),
             creator=self.challenge_host_team,
+            retention_policy_consent=True,  # Ensure consent is given
         )
 
         self.challenge_phase = ChallengePhase.objects.create(

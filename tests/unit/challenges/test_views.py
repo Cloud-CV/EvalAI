@@ -6430,8 +6430,10 @@ class TestRetentionConsentAPI(BaseAPITestClass):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("has_consent", response.data)
-        self.assertIn("consent_by", response.data)
-        self.assertIn("consent_date", response.data)
+        self.assertIn("is_host", response.data)
+        self.assertIn("can_provide_consent", response.data)
+        # consent_by and consent_date are only included when has_consent is True
+        self.assertFalse(response.data["has_consent"])
 
     def test_get_retention_consent_status_not_found(self):
         url = reverse_lazy(
