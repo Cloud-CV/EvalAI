@@ -256,7 +256,7 @@ def create_challenge(
         featured=is_featured,
         image=image_file,
         github_repository=f"evalai-examples/{slug}",
-        github_branch="main",
+        github_branch="challenge",
     )
     challenge.save()
 

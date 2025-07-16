@@ -587,7 +587,7 @@ class ValidateChallengeConfigUtil:
                         "GITHUB_REPOSITORY"
                     ],
                     "github_branch": self.request.data.get(
-                        "GITHUB_BRANCH_NAME", ""
+                        "GITHUB_BRANCH_NAME", "challenge"
                     ),
                 },
             )

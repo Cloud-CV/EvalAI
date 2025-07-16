@@ -6020,13 +6020,13 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json(), expected)
 
-        # Verify github_branch defaults to empty string when not provided
+        # Verify github_branch defaults to "challenge" when not provided
         challenge = Challenge.objects.first()
         self.assertEqual(
             challenge.github_repository,
             "https://github.com/yourusername/repository",
         )
-        self.assertEqual(challenge.github_branch, "")
+        self.assertEqual(challenge.github_branch, "challenge")
 
 
 class ValidateChallengeTest(APITestCase):
