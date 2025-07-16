@@ -312,6 +312,7 @@ error_message_dict = {
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
     "docker_based_challenge": "ERROR: New Docker based challenges are not supported starting March 15, 2025.",
+    "invalid_github_branch_format": "ERROR: GitHub branch name '{branch}' is invalid. It must match the pattern 'challenge-<year>-<version>' (e.g., challenge-2024-1).",
 }
 
 
@@ -363,6 +364,23 @@ class ValidateChallengeConfigUtil:
             )
         self.phase_ids = []
         self.leaderboard_ids = []
+
+    def validate_github_branch_format(self):
+        """
+        Ensure the github branch name matches challenge-<year>-<version>
+        """
+        branch = self.request.data.get(
+            "GITHUB_BRANCH_NAME"
+        ) or self.request.data.get("BRANCH_NAME")
+        if not branch:
+            branch = "challenge"
+        pattern = r"^challenge-\d{4}-\d+$"
+        if not re.match(pattern, branch):
+            self.error_messages.append(
+                self.error_messages_dict[
+                    "invalid_github_branch_format"
+                ].format(branch=branch)
+            )
 
     def read_and_validate_yaml(self):
         if not self.yaml_file_count:
@@ -1133,6 +1151,9 @@ def validate_challenge_config_util(
     val_config_util.validate_dates()
 
     val_config_util.validate_serializer()
+
+    # Add branch format validation
+    val_config_util.validate_github_branch_format()
 
     # Get existing config IDs for leaderboards and dataset splits
     if current_challenge:

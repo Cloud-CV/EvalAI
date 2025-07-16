@@ -3,6 +3,33 @@
 from django.db import migrations, models
 
 
+def populate_github_branch_default(apps, schema_editor):
+    """
+    Populate existing challenges with empty github_branch fields to use "challenge" as default.
+    """
+    Challenge = apps.get_model("challenges", "Challenge")
+    # Update all challenges that have github_repository but empty github_branch
+    Challenge.objects.filter(github_repository__isnull=False).exclude(
+        github_repository=""
+    ).filter(github_branch__isnull=True).update(github_branch="challenge")
+
+    # Also update challenges with empty string github_branch
+    Challenge.objects.filter(github_repository__isnull=False).exclude(
+        github_repository=""
+    ).filter(github_branch="").update(github_branch="challenge")
+
+
+def reverse_populate_github_branch_default(apps, schema_editor):
+    """
+    Reverse migration - set github_branch back to empty string for challenges that were set to "challenge".
+    """
+    Challenge = apps.get_model("challenges", "Challenge")
+    # Only reverse if the field was set to "challenge" by this migration
+    Challenge.objects.filter(github_repository__isnull=False).exclude(
+        github_repository=""
+    ).filter(github_branch="challenge").update(github_branch="")
+
+
 def fix_duplicate_github_fields(apps, schema_editor):
     """
     No data migration needed since we're using a partial unique constraint.
@@ -28,8 +55,13 @@ class Migration(migrations.Migration):
             model_name="challenge",
             name="github_branch",
             field=models.CharField(
-                blank=True, default="", max_length=200, null=True
+                blank=True, default="challenge", max_length=200, null=True
             ),
+        ),
+        # Data migration to populate existing records
+        migrations.RunPython(
+            populate_github_branch_default,
+            reverse_populate_github_branch_default,
         ),
         migrations.RunPython(
             fix_duplicate_github_fields,
