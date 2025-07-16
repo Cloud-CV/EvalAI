@@ -3901,7 +3901,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
     github_branch = request.data.get("GITHUB_BRANCH_NAME") or request.data.get(
         "BRANCH_NAME", "challenge"
     )
-
     challenge_queryset = Challenge.objects.filter(
         github_repository=request.data["GITHUB_REPOSITORY"],
         github_branch=github_branch,

@@ -606,6 +606,7 @@ class ValidateChallengeConfigUtil:
                     ],
                     "github_branch": self.request.data.get(
                         "GITHUB_BRANCH_NAME", "challenge"
+
                     ),
                 },
             )

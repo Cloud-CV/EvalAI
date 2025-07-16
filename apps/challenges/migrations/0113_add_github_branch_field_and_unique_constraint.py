@@ -28,8 +28,7 @@ def reverse_populate_github_branch_default(apps, schema_editor):
     Challenge.objects.filter(github_repository__isnull=False).exclude(
         github_repository=""
     ).filter(github_branch="challenge").update(github_branch="")
-
-
+    
 def fix_duplicate_github_fields(apps, schema_editor):
     """
     No data migration needed since we're using a partial unique constraint.

@@ -6028,7 +6028,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         )
         self.assertEqual(challenge.github_branch, "challenge")
 
-
 class ValidateChallengeTest(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)

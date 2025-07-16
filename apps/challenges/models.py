@@ -189,6 +189,8 @@ class Challenge(TimeStampedModel):
     # The github branch name used to create/update the challenge
     github_branch = models.CharField(
         max_length=200, null=True, blank=True, default="challenge"
+        max_length=200, null=True, blank=True, default=""
+
     )
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
