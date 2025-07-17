@@ -5941,8 +5941,8 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
             }
 
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), expected)
         self.assertEqual(Challenge.objects.count(), 1)
         self.assertEqual(DatasetSplit.objects.count(), 1)
         self.assertEqual(Leaderboard.objects.count(), 1)
@@ -5955,7 +5955,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             "https://github.com/yourusername/repository",
         )
         self.assertEqual(challenge.github_branch, "challenge-2025-v1")
-        
+
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
     ):
