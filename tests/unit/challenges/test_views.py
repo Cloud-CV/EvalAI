@@ -5917,45 +5917,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
-    def test_create_challenge_using_github_success(self):
-        self.url = reverse_lazy(
-            "challenges:create_or_update_github_challenge",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-
-        with mock.patch("challenges.views.requests.get") as m:
-            resp = mock.Mock()
-            resp.content = self.test_zip_file.read()
-            resp.status_code = 200
-            m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
-                    "zip_configuration": self.input_zip_file,
-                },
-                format="multipart",
-            )
-            expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
-            }
-
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
-        self.assertEqual(Challenge.objects.count(), 1)
-        self.assertEqual(DatasetSplit.objects.count(), 1)
-        self.assertEqual(Leaderboard.objects.count(), 1)
-        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
-
-        # Verify github_branch is properly stored
-        challenge = Challenge.objects.first()
-        self.assertEqual(
-            challenge.github_repository,
-            "https://github.com/yourusername/repository",
-        )
-        self.assertEqual(challenge.github_branch, "refs/heads/challenge")
-
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
     ):
@@ -5993,40 +5954,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_create_challenge_using_github_without_branch_name(self):
-        self.url = reverse_lazy(
-            "challenges:create_or_update_github_challenge",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-
-        with mock.patch("challenges.views.requests.get") as m:
-            resp = mock.Mock()
-            resp.content = self.test_zip_file.read()
-            resp.status_code = 200
-            m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "zip_configuration": self.input_zip_file,
-                },
-                format="multipart",
-            )
-            expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
-            }
-
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
-
-        # Verify github_branch defaults to empty string when not provided
-        challenge = Challenge.objects.first()
-        self.assertEqual(
-            challenge.github_repository,
-            "https://github.com/yourusername/repository",
-        )
-        self.assertEqual(challenge.github_branch, "")
 
 
 class ValidateChallengeTest(APITestCase):

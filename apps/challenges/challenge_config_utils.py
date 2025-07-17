@@ -586,9 +586,6 @@ class ValidateChallengeConfigUtil:
                     "github_repository": self.request.data[
                         "GITHUB_REPOSITORY"
                     ],
-                    "github_branch": self.request.data.get(
-                        "GITHUB_BRANCH_NAME", ""
-                    ),
                 },
             )
             if not serializer.is_valid():
