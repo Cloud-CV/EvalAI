@@ -5955,7 +5955,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             "https://github.com/yourusername/repository",
         )
         self.assertEqual(challenge.github_branch, "challenge-2025-v1")
-
+        
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
     ):
