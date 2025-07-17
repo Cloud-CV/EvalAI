@@ -312,7 +312,7 @@ error_message_dict = {
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
     "docker_based_challenge": "ERROR: New Docker based challenges are not supported starting March 15, 2025.",
-    "invalid_github_branch_format": "ERROR: GitHub branch name '{branch}' is invalid. It must match the pattern 'challenge-<year>-<version>' (e.g., challenge-2024-1).",
+    "invalid_github_branch_format": "ERROR: GitHub branch name '{branch}' is invalid. It must match the pattern 'challenge-<year>-<version>' (e.g., challenge-2024-1, challenge-2060-v2).",
 }
 
 
@@ -374,7 +374,7 @@ class ValidateChallengeConfigUtil:
         ) or self.request.data.get("BRANCH_NAME")
         if not branch:
             branch = "challenge"
-        pattern = r"^challenge-\d{4}-\d+$"
+        pattern = r"^challenge-\d{4}-[a-zA-Z0-9]+$"
         if not re.match(pattern, branch):
             self.error_messages.append(
                 self.error_messages_dict[
