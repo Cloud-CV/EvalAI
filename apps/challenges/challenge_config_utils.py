@@ -368,19 +368,27 @@ class ValidateChallengeConfigUtil:
     def validate_github_branch_format(self):
         """
         Ensure the github branch name matches challenge-<year>-<version>
+        For new challenges, enforce strict format. For existing challenges, allow "challenge" fallback.
         """
-        branch = self.request.data.get(
-            "GITHUB_BRANCH_NAME"
-        ) or self.request.data.get("BRANCH_NAME")
-        if not branch:
-            branch = "challenge"
+        branch = self.request.data.get("GITHUB_BRANCH_NAME", "challenge")
         pattern = r"^challenge-\d{4}-[a-zA-Z0-9]+$"
-        if not re.match(pattern, branch):
-            self.error_messages.append(
-                self.error_messages_dict[
-                    "invalid_github_branch_format"
-                ].format(branch=branch)
-            )
+
+        # For new challenge creation (when current_challenge is None), enforce strict format
+        if not self.current_challenge:
+            if not re.match(pattern, branch):
+                self.error_messages.append(
+                    self.error_messages_dict[
+                        "invalid_github_branch_format"
+                    ].format(branch=branch)
+                )
+        else:
+            # For existing challenges, allow "challenge" fallback but still validate other formats
+            if branch != "challenge" and not re.match(pattern, branch):
+                self.error_messages.append(
+                    self.error_messages_dict[
+                        "invalid_github_branch_format"
+                    ].format(branch=branch)
+                )
 
     def read_and_validate_yaml(self):
         if not self.yaml_file_count:
@@ -606,7 +614,6 @@ class ValidateChallengeConfigUtil:
                     ],
                     "github_branch": self.request.data.get(
                         "GITHUB_BRANCH_NAME", "challenge"
-
                     ),
                 },
             )

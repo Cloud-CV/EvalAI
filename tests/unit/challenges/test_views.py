@@ -2317,7 +2317,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             permissions=ChallengeHost.ADMIN,
         )
 
-        self.challenge = Challenge.objects.create(
+        self.challenge1 = Challenge.objects.create(
             title="Test Challenge",
             short_description="Short description for test challenge",
             description="Description for test challenge",
@@ -2334,7 +2334,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
-            github_repository="challenge/github_repo",
+            github_repository="challenge1/github_repo",
         )
 
         self.challenge2 = Challenge.objects.create(
@@ -2614,73 +2614,73 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
 
         expected = [
             {
-                "id": self.challenge.pk,
-                "title": self.challenge.title,
-                "short_description": self.challenge.short_description,
-                "description": self.challenge.description,
-                "terms_and_conditions": self.challenge.terms_and_conditions,
-                "submission_guidelines": self.challenge.submission_guidelines,
-                "evaluation_details": self.challenge.evaluation_details,
+                "id": self.challenge1.pk,
+                "title": self.challenge1.title,
+                "short_description": self.challenge1.short_description,
+                "description": self.challenge1.description,
+                "terms_and_conditions": self.challenge1.terms_and_conditions,
+                "submission_guidelines": self.challenge1.submission_guidelines,
+                "evaluation_details": self.challenge1.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
-                    self.challenge.start_date.isoformat(), "Z"
+                    self.challenge1.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "end_date": "{0}{1}".format(
-                    self.challenge.end_date.isoformat(), "Z"
+                    self.challenge1.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "creator": {
-                    "id": self.challenge.creator.pk,
-                    "team_name": self.challenge.creator.team_name,
-                    "created_by": self.challenge.creator.created_by.username,
-                    "team_url": self.challenge.creator.team_url,
+                    "id": self.challenge1.creator.pk,
+                    "team_name": self.challenge1.creator.team_name,
+                    "created_by": self.challenge1.creator.created_by.username,
+                    "team_url": self.challenge1.creator.team_url,
                 },
-                "domain": self.challenge.domain,
+                "domain": self.challenge1.domain,
                 "domain_name": "Computer Vision",
-                "list_tags": self.challenge.list_tags,
-                "has_prize": self.challenge.has_prize,
-                "has_sponsors": self.challenge.has_sponsors,
-                "published": self.challenge.published,
-                "submission_time_limit": self.challenge.submission_time_limit,
-                "is_registration_open": self.challenge.is_registration_open,
-                "enable_forum": self.challenge.enable_forum,
-                "leaderboard_description": self.challenge.leaderboard_description,
-                "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge.manual_participant_approval,
+                "list_tags": self.challenge1.list_tags,
+                "has_prize": self.challenge1.has_prize,
+                "has_sponsors": self.challenge1.has_sponsors,
+                "published": self.challenge1.published,
+                "submission_time_limit": self.challenge1.submission_time_limit,
+                "is_registration_open": self.challenge1.is_registration_open,
+                "enable_forum": self.challenge1.enable_forum,
+                "leaderboard_description": self.challenge1.leaderboard_description,
+                "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge1.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
-                "forum_url": self.challenge.forum_url,
-                "is_docker_based": self.challenge.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
-                "slug": self.challenge.slug,
-                "max_docker_image_size": self.challenge.max_docker_image_size,
-                "cli_version": self.challenge.cli_version,
-                "remote_evaluation": self.challenge.remote_evaluation,
-                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
-                "workers": self.challenge.workers,
+                "forum_url": self.challenge1.forum_url,
+                "is_docker_based": self.challenge1.is_docker_based,
+                "is_static_dataset_code_upload": self.challenge1.is_static_dataset_code_upload,
+                "slug": self.challenge1.slug,
+                "max_docker_image_size": self.challenge1.max_docker_image_size,
+                "cli_version": self.challenge1.cli_version,
+                "remote_evaluation": self.challenge1.remote_evaluation,
+                "allow_resuming_submissions": self.challenge1.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge1.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
+                "workers": self.challenge1.workers,
                 "created_at": "{0}{1}".format(
-                    self.challenge.created_at.isoformat(), "Z"
+                    self.challenge1.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
-                "queue": self.challenge.queue,
+                "queue": self.challenge1.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge.cpu_only_jobs,
-                "job_cpu_cores": self.challenge.job_cpu_cores,
-                "job_memory": self.challenge.job_memory,
-                "uses_ec2_worker": self.challenge.uses_ec2_worker,
-                "evaluation_module_error": self.challenge.evaluation_module_error,
-                "ec2_storage": self.challenge.ec2_storage,
-                "ephemeral_storage": self.challenge.ephemeral_storage,
-                "worker_image_url": self.challenge.worker_image_url,
-                "worker_instance_type": self.challenge.worker_instance_type,
-                "sqs_retention_period": self.challenge.sqs_retention_period,
-                "github_repository": self.challenge.github_repository,
-                "github_branch": self.challenge.github_branch,
+                "cpu_only_jobs": self.challenge1.cpu_only_jobs,
+                "job_cpu_cores": self.challenge1.job_cpu_cores,
+                "job_memory": self.challenge1.job_memory,
+                "uses_ec2_worker": self.challenge1.uses_ec2_worker,
+                "evaluation_module_error": self.challenge1.evaluation_module_error,
+                "ec2_storage": self.challenge1.ec2_storage,
+                "ephemeral_storage": self.challenge1.ephemeral_storage,
+                "worker_image_url": self.challenge1.worker_image_url,
+                "worker_instance_type": self.challenge1.worker_instance_type,
+                "sqs_retention_period": self.challenge1.sqs_retention_period,
+                "github_repository": self.challenge1.github_repository,
+                "github_branch": self.challenge1.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -5932,7 +5932,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
+                    "GITHUB_BRANCH_NAME": "challenge-2025-v1",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -5954,7 +5954,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             challenge.github_repository,
             "https://github.com/yourusername/repository",
         )
-        self.assertEqual(challenge.github_branch, "refs/heads/challenge")
+        self.assertEqual(challenge.github_branch, "challenge-2025-v1")
 
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
@@ -5995,6 +5995,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_challenge_using_github_without_branch_name(self):
+        """Test that missing GITHUB_BRANCH_NAME fails for new challenge creation"""
         self.url = reverse_lazy(
             "challenges:create_or_update_github_challenge",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -6013,6 +6014,89 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 },
                 format="multipart",
             )
+
+            # Should fail because "challenge" doesn't match the required format for new challenges
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("error", response.json())
+            # The error comes from challenge_config_utils validation
+            self.assertIn("invalid", str(response.json()["error"]))
+
+    def test_create_challenge_using_github_with_branch_name_challenge(self):
+        """Test when branch name is 'challenge' - should fail validation for new challenges"""
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH_NAME": "challenge",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+
+            # Should fail because "challenge" doesn't match the required format for new challenges
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("error", response.json())
+            # The error comes from challenge_config_utils validation
+            self.assertIn("invalid", str(response.json()["error"]))
+
+    def test_create_challenge_using_github_with_invalid_branch_name(self):
+        """Test when branch name is an invalid format (e.g., 'xyzabc')"""
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH_NAME": "xyzabc",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+
+            # Should fail validation due to invalid branch format
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("error", response.json())
+            self.assertIn("invalid", response.json()["error"])
+
+    def test_create_challenge_using_github_with_valid_branch_format(self):
+        """Test when branch name follows the correct format (e.g., 'challenge-2025-v2')"""
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH_NAME": "challenge-2025-v2",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
             expected = {
                 "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
             }
@@ -6020,13 +6104,120 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json(), expected)
 
-        # Verify github_branch defaults to "challenge" when not provided
+        # Verify github_branch is properly stored with the correct format
         challenge = Challenge.objects.first()
         self.assertEqual(
             challenge.github_repository,
             "https://github.com/yourusername/repository",
         )
-        self.assertEqual(challenge.github_branch, "challenge")
+        self.assertEqual(challenge.github_branch, "challenge-2025-v2")
+
+    def test_create_challenge_using_github_with_other_valid_branch_formats(
+        self,
+    ):
+        """Test various valid branch name formats"""
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        valid_branches = [
+            "challenge-2024-1",
+            "challenge-2025-v1",
+            "challenge-2060-v2",
+            "challenge-2024-final",
+        ]
+
+        for branch_name in valid_branches:
+            with mock.patch("challenges.views.requests.get") as m:
+                self.test_zip_file.seek(0)
+                resp = mock.Mock()
+                resp.content = self.test_zip_file.read()
+                resp.status_code = 200
+                m.return_value = resp
+                self.test_zip_file.seek(0)
+                response = self.client.post(
+                    self.url,
+                    {
+                        "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                        "GITHUB_BRANCH_NAME": branch_name,
+                        "zip_configuration": self.test_zip_file,
+                    },
+                    format="multipart",
+                )
+                expected = {
+                    "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+                }
+
+                self.assertEqual(
+                    response.status_code,
+                    201,
+                    f"Failed for branch: {branch_name}",
+                )
+                self.assertEqual(response.json(), expected)
+
+            # Verify github_branch is properly stored
+            challenge = Challenge.objects.first()
+            self.assertEqual(
+                challenge.github_repository,
+                "https://github.com/yourusername/repository",
+            )
+            self.assertEqual(challenge.github_branch, branch_name)
+
+            # Clean up for next iteration
+            Challenge.objects.all().delete()
+
+    def test_create_challenge_using_github_with_invalid_branch_formats(self):
+        """Test various invalid branch name formats"""
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        invalid_branches = [
+            "main",
+            "master",
+            "develop",
+            "feature-branch",
+            "challenge",
+            "challenge-2025",
+            "challenge-v2",
+            "2025-challenge-v2",
+            "challenge-2025-v2-extra",
+        ]
+
+        for branch_name in invalid_branches:
+            with mock.patch("challenges.views.requests.get") as m:
+                self.test_zip_file.seek(
+                    0
+                )  # Reset file pointer to the beginning
+                resp = mock.Mock()
+                resp.content = self.test_zip_file.read()
+                resp.status_code = 200
+                m.return_value = resp
+                self.test_zip_file.seek(
+                    0
+                )  # Reset file pointer to the beginning
+                response = self.client.post(
+                    self.url,
+                    {
+                        "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                        "GITHUB_BRANCH_NAME": branch_name,
+                        "zip_configuration": self.test_zip_file,
+                    },
+                    format="multipart",
+                )
+
+                # Should fail validation due to invalid branch format
+                self.assertEqual(
+                    response.status_code,
+                    400,
+                    f"Should fail for branch: {branch_name}",
+                )
+                self.assertIn("error", response.json())
+                # The error comes from challenge_config_utils validation
+                self.assertIn("invalid", str(response.json()["error"]))
+
 
 class ValidateChallengeTest(APITestCase):
     def setUp(self):
@@ -6093,7 +6284,7 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
+                    "GITHUB_BRANCH_NAME": "challenge-2025-v1",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -6116,13 +6307,14 @@ class ValidateChallengeTest(APITestCase):
             resp = mock.Mock()
             resp.content = self.test_zip_incorrect_file.read()
             resp.status_code = 200
-
             m.return_value = resp
+            self.test_zip_incorrect_file.seek(0)
             response = self.client.post(
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "zip_configuration": self.input_zip_file,
+                    "GITHUB_BRANCH_NAME": "challenge-2025-v1",
+                    "zip_configuration": self.test_zip_incorrect_file,
                 },
                 format="multipart",
             )
