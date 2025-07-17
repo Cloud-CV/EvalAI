@@ -2729,9 +2729,23 @@ describe('Unit tests for challenge controller', function () {
                 var deferred = $injector.get('$q').defer();
                 return deferred.promise;
             });
+            // Set required properties to ensure the function doesn't return early
             vm.retentionConsentChecked = true;
+            vm.retentionConsentLoading = false; // This is the key - must be false to proceed
+            vm.challengeId = 123; // Set a challenge ID
             vm.toggleRetentionConsent({});
             expect($mdDialog.show).toHaveBeenCalled();
+        });
+
+        it('should not open a dialog when retention consent is loading', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+            vm.retentionConsentChecked = true;
+            vm.retentionConsentLoading = true; // This should prevent the dialog from showing
+            vm.toggleRetentionConsent({});
+            expect($mdDialog.show).not.toHaveBeenCalled();
         });
     });
 });
