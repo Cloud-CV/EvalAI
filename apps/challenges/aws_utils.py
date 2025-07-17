@@ -18,6 +18,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 
 from evalai.celery import app
+from hosts.utils import is_user_a_host_of_challenge
 
 from .challenge_notification_util import (
     construct_and_send_eks_cluster_creation_mail,
@@ -2738,34 +2739,5 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
             f"Error recording retention consent for challenge {challenge_pk}"
         )
         return {"error": str(e)}
-def is_user_a_host_of_challenge(user, challenge_pk):
-    """
-    Check if a user is a host of a specific challenge.
-
-    Args:
-        user (User): User to check
-        challenge_pk (int): Challenge primary key
-
-    Returns:
-        bool: True if user is a host of the challenge
-    """
-    from django.contrib.auth.models import AnonymousUser
-    from hosts.models import ChallengeHost
-
-    from .models import Challenge
-
-    # Anonymous users cannot be hosts
-    if isinstance(user, AnonymousUser) or user.is_anonymous:
-        return False
-
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-        return ChallengeHost.objects.filter(
-            user=user,
-            team_name=challenge.creator,
-            status=ChallengeHost.ACCEPTED,
-        ).exists()
-    except Challenge.DoesNotExist:
-        return False
 
 

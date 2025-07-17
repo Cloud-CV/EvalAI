@@ -108,7 +108,6 @@ from .aws_utils import (
     describe_ec2_instance,
     get_log_group_name,
     get_logs_from_cloudwatch,
-    is_user_a_host_of_challenge,
     map_retention_days_to_aws_values,
     record_host_retention_consent,
     restart_ec2_instance,
@@ -5102,7 +5101,6 @@ def provide_retention_consent(request, challenge_pk):
         dict: Success/error response with consent details
     """
     from .aws_utils import (
-        is_user_a_host_of_challenge,
         record_host_retention_consent,
     )
 
@@ -5175,8 +5173,6 @@ def get_retention_consent_status(request, challenge_pk):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # Check if user is a host of this challenge
-    from .aws_utils import is_user_a_host_of_challenge
 
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
@@ -5237,8 +5233,6 @@ def get_challenge_retention_info(request, challenge_pk):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # Check if user is a host of this challenge
-    from .aws_utils import is_user_a_host_of_challenge
 
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
@@ -5323,7 +5317,6 @@ def update_retention_consent(request, challenge_pk):
         dict: Success/error response
     """
     from .aws_utils import (
-        is_user_a_host_of_challenge,
         record_host_retention_consent,
     )
 
