@@ -3,20 +3,6 @@
 from django.db import migrations, models
 
 
-def fix_duplicate_github_fields(apps, schema_editor):
-    """
-    No data migration needed since we're using a partial unique constraint.
-    """
-    pass
-
-
-def reverse_fix_duplicate_github_fields(apps, schema_editor):
-    """
-    No reverse migration needed.
-    """
-    pass
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -28,12 +14,8 @@ class Migration(migrations.Migration):
             model_name="challenge",
             name="github_branch",
             field=models.CharField(
-                blank=True, default="", max_length=200, null=True
+                blank=True, default="challenge", max_length=200, null=True
             ),
-        ),
-        migrations.RunPython(
-            fix_duplicate_github_fields,
-            reverse_fix_duplicate_github_fields,
         ),
         # Add a partial unique constraint that only applies when both fields are not empty
         migrations.RunSQL(

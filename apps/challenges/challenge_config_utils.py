@@ -312,6 +312,7 @@ error_message_dict = {
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
     "docker_based_challenge": "ERROR: New Docker based challenges are not supported starting March 15, 2025.",
+    "invalid_github_branch_format": "ERROR: GitHub branch name '{branch}' is invalid. It must match the pattern 'challenge-<year>-<version>' (e.g., challenge-2024-1, challenge-2060-v2).",
 }
 
 
@@ -363,6 +364,31 @@ class ValidateChallengeConfigUtil:
             )
         self.phase_ids = []
         self.leaderboard_ids = []
+
+    def validate_github_branch_format(self):
+        """
+        Ensure the github branch name matches challenge-<year>-<version>
+        For new challenges, enforce strict format. For existing challenges, allow "challenge" fallback.
+        """
+        branch = self.request.data.get("GITHUB_BRANCH_NAME", "challenge")
+        pattern = r"^challenge-\d{4}-[a-zA-Z0-9]+$"
+
+        # For new challenge creation (when current_challenge is None), enforce strict format
+        if not self.current_challenge:
+            if not re.match(pattern, branch):
+                self.error_messages.append(
+                    self.error_messages_dict[
+                        "invalid_github_branch_format"
+                    ].format(branch=branch)
+                )
+        else:
+            # For existing challenges, allow "challenge" fallback but still validate other formats
+            if branch != "challenge" and not re.match(pattern, branch):
+                self.error_messages.append(
+                    self.error_messages_dict[
+                        "invalid_github_branch_format"
+                    ].format(branch=branch)
+                )
 
     def read_and_validate_yaml(self):
         if not self.yaml_file_count:
@@ -586,6 +612,9 @@ class ValidateChallengeConfigUtil:
                     "github_repository": self.request.data[
                         "GITHUB_REPOSITORY"
                     ],
+                    "github_branch": self.request.data.get(
+                        "GITHUB_BRANCH_NAME", "challenge"
+                    ),
                 },
             )
             if not serializer.is_valid():
@@ -1130,6 +1159,9 @@ def validate_challenge_config_util(
     val_config_util.validate_dates()
 
     val_config_util.validate_serializer()
+
+    # Add branch format validation
+    val_config_util.validate_github_branch_format()
 
     # Get existing config IDs for leaderboards and dataset splits
     if current_challenge:
