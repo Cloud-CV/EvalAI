@@ -94,22 +94,27 @@
             parameters.token = null;
         }
 
-        // calls for ongoing challenges
-        parameters.url = 'challenges/challenge/present/approved/public';
-        parameters.method = 'GET';
+        // Clone base parameters
+        var baseParams = {};
+        baseParams.token = userKey ? userKey : null;
 
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
-        // calls for upcoming challenges
-        parameters.url = 'challenges/challenge/future/approved/public';
-        parameters.method = 'GET';
+        // Call for ongoing challenges
+        var presentParams = angular.copy(baseParams);
+        presentParams.url = 'challenges/challenge/present/approved/public';
+        presentParams.method = 'GET';
+        vm.getAllResults(presentParams, vm.currentList, "noneCurrentChallenge");
 
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
+        // Call for upcoming challenges
+        var futureParams = angular.copy(baseParams);
+        futureParams.url = 'challenges/challenge/future/approved/public';
+        futureParams.method = 'GET';
+        vm.getAllResults(futureParams, vm.upcomingList, "noneUpcomingChallenge");
 
-        // calls for past challenges
-        parameters.url = 'challenges/challenge/past/approved/public';
-        parameters.method = 'GET';
-
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
+        // Call for past challenges
+        var pastParams = angular.copy(baseParams);
+        pastParams.url = 'challenges/challenge/past/approved/public';
+        pastParams.method = 'GET';
+        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge");
 
         vm.scrollUp = function () {
             angular.element($window).bind('scroll', function () {
