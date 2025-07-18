@@ -20,53 +20,7 @@
         utilities.showLoader();
         utilities.hideButton();
 
-        vm.currentList = [
-            {
-                id: 101,
-                title: 'AI Innovation',
-                description: 'Explore AI breakthroughs',
-                list_tags: ['AI', 'ML'],
-                domain: 'Artificial Intelligence',
-                domain_name: 'AI',
-                creator: {
-                    id: 1,
-                    team_name: 'Alpha Team'
-                },
-                start_date: new Date('2025-07-01'),
-                end_date: new Date('2025-07-15'),
-                image: 'https://via.placeholder.com/300x200?text=AI+Innovation'
-            },
-            {
-                id: 102,
-                title: 'Data Dash',
-                description: 'Data analysis sprint',
-                list_tags: ['Data', 'Analytics'],
-                domain: 'Data Science',
-                domain_name: 'DS',
-                creator: {
-                    id: 2,
-                    team_name: 'Data Ninjas'
-                },
-                start_date: new Date('2025-07-05'),
-                end_date: new Date('2025-07-20'),
-                image: 'https://via.placeholder.com/300x200?text=Data+Dash'
-            },
-            {
-                id: 103,
-                title: 'Cyber Shield',
-                description: 'Cybersecurity challenge',
-                list_tags: ['Security'],
-                domain: 'Cybersecurity',
-                domain_name: 'Cyber',
-                creator: {
-                    id: 3,
-                    team_name: 'Cyber Warriors'
-                },
-                start_date: new Date('2025-07-10'),
-                end_date: new Date('2025-07-25'),
-                image: 'https://via.placeholder.com/300x200?text=Cyber+Shield'
-            }
-        ];
+        vm.currentList = [];
         vm.upcomingList = [];
         vm.pastList = [];
         vm.searchTitle = [];
