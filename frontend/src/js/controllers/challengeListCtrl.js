@@ -200,8 +200,8 @@
                 vm.filterStartDate = filters.filterStartDate;
                 vm.filterEndDate = filters.filterEndDate;
             });
-        };     
-        
+        };
+
     }
 
     angular.module('evalai')
@@ -233,6 +233,6 @@
         };
     }
 
-    
+
 
 })();
