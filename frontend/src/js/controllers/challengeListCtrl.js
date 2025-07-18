@@ -36,6 +36,7 @@
 
 
         vm.getAllResults = function (parameters, resultsArray, typ) {
+            parameters.method = parameters.method || 'GET';
             parameters.callback = {
                 onSuccess: function (response) {
                     var data = response.data;
