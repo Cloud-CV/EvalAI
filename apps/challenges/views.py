@@ -5168,7 +5168,6 @@ def get_retention_consent_status(request, challenge_pk):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
     response_data = {
@@ -5227,7 +5226,6 @@ def get_challenge_retention_info(request, challenge_pk):
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
 
     is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 

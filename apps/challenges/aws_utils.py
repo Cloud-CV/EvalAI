@@ -303,7 +303,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
                     # Update CloudWatch log retention policy on task definition registration
-                    update_challenge_log_retention_on_task_def_registration(challenge)
+                    update_challenge_log_retention_on_task_def_registration(
+                        challenge
+                    )
                 return response
             except ClientError as e:
                 logger.exception(e)
@@ -1885,7 +1887,6 @@ def update_sqs_retention_period_task(challenge):
     return update_sqs_retention_period(challenge_obj)
 
 
-
 def calculate_retention_period_days(challenge_end_date, challenge=None):
     """
     Calculate retention period in days based on challenge end date and challenge-level consent.
@@ -2621,9 +2622,7 @@ def weekly_retention_notifications_and_consent_log():
             f"[RetentionConsent] End of weekly consent change summary."
         )
 
-    return {
-        "notifications_sent": notifications_sent
-    }
+    return {"notifications_sent": notifications_sent}
 
 
 def update_challenge_log_retention_on_approval(challenge):
@@ -2739,5 +2738,3 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
             f"Error recording retention consent for challenge {challenge_pk}"
         )
         return {"error": str(e)}
-
-

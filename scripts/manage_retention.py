@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+
 """
 Standalone Django script for managing retention policies.
 
@@ -16,11 +17,12 @@ Note: This script is designed to run inside the Django Docker container.
 """
 
 # Ensure project root is in sys.path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/../')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/../")
 
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.common")
 import django
+
 django.setup()
 
 import csv
@@ -79,18 +81,26 @@ def handle_cleanup(dry_run=False):
     ).select_related("challenge_phase__challenge")
 
     if not eligible_submissions.exists():
-        print_success("✅ CLEANUP COMPLETED: No submissions eligible for cleanup - all submissions are either not expired or already cleaned up.")
+        print_success(
+            "✅ CLEANUP COMPLETED: No submissions eligible for cleanup - all submissions are either not expired or already cleaned up."
+        )
         return
 
-    print_info(f"Found {eligible_submissions.count()} submissions eligible for cleanup:")
+    print_info(
+        f"Found {eligible_submissions.count()} submissions eligible for cleanup:"
+    )
 
     for submission in eligible_submissions:
         challenge_name = submission.challenge_phase.challenge.title
         phase_name = submission.challenge_phase.name
-        print_info(f"  - Submission {submission.pk} from challenge '{challenge_name}' phase '{phase_name}' (eligible since {submission.retention_eligible_date})")
+        print_info(
+            f"  - Submission {submission.pk} from challenge '{challenge_name}' phase '{phase_name}' (eligible since {submission.retention_eligible_date})"
+        )
 
     if dry_run:
-        print_success("✅ DRY RUN COMPLETED: Would clean up {eligible_submissions.count()} expired submission artifacts")
+        print_success(
+            "✅ DRY RUN COMPLETED: Would clean up {eligible_submissions.count()} expired submission artifacts"
+        )
         return
 
     confirm = input("\nProceed with cleanup? (yes/no): ")
@@ -100,7 +110,9 @@ def handle_cleanup(dry_run=False):
 
     # Run the actual cleanup
     result = cleanup_expired_submission_artifacts.delay()
-    print_success(f"✅ CLEANUP INITIATED: Started cleanup task for {eligible_submissions.count()} expired submission artifacts. Task ID: {result.id}")
+    print_success(
+        f"✅ CLEANUP INITIATED: Started cleanup task for {eligible_submissions.count()} expired submission artifacts. Task ID: {result.id}"
+    )
 
 
 def handle_update_dates():
@@ -110,8 +122,10 @@ def handle_update_dates():
     try:
         # Run directly instead of via Celery in development
         result = update_submission_retention_dates()
-        updated_count = result.get('updated_submissions', 0)
-        print_success(f"✅ RETENTION DATES UPDATED: Successfully updated retention eligible dates for {updated_count} submissions")
+        updated_count = result.get("updated_submissions", 0)
+        print_success(
+            f"✅ RETENTION DATES UPDATED: Successfully updated retention eligible dates for {updated_count} submissions"
+        )
     except Exception as e:
         print_error(f"Failed to update retention dates: {e}")
         logger.exception("Error updating retention dates")
@@ -122,7 +136,9 @@ def handle_send_warnings():
     print_info("Sending retention warning notifications...")
 
     result = weekly_retention_notifications_and_consent_log.delay()
-    print_success(f"✅ WARNING NOTIFICATIONS SENT: Started notification task to send retention warnings to challenge hosts. Task ID: {result.id}")
+    print_success(
+        f"✅ WARNING NOTIFICATIONS SENT: Started notification task to send retention warnings to challenge hosts. Task ID: {result.id}"
+    )
 
 
 def handle_set_log_retention(challenge_id, days=None):
@@ -133,14 +149,18 @@ def handle_set_log_retention(challenge_id, days=None):
         print_error(f"Challenge {challenge_id} does not exist")
         return
 
-    print_info(f"Setting log retention for challenge {challenge_id}: {challenge.title}")
+    print_info(
+        f"Setting log retention for challenge {challenge_id}: {challenge.title}"
+    )
 
     result = set_cloudwatch_log_retention(challenge_id, days)
 
     if result.get("success"):
-        retention_days = result['retention_days']
-        log_group = result['log_group']
-        print_success(f"✅ LOG RETENTION SET: Successfully configured CloudWatch log retention to {retention_days} days for challenge '{challenge.title}' (ID: {challenge_id}). Log group: {log_group}")
+        retention_days = result["retention_days"]
+        log_group = result["log_group"]
+        print_success(
+            f"✅ LOG RETENTION SET: Successfully configured CloudWatch log retention to {retention_days} days for challenge '{challenge.title}' (ID: {challenge_id}). Log group: {log_group}"
+        )
     else:
         print_error(f"Failed to set log retention: {result.get('error')}")
 
@@ -160,10 +180,14 @@ def handle_force_delete(submission_id, confirm=False):
     challenge_name = submission.challenge_phase.challenge.title
     phase_name = submission.challenge_phase.name
 
-    print_info(f"Submission {submission_id} from challenge '{challenge_name}' phase '{phase_name}'")
+    print_info(
+        f"Submission {submission_id} from challenge '{challenge_name}' phase '{phase_name}'"
+    )
 
     if not confirm:
-        confirm_input = input("Are you sure you want to delete the submission files? (yes/no): ")
+        confirm_input = input(
+            "Are you sure you want to delete the submission files? (yes/no): "
+        )
         if confirm_input.lower() != "yes":
             print_info("Deletion cancelled.")
             return
@@ -171,13 +195,19 @@ def handle_force_delete(submission_id, confirm=False):
     result = delete_submission_files_from_storage(submission)
 
     if result["success"]:
-        deleted_count = len(result['deleted_files'])
-        failed_count = len(result.get('failed_files', []))
-        print_success(f"✅ SUBMISSION FILES DELETED: Successfully deleted {deleted_count} files for submission {submission_id} from challenge '{challenge_name}'")
+        deleted_count = len(result["deleted_files"])
+        failed_count = len(result.get("failed_files", []))
+        print_success(
+            f"✅ SUBMISSION FILES DELETED: Successfully deleted {deleted_count} files for submission {submission_id} from challenge '{challenge_name}'"
+        )
         if failed_count > 0:
-            print_warning(f"⚠️  PARTIAL FAILURE: Failed to delete {failed_count} files for submission {submission_id}")
+            print_warning(
+                f"⚠️  PARTIAL FAILURE: Failed to delete {failed_count} files for submission {submission_id}"
+            )
     else:
-        print_error(f"Failed to delete submission files: {result.get('error')}")
+        print_error(
+            f"Failed to delete submission files: {result.get('error')}"
+        )
 
 
 def handle_status(challenge_id=None):
@@ -199,20 +229,32 @@ def show_challenge_status(challenge_id):
         print_info("📋 CONSENT STATUS:")
         if challenge.retention_policy_consent:
             print_success("✅ HOST HAS CONSENTED TO 30-DAY RETENTION POLICY")
-            print_info(f"   Consent provided by: {challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'}")
-            print_info(f"   Consent date: {challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S') if challenge.retention_policy_consent_date else 'Unknown'}")
+            print_info(
+                f"   Consent provided by: {challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else 'Unknown'}"
+            )
+            print_info(
+                f"   Consent date: {challenge.retention_policy_consent_date.strftime('%Y-%m-%d %H:%M:%S') if challenge.retention_policy_consent_date else 'Unknown'}"
+            )
             if challenge.retention_policy_notes:
                 print_info(f"   Notes: {challenge.retention_policy_notes}")
             print_info(f"   Retention policy: 30-day retention allowed")
         else:
-            print_warning("❌ HOST HAS NOT CONSENTED - INDEFINITE RETENTION APPLIED")
-            print_info(f"   Retention policy: Indefinite retention (no automatic cleanup)")
-            print_info(f"   Action needed: Host must provide consent for 30-day retention")
+            print_warning(
+                "❌ HOST HAS NOT CONSENTED - INDEFINITE RETENTION APPLIED"
+            )
+            print_info(
+                f"   Retention policy: Indefinite retention (no automatic cleanup)"
+            )
+            print_info(
+                f"   Action needed: Host must provide consent for 30-day retention"
+            )
 
         # Show admin override if set
         if challenge.log_retention_days_override:
             print_info("🔧 ADMIN OVERRIDE:")
-            print_info(f"   Log retention override: {challenge.log_retention_days_override} days")
+            print_info(
+                f"   Log retention override: {challenge.log_retention_days_override} days"
+            )
 
         phases = ChallengePhase.objects.filter(challenge=challenge)
 
@@ -223,17 +265,27 @@ def show_challenge_status(challenge_id):
 
             # Calculate retention period based on consent status
             if phase.end_date:
-                retention_days = calculate_retention_period_days(phase.end_date, challenge)
-                aws_retention_days = map_retention_days_to_aws_values(retention_days)
-                print_info(f"  Calculated retention period: {retention_days} days")
-                print_info(f"  AWS CloudWatch retention: {aws_retention_days} days")
+                retention_days = calculate_retention_period_days(
+                    phase.end_date, challenge
+                )
+                aws_retention_days = map_retention_days_to_aws_values(
+                    retention_days
+                )
+                print_info(
+                    f"  Calculated retention period: {retention_days} days"
+                )
+                print_info(
+                    f"  AWS CloudWatch retention: {aws_retention_days} days"
+                )
 
             retention_date = calculate_submission_retention_date(phase)
             if retention_date:
                 print_info(f"  Retention eligible date: {retention_date}")
             else:
                 if phase.is_public:
-                    print_info("  Retention not applicable (phase still public)")
+                    print_info(
+                        "  Retention not applicable (phase still public)"
+                    )
                 elif not phase.end_date:
                     print_info("  Retention not applicable (no end date)")
                 else:
@@ -241,7 +293,9 @@ def show_challenge_status(challenge_id):
 
             submissions = Submission.objects.filter(challenge_phase=phase)
             total_submissions = submissions.count()
-            deleted_submissions = submissions.filter(is_artifact_deleted=True).count()
+            deleted_submissions = submissions.filter(
+                is_artifact_deleted=True
+            ).count()
             eligible_submissions = submissions.filter(
                 retention_eligible_date__lte=timezone.now(),
                 is_artifact_deleted=False,
@@ -254,11 +308,19 @@ def show_challenge_status(challenge_id):
         # Show actionable information for admins
         print_info("💡 ADMIN ACTIONS:")
         if not challenge.retention_policy_consent:
-            print_warning("   • Host needs to provide consent for 30-day retention")
-            print_info("   • Use: docker-compose exec django python manage.py shell < scripts/manage_retention.py record-consent <challenge_id> --username <host_username>")
+            print_warning(
+                "   • Host needs to provide consent for 30-day retention"
+            )
+            print_info(
+                "   • Use: docker-compose exec django python manage.py shell < scripts/manage_retention.py record-consent <challenge_id> --username <host_username>"
+            )
         else:
-            print_success("   • Host has consented - 30-day retention policy can be applied")
-            print_info("   • Use: docker-compose exec django python manage.py shell < scripts/manage_retention.py set-log-retention <challenge_id>")
+            print_success(
+                "   • Host has consented - 30-day retention policy can be applied"
+            )
+            print_info(
+                "   • Use: docker-compose exec django python manage.py shell < scripts/manage_retention.py set-log-retention <challenge_id>"
+            )
 
     except Challenge.DoesNotExist:
         print_error(f"Challenge {challenge_id} does not exist")
@@ -270,7 +332,9 @@ def show_overall_status():
     print_info("=" * 30)
 
     total_submissions = Submission.objects.count()
-    deleted_submissions = Submission.objects.filter(is_artifact_deleted=True).count()
+    deleted_submissions = Submission.objects.filter(
+        is_artifact_deleted=True
+    ).count()
     eligible_submissions = Submission.objects.filter(
         retention_eligible_date__lte=timezone.now(),
         retention_eligible_date__isnull=False,  # Exclude indefinite retention
@@ -283,16 +347,22 @@ def show_overall_status():
 
     # Show consent statistics
     total_challenges = Challenge.objects.count()
-    consented_challenges = Challenge.objects.filter(retention_policy_consent=True).count()
+    consented_challenges = Challenge.objects.filter(
+        retention_policy_consent=True
+    ).count()
     non_consented_challenges = total_challenges - consented_challenges
 
     print_info("📋 CONSENT STATISTICS:")
     print_info(f"Total challenges: {total_challenges}")
     print_info(f"With consent (30-day retention): {consented_challenges}")
-    print_info(f"Without consent (indefinite retention): {non_consented_challenges}")
+    print_info(
+        f"Without consent (indefinite retention): {non_consented_challenges}"
+    )
 
     if non_consented_challenges > 0:
-        print_warning(f"⚠️  {non_consented_challenges} challenges need consent for 30-day retention policy!")
+        print_warning(
+            f"⚠️  {non_consented_challenges} challenges need consent for 30-day retention policy!"
+        )
     else:
         print_success("🎉 All challenges have consent for 30-day retention!")
 
@@ -306,7 +376,9 @@ def show_overall_status():
     ).select_related("challenge_phase__challenge")
 
     if upcoming_submissions.exists():
-        print_info(f"\nUpcoming cleanups (next 14 days): {upcoming_submissions.count()}")
+        print_info(
+            f"\nUpcoming cleanups (next 14 days): {upcoming_submissions.count()}"
+        )
 
         challenges = {}
         for submission in upcoming_submissions:
@@ -320,11 +392,19 @@ def show_overall_status():
             challenges[challenge_id]["count"] += 1
 
         for challenge_data in challenges.values():
-            consent_status = "✅ 30-day" if challenge_data["has_consent"] else "❌ Indefinite"
-            print_info(f"  - {challenge_data['name']}: {challenge_data['count']} submissions ({consent_status})")
+            consent_status = (
+                "✅ 30-day"
+                if challenge_data["has_consent"]
+                else "❌ Indefinite"
+            )
+            print_info(
+                f"  - {challenge_data['name']}: {challenge_data['count']} submissions ({consent_status})"
+            )
 
 
-def handle_bulk_set_log_retention(challenge_ids=None, all_active=False, days=None, dry_run=False):
+def handle_bulk_set_log_retention(
+    challenge_ids=None, all_active=False, days=None, dry_run=False
+):
     """Set CloudWatch log retention for multiple challenges"""
     if not challenge_ids and not all_active:
         print_error("Must specify either --challenge-ids or --all-active")
@@ -346,7 +426,9 @@ def handle_bulk_set_log_retention(challenge_ids=None, all_active=False, days=Non
                 print_info(f"  - Challenge {challenge_id}: {challenge.title}")
             except Challenge.DoesNotExist:
                 print_info(f"  - Challenge {challenge_id}: NOT FOUND")
-        print_success(f"✅ DRY RUN COMPLETED: Would set log retention for {len(challenge_ids)} challenges")
+        print_success(
+            f"✅ DRY RUN COMPLETED: Would set log retention for {len(challenge_ids)} challenges"
+        )
         return
 
     print_info(f"Setting log retention for {len(challenge_ids)} challenges...")
@@ -357,23 +439,33 @@ def handle_bulk_set_log_retention(challenge_ids=None, all_active=False, days=Non
         try:
             result = set_cloudwatch_log_retention(challenge_id, days)
             if result.get("success"):
-                results["success"].append({
-                    "challenge_id": challenge_id,
-                    "retention_days": result.get("retention_days"),
-                    "log_group": result.get("log_group"),
-                })
-                print_info(f"✅ Challenge {challenge_id}: {result.get('retention_days')} days")
+                results["success"].append(
+                    {
+                        "challenge_id": challenge_id,
+                        "retention_days": result.get("retention_days"),
+                        "log_group": result.get("log_group"),
+                    }
+                )
+                print_info(
+                    f"✅ Challenge {challenge_id}: {result.get('retention_days')} days"
+                )
             else:
-                results["failed"].append({
-                    "challenge_id": challenge_id,
-                    "error": result.get("error"),
-                })
-                print_info(f"❌ Challenge {challenge_id}: {result.get('error')}")
+                results["failed"].append(
+                    {
+                        "challenge_id": challenge_id,
+                        "error": result.get("error"),
+                    }
+                )
+                print_info(
+                    f"❌ Challenge {challenge_id}: {result.get('error')}"
+                )
         except Exception as e:
-            results["failed"].append({
-                "challenge_id": challenge_id,
-                "error": str(e),
-            })
+            results["failed"].append(
+                {
+                    "challenge_id": challenge_id,
+                    "error": str(e),
+                }
+            )
             print_info(f"❌ Challenge {challenge_id}: {str(e)}")
 
     # Summary
@@ -381,10 +473,14 @@ def handle_bulk_set_log_retention(challenge_ids=None, all_active=False, days=Non
     failed_count = len(results["failed"])
 
     if success_count > 0:
-        print_success(f"✅ BULK LOG RETENTION COMPLETED: Successfully set log retention for {success_count} challenges")
+        print_success(
+            f"✅ BULK LOG RETENTION COMPLETED: Successfully set log retention for {success_count} challenges"
+        )
     if failed_count > 0:
-        print_error(f"❌ BULK LOG RETENTION FAILED: Failed to set log retention for {failed_count} challenges")
-    
+        print_error(
+            f"❌ BULK LOG RETENTION FAILED: Failed to set log retention for {failed_count} challenges"
+        )
+
     summary_text = f"✅ {success_count} successful, ❌ {failed_count} failed"
     if success_count > failed_count:
         print_success(summary_text)
@@ -397,23 +493,27 @@ def handle_bulk_set_log_retention(challenge_ids=None, all_active=False, days=Non
 def handle_generate_report(format_type="json", output=None, challenge_id=None):
     """Generate detailed retention report"""
     print_info("Generating retention report...")
-    
+
     try:
         report_data = build_retention_report(challenge_id)
-        
+
         if format_type == "csv":
             report_content = convert_report_to_csv(report_data)
         else:
             report_content = json.dumps(report_data, indent=2, default=str)
-        
+
         if output:
-            with open(output, 'w') as f:
+            with open(output, "w") as f:
                 f.write(report_content)
-            print_success(f"✅ REPORT GENERATED: Retention report saved to '{output}' in {format_type.upper()} format")
+            print_success(
+                f"✅ REPORT GENERATED: Retention report saved to '{output}' in {format_type.upper()} format"
+            )
         else:
-            print_success(f"✅ REPORT GENERATED: Retention report output in {format_type.upper()} format:")
+            print_success(
+                f"✅ REPORT GENERATED: Retention report output in {format_type.upper()} format:"
+            )
             print(report_content)
-            
+
     except Exception as e:
         print_error(f"Error generating report: {str(e)}")
         logger.exception("Error generating report")
@@ -437,7 +537,9 @@ def build_retention_report(challenge_id=None):
     # Summary statistics
     total_challenges = challenges_query.count()
     total_submissions = Submission.objects.count()
-    deleted_submissions = Submission.objects.filter(is_artifact_deleted=True).count()
+    deleted_submissions = Submission.objects.filter(
+        is_artifact_deleted=True
+    ).count()
     eligible_submissions = Submission.objects.filter(
         retention_eligible_date__lte=now,
         is_artifact_deleted=False,
@@ -448,7 +550,11 @@ def build_retention_report(challenge_id=None):
         "total_submissions": total_submissions,
         "deleted_submissions": deleted_submissions,
         "eligible_for_cleanup": eligible_submissions,
-        "deletion_rate": (deleted_submissions / total_submissions * 100) if total_submissions > 0 else 0,
+        "deletion_rate": (
+            (deleted_submissions / total_submissions * 100)
+            if total_submissions > 0
+            else 0
+        ),
     }
 
     # Per-challenge data
@@ -458,7 +564,9 @@ def build_retention_report(challenge_id=None):
         host_emails = None
         if challenge.creator:
             try:
-                host_emails = ", ".join([user.email for user in challenge.creator.members.all()])
+                host_emails = ", ".join(
+                    [user.email for user in challenge.creator.members.all()]
+                )
             except Exception:
                 host_emails = None
 
@@ -467,13 +575,29 @@ def build_retention_report(challenge_id=None):
             "title": challenge.title,
             "host_team": host_team,
             "host_emails": host_emails,
-            "created_at": challenge.created_at.isoformat() if challenge.created_at else None,
+            "created_at": (
+                challenge.created_at.isoformat()
+                if challenge.created_at
+                else None
+            ),
             "retention_consent": {
                 "has_consent": challenge.retention_policy_consent,
-                "consent_date": challenge.retention_policy_consent_date.isoformat() if challenge.retention_policy_consent_date else None,
-                "consent_by": challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else None,
+                "consent_date": (
+                    challenge.retention_policy_consent_date.isoformat()
+                    if challenge.retention_policy_consent_date
+                    else None
+                ),
+                "consent_by": (
+                    challenge.retention_policy_consent_by.username
+                    if challenge.retention_policy_consent_by
+                    else None
+                ),
                 "notes": challenge.retention_policy_notes,
-                "retention_policy": "30-day" if challenge.retention_policy_consent else "indefinite",
+                "retention_policy": (
+                    "30-day"
+                    if challenge.retention_policy_consent
+                    else "indefinite"
+                ),
             },
             "admin_override": {
                 "log_retention_days_override": challenge.log_retention_days_override,
@@ -491,29 +615,45 @@ def build_retention_report(challenge_id=None):
             phase_data = {
                 "id": phase.pk,
                 "name": phase.name,
-                "start_date": phase.start_date.isoformat() if phase.start_date else None,
-                "end_date": phase.end_date.isoformat() if phase.end_date else None,
+                "start_date": (
+                    phase.start_date.isoformat() if phase.start_date else None
+                ),
+                "end_date": (
+                    phase.end_date.isoformat() if phase.end_date else None
+                ),
                 "is_public": phase.is_public,
                 "retention_eligible_date": None,
             }
 
             # Calculate retention date using consent-aware calculation
             if phase.end_date and not phase.is_public:
-                retention_days = calculate_retention_period_days(phase.end_date, challenge)
-                retention_date = phase.end_date + timedelta(days=retention_days)
-                phase_data["retention_eligible_date"] = retention_date.isoformat()
+                retention_days = calculate_retention_period_days(
+                    phase.end_date, challenge
+                )
+                retention_date = phase.end_date + timedelta(
+                    days=retention_days
+                )
+                phase_data["retention_eligible_date"] = (
+                    retention_date.isoformat()
+                )
 
             challenge_data["phases"].append(phase_data)
 
         # Submission data for this challenge
-        challenge_submissions = Submission.objects.filter(challenge_phase__challenge=challenge)
+        challenge_submissions = Submission.objects.filter(
+            challenge_phase__challenge=challenge
+        )
         challenge_data["submissions"]["total"] = challenge_submissions.count()
-        challenge_data["submissions"]["deleted"] = challenge_submissions.filter(is_artifact_deleted=True).count()
-        challenge_data["submissions"]["eligible"] = challenge_submissions.filter(
-            retention_eligible_date__lte=now,
-            retention_eligible_date__isnull=False,  # Exclude indefinite retention
-            is_artifact_deleted=False,
-        ).count()
+        challenge_data["submissions"]["deleted"] = (
+            challenge_submissions.filter(is_artifact_deleted=True).count()
+        )
+        challenge_data["submissions"]["eligible"] = (
+            challenge_submissions.filter(
+                retention_eligible_date__lte=now,
+                retention_eligible_date__isnull=False,  # Exclude indefinite retention
+                is_artifact_deleted=False,
+            ).count()
+        )
 
         report_data["challenges"].append(challenge_data)
 
@@ -533,27 +673,54 @@ def convert_report_to_csv(report_data):
 
     writer.writerow([])
     writer.writerow(["CHALLENGES"])
-    writer.writerow([
-        "Challenge ID", "Title", "Host Team", "Host Emails", "Has Consent", "Consent Date", 
-        "Consent By", "Retention Policy", "Admin Override", "Total Submissions", 
-        "Deleted Submissions", "Eligible for Cleanup"
-    ])
+    writer.writerow(
+        [
+            "Challenge ID",
+            "Title",
+            "Host Team",
+            "Host Emails",
+            "Has Consent",
+            "Consent Date",
+            "Consent By",
+            "Retention Policy",
+            "Admin Override",
+            "Total Submissions",
+            "Deleted Submissions",
+            "Eligible for Cleanup",
+        ]
+    )
 
     for challenge in report_data["challenges"]:
-        writer.writerow([
-            challenge["id"],
-            challenge["title"],
-            challenge["host_team"] or "",
-            challenge["host_emails"] or "",
-            "Yes" if challenge["retention_consent"]["has_consent"] else "No",
-            challenge["retention_consent"]["consent_date"] or "",
-            challenge["retention_consent"]["consent_by"] or "",
-            challenge["retention_consent"]["retention_policy"],
-            str(challenge["admin_override"]["log_retention_days_override"]) if challenge["admin_override"]["log_retention_days_override"] else "",
-            challenge["submissions"]["total"],
-            challenge["submissions"]["deleted"],
-            challenge["submissions"]["eligible"],
-        ])
+        writer.writerow(
+            [
+                challenge["id"],
+                challenge["title"],
+                challenge["host_team"] or "",
+                challenge["host_emails"] or "",
+                (
+                    "Yes"
+                    if challenge["retention_consent"]["has_consent"]
+                    else "No"
+                ),
+                challenge["retention_consent"]["consent_date"] or "",
+                challenge["retention_consent"]["consent_by"] or "",
+                challenge["retention_consent"]["retention_policy"],
+                (
+                    str(
+                        challenge["admin_override"][
+                            "log_retention_days_override"
+                        ]
+                    )
+                    if challenge["admin_override"][
+                        "log_retention_days_override"
+                    ]
+                    else ""
+                ),
+                challenge["submissions"]["total"],
+                challenge["submissions"]["deleted"],
+                challenge["submissions"]["eligible"],
+            ]
+        )
 
     return output.getvalue()
 
@@ -601,12 +768,16 @@ def show_challenge_storage_usage(challenge_id):
 
     print_info(f"Total estimated storage: {format_bytes(total_size)}")
     print_info(f"Total submissions: {submissions.count()}")
-    print_success(f"✅ STORAGE ANALYSIS COMPLETED: Analyzed storage usage for challenge '{challenge.title}' (ID: {challenge_id})")
+    print_success(
+        f"✅ STORAGE ANALYSIS COMPLETED: Analyzed storage usage for challenge '{challenge.title}' (ID: {challenge_id})"
+    )
 
     if phase_breakdown:
         print_info("Breakdown by phase:")
         for phase_name, data in phase_breakdown.items():
-            print_info(f"  {phase_name}: {data['submissions']} submissions, {format_bytes(data['size'])}")
+            print_info(
+                f"  {phase_name}: {data['submissions']} submissions, {format_bytes(data['size'])}"
+            )
 
 
 def show_top_storage_usage(top_n):
@@ -623,14 +794,22 @@ def show_top_storage_usage(top_n):
         .order_by("-submission_count")[:top_n]
     )
 
-    print_info(f"{'Rank':<4} {'Challenge ID':<12} {'Submissions':<12} {'Est. Storage':<15} {'Title'}")
+    print_info(
+        f"{'Rank':<4} {'Challenge ID':<12} {'Submissions':<12} {'Est. Storage':<15} {'Title'}"
+    )
     print_info("-" * 80)
 
     for rank, challenge in enumerate(challenges, 1):
-        estimated_storage = challenge.submission_count * 100 * 1024  # 100KB per submission
-        print_info(f"{rank:<4} {challenge.pk:<12} {challenge.submission_count:<12} {format_bytes(estimated_storage):<15} {challenge.title[:40]}")
+        estimated_storage = (
+            challenge.submission_count * 100 * 1024
+        )  # 100KB per submission
+        print_info(
+            f"{rank:<4} {challenge.pk:<12} {challenge.submission_count:<12} {format_bytes(estimated_storage):<15} {challenge.title[:40]}"
+        )
 
-    print_success(f"✅ STORAGE ANALYSIS COMPLETED: Analyzed top {top_n} challenges by storage usage")
+    print_success(
+        f"✅ STORAGE ANALYSIS COMPLETED: Analyzed top {top_n} challenges by storage usage"
+    )
 
 
 def format_bytes(bytes_value):
@@ -663,9 +842,13 @@ def handle_check_health(verbose=False):
         health_status["overall"] = "UNHEALTHY"
 
     # Check 2: Orphaned submissions
-    orphaned_submissions = Submission.objects.filter(challenge_phase__isnull=True).count()
+    orphaned_submissions = Submission.objects.filter(
+        challenge_phase__isnull=True
+    ).count()
     if orphaned_submissions > 0:
-        health_status["warnings"].append(f"Found {orphaned_submissions} submissions without challenge phases")
+        health_status["warnings"].append(
+            f"Found {orphaned_submissions} submissions without challenge phases"
+        )
 
     # Check 3: Submissions with missing retention dates (excluding indefinite retention)
     # Only count submissions that should have retention dates but don't
@@ -677,7 +860,9 @@ def handle_check_health(verbose=False):
         challenge_phase__challenge__retention_policy_consent=True,  # Has consent
     ).count()
     if missing_retention_dates > 0:
-        health_status["warnings"].append(f"Found {missing_retention_dates} submissions without retention dates (should have 30-day retention)")
+        health_status["warnings"].append(
+            f"Found {missing_retention_dates} submissions without retention dates (should have 30-day retention)"
+        )
 
     # Check 4: Recent errors (if verbose)
     if verbose:
@@ -704,7 +889,9 @@ def handle_check_health(verbose=False):
     if health_status["overall"] == "HEALTHY":
         print_success("✅ HEALTH CHECK COMPLETED: Retention system is healthy")
     else:
-        print_error(f"❌ HEALTH CHECK COMPLETED: Retention system has issues - {len(health_status['issues'])} issues found")
+        print_error(
+            f"❌ HEALTH CHECK COMPLETED: Retention system has issues - {len(health_status['issues'])} issues found"
+        )
 
 
 def handle_extend_retention(challenge_id, days, confirm=False):
@@ -722,7 +909,9 @@ def handle_extend_retention(challenge_id, days, confirm=False):
         return
 
     latest_end_date = max(phase.end_date for phase in phases if phase.end_date)
-    current_retention_days = calculate_retention_period_days(latest_end_date, challenge)
+    current_retention_days = calculate_retention_period_days(
+        latest_end_date, challenge
+    )
     new_retention_days = current_retention_days + days
 
     print_info(f"Challenge: {challenge.title}")
@@ -740,7 +929,9 @@ def handle_extend_retention(challenge_id, days, confirm=False):
     result = set_cloudwatch_log_retention(challenge_id, new_retention_days)
 
     if result.get("success"):
-        print_success(f"✅ RETENTION EXTENDED: Successfully extended retention from {current_retention_days} to {result['retention_days']} days for challenge '{challenge.title}' (ID: {challenge_id})")
+        print_success(
+            f"✅ RETENTION EXTENDED: Successfully extended retention from {current_retention_days} to {result['retention_days']} days for challenge '{challenge.title}' (ID: {challenge_id})"
+        )
     else:
         print_error(f"Failed to extend retention: {result.get('error')}")
 
@@ -761,7 +952,9 @@ def handle_emergency_cleanup(challenge_id=None, force=False):
         print_info("Target: ALL challenges")
 
     if not force:
-        confirm_input = input("\nAre you absolutely sure you want to proceed? Type 'EMERGENCY' to confirm: ")
+        confirm_input = input(
+            "\nAre you absolutely sure you want to proceed? Type 'EMERGENCY' to confirm: "
+        )
         if confirm_input != "EMERGENCY":
             print_info("Emergency cleanup cancelled.")
             return
@@ -777,18 +970,26 @@ def handle_emergency_cleanup(challenge_id=None, force=False):
             is_artifact_deleted=False,
         )
 
-    print_info(f"Found {submissions.count()} submissions for emergency cleanup")
+    print_info(
+        f"Found {submissions.count()} submissions for emergency cleanup"
+    )
 
     # Mark all as deleted (this is the emergency bypass)
     deleted_count = submissions.update(is_artifact_deleted=True)
 
     if challenge_id:
-        print_success(f"✅ EMERGENCY CLEANUP COMPLETED: Marked {deleted_count} submissions as deleted for challenge '{challenge.title}' (ID: {challenge_id})")
+        print_success(
+            f"✅ EMERGENCY CLEANUP COMPLETED: Marked {deleted_count} submissions as deleted for challenge '{challenge.title}' (ID: {challenge_id})"
+        )
     else:
-        print_success(f"✅ EMERGENCY CLEANUP COMPLETED: Marked {deleted_count} submissions as deleted across all challenges")
+        print_success(
+            f"✅ EMERGENCY CLEANUP COMPLETED: Marked {deleted_count} submissions as deleted across all challenges"
+        )
 
 
-def handle_find_submissions(challenge_id=None, phase_id=None, status=None, deleted=False, limit=50):
+def handle_find_submissions(
+    challenge_id=None, phase_id=None, status=None, deleted=False, limit=50
+):
     """Find submissions by various criteria"""
     # Build query
     query = Q()
@@ -822,11 +1023,19 @@ def handle_find_submissions(challenge_id=None, phase_id=None, status=None, delet
     for submission in submissions:
         challenge_name = submission.challenge_phase.challenge.title
         phase_name = submission.challenge_phase.name
-        team_name = submission.participant_team.team_name if submission.participant_team else "N/A"
+        team_name = (
+            submission.participant_team.team_name
+            if submission.participant_team
+            else "N/A"
+        )
 
-        print_info(f"ID: {submission.pk:<6} | Challenge: {challenge_name[:30]:<30} | Phase: {phase_name[:15]:<15} | Team: {team_name[:20]:<20} | Status: {submission.status:<10} | Deleted: {submission.is_artifact_deleted}")
+        print_info(
+            f"ID: {submission.pk:<6} | Challenge: {challenge_name[:30]:<30} | Phase: {phase_name[:15]:<15} | Team: {team_name[:20]:<20} | Status: {submission.status:<10} | Deleted: {submission.is_artifact_deleted}"
+        )
 
-    print_success(f"✅ SUBMISSION SEARCH COMPLETED: Found {submissions.count()} submissions matching criteria")
+    print_success(
+        f"✅ SUBMISSION SEARCH COMPLETED: Found {submissions.count()} submissions matching criteria"
+    )
 
 
 def handle_check_consent(challenge_id=None):
@@ -834,11 +1043,21 @@ def handle_check_consent(challenge_id=None):
     if challenge_id:
         try:
             challenge = Challenge.objects.get(id=challenge_id)
-            print_info(f"Consent status for challenge {challenge_id} ({challenge.title}):")
-            print_info(f"  Host consent required: {challenge.retention_policy_consent}")
-            print_info(f"  Host consent given: {challenge.retention_policy_consent}")
-            print_info(f"  Consent date: {challenge.retention_policy_consent_date}")
-            print_success(f"✅ CONSENT CHECK COMPLETED: Analyzed consent status for challenge '{challenge.title}' (ID: {challenge_id})")
+            print_info(
+                f"Consent status for challenge {challenge_id} ({challenge.title}):"
+            )
+            print_info(
+                f"  Host consent required: {challenge.retention_policy_consent}"
+            )
+            print_info(
+                f"  Host consent given: {challenge.retention_policy_consent}"
+            )
+            print_info(
+                f"  Consent date: {challenge.retention_policy_consent_date}"
+            )
+            print_success(
+                f"✅ CONSENT CHECK COMPLETED: Analyzed consent status for challenge '{challenge.title}' (ID: {challenge_id})"
+            )
         except Challenge.DoesNotExist:
             print_error(f"Challenge {challenge_id} does not exist")
     else:
@@ -857,19 +1076,29 @@ def handle_check_consent(challenge_id=None):
                 consent_stats["without_consent"] += 1
                 status = "❌ NO CONSENT (indefinite retention for safety)"
 
-            print_info(f"Challenge {challenge.pk}: {challenge.title[:40]:<40} | {status}")
+            print_info(
+                f"Challenge {challenge.pk}: {challenge.title[:40]:<40} | {status}"
+            )
 
         # Summary
         print_info("\n" + "=" * 50)
         print_info("SUMMARY:")
         print_info(f"Total challenges: {consent_stats['total']}")
-        print_info(f"With consent (30-day retention allowed): {consent_stats['with_consent']}")
-        print_info(f"Without consent (indefinite retention for safety): {consent_stats['without_consent']}")
+        print_info(
+            f"With consent (30-day retention allowed): {consent_stats['with_consent']}"
+        )
+        print_info(
+            f"Without consent (indefinite retention for safety): {consent_stats['without_consent']}"
+        )
 
         if consent_stats["without_consent"] > 0:
-            print_warning(f"⚠️  {consent_stats['without_consent']} challenges need consent for 30-day retention policy!")
+            print_warning(
+                f"⚠️  {consent_stats['without_consent']} challenges need consent for 30-day retention policy!"
+            )
 
-        print_success(f"✅ CONSENT CHECK COMPLETED: Analyzed consent status for {consent_stats['total']} challenges")
+        print_success(
+            f"✅ CONSENT CHECK COMPLETED: Analyzed consent status for {consent_stats['total']} challenges"
+        )
 
 
 def handle_bulk_consent(challenge_ids, require_consent=True):
@@ -902,7 +1131,9 @@ def bulk_check_consent(challenge_ids):
                 status = "❌ NO CONSENT"
                 challenges_needing_consent.append(challenge_id)
 
-            print_info(f"Challenge {challenge_id}: {challenge.title[:50]:<50} | {status}")
+            print_info(
+                f"Challenge {challenge_id}: {challenge.title[:50]:<50} | {status}"
+            )
         except Challenge.DoesNotExist:
             print_info(f"Challenge {challenge_id}: NOT FOUND")
 
@@ -912,14 +1143,20 @@ def bulk_check_consent(challenge_ids):
     print_info(f"Need consent: {len(challenges_needing_consent)}")
 
     if challenges_needing_consent:
-        print_warning(f"Challenges needing consent: {', '.join(map(str, challenges_needing_consent))}")
+        print_warning(
+            f"Challenges needing consent: {', '.join(map(str, challenges_needing_consent))}"
+        )
 
-    print_success(f"✅ BULK CONSENT CHECK COMPLETED: Analyzed consent status for {len(challenge_ids)} challenges")
+    print_success(
+        f"✅ BULK CONSENT CHECK COMPLETED: Analyzed consent status for {len(challenge_ids)} challenges"
+    )
 
 
 def bulk_require_consent(challenge_ids):
     """Bulk require consent (show which challenges need consent)"""
-    print_warning(f"⚠️  BULK CONSENT REQUIREMENT CHECK for {len(challenge_ids)} challenges")
+    print_warning(
+        f"⚠️  BULK CONSENT REQUIREMENT CHECK for {len(challenge_ids)} challenges"
+    )
     print_info("=" * 60)
 
     challenges_needing_consent = []
@@ -929,9 +1166,13 @@ def bulk_require_consent(challenge_ids):
             challenge = Challenge.objects.get(id=challenge_id)
             if not challenge.retention_policy_consent:
                 challenges_needing_consent.append(challenge_id)
-                print_info(f"❌ Challenge {challenge_id}: {challenge.title} - NEEDS CONSENT")
+                print_info(
+                    f"❌ Challenge {challenge_id}: {challenge.title} - NEEDS CONSENT"
+                )
             else:
-                print_info(f"✅ Challenge {challenge_id}: {challenge.title} - HAS CONSENT")
+                print_info(
+                    f"✅ Challenge {challenge_id}: {challenge.title} - HAS CONSENT"
+                )
         except Challenge.DoesNotExist:
             print_info(f"Challenge {challenge_id}: NOT FOUND")
 
@@ -941,12 +1182,18 @@ def bulk_require_consent(challenge_ids):
     print_info(f"Need consent: {len(challenges_needing_consent)}")
 
     if challenges_needing_consent:
-        print_error(f"⚠️  URGENT: {len(challenges_needing_consent)} challenges require consent!")
-        print_info("Use 'docker-compose exec django python manage.py shell < scripts/manage_retention.py record-consent <challenge_id> --username <host_username>' to record consent for each challenge.")
+        print_error(
+            f"⚠️  URGENT: {len(challenges_needing_consent)} challenges require consent!"
+        )
+        print_info(
+            "Use 'docker-compose exec django python manage.py shell < scripts/manage_retention.py record-consent <challenge_id> --username <host_username>' to record consent for each challenge."
+        )
     else:
         print_success("🎉 All challenges have consent!")
 
-    print_success(f"✅ BULK CONSENT REQUIREMENT CHECK COMPLETED: Analyzed {len(challenge_ids)} challenges")
+    print_success(
+        f"✅ BULK CONSENT REQUIREMENT CHECK COMPLETED: Analyzed {len(challenge_ids)} challenges"
+    )
 
 
 def handle_recent_consent_changes():
@@ -964,17 +1211,29 @@ def handle_recent_consent_changes():
 
     if not recent_consents.exists():
         print_warning("No recent consent changes found in the last 30 days.")
-        print_success("✅ RECENT CONSENT CHANGES CHECK COMPLETED: No consent changes found in the last 30 days")
+        print_success(
+            "✅ RECENT CONSENT CHANGES CHECK COMPLETED: No consent changes found in the last 30 days"
+        )
         return
 
-    print_info(f"Found {recent_consents.count()} consent changes in the last 30 days:")
+    print_info(
+        f"Found {recent_consents.count()} consent changes in the last 30 days:"
+    )
     print_info("")
 
     for challenge in recent_consents:
-        consent_date = challenge.retention_policy_consent_date.strftime("%Y-%m-%d %H:%M:%S")
-        consent_by = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else "Unknown"
+        consent_date = challenge.retention_policy_consent_date.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        consent_by = (
+            challenge.retention_policy_consent_by.username
+            if challenge.retention_policy_consent_by
+            else "Unknown"
+        )
 
-        print_info(f"✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}")
+        print_info(
+            f"✅ {consent_date} | Challenge {challenge.pk}: {challenge.title[:50]}"
+        )
         print_info(f"   Consent by: {consent_by}")
         if challenge.retention_policy_notes:
             print_info(f"   Notes: {challenge.retention_policy_notes}")
@@ -988,23 +1247,33 @@ def handle_recent_consent_changes():
     # Show by user
     user_consents = {}
     for challenge in recent_consents:
-        user = challenge.retention_policy_consent_by.username if challenge.retention_policy_consent_by else "Unknown"
+        user = (
+            challenge.retention_policy_consent_by.username
+            if challenge.retention_policy_consent_by
+            else "Unknown"
+        )
         if user not in user_consents:
             user_consents[user] = 0
         user_consents[user] += 1
 
     if user_consents:
         print_info("Consents by user:")
-        for user, count in sorted(user_consents.items(), key=lambda x: x[1], reverse=True):
+        for user, count in sorted(
+            user_consents.items(), key=lambda x: x[1], reverse=True
+        ):
             print_info(f"  {user}: {count} consent(s)")
 
-    print_success(f"✅ RECENT CONSENT CHANGES CHECK COMPLETED: Found {recent_consents.count()} consent changes in the last 30 days")
+    print_success(
+        f"✅ RECENT CONSENT CHANGES CHECK COMPLETED: Found {recent_consents.count()} consent changes in the last 30 days"
+    )
 
 
 def main():
     """Main function to handle command line arguments"""
     if len(sys.argv) < 2:
-        print_error("Usage: docker-compose exec django python scripts/manage_retention.py <action> [options]")
+        print_error(
+            "Usage: docker-compose exec django python scripts/manage_retention.py <action> [options]"
+        )
         print_info("Available actions:")
         print_info("  cleanup [--dry-run]")
         print_info("  update-dates")
@@ -1012,15 +1281,29 @@ def main():
         print_info("  set-log-retention <challenge_id> [--days <days>]")
         print_info("  force-delete <submission_id> [--confirm]")
         print_info("  status [--challenge-id <challenge_id>]")
-        print_info("  bulk-set-log-retention [--challenge-ids <ids>] [--all-active] [--days <days>] [--dry-run]")
-        print_info("  generate-report [--format json|csv] [--output <file>] [--challenge-id <challenge_id>]")
-        print_info("  storage-usage [--challenge-id <challenge_id>] [--top <n>]")
+        print_info(
+            "  bulk-set-log-retention [--challenge-ids <ids>] [--all-active] [--days <days>] [--dry-run]"
+        )
+        print_info(
+            "  generate-report [--format json|csv] [--output <file>] [--challenge-id <challenge_id>]"
+        )
+        print_info(
+            "  storage-usage [--challenge-id <challenge_id>] [--top <n>]"
+        )
         print_info("  check-health [--verbose]")
-        print_info("  extend-retention <challenge_id> --days <days> [--confirm]")
-        print_info("  emergency-cleanup [--challenge-id <challenge_id>] [--force]")
-        print_info("  find-submissions [--challenge-id <challenge_id>] [--phase-id <phase_id>] [--status <status>] [--deleted] [--limit <n>]")
+        print_info(
+            "  extend-retention <challenge_id> --days <days> [--confirm]"
+        )
+        print_info(
+            "  emergency-cleanup [--challenge-id <challenge_id>] [--force]"
+        )
+        print_info(
+            "  find-submissions [--challenge-id <challenge_id>] [--phase-id <phase_id>] [--status <status>] [--deleted] [--limit <n>]"
+        )
         print_info("  check-consent [--challenge-id <challenge_id>]")
-        print_info("  bulk-consent [--challenge-ids <ids>] [--require-consent]")
+        print_info(
+            "  bulk-consent [--challenge-ids <ids>] [--require-consent]"
+        )
         print_info("  recent-consent-changes")
         return
 
@@ -1084,7 +1367,9 @@ def main():
                 if days_index + 1 < len(sys.argv):
                     days = int(sys.argv[days_index + 1])
 
-            handle_bulk_set_log_retention(challenge_ids, all_active, days, dry_run)
+            handle_bulk_set_log_retention(
+                challenge_ids, all_active, days, dry_run
+            )
 
         elif action == "generate-report":
             format_type = "json"
@@ -1185,7 +1470,9 @@ def main():
                 if limit_index + 1 < len(sys.argv):
                     limit = int(sys.argv[limit_index + 1])
 
-            handle_find_submissions(challenge_id, phase_id, status, deleted, limit)
+            handle_find_submissions(
+                challenge_id, phase_id, status, deleted, limit
+            )
 
         elif action == "check-consent":
             challenge_id = None
@@ -1225,4 +1512,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
