@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$rootScope', '$mdDialog'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$rootScope', '$mdDialog', '$filter'];
 
-    function ChallengeListCtrl(utilities, $window, moment, $rootScope, $mdDialog) {
+    function ChallengeListCtrl(utilities, $window, moment, $rootScope, $mdDialog,$filter) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -171,6 +171,37 @@
             vm.filterStartDate = null;
             vm.filterEndDate = null;
         };
+
+        vm.getFilteredCurrentChallenges = function () {
+            let filtered = vm.currentList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+
+        vm.getFilteredUpcomingChallenges = function () {
+            let filtered = vm.upcomingList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+
+        vm.getFilteredPastChallenges = function () {
+            let filtered = vm.pastList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+        
 
         vm.openFilterDialog = function (ev) {
             console.log("Filter dialog opened");

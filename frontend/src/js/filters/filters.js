@@ -7,16 +7,20 @@
 
     angular
         .module('evalai')
-        .filter('ceil', ceil);
+        .filter('ceil', ceil)
+        .filter('format_execution_time', format_execution_time)
+        .filter('customTitleFilter', customTitleFilter)
+        .filter('customDomainFilter', customDomainFilter)
+        .filter('customHostFilter', customHostFilter)
+        .filter('orderByTeam', orderByTeam)
+        .filter('customDateRangeFilter', customDateRangeFilter);
+
 
     function ceil() {
         return function(input) {
             return Math.ceil(input);
         };
     }
-
-    angular.module('evalai')
-        .filter('format_execution_time', format_execution_time);
 
     function format_execution_time() {
         return function (execution_time) {
@@ -35,8 +39,7 @@
         };
     }
 
-    angular.module('evalai')
-    .filter('customTitleFilter', customTitleFilter);
+
 
     function customTitleFilter() {
         return function(challenges, searchText) {
@@ -55,8 +58,6 @@
         };
     }
 
-    angular.module('evalai')
-    .filter('customDomainFilter', customDomainFilter);
 
     function customDomainFilter() {
         return function(challenges, selecteddomain) {
@@ -80,10 +81,8 @@
         };
     }
 
-})();
 
-angular.module('evalai')
-.filter('customHostFilter', customHostFilter);
+
 
 function customHostFilter() {
     return function(challenges, selectedHostTeam) {
@@ -97,8 +96,6 @@ function customHostFilter() {
     };
 }
 
-angular.module('evalai')
-.filter('orderByTeam', orderByTeam);
 
 function orderByTeam() {
     return function(challenges, sortOrder) {
@@ -117,8 +114,7 @@ function orderByTeam() {
     };
 }
 
-angular.module('evalai')
-.filter('customDateRangeFilter', function () {
+function customDateRangeFilter() {
     return function (challenges, startDate, endDate) {
         if (!startDate && !endDate) return challenges;
 
@@ -136,5 +132,5 @@ angular.module('evalai')
             return true;
         });
     };
-
+}
 })();

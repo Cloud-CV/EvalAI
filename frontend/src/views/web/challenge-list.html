@@ -28,17 +28,18 @@
             <ul class="nav nav-underline" ng-init="tab = 1">
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 1" class="nav-link" ng-class="{'active': tab === 1}">
-                        <strong class="text-med-black">Ongoing ({{challengeList.currentList.length}})</strong>
+                        <strong class="text-med-black">Ongoing ({{ challengeList.getFilteredCurrentChallenges().length }})</strong>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 2" class="nav-link" ng-class="{'active': tab === 2}">
-                        <strong class="text-med-black">Upcoming ({{challengeList.upcomingList.length}})</strong>
+                        <strong class="text-med-black"><span>Upcoming ({{ challengeList.getFilteredUpcomingChallenges().length }})</span>
+                        </strong>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 3" class="nav-link" ng-class="{'active': tab === 3}">
-                        <strong class="text-med-black">Past ({{challengeList.pastList.length}})</strong>
+                        <strong class="text-med-black">Past ({{ challengeList.getFilteredPastChallenges().length }})</strong>
                     </a>
                 </li>
             </ul>
@@ -50,7 +51,7 @@
         <div ng-if="challengeList.noneCurrentChallenge">None</div>
         <div class="row">
             <div class="col s12 m3"
-                ng-repeat="challenge in challengeList.currentList | customTitleFilter:challengeList.searchTitle | customDomainFilter:challengeList.selecteddomain | customHostFilter:challengeList.selectedHostTeam | orderByTeam:challengeList.sortByTeam | customDateRangeFilter:challengeList.filterStartDate:challengeList.filterEndDate">
+                ng-repeat="challenge in challengeList.getFilteredCurrentChallenges()">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
@@ -106,7 +107,7 @@
         <div ng-if="challengeList.noneUpcomingChallenge">None</div>
         <div class="row">
             <div class="col s12 m3"
-                ng-repeat="challenge in challengeList.upcomingList | customTitleFilter:challengeList.searchTitle | customDomainFilter:challengeList.selecteddomain | customHostFilter:challengeList.selectedHostTeam | orderByTeam:challengeList.sortByTeam | customDateRangeFilter:challengeList.filterStartDate:challengeList.filterEndDate">
+                ng-repeat="challenge in challengeList.getFilteredUpcomingChallenges()">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
@@ -144,7 +145,7 @@
         <div ng-if="challengeList.nonePastChallenge">None</div>
         <div class="row">
             <div class="col s12 m3"
-                ng-repeat="challenge in challengeList.pastList | customTitleFilter:challengeList.searchTitle | customDomainFilter:challengeList.selecteddomain | customHostFilter:challengeList.selectedHostTeam | orderByTeam:challengeList.sortByTeam | customDateRangeFilter:challengeList.filterStartDate:challengeList.filterEndDate">
+                ng-repeat="challenge in challengeList.getFilteredPastChallenges()">
                 <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                     <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                         <div class="card-image ev-card-image">
