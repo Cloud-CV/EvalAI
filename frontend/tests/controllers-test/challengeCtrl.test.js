@@ -4634,7 +4634,6 @@ describe('Unit tests for challenge controller', function () {
             expect(submissionObject.classList).toEqual(['']);
         });
 
-        
         it('should handle empty success response data', function () {
             var successResponse = { data: {} };
             utilities.sendRequest.and.callFake(function (params) {
