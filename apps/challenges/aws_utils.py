@@ -13,12 +13,12 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
-from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from hosts.utils import is_user_a_host_of_challenge
 
 from evalai.celery import app
-from hosts.utils import is_user_a_host_of_challenge
 
 from .challenge_notification_util import (
     construct_and_send_eks_cluster_creation_mail,

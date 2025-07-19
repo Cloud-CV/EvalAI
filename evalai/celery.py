@@ -11,7 +11,6 @@ if settings.DEBUG:
 else:
     app.conf.task_default_queue = os.environ.get("CELERY_QUEUE_NAME")
 
-app.config_from_object("django.conf:settings")
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 if __name__ == "__main__":

@@ -3252,7 +3252,6 @@ def test_set_cloudwatch_log_retention_requires_consent():
 class TestCloudWatchRetention(
     django.test.TestCase
 ):  # Uses Django TestCase for database operations (Challenge, ChallengePhase models)
-    """Simplified CloudWatch log retention tests"""
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -3821,12 +3820,13 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test successful retention warning notification."""
+        from datetime import datetime, timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
-        from jobs.models import Submission
-        from datetime import timedelta, datetime
         from django.utils import timezone
+        from jobs.models import Submission
 
         # Freeze time to a fixed datetime
         fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
@@ -3882,10 +3882,11 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test when no submissions require warnings."""
+        from datetime import datetime, timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
-        from datetime import timedelta, datetime
         from django.utils import timezone
 
         # Freeze time to a fixed datetime
@@ -3909,12 +3910,13 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test when challenge has inform_hosts=False."""
+        from datetime import datetime, timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
-        from jobs.models import Submission
-        from datetime import timedelta, datetime
         from django.utils import timezone
+        from jobs.models import Submission
 
         # Freeze time to a fixed datetime
         fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
@@ -3957,12 +3959,13 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test when EVALAI_API_SERVER is not set."""
+        from datetime import datetime, timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
-        from jobs.models import Submission
-        from datetime import timedelta, datetime
         from django.utils import timezone
+        from jobs.models import Submission
 
         # Freeze time to a fixed datetime
         fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
@@ -4003,11 +4006,12 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_settings
     ):
         """Test consent change logging functionality."""
+        from datetime import timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
         from django.utils import timezone
-        from datetime import timedelta
 
         # Setup consent change
         self.challenge.retention_policy_consent = True
@@ -4053,12 +4057,13 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test that the task handles exceptions during email sending."""
+        from datetime import datetime, timedelta
+
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
         )
-        from jobs.models import Submission
-        from datetime import timedelta, datetime
         from django.utils import timezone
+        from jobs.models import Submission
 
         # Freeze time to a fixed datetime
         fixed_now = datetime(2025, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
