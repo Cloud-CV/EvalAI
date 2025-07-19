@@ -114,7 +114,7 @@
             result = $filter('customDomainFilter')(result, vm.selecteddomain);
             result = $filter('customHostFilter')(result, vm.selectedHostTeam);
             result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
-            result = $filter('orderBy')(result, vm.sortByTeam);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
             return result;
         };
         vm.getFilteredUpcomingChallenges = function () {
@@ -122,7 +122,7 @@
             result = $filter('customDomainFilter')(result, vm.selecteddomain);
             result = $filter('customHostFilter')(result, vm.selectedHostTeam);
             result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
-            result = $filter('orderBy')(result, vm.sortByTeam);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
             return result;
         };
         vm.getFilteredPastChallenges = function () {
@@ -130,7 +130,7 @@
             result = $filter('customDomainFilter')(result, vm.selecteddomain);
             result = $filter('customHostFilter')(result, vm.selectedHostTeam);
             result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
-            result = $filter('orderBy')(result, vm.sortByTeam);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
             return result;
         };
 
@@ -184,6 +184,8 @@
             vm.filterStartDate = null;
             vm.filterEndDate = null;
         };
+
+        
 
         vm.openFilterDialog = function (ev) {
             console.log("Filter dialog opened");
