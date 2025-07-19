@@ -364,5 +364,217 @@ describe('Unit tests for challenge list controller', function () {
             scrollCallback.call(mockScrollContext);
             expect(utilities.hideButton).toHaveBeenCalled();
         });
+
+        it('should reset all filters to default values', function() {
+            vm.selecteddomain = ['domain1'];
+            vm.searchTitle = ['title'];
+            vm.selectedHostTeam = 'hostTeam';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = '2024-01-01';
+            vm.filterEndDate = '2024-12-31';
+
+            vm.resetFilter();
+
+            expect(vm.selecteddomain).toEqual([]);
+            expect(vm.searchTitle).toEqual([]);
+            expect(vm.selectedHostTeam).toBe('');
+            expect(vm.sortByTeam).toBe('');
+            expect(vm.filterStartDate).toBeNull();
+            expect(vm.filterEndDate).toBeNull();
+        });
+
+        it('should filter current challenges using all filters', function() {
+            vm.currentList = [{id: 1}, {id: 2}];
+            vm.searchTitle = ['title'];
+            vm.selecteddomain = ['domain'];
+            vm.selectedHostTeam = 'hostTeam';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = '2024-01-01';
+            vm.filterEndDate = '2024-12-31';
+
+            // Mock $filter to just return the input array for each filter
+            spyOn(window, 'angular').and.returnValue({module: function(){}});
+            spyOn(window, '$filter').and.callFake(function() {
+                return function(arr) { return arr; };
+            });
+
+            var filtered = vm.getFilteredCurrentChallenges();
+            expect(filtered).toBe(vm.currentList);
+        });
+
+        it('should filter upcoming challenges using all filters', function() {
+            vm.upcomingList = [{id: 3}, {id: 4}];
+            vm.searchTitle = ['title'];
+            vm.selecteddomain = ['domain'];
+            vm.selectedHostTeam = 'hostTeam';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = '2024-01-01';
+            vm.filterEndDate = '2024-12-31';
+
+            spyOn(window, '$filter').and.callFake(function() {
+                return function(arr) { return arr; };
+            });
+
+            var filtered = vm.getFilteredUpcomingChallenges();
+            expect(filtered).toBe(vm.upcomingList);
+        });
+
+        it('should filter past challenges using all filters', function() {
+            vm.pastList = [{id: 5}, {id: 6}];
+            vm.searchTitle = ['title'];
+            vm.selecteddomain = ['domain'];
+            vm.selectedHostTeam = 'hostTeam';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = '2024-01-01';
+            vm.filterEndDate = '2024-12-31';
+
+            spyOn(window, '$filter').and.callFake(function() {
+                return function(arr) { return arr; };
+            });
+
+            var filtered = vm.getFilteredPastChallenges();
+            expect(filtered).toBe(vm.pastList);
+        });
+    });
+
+    describe('Unit tests for filter dialog', function () {
+        var $mdDialog, $controller, $rootScope, $scope, vm;
+
+        beforeEach(inject(function (_$mdDialog_, _$controller_, _$rootScope_) {
+            $mdDialog = _$mdDialog_;
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            $scope = $rootScope.$new();
+            vm = createController();
+        }));
+
+        it('should open filter dialog and update filters on dialog close', function (done) {
+            // Arrange
+            var ev = {};
+            var filters = {
+                selecteddomain: ['domain1'],
+                selectedHostTeam: 'host1',
+                sortByTeam: 'asc',
+                filterStartDate: '2024-01-01',
+                filterEndDate: '2024-12-31'
+            };
+            spyOn($mdDialog, 'show').and.returnValue(Promise.resolve(filters));
+            // Set some initial values
+            vm.selecteddomain = [];
+            vm.selectedHostTeam = '';
+            vm.sortByTeam = '';
+            vm.filterStartDate = null;
+            vm.filterEndDate = null;
+
+            // Act
+            vm.openFilterDialog(ev);
+
+            // Assert
+            setTimeout(function () {
+                expect($mdDialog.show).toHaveBeenCalled();
+                expect(vm.selecteddomain).toEqual(filters.selecteddomain);
+                expect(vm.selectedHostTeam).toEqual(filters.selectedHostTeam);
+                expect(vm.sortByTeam).toEqual(filters.sortByTeam);
+                expect(vm.filterStartDate).toEqual(filters.filterStartDate);
+                expect(vm.filterEndDate).toEqual(filters.filterEndDate);
+                done();
+            }, 0);
+        });
+
+        it('should open filter dialog and do nothing if dialog is cancelled', function (done) {
+            var ev = {};
+            spyOn($mdDialog, 'show').and.returnValue(Promise.reject());
+            // Set some initial values
+            vm.selecteddomain = ['domain1'];
+            vm.selectedHostTeam = 'host1';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = '2024-01-01';
+            vm.filterEndDate = '2024-12-31';
+
+            vm.openFilterDialog(ev);
+
+            setTimeout(function () {
+                // Values should remain unchanged
+                expect(vm.selecteddomain).toEqual(['domain1']);
+                expect(vm.selectedHostTeam).toEqual('host1');
+                expect(vm.sortByTeam).toEqual('asc');
+                expect(vm.filterStartDate).toEqual('2024-01-01');
+                expect(vm.filterEndDate).toEqual('2024-12-31');
+                done();
+            }, 0);
+        });
+
+        it('should initialize FilterDialogController with filterData', function () {
+            var filterData = {
+                selecteddomain: ['domain1'],
+                selectedHostTeam: 'host1',
+                sortByTeam: 'asc',
+                filterStartDate: '2024-01-01',
+                filterEndDate: '2024-12-31',
+                domain_choices: [['All', 'All']],
+                host_team_choices: ['host1']
+            };
+            var ctrlScope = $rootScope.$new();
+            $controller('FilterDialogController', {
+                $scope: ctrlScope,
+                $mdDialog: $mdDialog,
+                filterData: filterData
+            });
+            expect(ctrlScope.selecteddomain).toEqual(filterData.selecteddomain);
+            expect(ctrlScope.selectedHostTeam).toEqual(filterData.selectedHostTeam);
+            expect(ctrlScope.sortByTeam).toEqual(filterData.sortByTeam);
+            expect(ctrlScope.filterStartDate).toEqual(filterData.filterStartDate);
+            expect(ctrlScope.filterEndDate).toEqual(filterData.filterEndDate);
+            expect(ctrlScope.domain_choices).toEqual(filterData.domain_choices);
+            expect(ctrlScope.host_team_choices).toEqual(filterData.host_team_choices);
+        });
+
+        it('should call $mdDialog.hide with correct filters on apply', function () {
+            var filterData = {
+                selecteddomain: ['domain1'],
+                selectedHostTeam: 'host1',
+                sortByTeam: 'asc',
+                filterStartDate: '2024-01-01',
+                filterEndDate: '2024-12-31',
+                domain_choices: [['All', 'All']],
+                host_team_choices: ['host1']
+            };
+            var ctrlScope = $rootScope.$new();
+            var mockMdDialog = { hide: jasmine.createSpy('hide') };
+            $controller('FilterDialogController', {
+                $scope: ctrlScope,
+                $mdDialog: mockMdDialog,
+                filterData: filterData
+            });
+            ctrlScope.apply();
+            expect(mockMdDialog.hide).toHaveBeenCalledWith({
+                selecteddomain: filterData.selecteddomain,
+                selectedHostTeam: filterData.selectedHostTeam,
+                sortByTeam: filterData.sortByTeam,
+                filterStartDate: filterData.filterStartDate,
+                filterEndDate: filterData.filterEndDate
+            });
+        });
+
+        it('should call $mdDialog.cancel on cancel', function () {
+            var filterData = {
+                selecteddomain: [],
+                selectedHostTeam: '',
+                sortByTeam: '',
+                filterStartDate: null,
+                filterEndDate: null,
+                domain_choices: [],
+                host_team_choices: []
+            };
+            var ctrlScope = $rootScope.$new();
+            var mockMdDialog = { cancel: jasmine.createSpy('cancel') };
+            $controller('FilterDialogController', {
+                $scope: ctrlScope,
+                $mdDialog: mockMdDialog,
+                filterData: filterData
+            });
+            ctrlScope.cancel();
+            expect(mockMdDialog.cancel).toHaveBeenCalled();
+        });
     });
 });
