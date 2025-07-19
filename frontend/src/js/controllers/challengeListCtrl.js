@@ -236,6 +236,8 @@
                 vm.sortByTeam = filters.sortByTeam;
                 vm.filterStartDate = filters.filterStartDate;
                 vm.filterEndDate = filters.filterEndDate;
+            }).catch(function () {
+                // Do nothing if dialog is cancelled
             });
         };
 

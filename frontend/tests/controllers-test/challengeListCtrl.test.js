@@ -3,12 +3,13 @@
 describe('Unit tests for challenge list controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    var $controller, createController, $rootScope, $scope, utilities, vm;
+    var $controller, createController, $rootScope, $scope, utilities, vm, $filter;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$filter_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
+        $filter = _$filter_;
 
         $scope = $rootScope.$new();
         createController = function () {
@@ -393,8 +394,7 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterEndDate = '2024-12-31';
 
             // Mock $filter to just return the input array for each filter
-            spyOn(window, 'angular').and.returnValue({module: function(){}});
-            spyOn(window, '$filter').and.callFake(function() {
+            spyOn($filter).and.callFake(function() {
                 return function(arr) { return arr; };
             });
 
@@ -411,7 +411,7 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterStartDate = '2024-01-01';
             vm.filterEndDate = '2024-12-31';
 
-            spyOn(window, '$filter').and.callFake(function() {
+            spyOn($filter).and.callFake(function() {
                 return function(arr) { return arr; };
             });
 
@@ -428,7 +428,7 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterStartDate = '2024-01-01';
             vm.filterEndDate = '2024-12-31';
 
-            spyOn(window, '$filter').and.callFake(function() {
+            spyOn($filter).and.callFake(function() {
                 return function(arr) { return arr; };
             });
 
