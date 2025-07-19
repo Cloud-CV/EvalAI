@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:16.20.2-bullseye AS base
+FROM node:14.21.3-bullseye AS base
 WORKDIR /code
 
 # Add dependencies
