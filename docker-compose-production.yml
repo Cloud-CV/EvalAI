@@ -37,6 +37,23 @@ services:
         awslogs-group: celery_production
         awslogs-create-group: "true"
 
+  celerybeat:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-celery:${COMMIT_ID}
+    env_file:
+      - docker/prod/docker_production.env
+    build:
+      context: ./
+      dockerfile: docker/prod/celery/Dockerfile
+    command: ["celery", "-A", "evalai", "beat", "-l", "INFO", "-s", "/tmp/celerybeat-schedule"]
+    depends_on:
+      - django
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: celerybeat_production
+        awslogs-create-group: "true"
+
   worker_py3_7:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.7:${COMMIT_ID}
     build:

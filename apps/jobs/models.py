@@ -143,6 +143,37 @@ class Submission(TimeStampedModel):
     submission_metadata = JSONField(blank=True, null=True)
     is_verified_by_host = models.BooleanField(default=False)
 
+    # Retention policy fields
+    retention_eligible_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date when submission artifacts become eligible for deletion",
+        db_index=True,
+    )
+    is_artifact_deleted = models.BooleanField(
+        default=False,
+        help_text="Flag indicating whether submission artifacts have been deleted",
+        db_index=True,
+    )
+    artifact_deletion_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when submission artifacts were deleted",
+    )
+
+    # Submission type and retention policy tracking
+    retention_policy_applied = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Description of retention policy applied to this submission",
+    )
+    retention_override_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason for any retention policy override applied to this submission",
+    )
+
     def __str__(self):
         return "{}".format(self.id)
 

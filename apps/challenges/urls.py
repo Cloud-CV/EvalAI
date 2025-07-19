@@ -201,6 +201,22 @@ urlpatterns = [
         views.manage_worker,
         name="manage_worker",
     ),
+    # Retention policy consent endpoints
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/retention-consent/$",
+        views.provide_retention_consent,
+        name="provide_retention_consent",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/retention-consent-status/$",
+        views.get_retention_consent_status,
+        name="get_retention_consent_status",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/update-retention-consent/$",
+        views.update_retention_consent,
+        name="update_retention_consent",
+    ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/manage_ec2_instance/(?P<action>[\w-]+)/$",
         views.manage_ec2_instance,
