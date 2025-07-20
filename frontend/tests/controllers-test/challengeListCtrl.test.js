@@ -374,61 +374,51 @@ describe('Unit tests for challenge list controller', function () {
         }));
 
         beforeEach(function () {
-            // Mock the custom filters
-            spyOn($filter, 'customTitleFilter').and.callFake(function () {
-                return function (challenges, searchText) {
-                    if (!searchText || searchText.length === 0) return challenges;
-                    return challenges.filter(function (challenge) {
-                        return challenge.title.toLowerCase().includes(searchText.toLowerCase());
-                    });
-                };
+            // Mock the custom filters by creating spy functions that return filter functions
+            spyOn($filter, 'customTitleFilter').and.returnValue(function(challenges, searchText) {
+                if (!searchText || searchText.length === 0) return challenges;
+                return challenges.filter(function(challenge) {
+                    return challenge.title && challenge.title.toLowerCase().includes(searchText.toLowerCase());
+                });
             });
 
-            spyOn($filter, 'customDomainFilter').and.callFake(function () {
-                return function (challenges, selecteddomain) {
-                    if (!selecteddomain || selecteddomain.length === 0) return challenges;
-                    return challenges.filter(function (challenge) {
-                        return challenge.domain_name === selecteddomain;
-                    });
-                };
+            spyOn($filter, 'customDomainFilter').and.returnValue(function(challenges, selecteddomain) {
+                if (!selecteddomain || selecteddomain.length === 0) return challenges;
+                return challenges.filter(function(challenge) {
+                    return challenge.domain_name === selecteddomain;
+                });
             });
 
-            spyOn($filter, 'customHostFilter').and.callFake(function () {
-                return function (challenges, selectedHostTeam) {
-                    if (!selectedHostTeam || selectedHostTeam === '') return challenges;
-                    return challenges.filter(function (challenge) {
-                        return challenge.creator && challenge.creator.team_name === selectedHostTeam;
-                    });
-                };
+            spyOn($filter, 'customHostFilter').and.returnValue(function(challenges, selectedHostTeam) {
+                if (!selectedHostTeam || selectedHostTeam === '') return challenges;
+                return challenges.filter(function(challenge) {
+                    return challenge.creator && challenge.creator.team_name === selectedHostTeam;
+                });
             });
 
-            spyOn($filter, 'customDateRangeFilter').and.callFake(function () {
-                return function (challenges, startDate, endDate) {
-                    if (!startDate && !endDate) return challenges;
-                    return challenges.filter(function (challenge) {
-                        const challengeStartDate = new Date(challenge.start_date);
-                        if (startDate && challengeStartDate < new Date(startDate)) return false;
-                        if (endDate) {
-                            const endOfDay = new Date(endDate);
-                            endOfDay.setHours(23, 59, 59, 999);
-                            if (challengeStartDate > endOfDay) return false;
-                        }
-                        return true;
-                    });
-                };
+            spyOn($filter, 'customDateRangeFilter').and.returnValue(function(challenges, startDate, endDate) {
+                if (!startDate && !endDate) return challenges;
+                return challenges.filter(function(challenge) {
+                    const challengeStartDate = new Date(challenge.start_date);
+                    if (startDate && challengeStartDate < new Date(startDate)) return false;
+                    if (endDate) {
+                        const endOfDay = new Date(endDate);
+                        endOfDay.setHours(23, 59, 59, 999);
+                        if (challengeStartDate > endOfDay) return false;
+                    }
+                    return true;
+                });
             });
 
-            spyOn($filter, 'orderByTeam').and.callFake(function () {
-                return function (challenges, sortOrder) {
-                    if (!sortOrder || sortOrder === '') return challenges;
-                    return challenges.slice().sort(function (a, b) {
-                        const teamA = (a.creator && a.creator.team_name || '').toLowerCase();
-                        const teamB = (b.creator && b.creator.team_name || '').toLowerCase();
-                        return sortOrder === 'asc'
-                            ? teamA.localeCompare(teamB)
-                            : teamB.localeCompare(teamA);
-                    });
-                };
+            spyOn($filter, 'orderByTeam').and.returnValue(function(challenges, sortOrder) {
+                if (!sortOrder || sortOrder === '') return challenges;
+                return challenges.slice().sort(function(a, b) {
+                    const teamA = (a.creator && a.creator.team_name || '').toLowerCase();
+                    const teamB = (b.creator && b.creator.team_name || '').toLowerCase();
+                    return sortOrder === 'asc'
+                        ? teamA.localeCompare(teamB)
+                        : teamB.localeCompare(teamA);
+                });
             });
         });
 
@@ -628,23 +618,6 @@ describe('Unit tests for challenge list controller', function () {
                     start_date: '2023-07-01T00:00:00Z'
                 }
             ];
-
-            // Mock filter responses
-            $filter('customTitleFilter').and.returnValue(function (challenges, searchText) {
-                return challenges; // Return all challenges
-            });
-            $filter('customDomainFilter').and.returnValue(function (challenges, selecteddomain) {
-                return challenges; // Return all challenges
-            });
-            $filter('customHostFilter').and.returnValue(function (challenges, selectedHostTeam) {
-                return challenges; // Return all challenges
-            });
-            $filter('customDateRangeFilter').and.returnValue(function (challenges, startDate, endDate) {
-                return challenges; // Return all challenges
-            });
-            $filter('orderByTeam').and.returnValue(function (challenges, sortOrder) {
-                return challenges; // Return all challenges
-            });
 
             // Set filter values
             vm.searchTitle = ['Test'];
