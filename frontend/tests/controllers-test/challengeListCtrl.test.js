@@ -481,4 +481,173 @@ describe('Unit tests for challenge list controller', function () {
             });
         });
     });
+
+    describe('openFilterDialog', function () {
+        var $mdDialog, $rootScope;
+    
+        beforeEach(inject(function (_$mdDialog_, _$rootScope_) {
+            $mdDialog = _$mdDialog_;
+            $rootScope = _$rootScope_;
+            vm = createController();
+        }));
+    
+        it('should call $mdDialog.show with correct parameters', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                return { then: function () {} };
+            });
+            spyOn(console, 'log');
+    
+            // Set some filter values
+            vm.selecteddomain = ['Computer Vision'];
+            vm.selectedHostTeam = 'Team A';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = new Date('2023-01-01');
+            vm.filterEndDate = new Date('2023-12-31');
+            vm.domain_choices = [['All', 'All'], ['Computer Vision', 'Computer Vision']];
+            vm.host_team_choices = ['Team A', 'Team B'];
+    
+            vm.openFilterDialog('fakeEvent');
+    
+            expect(console.log).toHaveBeenCalledWith('Filter dialog opened');
+            expect($mdDialog.show).toHaveBeenCalled();
+            var args = $mdDialog.show.calls.mostRecent().args[0];
+            expect(args.controllerAs).toBe('dialog');
+            expect(args.templateUrl).toBe('src/views/web/challenge/challenge-filter-dialog.html');
+            expect(args.locals.filterData.selecteddomain).toEqual(['Computer Vision']);
+            expect(args.locals.filterData.selectedHostTeam).toBe('Team A');
+            expect(args.locals.filterData.sortByTeam).toBe('asc');
+            expect(args.locals.filterData.filterStartDate).toEqual(new Date('2023-01-01'));
+            expect(args.locals.filterData.filterEndDate).toEqual(new Date('2023-12-31'));
+            expect(args.locals.filterData.domain_choices).toEqual([['All', 'All'], ['Computer Vision', 'Computer Vision']]);
+            expect(args.locals.filterData.host_team_choices).toEqual(['Team A', 'Team B']);
+        });
+    
+        it('should update filter values when dialog resolves', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                return {
+                    then: function (cb) {
+                        cb({
+                            selecteddomain: ['NLP'],
+                            selectedHostTeam: 'Team B',
+                            sortByTeam: 'desc',
+                            filterStartDate: new Date('2024-01-01'),
+                            filterEndDate: new Date('2024-12-31')
+                        });
+                    }
+                };
+            });
+    
+            // Set initial values
+            vm.selecteddomain = ['Computer Vision'];
+            vm.selectedHostTeam = 'Team A';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = new Date('2023-01-01');
+            vm.filterEndDate = new Date('2023-12-31');
+    
+            vm.openFilterDialog('fakeEvent');
+    
+            expect(vm.selecteddomain).toEqual(['NLP']);
+            expect(vm.selectedHostTeam).toBe('Team B');
+            expect(vm.sortByTeam).toBe('desc');
+            expect(vm.filterStartDate).toEqual(new Date('2024-01-01'));
+            expect(vm.filterEndDate).toEqual(new Date('2024-12-31'));
+        });
+    
+        it('should not throw if dialog is cancelled', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                return { then: function () { /* do nothing, simulates cancel */ } };
+            });
+    
+            // Set initial values
+            vm.selecteddomain = ['Computer Vision'];
+            vm.selectedHostTeam = 'Team A';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = new Date('2023-01-01');
+            vm.filterEndDate = new Date('2023-12-31');
+    
+            expect(function () {
+                vm.openFilterDialog('fakeEvent');
+            }).not.toThrow();
+    
+            // Values should remain unchanged
+            expect(vm.selecteddomain).toEqual(['Computer Vision']);
+            expect(vm.selectedHostTeam).toBe('Team A');
+            expect(vm.sortByTeam).toBe('asc');
+            expect(vm.filterStartDate).toEqual(new Date('2023-01-01'));
+            expect(vm.filterEndDate).toEqual(new Date('2023-12-31'));
+        });
+    });
+
+    describe('FilterDialogController', function () {
+        var $scope, $mdDialog, filterData, $controller;
+    
+        beforeEach(inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
+            $controller = _$controller_;
+            $scope = _$rootScope_.$new();
+            $mdDialog = _$mdDialog_;
+        }));
+    
+        beforeEach(function () {
+            filterData = {
+                selecteddomain: ['Computer Vision'],
+                selectedHostTeam: 'Team A',
+                sortByTeam: 'asc',
+                filterStartDate: new Date('2023-01-01'),
+                filterEndDate: new Date('2023-12-31'),
+                domain_choices: [['All', 'All'], ['Computer Vision', 'Computer Vision']],
+                host_team_choices: ['Team A', 'Team B']
+            };
+            spyOn($mdDialog, 'hide');
+            spyOn($mdDialog, 'cancel');
+        });
+    
+        it('should initialize $scope variables from filterData', function () {
+            $controller('FilterDialogController', {
+                $scope: $scope,
+                $mdDialog: $mdDialog,
+                filterData: filterData
+            });
+            expect($scope.selecteddomain).toEqual(['Computer Vision']);
+            expect($scope.selectedHostTeam).toBe('Team A');
+            expect($scope.sortByTeam).toBe('asc');
+            expect($scope.filterStartDate).toEqual(new Date('2023-01-01'));
+            expect($scope.filterEndDate).toEqual(new Date('2023-12-31'));
+            expect($scope.domain_choices).toEqual([['All', 'All'], ['Computer Vision', 'Computer Vision']]);
+            expect($scope.host_team_choices).toEqual(['Team A', 'Team B']);
+        });
+    
+        it('should call $mdDialog.hide with correct data on apply()', function () {
+            $controller('FilterDialogController', {
+                $scope: $scope,
+                $mdDialog: $mdDialog,
+                filterData: filterData
+            });
+            // Change some values
+            $scope.selecteddomain = ['NLP'];
+            $scope.selectedHostTeam = 'Team B';
+            $scope.sortByTeam = 'desc';
+            $scope.filterStartDate = new Date('2024-01-01');
+            $scope.filterEndDate = new Date('2024-12-31');
+    
+            $scope.apply();
+    
+            expect($mdDialog.hide).toHaveBeenCalledWith({
+                selecteddomain: ['NLP'],
+                selectedHostTeam: 'Team B',
+                sortByTeam: 'desc',
+                filterStartDate: new Date('2024-01-01'),
+                filterEndDate: new Date('2024-12-31')
+            });
+        });
+    
+        it('should call $mdDialog.cancel on cancel()', function () {
+            $controller('FilterDialogController', {
+                $scope: $scope,
+                $mdDialog: $mdDialog,
+                filterData: filterData
+            });
+            $scope.cancel();
+            expect($mdDialog.cancel).toHaveBeenCalled();
+        });
+    });
 });
