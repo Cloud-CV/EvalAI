@@ -581,13 +581,18 @@ describe('Unit tests for challenge list controller', function () {
     describe('FilterDialogController', function () {
         var $scope, $mdDialog, filterData, $controller;
     
+        beforeEach(angular.mock.module('evalai'));
+    
         beforeEach(inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
             $controller = _$controller_;
             $scope = _$rootScope_.$new();
             $mdDialog = _$mdDialog_;
+            spyOn($mdDialog, 'hide');
+            spyOn($mdDialog, 'cancel');
         }));
     
-        beforeEach(function () {
+        // This test already covers the initialization lines by ensuring they are assigned
+        it('should initialize $scope variables from complete filterData', function () {
             filterData = {
                 selecteddomain: ['Computer Vision'],
                 selectedHostTeam: 'Team A',
@@ -597,16 +602,14 @@ describe('Unit tests for challenge list controller', function () {
                 domain_choices: [['All', 'All'], ['Computer Vision', 'Computer Vision']],
                 host_team_choices: ['Team A', 'Team B']
             };
-            spyOn($mdDialog, 'hide');
-            spyOn($mdDialog, 'cancel');
-        });
     
-        it('should initialize $scope variables from filterData', function () {
             $controller('FilterDialogController', {
                 $scope: $scope,
                 $mdDialog: $mdDialog,
                 filterData: filterData
             });
+    
+            // Assertions to confirm all properties are correctly assigned
             expect($scope.selecteddomain).toEqual(['Computer Vision']);
             expect($scope.selectedHostTeam).toBe('Team A');
             expect($scope.sortByTeam).toBe('asc');
@@ -616,13 +619,48 @@ describe('Unit tests for challenge list controller', function () {
             expect($scope.host_team_choices).toEqual(['Team A', 'Team B']);
         });
     
-        it('should call $mdDialog.hide with correct data on apply()', function () {
+        // --- New test case for coverage of initialization lines with potentially missing data ---
+        // This case ensures that even if some filterData properties are undefined,
+        // the assignment lines are still executed.
+        it('should initialize $scope variables when some filterData properties are undefined', function () {
+            filterData = {
+                selecteddomain: undefined,
+                selectedHostTeam: null, // Test with null as well
+                sortByTeam: 'asc',
+                // Missing filterStartDate and filterEndDate
+                domain_choices: [['All', 'All']],
+                host_team_choices: []
+            };
+    
             $controller('FilterDialogController', {
                 $scope: $scope,
                 $mdDialog: $mdDialog,
                 filterData: filterData
             });
-            // Change some values
+    
+            expect($scope.selecteddomain).toBeUndefined();
+            expect($scope.selectedHostTeam).toBeNull();
+            expect($scope.sortByTeam).toBe('asc');
+            expect($scope.filterStartDate).toBeUndefined(); // Will be undefined if not provided
+            expect($scope.filterEndDate).toBeUndefined();   // Will be undefined if not provided
+            expect($scope.domain_choices).toEqual([['All', 'All']]);
+            expect($scope.host_team_choices).toEqual([]);
+        });
+        // --- End of new test case ---
+    
+        it('should call $mdDialog.hide with correct data on apply()', function () {
+            filterData = {
+                selecteddomain: ['Computer Vision'], selectedHostTeam: 'Team A', sortByTeam: 'asc',
+                filterStartDate: new Date('2023-01-01'), filterEndDate: new Date('2023-12-31'),
+                domain_choices: [['All', 'All']], host_team_choices: ['Team A']
+            };
+            $controller('FilterDialogController', {
+                $scope: $scope,
+                $mdDialog: $mdDialog,
+                filterData: filterData
+            });
+    
+            // Change some values to ensure hide receives the *updated* scope values
             $scope.selecteddomain = ['NLP'];
             $scope.selectedHostTeam = 'Team B';
             $scope.sortByTeam = 'desc';
@@ -641,6 +679,7 @@ describe('Unit tests for challenge list controller', function () {
         });
     
         it('should call $mdDialog.cancel on cancel()', function () {
+            filterData = { /* minimal data needed for controller instantiation */ };
             $controller('FilterDialogController', {
                 $scope: $scope,
                 $mdDialog: $mdDialog,
@@ -650,5 +689,4 @@ describe('Unit tests for challenge list controller', function () {
             expect($mdDialog.cancel).toHaveBeenCalled();
         });
     });
-    
 });
