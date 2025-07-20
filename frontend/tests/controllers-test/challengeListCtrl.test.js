@@ -581,8 +581,6 @@ describe('Unit tests for challenge list controller', function () {
     describe('FilterDialogController', function () {
         var $scope, $mdDialog, filterData, $controller;
     
-        beforeEach(angular.mock.module('evalai'));
-    
         beforeEach(inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
             $controller = _$controller_;
             $scope = _$rootScope_.$new();
