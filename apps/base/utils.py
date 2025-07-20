@@ -84,7 +84,8 @@ def get_model_object(model_name):
 
 def encode_data(data):
     """
-    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    Turn `data` into a hash and an encoded string,
+    suitable for use with `decode_data`.
     """
     encoded = []
     for i in data:
@@ -114,7 +115,8 @@ def send_email(
         sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
         recipient {string} -- Recipient email address
         template_id {string} -- Sendgrid template id
-        template_data {dict} -- Dictionary to substitute values in subject and email body
+        template_data {dict} --
+        Dictionary to substitute values in subject and email body
     """
     try:
         sg = sendgrid.SendGridAPIClient(
@@ -132,7 +134,8 @@ def send_email(
         sg.client.mail.send.post(request_body=mail.get())
     except Exception:
         logger.warning(
-            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+            "Cannot make sendgrid call. "
+            "Please check if SENDGRID_API_KEY is present."
         )
     return
 
@@ -150,7 +153,8 @@ def get_boto3_client(resource, aws_keys):
     """
     Returns the boto3 client for a resource in AWS
     Arguments:
-        resource {str} -- Name of the resource for which client is to be created
+        resource {str} --
+        Name of the resource for which client is to be created
         aws_keys {dict} -- AWS keys which are to be used
     Returns:
         Boto3 client object for the resource
@@ -250,8 +254,10 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     Send slack notification to any workspace
     Keyword Arguments:
-        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
-        message {str} -- JSON/Text message to be sent to slack (default: {""})
+        webhook {string} --
+        slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
+        message {str} --
+        JSON/Text message to be sent to slack (default: {""})
     """
     try:
         data = {
@@ -267,7 +273,8 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         )
     except Exception as e:
         logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(
+            "Exception raised while sending slack notification."
+            " \n Exception message: {}".format(
                 e
             )
         )
