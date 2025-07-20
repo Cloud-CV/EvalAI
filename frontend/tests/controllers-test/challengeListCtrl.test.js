@@ -828,5 +828,4 @@ describe('Unit tests for challenge list controller', function () {
             expect(dialogCall.locals.filterData.host_team_choices).toEqual(['Team A', 'Team B', 'Team C']);
         });
     });
-
 });
