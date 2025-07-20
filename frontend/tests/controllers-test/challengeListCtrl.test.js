@@ -650,4 +650,5 @@ describe('Unit tests for challenge list controller', function () {
             expect($mdDialog.cancel).toHaveBeenCalled();
         });
     });
+    
 });
