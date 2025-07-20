@@ -394,9 +394,7 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterEndDate = '2024-12-31';
 
             // Mock $filter to just return the input array for each filter
-            spyOn($filter).and.callFake(function() {
-                return function(arr) { return arr; };
-            });
+            spyOn($filter).and.returnValue(function(arr) { return arr; });
 
             var filtered = vm.getFilteredCurrentChallenges();
             expect(filtered).toBe(vm.currentList);
@@ -411,9 +409,7 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterStartDate = '2024-01-01';
             vm.filterEndDate = '2024-12-31';
 
-            spyOn($filter).and.callFake(function() {
-                return function(arr) { return arr; };
-            });
+            spyOn($filter).and.returnValue(function(arr) { return arr; });
 
             var filtered = vm.getFilteredUpcomingChallenges();
             expect(filtered).toBe(vm.upcomingList);
@@ -428,9 +424,8 @@ describe('Unit tests for challenge list controller', function () {
             vm.filterStartDate = '2024-01-01';
             vm.filterEndDate = '2024-12-31';
 
-            spyOn($filter).and.callFake(function() {
-                return function(arr) { return arr; };
-            });
+           
+            spyOn($filter).and.returnValue(function(arr) { return arr; });
 
             var filtered = vm.getFilteredPastChallenges();
             expect(filtered).toBe(vm.pastList);
