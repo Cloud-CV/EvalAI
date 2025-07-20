@@ -5,7 +5,7 @@ describe('Unit tests for challenge list controller', function () {
 
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
