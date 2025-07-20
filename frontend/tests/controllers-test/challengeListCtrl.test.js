@@ -3,46 +3,12 @@
 describe('Unit tests for challenge list controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    beforeEach(module(function ($provide) {
-        $provide.filter('customTitleFilter', function () {
-            return function (challenges, searchText) {
-                return challenges;
-            };
-        });
-
-        $provide.filter('customDomainFilter', function () {
-            return function (challenges, selecteddomain) {
-                return challenges;
-            };
-        });
-
-        $provide.filter('customHostFilter', function () {
-            return function (challenges, selectedHostTeam) {
-                return challenges;
-            };
-        });
-
-        $provide.filter('customDateRangeFilter', function () {
-            return function (challenges, startDate, endDate) {
-                return challenges;
-            };
-        });
-
-        $provide.filter('orderByTeam', function () {
-            return function (challenges, sortOrder) {
-                return challenges;
-            };
-        });
-    }));
-    
-
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$filter_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
-        $filter = _$filter_;
 
         $scope = $rootScope.$new();
         createController = function () {
@@ -398,186 +364,145 @@ describe('Unit tests for challenge list controller', function () {
             scrollCallback.call(mockScrollContext);
             expect(utilities.hideButton).toHaveBeenCalled();
         });
-    }); 
-    
-    describe('Filter functions', function () {
 
-        it('should reset all filter values when resetFilter is called', function () {
-            vm = createController();
-
-            // Set some filter values
-            vm.selecteddomain = ['Computer Vision'];
-            vm.searchTitle = ['test'];
-            vm.selectedHostTeam = 'Test Team';
-            vm.sortByTeam = 'asc';
-            vm.filterStartDate = new Date('2023-01-01');
-            vm.filterEndDate = new Date('2023-12-31');
-
-            // Call resetFilter
-            vm.resetFilter();
-
-            // Verify all values are reset
-            expect(vm.selecteddomain).toEqual([]);
-            expect(vm.searchTitle).toEqual([]);
-            expect(vm.selectedHostTeam).toEqual('');
-            expect(vm.sortByTeam).toEqual('');
-            expect(vm.filterStartDate).toBeNull();
-            expect(vm.filterEndDate).toBeNull();
+        describe('Filter functions', function () {
+            beforeEach(function () {
+                vm = createController();
+            });
+        
+            it('should reset all filter values when resetFilter is called', function () {
+                // Set some filter values
+                vm.selecteddomain = ['Computer Vision'];
+                vm.searchTitle = ['test'];
+                vm.selectedHostTeam = 'Test Team';
+                vm.sortByTeam = 'asc';
+                vm.filterStartDate = new Date('2023-01-01');
+                vm.filterEndDate = new Date('2023-12-31');
+        
+                // Call resetFilter
+                vm.resetFilter();
+        
+                // Verify all values are reset
+                expect(vm.selecteddomain).toEqual([]);
+                expect(vm.searchTitle).toEqual([]);
+                expect(vm.selectedHostTeam).toEqual('');
+                expect(vm.sortByTeam).toEqual('');
+                expect(vm.filterStartDate).toBeNull();
+                expect(vm.filterEndDate).toBeNull();
+            });
+        
+            it('should filter current challenges', function () {
+                vm.currentList = [
+                    {
+                        id: 1,
+                        title: 'Test Challenge 1',
+                        domain_name: 'Computer Vision',
+                        creator: { team_name: 'Team A' },
+                        start_date: '2023-06-01T00:00:00Z'
+                    },
+                    {
+                        id: 2,
+                        title: 'Test Challenge 2',
+                        domain_name: 'NLP',
+                        creator: { team_name: 'Team B' },
+                        start_date: '2023-07-01T00:00:00Z'
+                    }
+                ];
+                vm.searchTitle = 'Test Challenge 1';
+                vm.selecteddomain = 'Computer Vision';
+                vm.selectedHostTeam = 'Team A';
+                vm.filterStartDate = '2023-01-01';
+                vm.filterEndDate = '2023-12-31';
+                vm.sortByTeam = 'asc';
+        
+                var result = vm.getFilteredCurrentChallenges();
+                expect(Array.isArray(result)).toBe(true);
+                // Should only return the first challenge
+                expect(result.length).toBe(1);
+                expect(result[0].title).toBe('Test Challenge 1');
+            });
+        
+            it('should filter upcoming challenges', function () {
+                vm.upcomingList = [
+                    {
+                        id: 3,
+                        title: 'Upcoming Challenge 1',
+                        domain_name: 'Computer Vision',
+                        creator: { team_name: 'Team C' },
+                        start_date: '2024-01-01T00:00:00Z'
+                    },
+                    {
+                        id: 4,
+                        title: 'Upcoming Challenge 2',
+                        domain_name: 'NLP',
+                        creator: { team_name: 'Team D' },
+                        start_date: '2024-02-01T00:00:00Z'
+                    }
+                ];
+                vm.searchTitle = 'Upcoming Challenge 2';
+                vm.selecteddomain = 'NLP';
+                vm.selectedHostTeam = 'Team D';
+                vm.filterStartDate = '2024-01-01';
+                vm.filterEndDate = '2024-12-31';
+                vm.sortByTeam = 'asc';
+        
+                var result = vm.getFilteredUpcomingChallenges();
+                expect(Array.isArray(result)).toBe(true);
+                expect(result.length).toBe(1);
+                expect(result[0].title).toBe('Upcoming Challenge 2');
+            });
+        
+            it('should filter past challenges', function () {
+                vm.pastList = [
+                    {
+                        id: 5,
+                        title: 'Past Challenge 1',
+                        domain_name: 'Computer Vision',
+                        creator: { team_name: 'Team E' },
+                        start_date: '2022-01-01T00:00:00Z'
+                    },
+                    {
+                        id: 6,
+                        title: 'Past Challenge 2',
+                        domain_name: 'NLP',
+                        creator: { team_name: 'Team F' },
+                        start_date: '2022-02-01T00:00:00Z'
+                    }
+                ];
+                vm.searchTitle = 'Past Challenge 2';
+                vm.selecteddomain = 'NLP';
+                vm.selectedHostTeam = 'Team F';
+                vm.filterStartDate = '2022-01-01';
+                vm.filterEndDate = '2022-12-31';
+                vm.sortByTeam = 'asc';
+        
+                var result = vm.getFilteredPastChallenges();
+                expect(Array.isArray(result)).toBe(true);
+                expect(result.length).toBe(1);
+                expect(result[0].title).toBe('Past Challenge 2');
+            });
+        
+            it('should handle empty filter values gracefully', function () {
+                vm.currentList = [
+                    {
+                        id: 1,
+                        title: 'Test Challenge',
+                        domain_name: 'Computer Vision',
+                        creator: { team_name: 'Team A' },
+                        start_date: '2023-06-01T00:00:00Z'
+                    }
+                ];
+                vm.searchTitle = '';
+                vm.selecteddomain = '';
+                vm.selectedHostTeam = '';
+                vm.filterStartDate = null;
+                vm.filterEndDate = null;
+                vm.sortByTeam = '';
+        
+                var result = vm.getFilteredCurrentChallenges();
+                expect(Array.isArray(result)).toBe(true);
+                expect(result.length).toBe(1);
+            });
         });
-
-        it('should apply all filters to current challenges', function () {
-            vm = createController();
-
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    title: 'Test Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team B' },
-                    start_date: '2023-07-01T00:00:00Z'
-                }
-            ];
-
-            vm.searchTitle = ['Test'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team A';
-            vm.filterStartDate = new Date('2023-05-01');
-            vm.filterEndDate = new Date('2023-08-01');
-            vm.sortByTeam = 'asc';
-
-            const result = vm.getFilteredCurrentChallenges();
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBe(true);
-        });
-
-        it('should apply all filters to upcoming challenges', function () {
-            vm = createController();
-
-            vm.upcomingList = [
-                {
-                    id: 3,
-                    title: 'Upcoming Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team C' },
-                    start_date: '2024-01-01T00:00:00Z'
-                },
-                {
-                    id: 4,
-                    title: 'Upcoming Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team D' },
-                    start_date: '2024-02-01T00:00:00Z'
-                }
-            ];
-
-            vm.searchTitle = ['Upcoming'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team C';
-            vm.filterStartDate = new Date('2024-01-01');
-            vm.filterEndDate = new Date('2024-03-01');
-            vm.sortByTeam = 'desc';
-
-            const result = vm.getFilteredUpcomingChallenges();
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBe(true);
-        });
-
-        it('should apply all filters to past challenges', function () {
-            vm = createController();
-
-            vm.pastList = [
-                {
-                    id: 5,
-                    title: 'Past Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team E' },
-                    start_date: '2022-01-01T00:00:00Z'
-                },
-                {
-                    id: 6,
-                    title: 'Past Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team F' },
-                    start_date: '2022-02-01T00:00:00Z'
-                }
-            ];
-
-            vm.searchTitle = ['Past'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team E';
-            vm.filterStartDate = new Date('2022-01-01');
-            vm.filterEndDate = new Date('2022-03-01');
-            vm.sortByTeam = 'asc';
-
-            const result = vm.getFilteredPastChallenges();
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBe(true);
-        });
-
-        it('should handle empty filter values gracefully', function () {
-            vm = createController();
-
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                }
-            ];
-
-            vm.searchTitle = [];
-            vm.selecteddomain = [];
-            vm.selectedHostTeam = '';
-            vm.filterStartDate = null;
-            vm.filterEndDate = null;
-            vm.sortByTeam = '';
-
-            const result = vm.getFilteredCurrentChallenges();
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBe(true);
-        });
-
-        it('should return filtered results in correct order', function () {
-            vm = createController();
-
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    title: 'Test Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team B' },
-                    start_date: '2023-07-01T00:00:00Z'
-                }
-            ];
-
-            vm.searchTitle = ['Test'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team A';
-            vm.filterStartDate = new Date('2023-05-01');
-            vm.filterEndDate = new Date('2023-08-01');
-            vm.sortByTeam = 'asc';
-
-            const result = vm.getFilteredCurrentChallenges();
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBe(true);
-        });
-
     });
-    
 });
