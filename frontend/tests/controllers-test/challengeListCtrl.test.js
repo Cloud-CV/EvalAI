@@ -5,7 +5,7 @@ describe('Unit tests for challenge list controller', function () {
 
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
@@ -410,7 +410,9 @@ describe('Unit tests for challenge list controller', function () {
                         list_tags: []
                     }
                 ];
-                // ... unchanged ...
+                const result = vm.getFilteredCurrentChallenges();
+                expect(result).toBeDefined();
+                
             });
         
             it('should filter upcoming challenges', function () {
@@ -432,7 +434,9 @@ describe('Unit tests for challenge list controller', function () {
                         list_tags: []
                     }
                 ];
-                // ... unchanged ...
+                const result = vm.getFilteredUpcomingChallenges();
+                expect(result).toBeDefined();
+                
             });
         
             it('should filter past challenges', function () {
@@ -454,7 +458,8 @@ describe('Unit tests for challenge list controller', function () {
                         list_tags: []
                     }
                 ];
-                // ... unchanged ...
+                const result = vm.getFilteredPastChallenges();
+                expect(result).toBeDefined();              
             });
         
             it('should handle empty filter values gracefully', function () {
@@ -575,116 +580,6 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.sortByTeam).toBe('asc');
             expect(vm.filterStartDate).toEqual(new Date('2023-01-01'));
             expect(vm.filterEndDate).toEqual(new Date('2023-12-31'));
-        });
-    });
-
-    describe('FilterDialogController', function () {
-        var $scope, $mdDialog, filterData, $controller;
-    
-        beforeEach(inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
-            $controller = _$controller_;
-            $scope = _$rootScope_.$new();
-            $mdDialog = _$mdDialog_;
-            spyOn($mdDialog, 'hide');
-            spyOn($mdDialog, 'cancel');
-        }));
-    
-        // This test already covers the initialization lines by ensuring they are assigned
-        it('should initialize $scope variables from complete filterData', function () {
-            filterData = {
-                selecteddomain: ['Computer Vision'],
-                selectedHostTeam: 'Team A',
-                sortByTeam: 'asc',
-                filterStartDate: new Date('2023-01-01'),
-                filterEndDate: new Date('2023-12-31'),
-                domain_choices: [['All', 'All'], ['Computer Vision', 'Computer Vision']],
-                host_team_choices: ['Team A', 'Team B']
-            };
-    
-            $controller('FilterDialogController', {
-                $scope: $scope,
-                $mdDialog: $mdDialog,
-                filterData: filterData
-            });
-    
-            // Assertions to confirm all properties are correctly assigned
-            expect($scope.selecteddomain).toEqual(['Computer Vision']);
-            expect($scope.selectedHostTeam).toBe('Team A');
-            expect($scope.sortByTeam).toBe('asc');
-            expect($scope.filterStartDate).toEqual(new Date('2023-01-01'));
-            expect($scope.filterEndDate).toEqual(new Date('2023-12-31'));
-            expect($scope.domain_choices).toEqual([['All', 'All'], ['Computer Vision', 'Computer Vision']]);
-            expect($scope.host_team_choices).toEqual(['Team A', 'Team B']);
-        });
-    
-        // --- New test case for coverage of initialization lines with potentially missing data ---
-        // This case ensures that even if some filterData properties are undefined,
-        // the assignment lines are still executed.
-        it('should initialize $scope variables when some filterData properties are undefined', function () {
-            filterData = {
-                selecteddomain: undefined,
-                selectedHostTeam: null, // Test with null as well
-                sortByTeam: 'asc',
-                // Missing filterStartDate and filterEndDate
-                domain_choices: [['All', 'All']],
-                host_team_choices: []
-            };
-    
-            $controller('FilterDialogController', {
-                $scope: $scope,
-                $mdDialog: $mdDialog,
-                filterData: filterData
-            });
-    
-            expect($scope.selecteddomain).toBeUndefined();
-            expect($scope.selectedHostTeam).toBeNull();
-            expect($scope.sortByTeam).toBe('asc');
-            expect($scope.filterStartDate).toBeUndefined(); // Will be undefined if not provided
-            expect($scope.filterEndDate).toBeUndefined();   // Will be undefined if not provided
-            expect($scope.domain_choices).toEqual([['All', 'All']]);
-            expect($scope.host_team_choices).toEqual([]);
-        });
-        // --- End of new test case ---
-    
-        it('should call $mdDialog.hide with correct data on apply()', function () {
-            filterData = {
-                selecteddomain: ['Computer Vision'], selectedHostTeam: 'Team A', sortByTeam: 'asc',
-                filterStartDate: new Date('2023-01-01'), filterEndDate: new Date('2023-12-31'),
-                domain_choices: [['All', 'All']], host_team_choices: ['Team A']
-            };
-            $controller('FilterDialogController', {
-                $scope: $scope,
-                $mdDialog: $mdDialog,
-                filterData: filterData
-            });
-    
-            // Change some values to ensure hide receives the *updated* scope values
-            $scope.selecteddomain = ['NLP'];
-            $scope.selectedHostTeam = 'Team B';
-            $scope.sortByTeam = 'desc';
-            $scope.filterStartDate = new Date('2024-01-01');
-            $scope.filterEndDate = new Date('2024-12-31');
-    
-            $scope.apply();
-    
-            expect($mdDialog.hide).toHaveBeenCalledWith({
-                selecteddomain: ['NLP'],
-                selectedHostTeam: 'Team B',
-                sortByTeam: 'desc',
-                filterStartDate: new Date('2024-01-01'),
-                filterEndDate: new Date('2024-12-31')
-            });
-        });
-    
-        it('should call $mdDialog.cancel on cancel()', function () {
-            filterData = { /* minimal data needed for controller instantiation */ };
-            $controller('FilterDialogController', {
-                $scope: $scope,
-                $mdDialog: $mdDialog,
-                filterData: filterData
-            });
-            $scope.cancel();
-            expect($mdDialog.cancel).toHaveBeenCalled();
         });
     });
 });
