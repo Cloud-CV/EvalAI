@@ -1,6 +1,16 @@
 FROM node:14.21.3-bullseye AS base
 
 ARG NODE_ENV
+
+# Install Python2, symlink, and C++ build tools for node-gyp/node-sass
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python2 \
+    python-is-python2 \
+    make \
+    g++ && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /code
 
 # Add dependencies
