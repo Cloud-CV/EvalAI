@@ -1,4 +1,4 @@
-FROM node:14.21.3-bullseye AS base
+FROM node:14.21.3-slim-bullseye AS base
 
 ARG NODE_ENV
 WORKDIR /code

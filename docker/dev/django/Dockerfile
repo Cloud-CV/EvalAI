@@ -1,4 +1,4 @@
-FROM python:3.9.21-bullseye
+FROM python:3.9.21-slim-bullseye
 
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR=off
