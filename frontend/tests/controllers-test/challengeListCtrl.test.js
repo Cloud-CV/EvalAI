@@ -513,7 +513,7 @@ describe('Unit tests for challenge list controller', function () {
     
             vm.openFilterDialog('fakeEvent');
     
-            expect(console.log).toHaveBeenCalledWith('Filter dialog opened');
+          
             expect($mdDialog.show).toHaveBeenCalled();
             var args = $mdDialog.show.calls.mostRecent().args[0];
             expect(args.controllerAs).toBe('dialog');
