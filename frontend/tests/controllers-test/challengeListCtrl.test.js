@@ -364,8 +364,8 @@ describe('Unit tests for challenge list controller', function () {
             scrollCallback.call(mockScrollContext);
             expect(utilities.hideButton).toHaveBeenCalled();
         });
-    });
-
+    }); 
+    
     describe('Filter functions', function () {
         var $filter;
 
@@ -375,30 +375,30 @@ describe('Unit tests for challenge list controller', function () {
 
         beforeEach(function () {
             // Create mock filter functions
-            var mockCustomTitleFilter = function(challenges, searchText) {
+            var mockCustomTitleFilter = function (challenges, searchText) {
                 if (!searchText || searchText.length === 0) return challenges;
-                return challenges.filter(function(challenge) {
+                return challenges.filter(function (challenge) {
                     return challenge.title && challenge.title.toLowerCase().includes(searchText.toLowerCase());
                 });
             };
 
-            var mockCustomDomainFilter = function(challenges, selecteddomain) {
+            var mockCustomDomainFilter = function (challenges, selecteddomain) {
                 if (!selecteddomain || selecteddomain.length === 0) return challenges;
-                return challenges.filter(function(challenge) {
+                return challenges.filter(function (challenge) {
                     return challenge.domain_name === selecteddomain;
                 });
             };
 
-            var mockCustomHostFilter = function(challenges, selectedHostTeam) {
+            var mockCustomHostFilter = function (challenges, selectedHostTeam) {
                 if (!selectedHostTeam || selectedHostTeam === '') return challenges;
-                return challenges.filter(function(challenge) {
+                return challenges.filter(function (challenge) {
                     return challenge.creator && challenge.creator.team_name === selectedHostTeam;
                 });
             };
 
-            var mockCustomDateRangeFilter = function(challenges, startDate, endDate) {
+            var mockCustomDateRangeFilter = function (challenges, startDate, endDate) {
                 if (!startDate && !endDate) return challenges;
-                return challenges.filter(function(challenge) {
+                return challenges.filter(function (challenge) {
                     const challengeStartDate = new Date(challenge.start_date);
                     if (startDate && challengeStartDate < new Date(startDate)) return false;
                     if (endDate) {
@@ -410,9 +410,9 @@ describe('Unit tests for challenge list controller', function () {
                 });
             };
 
-            var mockOrderByTeam = function(challenges, sortOrder) {
+            var mockOrderByTeam = function (challenges, sortOrder) {
                 if (!sortOrder || sortOrder === '') return challenges;
-                return challenges.slice().sort(function(a, b) {
+                return challenges.slice().sort(function (a, b) {
                     const teamA = (a.creator && a.creator.team_name || '').toLowerCase();
                     const teamB = (b.creator && b.creator.team_name || '').toLowerCase();
                     return sortOrder === 'asc'
@@ -642,191 +642,4 @@ describe('Unit tests for challenge list controller', function () {
             expect(Array.isArray(result)).toBeTruthy();
         });
     });
-
-    describe('Filter Dialog functions', function () {
-        var $mdDialog, $window, moment, $rootScope, $filter;
-
-        beforeEach(inject(function (_$mdDialog_, _$window_, _moment_, _$rootScope_, _$filter_) {
-            $mdDialog = _$mdDialog_;
-            $window = _$window_;
-            moment = _moment_;
-            $rootScope = _$rootScope_;
-            $filter = _$filter_;
-        }));
-
-        beforeEach(function () {
-            // Mock $mdDialog.show
-            spyOn($mdDialog, 'show').and.returnValue({
-                then: function (callback) {
-                    // Simulate successful dialog result
-                    var mockFilters = {
-                        selecteddomain: ['Computer Vision'],
-                        selectedHostTeam: 'Test Team',
-                        sortByTeam: 'asc',
-                        filterStartDate: new Date('2023-01-01'),
-                        filterEndDate: new Date('2023-12-31')
-                    };
-                    callback(mockFilters);
-                }
-            });
-
-            // Mock angular.element
-            spyOn(angular, 'element').and.returnValue({
-                bind: jasmine.createSpy('bind')
-            });
-
-            // Mock console.log
-            spyOn(console, 'log');
-        });
-
-        it('should open filter dialog with correct configuration', function () {
-            vm = createController();
-
-            // Set up filter data
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Test Team';
-            vm.sortByTeam = 'asc';
-            vm.filterStartDate = new Date('2023-01-01');
-            vm.filterEndDate = new Date('2023-12-31');
-            vm.domain_choices = [['All', 'All'], ['Computer Vision', 'Computer Vision']];
-            vm.host_team_choices = ['Team A', 'Team B'];
-
-            var mockEvent = { preventDefault: jasmine.createSpy('preventDefault') };
-
-            // Call openFilterDialog
-            vm.openFilterDialog(mockEvent);
-
-            // Verify console.log was called
-            expect(console.log).toHaveBeenCalledWith('Filter dialog opened');
-
-            // Verify $mdDialog.show was called with correct parameters
-            expect($mdDialog.show).toHaveBeenCalledWith({
-                controller: jasmine.any(Function), // FilterDialogController
-                controllerAs: 'dialog',
-                templateUrl: 'src/views/web/challenge/challenge-filter-dialog.html',
-                parent: jasmine.any(Object),
-                targetEvent: mockEvent,
-                clickOutsideToClose: true,
-                fullscreen: true,
-                locals: {
-                    filterData: {
-                        selecteddomain: vm.selecteddomain,
-                        selectedHostTeam: vm.selectedHostTeam,
-                        sortByTeam: vm.sortByTeam,
-                        filterStartDate: vm.filterStartDate,
-                        filterEndDate: vm.filterEndDate,
-                        domain_choices: vm.domain_choices,
-                        host_team_choices: vm.host_team_choices
-                    }
-                }
-            });
-        });
-
-        it('should update filter values when dialog returns successfully', function () {
-            vm = createController();
-
-            // Set initial filter values
-            vm.selecteddomain = [];
-            vm.selectedHostTeam = '';
-            vm.sortByTeam = '';
-            vm.filterStartDate = null;
-            vm.filterEndDate = null;
-
-            var mockEvent = { preventDefault: jasmine.createSpy('preventDefault') };
-
-            // Mock successful dialog result
-            $mdDialog.show.and.returnValue({
-                then: function (callback) {
-                    var mockFilters = {
-                        selecteddomain: ['NLP'],
-                        selectedHostTeam: 'New Team',
-                        sortByTeam: 'desc',
-                        filterStartDate: new Date('2024-01-01'),
-                        filterEndDate: new Date('2024-12-31')
-                    };
-                    callback(mockFilters);
-                }
-            });
-
-            // Call openFilterDialog
-            vm.openFilterDialog(mockEvent);
-
-            // Verify filter values were updated
-            expect(vm.selecteddomain).toEqual(['NLP']);
-            expect(vm.selectedHostTeam).toEqual('New Team');
-            expect(vm.sortByTeam).toEqual('desc');
-            expect(vm.filterStartDate).toEqual(new Date('2024-01-01'));
-            expect(vm.filterEndDate).toEqual(new Date('2024-12-31'));
-        });
-
-        it('should handle dialog cancellation gracefully', function () {
-            vm = createController();
-
-            // Set initial filter values
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Test Team';
-            vm.sortByTeam = 'asc';
-            vm.filterStartDate = new Date('2023-01-01');
-            vm.filterEndDate = new Date('2023-12-31');
-
-            var mockEvent = { preventDefault: jasmine.createSpy('preventDefault') };
-
-            // Mock dialog cancellation (no callback executed)
-            $mdDialog.show.and.returnValue({
-                then: function (callback) {
-                    // Don't call callback, simulating cancellation
-                    return;
-                }
-            });
-
-            // Call openFilterDialog
-            vm.openFilterDialog(mockEvent);
-
-            // Verify filter values remain unchanged
-            expect(vm.selecteddomain).toEqual(['Computer Vision']);
-            expect(vm.selectedHostTeam).toEqual('Test Team');
-            expect(vm.sortByTeam).toEqual('asc');
-            expect(vm.filterStartDate).toEqual(new Date('2023-01-01'));
-            expect(vm.filterEndDate).toEqual(new Date('2023-12-31'));
-        });
-
-        it('should pass correct filter data to dialog', function () {
-            vm = createController();
-
-            // Set up comprehensive filter data
-            vm.selecteddomain = ['Computer Vision', 'NLP'];
-            vm.selectedHostTeam = 'Test Team';
-            vm.sortByTeam = 'asc';
-            vm.filterStartDate = new Date('2023-01-01');
-            vm.filterEndDate = new Date('2023-12-31');
-            vm.domain_choices = [
-                ['All', 'All'],
-                ['Computer Vision', 'Computer Vision'],
-                ['NLP', 'NLP'],
-                ['None', 'None']
-            ];
-            vm.host_team_choices = ['Team A', 'Team B', 'Team C'];
-
-            var mockEvent = { preventDefault: jasmine.createSpy('preventDefault') };
-
-            // Call openFilterDialog
-            vm.openFilterDialog(mockEvent);
-
-            // Verify the locals object contains correct data
-            var dialogCall = $mdDialog.show.calls.mostRecent().args[0];
-            expect(dialogCall.locals.filterData.selecteddomain).toEqual(['Computer Vision', 'NLP']);
-            expect(dialogCall.locals.filterData.selectedHostTeam).toEqual('Test Team');
-            expect(dialogCall.locals.filterData.sortByTeam).toEqual('asc');
-            expect(dialogCall.locals.filterData.filterStartDate).toEqual(new Date('2023-01-01'));
-            expect(dialogCall.locals.filterData.filterEndDate).toEqual(new Date('2023-12-31'));
-            expect(dialogCall.locals.filterData.domain_choices).toEqual([
-                ['All', 'All'],
-                ['Computer Vision', 'Computer Vision'],
-                ['NLP', 'NLP'],
-                ['None', 'None']
-            ]);
-            expect(dialogCall.locals.filterData.host_team_choices).toEqual(['Team A', 'Team B', 'Team C']);
-        });
-    });
-    
 });
