@@ -374,29 +374,29 @@ describe('Unit tests for challenge list controller', function () {
         }));
 
         beforeEach(function () {
-            // Mock the custom filters by creating spy functions that return filter functions
-            spyOn($filter, 'customTitleFilter').and.returnValue(function(challenges, searchText) {
+            // Create mock filter functions
+            var mockCustomTitleFilter = function(challenges, searchText) {
                 if (!searchText || searchText.length === 0) return challenges;
                 return challenges.filter(function(challenge) {
                     return challenge.title && challenge.title.toLowerCase().includes(searchText.toLowerCase());
                 });
-            });
+            };
 
-            spyOn($filter, 'customDomainFilter').and.returnValue(function(challenges, selecteddomain) {
+            var mockCustomDomainFilter = function(challenges, selecteddomain) {
                 if (!selecteddomain || selecteddomain.length === 0) return challenges;
                 return challenges.filter(function(challenge) {
                     return challenge.domain_name === selecteddomain;
                 });
-            });
+            };
 
-            spyOn($filter, 'customHostFilter').and.returnValue(function(challenges, selectedHostTeam) {
+            var mockCustomHostFilter = function(challenges, selectedHostTeam) {
                 if (!selectedHostTeam || selectedHostTeam === '') return challenges;
                 return challenges.filter(function(challenge) {
                     return challenge.creator && challenge.creator.team_name === selectedHostTeam;
                 });
-            });
+            };
 
-            spyOn($filter, 'customDateRangeFilter').and.returnValue(function(challenges, startDate, endDate) {
+            var mockCustomDateRangeFilter = function(challenges, startDate, endDate) {
                 if (!startDate && !endDate) return challenges;
                 return challenges.filter(function(challenge) {
                     const challengeStartDate = new Date(challenge.start_date);
@@ -408,9 +408,9 @@ describe('Unit tests for challenge list controller', function () {
                     }
                     return true;
                 });
-            });
+            };
 
-            spyOn($filter, 'orderByTeam').and.returnValue(function(challenges, sortOrder) {
+            var mockOrderByTeam = function(challenges, sortOrder) {
                 if (!sortOrder || sortOrder === '') return challenges;
                 return challenges.slice().sort(function(a, b) {
                     const teamA = (a.creator && a.creator.team_name || '').toLowerCase();
@@ -419,7 +419,14 @@ describe('Unit tests for challenge list controller', function () {
                         ? teamA.localeCompare(teamB)
                         : teamB.localeCompare(teamA);
                 });
-            });
+            };
+
+            // Mock the $filter service to return our mock functions
+            spyOn($filter, 'customTitleFilter').and.returnValue(mockCustomTitleFilter);
+            spyOn($filter, 'customDomainFilter').and.returnValue(mockCustomDomainFilter);
+            spyOn($filter, 'customHostFilter').and.returnValue(mockCustomHostFilter);
+            spyOn($filter, 'customDateRangeFilter').and.returnValue(mockCustomDateRangeFilter);
+            spyOn($filter, 'orderByTeam').and.returnValue(mockOrderByTeam);
         });
 
         it('should reset all filter values when resetFilter is called', function () {
