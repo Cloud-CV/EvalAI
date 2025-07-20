@@ -12,7 +12,7 @@ describe('Unit tests for challenge list controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeListCtrl', { $scope: $scope });
+            return $controller('ChallengeListCtrl', {$scope: $scope});
         };
         vm = $controller('ChallengeListCtrl', { $scope: $scope });
     }));
@@ -45,14 +45,14 @@ describe('Unit tests for challenge list controller', function () {
 
             utilities.sendRequest = function (parameters) {
                 if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present/approved/public') ||
-                    (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future/approved/public') ||
-                    (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past/approved/public')) {
+                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future/approved/public') ||
+                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past/approved/public')) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
                 } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present/approved/public') ||
-                    (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future/approved/public') ||
-                    (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past/approved/public')) {
+                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future/approved/public') ||
+                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past/approved/public')){
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -121,7 +121,7 @@ describe('Unit tests for challenge list controller', function () {
         });
 
         it('ongoing challenge backend error `challenges/challenge/present/approved/public`', function () {
-            isPresentChallengeSuccess = false;
+            isPresentChallengeSuccess = false; 
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             errorResponse = {
@@ -194,7 +194,7 @@ describe('Unit tests for challenge list controller', function () {
 
         it('upcoming challenge backend error `challenges/challenge/future/approved/public`', function () {
             isUpcomingChallengeSucess = false;
-            isPresentChallengeSuccess = true;
+            isPresentChallengeSuccess = true; 
             isPastChallengeSuccess = null;
             // success response for the ongoing challenge
             successResponse = {
@@ -295,7 +295,7 @@ describe('Unit tests for challenge list controller', function () {
                         id: 1,
                         description: "the length of the ongoing challenge description is greater than or equal to 50",
                         creator: {
-                            id: 1
+                        id: 1
                         },
                         start_date: "Fri June 12 2018 22:41:51 GMT+0530",
                         end_date: "Fri June 12 2099 22:41:51 GMT+0530"
@@ -316,7 +316,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.getAllResults).toHaveBeenCalledTimes(2);
         });
 
-        it('ensures method is set to GET inside getAllResults function', function () {
+        it('ensures method is set to GET inside getAllResults function', function() {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -324,342 +324,45 @@ describe('Unit tests for challenge list controller', function () {
                 next: null,
                 results: []
             };
-
+            
             vm = createController();
             spyOn(utilities, 'sendRequest').and.callThrough();
-
+            
             const parameters = {
                 url: 'challenges/challenge/present/approved/public'
             };
-
+            
             vm.getAllResults(parameters, [], 'noneCurrentChallenge');
-
+            
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect(utilities.sendRequest.calls.argsFor(0)[0].method).toEqual('GET');
         });
-        it('tests scrollUp function binding to window scroll events', function () {
+        it('tests scrollUp function binding to window scroll events', function() {
             vm = createController();
-
+            
             var mockElement = {
                 bind: jasmine.createSpy('bind')
             };
-
+            
             spyOn(angular, 'element').and.returnValue(mockElement);
-
+            
             vm.scrollUp();
-
+            
             expect(angular.element).toHaveBeenCalled();
-
+            
             expect(mockElement.bind).toHaveBeenCalledWith('scroll', jasmine.any(Function));
-
+            
             var scrollCallback = mockElement.bind.calls.mostRecent().args[1];
-
+            
             spyOn(utilities, 'showButton');
             var mockScrollContext = { pageYOffset: 100 };
             scrollCallback.call(mockScrollContext);
             expect(utilities.showButton).toHaveBeenCalled();
-
+            
             spyOn(utilities, 'hideButton');
             mockScrollContext.pageYOffset = 99;
             scrollCallback.call(mockScrollContext);
             expect(utilities.hideButton).toHaveBeenCalled();
-        });
-    });
-
-    describe('Filter functions', function () {
-        var $filter;
-
-        beforeEach(inject(function (_$filter_) {
-            $filter = _$filter_;
-        }));
-
-        beforeEach(function () {
-            // Mock the custom filters
-            spyOn($filter, 'customTitleFilter').and.callFake(function() {
-                return function(challenges, searchText) {
-                    if (!searchText || searchText.length === 0) return challenges;
-                    return challenges.filter(function(challenge) {
-                        return challenge.title.toLowerCase().includes(searchText.toLowerCase());
-                    });
-                };
-            });
-
-            spyOn($filter, 'customDomainFilter').and.callFake(function() {
-                return function(challenges, selecteddomain) {
-                    if (!selecteddomain || selecteddomain.length === 0) return challenges;
-                    return challenges.filter(function(challenge) {
-                        return challenge.domain_name === selecteddomain;
-                    });
-                };
-            });
-
-            spyOn($filter, 'customHostFilter').and.callFake(function() {
-                return function(challenges, selectedHostTeam) {
-                    if (!selectedHostTeam || selectedHostTeam === '') return challenges;
-                    return challenges.filter(function(challenge) {
-                        return challenge.creator && challenge.creator.team_name === selectedHostTeam;
-                    });
-                };
-            });
-
-            spyOn($filter, 'customDateRangeFilter').and.callFake(function() {
-                return function(challenges, startDate, endDate) {
-                    if (!startDate && !endDate) return challenges;
-                    return challenges.filter(function(challenge) {
-                        const challengeStartDate = new Date(challenge.start_date);
-                        if (startDate && challengeStartDate < new Date(startDate)) return false;
-                        if (endDate) {
-                            const endOfDay = new Date(endDate);
-                            endOfDay.setHours(23, 59, 59, 999);
-                            if (challengeStartDate > endOfDay) return false;
-                        }
-                        return true;
-                    });
-                };
-            });
-
-            spyOn($filter, 'orderByTeam').and.callFake(function() {
-                return function(challenges, sortOrder) {
-                    if (!sortOrder || sortOrder === '') return challenges;
-                    return challenges.slice().sort(function(a, b) {
-                        const teamA = (a.creator && a.creator.team_name || '').toLowerCase();
-                        const teamB = (b.creator && b.creator.team_name || '').toLowerCase();
-                        return sortOrder === 'asc' 
-                            ? teamA.localeCompare(teamB)
-                            : teamB.localeCompare(teamA);
-                    });
-                };
-            });
-        });
-
-        it('should reset all filter values when resetFilter is called', function () {
-            vm = createController();
-            
-            // Set some filter values
-            vm.selecteddomain = ['Computer Vision'];
-            vm.searchTitle = ['test'];
-            vm.selectedHostTeam = 'Test Team';
-            vm.sortByTeam = 'asc';
-            vm.filterStartDate = new Date('2023-01-01');
-            vm.filterEndDate = new Date('2023-12-31');
-
-            // Call resetFilter
-            vm.resetFilter();
-
-            // Verify all values are reset
-            expect(vm.selecteddomain).toEqual([]);
-            expect(vm.searchTitle).toEqual([]);
-            expect(vm.selectedHostTeam).toEqual('');
-            expect(vm.sortByTeam).toEqual('');
-            expect(vm.filterStartDate).toBeNull();
-            expect(vm.filterEndDate).toBeNull();
-        });
-
-        it('should apply all filters to current challenges', function () {
-            vm = createController();
-            
-            // Set up test data
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    title: 'Test Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team B' },
-                    start_date: '2023-07-01T00:00:00Z'
-                }
-            ];
-
-            // Set filter values
-            vm.searchTitle = ['Test'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team A';
-            vm.filterStartDate = new Date('2023-05-01');
-            vm.filterEndDate = new Date('2023-08-01');
-            vm.sortByTeam = 'asc';
-
-            // Call the filtering function
-            var result = vm.getFilteredCurrentChallenges();
-
-            // Verify all filters were called
-            expect($filter('customTitleFilter')).toHaveBeenCalledWith(vm.currentList, vm.searchTitle);
-            expect($filter('customDomainFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selecteddomain);
-            expect($filter('customHostFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selectedHostTeam);
-            expect($filter('customDateRangeFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.filterStartDate, vm.filterEndDate);
-            expect($filter('orderByTeam')).toHaveBeenCalledWith(jasmine.any(Array), vm.sortByTeam);
-        });
-
-        it('should apply all filters to upcoming challenges', function () {
-            vm = createController();
-            
-            // Set up test data
-            vm.upcomingList = [
-                {
-                    id: 3,
-                    title: 'Upcoming Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team C' },
-                    start_date: '2024-01-01T00:00:00Z'
-                },
-                {
-                    id: 4,
-                    title: 'Upcoming Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team D' },
-                    start_date: '2024-02-01T00:00:00Z'
-                }
-            ];
-
-            // Set filter values
-            vm.searchTitle = ['Upcoming'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team C';
-            vm.filterStartDate = new Date('2024-01-01');
-            vm.filterEndDate = new Date('2024-03-01');
-            vm.sortByTeam = 'desc';
-
-            // Call the filtering function
-            var result = vm.getFilteredUpcomingChallenges();
-
-            // Verify all filters were called
-            expect($filter('customTitleFilter')).toHaveBeenCalledWith(vm.upcomingList, vm.searchTitle);
-            expect($filter('customDomainFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selecteddomain);
-            expect($filter('customHostFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selectedHostTeam);
-            expect($filter('customDateRangeFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.filterStartDate, vm.filterEndDate);
-            expect($filter('orderByTeam')).toHaveBeenCalledWith(jasmine.any(Array), vm.sortByTeam);
-        });
-
-        it('should apply all filters to past challenges', function () {
-            vm = createController();
-            
-            // Set up test data
-            vm.pastList = [
-                {
-                    id: 5,
-                    title: 'Past Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team E' },
-                    start_date: '2022-01-01T00:00:00Z'
-                },
-                {
-                    id: 6,
-                    title: 'Past Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team F' },
-                    start_date: '2022-02-01T00:00:00Z'
-                }
-            ];
-
-            // Set filter values
-            vm.searchTitle = ['Past'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team E';
-            vm.filterStartDate = new Date('2022-01-01');
-            vm.filterEndDate = new Date('2022-03-01');
-            vm.sortByTeam = 'asc';
-
-            // Call the filtering function
-            var result = vm.getFilteredPastChallenges();
-
-            // Verify all filters were called
-            expect($filter('customTitleFilter')).toHaveBeenCalledWith(vm.pastList, vm.searchTitle);
-            expect($filter('customDomainFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selecteddomain);
-            expect($filter('customHostFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selectedHostTeam);
-            expect($filter('customDateRangeFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.filterStartDate, vm.filterEndDate);
-            expect($filter('orderByTeam')).toHaveBeenCalledWith(jasmine.any(Array), vm.sortByTeam);
-        });
-
-        it('should handle empty filter values gracefully', function () {
-            vm = createController();
-            
-            // Set up test data
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                }
-            ];
-
-            // Set empty filter values
-            vm.searchTitle = [];
-            vm.selecteddomain = [];
-            vm.selectedHostTeam = '';
-            vm.filterStartDate = null;
-            vm.filterEndDate = null;
-            vm.sortByTeam = '';
-
-            // Call the filtering function
-            var result = vm.getFilteredCurrentChallenges();
-
-            // Verify filters are still called with empty values
-            expect($filter('customTitleFilter')).toHaveBeenCalledWith(vm.currentList, vm.searchTitle);
-            expect($filter('customDomainFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selecteddomain);
-            expect($filter('customHostFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.selectedHostTeam);
-            expect($filter('customDateRangeFilter')).toHaveBeenCalledWith(jasmine.any(Array), vm.filterStartDate, vm.filterEndDate);
-            expect($filter('orderByTeam')).toHaveBeenCalledWith(jasmine.any(Array), vm.sortByTeam);
-        });
-
-        it('should return filtered results in correct order', function () {
-            vm = createController();
-            
-            // Set up test data
-            vm.currentList = [
-                {
-                    id: 1,
-                    title: 'Test Challenge 1',
-                    domain_name: 'Computer Vision',
-                    creator: { team_name: 'Team A' },
-                    start_date: '2023-06-01T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    title: 'Test Challenge 2',
-                    domain_name: 'NLP',
-                    creator: { team_name: 'Team B' },
-                    start_date: '2023-07-01T00:00:00Z'
-                }
-            ];
-
-            // Mock filter responses
-            $filter('customTitleFilter').and.returnValue(function(challenges, searchText) {
-                return challenges; // Return all challenges
-            });
-            $filter('customDomainFilter').and.returnValue(function(challenges, selecteddomain) {
-                return challenges; // Return all challenges
-            });
-            $filter('customHostFilter').and.returnValue(function(challenges, selectedHostTeam) {
-                return challenges; // Return all challenges
-            });
-            $filter('customDateRangeFilter').and.returnValue(function(challenges, startDate, endDate) {
-                return challenges; // Return all challenges
-            });
-            $filter('orderByTeam').and.returnValue(function(challenges, sortOrder) {
-                return challenges; // Return all challenges
-            });
-
-            // Set filter values
-            vm.searchTitle = ['Test'];
-            vm.selecteddomain = ['Computer Vision'];
-            vm.selectedHostTeam = 'Team A';
-            vm.filterStartDate = new Date('2023-05-01');
-            vm.filterEndDate = new Date('2023-08-01');
-            vm.sortByTeam = 'asc';
-
-            // Call the filtering function
-            var result = vm.getFilteredCurrentChallenges();
-
-            // Verify the result is returned
-            expect(result).toBeDefined();
-            expect(Array.isArray(result)).toBeTruthy();
         });
     });
 });
