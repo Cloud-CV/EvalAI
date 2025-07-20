@@ -286,4 +286,261 @@ describe('Unit tests for hosted challenge controller', function () {
             expect(utilities.showLoader).toHaveBeenCalled();
         });
     }); 
+
+    describe('Filter functions', function () {
+        beforeEach(function () {
+            vm = createController();
+        });
+    
+        it('should reset all filter values when resetFilter is called', function () {
+            // Set some filter values
+            vm.selecteddomain = ['Computer Vision'];
+            vm.searchTitle = ['test'];
+            vm.selectedHostTeam = 'Test Team';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = new Date('2023-01-01');
+            vm.filterEndDate = new Date('2023-12-31');
+    
+            // Call resetFilter
+            vm.resetFilter();
+    
+            // Verify all values are reset
+            expect(vm.selecteddomain).toEqual([]);
+            expect(vm.searchTitle).toEqual([]);
+            expect(vm.selectedHostTeam).toEqual('');
+            expect(vm.sortByTeam).toEqual('');
+            expect(vm.filterStartDate).toBeNull();
+            expect(vm.filterEndDate).toBeNull();
+        });
+    
+        it('should filter current challenges', function () {
+            vm.currentList = [
+                {
+                    id: 1,
+                    title: 'Test Challenge 1',
+                    domain_name: 'Computer Vision',
+                    creator: { team_name: 'Team A' },
+                    start_date: '2023-06-01T00:00:00Z',
+                    list_tags: []
+                },
+                {
+                    id: 2,
+                    title: 'Test Challenge 2',
+                    domain_name: 'NLP',
+                    creator: { team_name: 'Team B' },
+                    start_date: '2023-07-01T00:00:00Z',
+                    list_tags: []
+                }
+            ];
+            const result = vm.getFilteredCurrentChallenges();
+            expect(result).toBeDefined();
+            
+        });
+    
+        it('should filter upcoming challenges', function () {
+            vm.upcomingList = [
+                {
+                    id: 3,
+                    title: 'Upcoming Challenge 1',
+                    domain_name: 'Computer Vision',
+                    creator: { team_name: 'Team C' },
+                    start_date: '2024-01-01T00:00:00Z',
+                    list_tags: []
+                },
+                {
+                    id: 4,
+                    title: 'Upcoming Challenge 2',
+                    domain_name: 'NLP',
+                    creator: { team_name: 'Team D' },
+                    start_date: '2024-02-01T00:00:00Z',
+                    list_tags: []
+                }
+            ];
+            const result = vm.getFilteredUpcomingChallenges();
+            expect(result).toBeDefined();
+            
+        });
+    
+        it('should filter past challenges', function () {
+            vm.pastList = [
+                {
+                    id: 5,
+                    title: 'Past Challenge 1',
+                    domain_name: 'Computer Vision',
+                    creator: { team_name: 'Team E' },
+                    start_date: '2022-01-01T00:00:00Z',
+                    list_tags: []
+                },
+                {
+                    id: 6,
+                    title: 'Past Challenge 2',
+                    domain_name: 'NLP',
+                    creator: { team_name: 'Team F' },
+                    start_date: '2022-02-01T00:00:00Z',
+                    list_tags: []
+                }
+            ];
+            const result = vm.getFilteredPastChallenges();
+            expect(result).toBeDefined();              
+        });
+    
+        it('should handle empty filter values gracefully', function () {
+            vm.currentList = [
+                {
+                    id: 1,
+                    title: 'Test Challenge',
+                    domain_name: 'Computer Vision',
+                    creator: { team_name: 'Team A' },
+                    start_date: '2023-06-01T00:00:00Z',
+                    list_tags: []
+                }
+            ];
+            vm.searchTitle = '';
+            vm.selecteddomain = '';
+            vm.selectedHostTeam = '';
+            vm.filterStartDate = null;
+            vm.filterEndDate = null;
+            vm.sortByTeam = '';
+    
+            var result = vm.getFilteredCurrentChallenges();
+            expect(Array.isArray(result)).toBe(true);
+            expect(result.length).toBe(1);
+        });
+    });
+});
+
+describe('openFilterDialog', function () {
+    var $mdDialog, $rootScope;
+
+    beforeEach(inject(function (_$mdDialog_, _$rootScope_) {
+        $mdDialog = _$mdDialog_;
+        $rootScope = _$rootScope_;
+        vm = createController();
+    }));
+
+    it('should call $mdDialog.show with correct parameters', function () {
+        spyOn($mdDialog, 'show').and.callFake(function () {
+            return { then: function () {} };
+        });
+        spyOn(console, 'log');
+
+        // Set some filter values
+        vm.selecteddomain = ['Computer Vision'];
+        vm.selectedHostTeam = 'Team A';
+        vm.sortByTeam = 'asc';
+        vm.filterStartDate = new Date('2023-01-01');
+        vm.filterEndDate = new Date('2023-12-31');
+        vm.domain_choices = [['All', 'All'], ['Computer Vision', 'Computer Vision']];
+        vm.host_team_choices = ['Team A', 'Team B'];
+
+        vm.openFilterDialog('fakeEvent');
+
+      
+        expect($mdDialog.show).toHaveBeenCalled();
+        var args = $mdDialog.show.calls.mostRecent().args[0];
+        expect(args.controllerAs).toBe('dialog');
+        expect(args.templateUrl).toBe('src/views/web/challenge/challenge-filter-dialog.html');
+        expect(args.locals.filterData.selecteddomain).toEqual(['Computer Vision']);
+        expect(args.locals.filterData.selectedHostTeam).toBe('Team A');
+        expect(args.locals.filterData.sortByTeam).toBe('asc');
+        expect(args.locals.filterData.filterStartDate).toEqual(new Date('2023-01-01'));
+        expect(args.locals.filterData.filterEndDate).toEqual(new Date('2023-12-31'));
+        expect(args.locals.filterData.domain_choices).toEqual([['All', 'All'], ['Computer Vision', 'Computer Vision']]);
+        expect(args.locals.filterData.host_team_choices).toEqual(['Team A', 'Team B']);
+    });
+
+    it('should update filter values when dialog resolves', function () {
+        spyOn($mdDialog, 'show').and.callFake(function () {
+            return {
+                then: function (cb) {
+                    cb({
+                        selecteddomain: ['NLP'],
+                        selectedHostTeam: 'Team B',
+                        sortByTeam: 'desc',
+                        filterStartDate: new Date('2024-01-01'),
+                        filterEndDate: new Date('2024-12-31')
+                    });
+                }
+            };
+        });
+
+        // Set initial values
+        vm.selecteddomain = ['Computer Vision'];
+        vm.selectedHostTeam = 'Team A';
+        vm.sortByTeam = 'asc';
+        vm.filterStartDate = new Date('2023-01-01');
+        vm.filterEndDate = new Date('2023-12-31');
+
+        vm.openFilterDialog('fakeEvent');
+
+        expect(vm.selecteddomain).toEqual(['NLP']);
+        expect(vm.selectedHostTeam).toBe('Team B');
+        expect(vm.sortByTeam).toBe('desc');
+        expect(vm.filterStartDate).toEqual(new Date('2024-01-01'));
+        expect(vm.filterEndDate).toEqual(new Date('2024-12-31'));
+    });
+
+    it('should not throw if dialog is cancelled', function () {
+        spyOn($mdDialog, 'show').and.callFake(function () {
+            return { then: function () { /* do nothing, simulates cancel */ } };
+        });
+
+        // Set initial values
+        vm.selecteddomain = ['Computer Vision'];
+        vm.selectedHostTeam = 'Team A';
+        vm.sortByTeam = 'asc';
+        vm.filterStartDate = new Date('2023-01-01');
+        vm.filterEndDate = new Date('2023-12-31');
+
+        expect(function () {
+            vm.openFilterDialog('fakeEvent');
+        }).not.toThrow();
+
+        // Values should remain unchanged
+        expect(vm.selecteddomain).toEqual(['Computer Vision']);
+        expect(vm.selectedHostTeam).toBe('Team A');
+        expect(vm.sortByTeam).toBe('asc');
+        expect(vm.filterStartDate).toEqual(new Date('2023-01-01'));
+        expect(vm.filterEndDate).toEqual(new Date('2023-12-31'));
+    });
+
+    describe('getCurrentChallengeList', function () {
+        beforeEach(function () {
+            vm = createController();
+            // Initialize challenges for testing if needed
+            vm.ongoingChallenges = [{ id: 1, name: 'Ongoing Challenge' }];
+            vm.upcomingChallenges = [{ id: 2, name: 'Upcoming Challenge' }];
+            vm.pastChallenges = [{ id: 3, name: 'Past Challenge' }];
+        });
+    
+        it('should return ongoing challenges when currentTab is "ongoing"', function () {
+            vm.currentTab = 'ongoing';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.ongoingChallenges);
+        });
+    
+        it('should return upcoming challenges when currentTab is "upcoming"', function () {
+            vm.currentTab = 'upcoming';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.upcomingChallenges);
+        });
+    
+        it('should return past challenges when currentTab is "past"', function () {
+            vm.currentTab = 'past';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.pastChallenges);
+        });
+    
+        it('should return an empty array when currentTab is an unknown value', function () {
+            vm.currentTab = 'unknown'; // This covers the 'else' branch
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    
+        it('should return an empty array when currentTab is null', function () {
+            vm.currentTab = null; // Another case for the 'else' branch
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    
+        it('should return an empty array when currentTab is undefined', function () {
+            vm.currentTab = undefined; // Yet another case for the 'else' branch
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    });
 });
