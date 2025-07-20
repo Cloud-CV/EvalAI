@@ -3,10 +3,13 @@ FROM python:3.7-bullseye
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && \
-  apt-get --no-install-recommends install -q -y default-jre default-jdk \
-  git cmake libeigen3-dev libboost-python-dev libopencv-dev python-opencv \
-  libgmp-dev libcgal-qt5-dev swig && \
-  rm -rf /var/lib/apt/lists/*
+    apt-get --no-install-recommends install -y \
+        default-jre default-jdk \
+        git cmake \
+        libeigen3-dev libboost-python-dev \
+        libopencv-dev python3-opencv \
+        libgmp-dev libcgal-qt5-dev swig \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /code
 WORKDIR /code
