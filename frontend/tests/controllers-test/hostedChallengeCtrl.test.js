@@ -336,15 +336,18 @@ describe('Unit tests for hosted challenge controller', function () {
     });
 
     describe('Filter function coverage for getFiltered*Challenges', function () {
-        var vm, customTitleFilter, customDomainFilter, customHostFilter, customDateRangeFilter, orderBy;
+        var vm, customTitleFilter, customDomainFilter, customHostFilter, customDateRangeFilter, orderBy, $httpBackend;
     
-        beforeEach(inject(function (_customTitleFilter_, _customDomainFilter_, _customHostFilter_, _customDateRangeFilter_, _orderBy_) {
-            customTitleFilter = _customTitleFilter_;
-            customDomainFilter = _customDomainFilter_;
-            customHostFilter = _customHostFilter_;
-            customDateRangeFilter = _customDateRangeFilter_;
-            orderBy = _orderBy_;
+        beforeEach(inject(function (customTitleFilterSpy, customDomainFilterSpy, customHostFilterSpy, customDateRangeFilterSpy, orderBySpy, _$httpBackend_) {
+            customTitleFilter = customTitleFilterSpy;
+            customDomainFilter = customDomainFilterSpy;
+            customHostFilter = customHostFilterSpy;
+            customDateRangeFilter = customDateRangeFilterSpy;
+            orderBy = orderBySpy;
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET(/.*/).respond(200, { results: [] });
             vm = createController();
+            $httpBackend.flush();
     
             // Set up sample data
             vm.ongoingChallenges = [{ id: 1 }];
@@ -400,32 +403,28 @@ describe('Unit tests for hosted challenge controller', function () {
             expect(vm.getFilteredPastChallenges()).toContain('ordered');
         });
     });
-    describe('Filter and Dialog Functions', function () {
-        var $mdDialog, $q, $rootScope, vm;
     
-        beforeEach(inject(function (_$mdDialog_, _$q_, _$rootScope_) {
+    describe('Filter and Dialog Functions', function () {
+        var $mdDialog, $q, $rootScope, vm, $httpBackend;
+    
+        beforeEach(inject(function (_$mdDialog_, _$q_, _$rootScope_, _$httpBackend_) {
             $mdDialog = _$mdDialog_;
             $q = _$q_;
             $rootScope = _$rootScope_;
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET(/.*/).respond(200, { results: [] });
             vm = createController();
+            $httpBackend.flush();
         }));
     
-        // ---
-        // Tests for vm.resetFilter
-        // ---
         it('should reset all filter properties to their default state', function () {
-            // 1. Arrange: Set some non-default filter values
             vm.selecteddomain = ['NLP', 'Computer Vision'];
             vm.searchTitle = ['Awesome Challenge'];
             vm.selectedHostTeam = 'Team EvalAI';
             vm.sortByTeam = 'asc';
             vm.filterStartDate = new Date('2025-01-01');
             vm.filterEndDate = new Date('2025-12-31');
-    
-            // 2. Act: Call the reset function
             vm.resetFilter();
-    
-            // 3. Assert: Verify all properties are reset
             expect(vm.selecteddomain).toEqual([]);
             expect(vm.searchTitle).toEqual([]);
             expect(vm.selectedHostTeam).toBe('');
@@ -434,17 +433,12 @@ describe('Unit tests for hosted challenge controller', function () {
             expect(vm.filterEndDate).toBeNull();
         });
     
-        // ---
-        // Tests for vm.openFilterDialog
-        // ---
         describe('openFilterDialog', function() {
             var mockEvent;
             var initialFilterData;
     
             beforeEach(function() {
                 mockEvent = { target: 'mockButton' };
-                
-                // Arrange: Set initial filter state on the controller
                 vm.selecteddomain = ['CV'];
                 vm.selectedHostTeam = 'HostTeam1';
                 vm.sortByTeam = 'asc';
@@ -452,7 +446,6 @@ describe('Unit tests for hosted challenge controller', function () {
                 vm.filterEndDate = new Date('2025-01-31');
                 vm.domain_choices = [['All', 'All'], ['CV', 'CV']];
                 vm.host_team_choices = ['HostTeam1', 'HostTeam2'];
-    
                 initialFilterData = {
                     selecteddomain: vm.selecteddomain,
                     selectedHostTeam: vm.selectedHostTeam,
@@ -465,14 +458,9 @@ describe('Unit tests for hosted challenge controller', function () {
             });
     
             it('should open the filter dialog with the correct initial data', function() {
-                // Arrange: Spy on the $mdDialog.show method
                 spyOn($mdDialog, 'show').and.returnValue($q.defer().promise);
-    
-                // Act: Call the function
                 vm.openFilterDialog(mockEvent);
                 $rootScope.$apply();
-    
-                // Assert: Check if the dialog was shown with the correct parameters
                 expect($mdDialog.show).toHaveBeenCalled();
                 var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
                 expect(dialogArgs.controller).toBe('filterDialogCtrl');
@@ -481,7 +469,6 @@ describe('Unit tests for hosted challenge controller', function () {
             });
     
             it('should update controller filters when the dialog is closed with new filters', function() {
-                // Arrange: Define the new filters the dialog will return
                 var newFilters = {
                     selecteddomain: ['NLP'],
                     selectedHostTeam: 'HostTeam2',
@@ -489,15 +476,9 @@ describe('Unit tests for hosted challenge controller', function () {
                     filterStartDate: new Date('2025-06-01'),
                     filterEndDate: new Date('2025-06-30')
                 };
-                
-                // Mock the dialog to return a resolved promise with the new filters
                 spyOn($mdDialog, 'show').and.returnValue($q.resolve(newFilters));
-    
-                // Act: Open the dialog
                 vm.openFilterDialog(mockEvent);
-                $rootScope.$apply(); // Resolve the promise
-    
-                // Assert: Verify the controller's scope was updated
+                $rootScope.$apply();
                 expect(vm.selecteddomain).toEqual(newFilters.selecteddomain);
                 expect(vm.selectedHostTeam).toEqual(newFilters.selectedHostTeam);
                 expect(vm.sortByTeam).toEqual(newFilters.sortByTeam);
@@ -506,14 +487,9 @@ describe('Unit tests for hosted challenge controller', function () {
             });
     
             it('should NOT update controller filters when the dialog is cancelled', function() {
-                // Arrange: Mock the dialog to return a rejected promise (simulating a cancel action)
                 spyOn($mdDialog, 'show').and.returnValue($q.reject());
-    
-                // Act: Open the dialog
                 vm.openFilterDialog(mockEvent);
-                $rootScope.$apply(); // Reject the promise
-    
-                // Assert: Verify the controller's filter data remains unchanged
+                $rootScope.$apply();
                 expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
                 expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
                 expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
