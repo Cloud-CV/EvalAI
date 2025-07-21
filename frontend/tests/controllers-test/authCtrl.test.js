@@ -5,10 +5,11 @@ describe('Unit tests for auth controller', function () {
 
     var $controller, $rootScope, $state, $window, $scope, utilities, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _$state_, _utilities_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$state_, _$window_, _utilities_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         $state = _$state_;
+        $window = _$window_;
         utilities = _utilities_;
 
         $scope = $rootScope.$new();
@@ -778,6 +779,68 @@ describe('Unit tests for auth controller', function () {
             vm.resetPasswordConfirm(true);
             expect(vm.isFormError).toBe(true);
             expect(vm.FormError).toContain('Passwords do not match');
+        });
+    });
+
+    describe('Unit tests for checkPendingInvitation function', function () {
+        beforeEach(function () {
+            spyOn($window.sessionStorage, 'getItem');
+            spyOn($window.sessionStorage, 'removeItem');
+            spyOn($window.sessionStorage, 'setItem');
+            spyOn($state, 'go');
+        });
+
+        it('should handle pending invitation redirect', function () {
+            $window.sessionStorage.getItem.and.callFake(function(key) {
+                if (key === 'pendingInvitationKey') return 'test-invitation-key';
+                if (key === 'redirectAfterLogin') return 'web.challenge-host-team-invitation-accept';
+                return null;
+            });
+            
+            var result = vm.checkPendingInvitation();
+            
+            expect(result).toBe(true);
+            expect($window.sessionStorage.removeItem).toHaveBeenCalledWith('redirectAfterLogin');
+            expect($window.sessionStorage.setItem).toHaveBeenCalledWith('justCompletedLogin', 'true');
+            expect($state.go).toHaveBeenCalledWith('web.challenge-host-team-invitation-accept', {
+                invitation_key: 'test-invitation-key',
+                justLoggedIn: true
+            });
+        });
+
+        it('should return false when no pending invitation', function () {
+            $window.sessionStorage.getItem.and.returnValue(null);
+            
+            var result = vm.checkPendingInvitation();
+            
+            expect(result).toBe(false);
+            expect($state.go).not.toHaveBeenCalled();
+        });
+
+        it('should return false when redirectAfterLogin does not match', function () {
+            $window.sessionStorage.getItem.and.callFake(function(key) {
+                if (key === 'pendingInvitationKey') return 'test-invitation-key';
+                if (key === 'redirectAfterLogin') return 'web.dashboard';
+                return null;
+            });
+            
+            var result = vm.checkPendingInvitation();
+            
+            expect(result).toBe(false);
+            expect($state.go).not.toHaveBeenCalled();
+        });
+
+        it('should return false when no pendingInvitationKey', function () {
+            $window.sessionStorage.getItem.and.callFake(function(key) {
+                if (key === 'pendingInvitationKey') return null;
+                if (key === 'redirectAfterLogin') return 'web.challenge-host-team-invitation-accept';
+                return null;
+            });
+            
+            var result = vm.checkPendingInvitation();
+            
+            expect(result).toBe(false);
+            expect($state.go).not.toHaveBeenCalled();
         });
     });
 });

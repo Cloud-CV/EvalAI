@@ -30,3 +30,5 @@ CACHES = {
 TEST = True
 
 MEDIAFILES_LOCATION = "media"
+# Frontend URL for testing
+FRONTEND_URL = "http://localhost:8888"
