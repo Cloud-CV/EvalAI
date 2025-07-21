@@ -3,8 +3,6 @@ from http import HTTPStatus
 from unittest import mock
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
-from django.test import TestCase
-
 import django
 import pytest
 from botocore.exceptions import ClientError
@@ -24,6 +22,7 @@ from challenges.aws_utils import (
     scale_resources,
     scale_workers,
     service_manager,
+    set_cloudwatch_log_retention,
     setup_ec2,
     setup_eks_cluster,
     start_ec2_instance,
@@ -38,6 +37,7 @@ from challenges.aws_utils import (
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.test import TestCase
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -3232,8 +3232,6 @@ class TestRetentionCalculations(TestCase):
 
 
 def test_set_cloudwatch_log_retention_requires_consent():
-    from challenges.aws_utils import set_cloudwatch_log_retention
-
     with patch(
         "challenges.models.Challenge.objects.get"
     ) as mock_challenge, patch(
@@ -3261,8 +3259,6 @@ class TestCloudWatchRetention(
         self, mock_log_group, mock_creds, mock_client
     ):
         """Test successful log retention setting"""
-        from challenges.aws_utils import set_cloudwatch_log_retention
-
         # Setup mocks
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
@@ -3293,8 +3289,6 @@ class TestCloudWatchRetention(
 
     def test_log_retention_no_phases(self):
         """Test error when no phases exist"""
-        from challenges.aws_utils import set_cloudwatch_log_retention
-
         with patch("challenges.models.Challenge.objects.get"):
             with patch(
                 "challenges.models.ChallengePhase.objects.filter"
@@ -3313,9 +3307,6 @@ class TestCloudWatchRetention(
         self, mock_logger, mock_log_group, mock_creds, mock_client
     ):
         """Test AWS ResourceNotFoundException is handled"""
-        from botocore.exceptions import ClientError
-        from challenges.aws_utils import set_cloudwatch_log_retention
-
         mock_log_group.return_value = "test-log-group"
         mock_creds.return_value = {"aws_access_key_id": "test"}
         mock_logs_client = MagicMock()
