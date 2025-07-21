@@ -500,19 +500,16 @@ describe('Unit tests for hosted challenge controller', function () {
                 expect(vm.filterEndDate).toEqual(newFilters.filterEndDate);
             });
     
-            it('should NOT update controller filters when the dialog is cancelled', function(done) {
+            it('should NOT update controller filters when the dialog is cancelled', function() {
                 spyOn($mdDialog, 'show').and.returnValue($q.reject());
                 vm.openFilterDialog(mockEvent);
-                // Use $q to catch the rejection and then check expectations
+                // Add a catch handler to suppress the unhandled rejection warning
                 $rootScope.$apply();
-                setTimeout(function() {
-                    expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
-                    expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
-                    expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
-                    expect(vm.filterStartDate).toEqual(initialFilterData.filterStartDate);
-                    expect(vm.filterEndDate).toEqual(initialFilterData.filterEndDate);
-                    done();
-                }, 0);
+                expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
+                expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
+                expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
+                expect(vm.filterStartDate).toEqual(initialFilterData.filterStartDate);
+                expect(vm.filterEndDate).toEqual(initialFilterData.filterEndDate);
             });
         });
     });
