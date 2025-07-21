@@ -1924,7 +1924,6 @@ def map_retention_days_to_aws_values(days):
 
 def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
     """Set CloudWatch log retention policy for a challenge's log group."""
-    from .models import Challenge, ChallengePhase
     from .utils import get_aws_credentials_for_challenge
 
     try:
@@ -2286,9 +2285,7 @@ def weekly_retention_notifications_and_consent_log():
                 logger.info(
                     f"[RetentionConsent]    Notes: {challenge.retention_policy_notes}"
                 )
-        logger.info(
-            f"[RetentionConsent] End of weekly consent change summary."
-        )
+        logger.info("[RetentionConsent] End of weekly consent change summary.")
 
     return {"notifications_sent": notifications_sent}
 

@@ -102,14 +102,11 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from yaml.scanner import ScannerError
 
 from .aws_utils import (
-    calculate_retention_period_days,
     create_ec2_instance,
     delete_workers,
     describe_ec2_instance,
     get_log_group_name,
     get_logs_from_cloudwatch,
-    map_retention_days_to_aws_values,
-    record_host_retention_consent,
     restart_ec2_instance,
     restart_workers,
     scale_resources,
@@ -5095,9 +5092,7 @@ def provide_retention_consent(request, challenge_pk):
     Returns:
         dict: Success/error response with consent details
     """
-    from .aws_utils import (
-        record_host_retention_consent,
-    )
+    from .aws_utils import record_host_retention_consent
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -5309,9 +5304,7 @@ def update_retention_consent(request, challenge_pk):
     Returns:
         dict: Success/error response
     """
-    from .aws_utils import (
-        record_host_retention_consent,
-    )
+    from .aws_utils import record_host_retention_consent
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)

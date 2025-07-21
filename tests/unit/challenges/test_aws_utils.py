@@ -1,8 +1,9 @@
-import unittest
 from datetime import timedelta
 from http import HTTPStatus
-from unittest import TestCase, mock
+from unittest import mock
 from unittest.mock import MagicMock, Mock, mock_open, patch
+
+from django.test import TestCase
 
 import django
 import pytest
@@ -37,7 +38,6 @@ from challenges.aws_utils import (
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.test import TestCase
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission

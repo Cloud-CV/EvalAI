@@ -12,24 +12,21 @@ Usage:
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/../")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.common")
 import django
-
-django.setup()
-
-from datetime import timedelta
-
 from challenges.aws_utils import (
     cleanup_expired_submission_artifacts,
     record_host_retention_consent,
     set_cloudwatch_log_retention,
-    update_submission_retention_dates,
 )
 from challenges.models import Challenge
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from jobs.models import Submission
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/../")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.common")
+
+django.setup()
 
 
 def cleanup(dry_run=False):
@@ -77,7 +74,7 @@ def status(challenge_id=None):
             retention_eligible_date__lte=timezone.now(),
             is_artifact_deleted=False,
         ).count()
-        print(f"\nOverall Status:")
+        print("\nOverall Status:")
         print(f"Challenges with consent: {consented}/{challenges.count()}")
         print(f"Total submissions: {total_submissions}")
         print(f"Eligible for cleanup: {eligible_submissions}")
