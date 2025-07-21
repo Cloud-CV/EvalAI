@@ -37,7 +37,6 @@ def cleanup(dry_run=False):
     if dry_run:
         print("DRY RUN: Would clean up expired submissions")
         return
-
     result = cleanup_expired_submission_artifacts.delay()
     print(f"Cleanup task started: {result.id}")
 
@@ -58,7 +57,6 @@ def status(challenge_id=None):
                 print(
                     f"Consent date: {challenge.retention_policy_consent_date}"
                 )
-
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge
             )
@@ -79,7 +77,6 @@ def status(challenge_id=None):
             retention_eligible_date__lte=timezone.now(),
             is_artifact_deleted=False,
         ).count()
-
         print(f"\nOverall Status:")
         print(f"Challenges with consent: {consented}/{challenges.count()}")
         print(f"Total submissions: {total_submissions}")
@@ -117,13 +114,10 @@ def main():
     if len(sys.argv) < 2:
         print(__doc__)
         return
-
     action = sys.argv[1]
-
     if action == "cleanup":
         dry_run = "--dry-run" in sys.argv
         cleanup(dry_run)
-
     elif action == "status":
         challenge_id = None
         if "--challenge-id" in sys.argv:
@@ -131,7 +125,6 @@ def main():
             if idx + 1 < len(sys.argv):
                 challenge_id = int(sys.argv[idx + 1])
         status(challenge_id)
-
     elif action == "set-retention":
         if len(sys.argv) < 3:
             print("Usage: set-retention <challenge_id> [--days <days>]")
@@ -143,7 +136,6 @@ def main():
             if idx + 1 < len(sys.argv):
                 days = int(sys.argv[idx + 1])
         set_retention(challenge_id, days)
-
     elif action == "consent":
         if len(sys.argv) < 4:
             print("Usage: consent <challenge_id> <username>")
@@ -151,7 +143,6 @@ def main():
         challenge_id = int(sys.argv[2])
         username = sys.argv[3]
         consent(challenge_id, username)
-
     else:
         print(f"Unknown action: {action}")
         print(__doc__)
