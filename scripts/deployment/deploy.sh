@@ -17,11 +17,11 @@ if [ -z ${COMMIT_ID} ]; then
     export COMMIT_ID="latest"
 fi
 
-if [ -z ${GITHUB_REF_NAME} ]; then
-    echo "Please set the GITHUB_REF_NAME first."
+if [ -z ${GITHUB_BRANCH_NAME} ]; then
+    echo "Please set the GITHUB_BRANCH_NAME first."
 fi
 
-env=${GITHUB_REF_NAME}
+env=${GITHUB_BRANCH_NAME}
 JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
