@@ -134,6 +134,39 @@ class Challenge(TimeStampedModel):
     sqs_retention_period = models.PositiveIntegerField(
         default=345600, verbose_name="SQS Retention Period"
     )
+    log_retention_days_override = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Admin override for CloudWatch log retention period in days (defaults to 30 days when host has consented)",
+    )
+
+    # Retention policy consent and configuration
+    retention_policy_consent = models.BooleanField(
+        default=False,
+        help_text="Challenge host has consented to allow to set a 30-day retention policy for this challenge",
+        verbose_name="Retention Policy Consent",
+    )
+    retention_policy_consent_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date when retention policy consent was given",
+    )
+    retention_policy_consent_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="retention_consent_challenges",
+        help_text="User who provided retention policy consent",
+    )
+
+    # Retention policy documentation and notes
+    retention_policy_notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes about retention policy for this challenge",
+    )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
     )

@@ -49,8 +49,8 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
+					docker-compose -f docker-compose-${env}.yml pull django nodejs celery celerybeat node_exporter memcached
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery celerybeat node_exporter memcached
 				ENDSSH2
 			ENDSSH
             ;;
@@ -98,8 +98,8 @@ case $opt in
             echo "Completed deploy operation."
             ;;
         deploy-celery)
-            echo "Deploying celery docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d celery
+            echo "Deploying celery worker and beat docker containers..."
+            docker-compose -f docker-compose-${env}.yml up -d celery celerybeat
             echo "Completed deploy operation."
             ;;
         deploy-worker)
@@ -234,7 +234,7 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-nodejs production"
         echo "    deploy-nodejs-v2 : Deploy new frontend container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-nodejs-v2 production"
-        echo "    deploy-celery : Deploy celery containers in the respective environment."
+        echo "    deploy-celery : Deploy celery worker and beat containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-celery production"
         echo "    deploy-worker : Deploy worker container for a challenge using challenge pk."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-worker production <superuser_auth_token> <challenge_pk>"
