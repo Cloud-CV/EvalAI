@@ -1,5 +1,27 @@
 <section class="ev-sm-container ev-view challenge-container">
 
+    <div class="row" layout="row" layout-align="start center" layout-wrap style="gap: 10px; margin-bottom: 20px;">
+        <div flex="60">
+            <strong class="text-med-black fs-18">Search</strong>
+            <input type="text" ng-model="hostedChallenges.searchTitle" ng-change="hostedChallenges.filterChallenges()"
+                placeholder="Search challenges by title, tag or domain" style="font-weight: bold; width: 100%;">
+        </div>
+    
+        <div>
+            <md-button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                ng-click="hostedChallenges.openFilterDialog($event)">
+                Apply Filters
+            </md-button>
+        </div>
+    
+        <div>
+            <md-button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                ng-click="hostedChallenges.resetFilter()">
+                Reset Filter
+            </md-button>
+        </div>
+    </div>
+
    <!-- my challenges -->
     <div class="challenge-page-title" id="ongoing-challenges"><span class="text-med-black fs-30 no-margin">My Hosted Challenges</span></div>
     <div ng-if="!hostedChallenges.challengeList.length">
@@ -10,17 +32,17 @@
         <ul class="nav-underline">
             <li class="nav-item">
                 <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'ongoing'}" ng-click="hostedChallenges.setCurrentTab('ongoing')">
-                    Ongoing ({{hostedChallenges.ongoingChallenges.length}})
+                    Ongoing ({{ hostedChallenges.getFilteredOngoingChallenges().length }})
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'upcoming'}" ng-click="hostedChallenges.setCurrentTab('upcoming')">
-                    Upcoming ({{hostedChallenges.upcomingChallenges.length}})
+                    Upcoming ({{ hostedChallenges.getFilteredUpcomingChallenges().length }})
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'past'}" ng-click="hostedChallenges.setCurrentTab('past')">
-                    Past ({{hostedChallenges.pastChallenges.length}})
+                    Past ({{ hostedChallenges.getFilteredPastChallenges().length }})
                 </a>
             </li>
         </ul>
@@ -31,7 +53,7 @@
                 <p>You haven't hosted any ongoing challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
             </div>
             <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
-                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.ongoingChallenges">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.getFilteredOngoingChallenges()">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                         <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">
@@ -77,7 +99,7 @@
                 <p>You haven't hosted any upcoming challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
             </div>
             <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
-                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.upcomingChallenges">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.getFilteredUpcomingChallenges()">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                         <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">
@@ -123,7 +145,7 @@
                 <p>You haven't hosted any past challenge.</p>
             </div>
             <div class="row" ng-if="hostedChallenges.pastChallenges.length">
-                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.pastChallenges">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.getFilteredPastChallenges()">
                     <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                         <div class="card ev-card-panel ev-hosted-challenge-card ev-card-hover">
                             <div class="card-image ev-card-image">

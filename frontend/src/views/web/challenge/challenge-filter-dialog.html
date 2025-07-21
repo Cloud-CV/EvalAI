@@ -1,0 +1,47 @@
+<md-dialog aria-label="Filter Challenges" class="filter-dialog">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools" layout="row" layout-align="space-between center" style="width: 100%;">
+                <h2 style="font-weight: 500; margin: 0;">Filter Challenges</h2>
+            </div>
+        </md-toolbar>    
+
+        <div class="md-dialog-content" layout="column" layout-padding style="gap: 20px;">
+            <div layout="row" layout-align="space-between center" layout-wrap>
+                <div flex="45">
+                    <label>Start Date</label>
+                    <input type="date" ng-model="filterStartDate" class="browser-default" />
+                </div>
+                <div flex="45">
+                    <label>End Date</label>
+                    <input type="date" ng-model="filterEndDate" class="browser-default" />
+                </div>
+            </div>
+        
+            <md-select placeholder="Domain Filter" ng-model="selecteddomain">
+                <md-option ng-repeat="option in domain_choices" value="{{ option[1] }}">
+                    {{ option[1] }}
+                </md-option>
+            </md-select>
+        
+            <md-select placeholder="Filter by Host Team" ng-model="selectedHostTeam">
+                <md-option value="">All Teams</md-option>
+                <md-option ng-repeat="team in host_team_choices" value="{{ team }}">
+                    {{ team }}
+                </md-option>
+            </md-select>
+        
+            <md-select placeholder="Sort by" ng-model="sortByTeam">
+                <md-option value="">Default</md-option>
+                <md-option value="asc">Organized by (A → Z)</md-option>
+                <md-option value="desc">Organized by (Z → A)</md-option>
+            </md-select>
+        </div>
+        
+
+        <md-dialog-actions layout="row" layout-align="end center" layout-margin>
+            <md-button ng-click="cancel()">Cancel</md-button>
+            <md-button class="custom-apply-button" ng-click="apply()">Apply</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
