@@ -1,4 +1,5 @@
 import io
+import tempfile
 import unittest
 import zipfile
 from os.path import join
@@ -11,10 +12,13 @@ import yaml
 from challenges.challenge_config_utils import (
     ValidateChallengeConfigUtil,
     download_and_write_file,
+    get_value_from_field,
     get_yaml_files_from_challenge_config,
     get_yaml_read_error,
     is_challenge_config_yaml_html_field_valid,
+    is_challenge_phase_config_yaml_html_field_valid,
     is_challenge_phase_split_mapping_valid,
+    read_yaml_file,
     validate_challenge_config_util,
 )
 from challenges.models import (
@@ -40,9 +44,11 @@ class TestGetYamlFilesFromChallengeConfig(unittest.TestCase):
 
         zip_buffer.seek(0)
         with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-            yaml_file_count, yaml_file_name, extracted_folder_name = (
-                get_yaml_files_from_challenge_config(zip_file)
-            )
+            (
+                yaml_file_count,
+                yaml_file_name,
+                extracted_folder_name,
+            ) = get_yaml_files_from_challenge_config(zip_file)
 
         self.assertEqual(yaml_file_count, 0)
         self.assertIsNone(yaml_file_name)
@@ -216,11 +222,37 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             "missing_submission_guidelines": "Submission guidelines are missing.",
             "evaluation_script_not_zip": "Evaluation script is not a zip file.",
             "missing_evaluation_script": "Evaluation script file is missing.",
-            "missing_evaluation_script_key": "Evaluation script key is missing.",
+            "missing_evaluation_script_key": (
+                "ERROR: There is no key for the evaluation script in the YAML file."
+                " Please add it and then try again!"
+            ),
             "missing_date": "Start date or end date is missing.",
             "start_date_greater_than_end_date": "Start date is greater than end date.",
             "challenge_metadata_schema_errors": "Schema errors: {}",
         }
+
+        self.error_message_dict.update(
+            {
+                "missing_keys_in_challenge_phase_splits": (
+                    "The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}"
+                ),
+                "challenge_phase_split_not_found": (
+                    "Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) "
+                    "not found in config."
+                    "Deletion of existing challenge phase split after challenge creation is not allowed."
+                ),
+                "duplicate_combinations_in_challenge_phase_splits": (
+                    "Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and "
+                    "dataset_split_id {} found in challenge phase splits."
+                ),
+                "challenge_phase_split_not_exist": (
+                    "Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {})"
+                    " doesn't exist."
+                    "Addition of challenge phase split after challenge creation is not allowed."
+                ),
+                "no_key_for_challenge_phase_splits": "There is no key for challenge phase splits.",
+            }
+        )
 
         self.util = ValidateChallengeConfigUtil(
             self.request,
@@ -583,6 +615,247 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertEqual(len(self.util.error_messages), 1)
         self.assertIn("Schema errors:", self.util.error_messages[0])
 
+    def test_validate_challenge_phase_splits_uuid_not_found(self):
+        self.util.yaml_file_data = {
+            "challenge_phase_splits": [
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": 1,
+                    "dataset_split_id": 1,
+                    "leaderboard_id": 2,
+                    "challenge_phase_id": 3,
+                }
+            ]
+        }
+        self.util.phase_ids = [3]
+        self.util.leaderboard_ids = [2]
+        self.util.dataset_splits_ids = [1]
+        self.util.error_messages = []
+
+        self.util.validate_challenge_phase_splits([(99, 98, 97)])
+
+        assert any(
+            "challenge phase split" in msg.lower()
+            and "not found in config" in msg.lower()
+            for msg in self.util.error_messages
+        )
+
+    def test_validate_challenge_phase_splits_duplicate_combinations(self):
+        self.util.yaml_file_data = {
+            "challenge_phase_splits": [
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": 1,
+                    "dataset_split_id": 1,
+                    "leaderboard_id": 2,
+                    "challenge_phase_id": 3,
+                },
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": 1,
+                    "dataset_split_id": 1,
+                    "leaderboard_id": 2,
+                    "challenge_phase_id": 3,
+                },
+            ]
+        }
+        self.util.phase_ids = [3]
+        self.util.leaderboard_ids = [2]
+        self.util.dataset_splits_ids = [1]
+        self.util.error_messages = []
+        self.util.validate_challenge_phase_splits([])
+        assert any(
+            "Duplicate combinations of leaderboard_id" in msg
+            for msg in self.util.error_messages
+        )
+
+    def test_validate_challenge_phase_splits_invalid_mapping(self):
+        self.util.yaml_file_data = {
+            "challenge_phase_splits": [
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": 1,
+                    "dataset_split_id": 99,  # not in dataset_splits_ids
+                    "leaderboard_id": 2,
+                    "challenge_phase_id": 3,
+                }
+            ]
+        }
+        self.util.phase_ids = [3]
+        self.util.leaderboard_ids = [2]
+        self.util.dataset_splits_ids = [1]
+        self.util.error_messages = []
+        self.util.validate_challenge_phase_splits([])
+        assert any(
+            "Invalid dataset split id" in msg
+            for msg in self.util.error_messages
+        )
+
+    def test_validate_evaluation_script_file_missing_key(self):
+        # Remove 'evaluation_script' key to trigger the else branch
+        self.util.yaml_file_data = {}
+        self.util.validate_evaluation_script_file()
+        assert any(
+            "There is no key for the evaluation script in the YAML file" in msg
+            for msg in self.util.error_messages
+        )
+
+    def test_read_yaml_file(self):
+        data = {"foo": "bar"}
+        with tempfile.NamedTemporaryFile("w+", delete=False) as f:
+            yaml.dump(data, f)
+            f.flush()
+            result = read_yaml_file(f.name, "r")
+        self.assertEqual(result, data)
+
+    def test_get_yaml_read_error_with_problem_and_mark(self):
+        class MockExc:
+            problem = "some problem"
+
+            class Mark:
+                line = 2
+                column = 3
+
+            problem_mark = Mark()
+
+        desc, line, col = get_yaml_read_error(MockExc())
+        self.assertEqual(desc, "Some problem")
+        self.assertEqual(line, 3)
+        self.assertEqual(col, 4)
+
+    def test_get_yaml_read_error_without_problem(self):
+        class MockExc:
+            pass
+
+        desc, line, col = get_yaml_read_error(MockExc())
+        self.assertIsNone(desc)
+        self.assertIsNone(line)
+        self.assertIsNone(col)
+
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=False)
+    def test_is_challenge_config_yaml_html_field_valid_file_not_found(
+        self, mock_isfile
+    ):
+        yaml_file_data = {"desc": "nofile.html"}
+        is_valid, msg = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "desc", "/tmp"
+        )
+        self.assertFalse(is_valid)
+        self.assertIn("not found", msg)
+
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=True)
+    def test_is_challenge_config_yaml_html_field_valid_not_html(
+        self, mock_isfile
+    ):
+        yaml_file_data = {"desc": "file.txt"}
+        is_valid, msg = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "desc", "/tmp"
+        )
+        self.assertFalse(is_valid)
+        self.assertIn("not a HTML file", msg)
+
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=True)
+    def test_is_challenge_config_yaml_html_field_valid_success(
+        self, mock_isfile
+    ):
+        yaml_file_data = {"desc": "file.html"}
+        s_valid, msg = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "desc", "/tmp"
+        )
+        self.assertTrue(s_valid)
+        self.assertEqual(msg, "")
+
+    def test_is_challenge_phase_config_yaml_html_field_valid_present(self):
+        yaml_file_data = {"desc": "foo", "name": "phase"}
+        s_valid, msg = is_challenge_phase_config_yaml_html_field_valid(
+            yaml_file_data, "desc", "/tmp"
+        )
+        self.assertTrue(s_valid)
+        self.assertEqual(msg, "")
+
+    def test_is_challenge_phase_config_yaml_html_field_valid_missing(self):
+        yaml_file_data = {"name": "phase"}
+        is_valid, msg = is_challenge_phase_config_yaml_html_field_valid(
+            yaml_file_data, "desc", "/tmp"
+        )
+        self.assertFalse(is_valid)
+        self.assertIn("There is no key for desc in phase phase", msg)
+
+    @mockpatch("challenges.challenge_config_utils.requests.get")
+    @mockpatch("challenges.challenge_config_utils.write_file")
+    def test_download_and_write_file_success(
+        self, mock_write_file, mock_requests_get
+    ):
+        mock_requests_get.return_value = Mock(status_code=200, content=b"abc")
+        is_success, msg = download_and_write_file(
+            "http://x", True, "/tmp/file", "wb"
+        )
+        self.assertTrue(is_success)
+        self.assertIsNone(msg)
+
+    @mockpatch("challenges.challenge_config_utils.requests.get")
+    def test_download_and_write_file_request_exception(
+        self, mock_requests_get
+    ):
+        mock_requests_get.side_effect = requests.exceptions.RequestException
+        is_success, msg = download_and_write_file(
+            "http://x", True, "/tmp/file", "wb"
+        )
+        self.assertFalse(is_success)
+        self.assertIn("server error", msg)
+
+    def test_is_challenge_phase_split_mapping_valid_all_valid(self):
+        phase_ids = [1]
+        leaderboard_ids = [2]
+        dataset_split_ids = [3]
+        phase_split = {
+            "challenge_phase_id": 1,
+            "leaderboard_id": 2,
+            "dataset_split_id": 3,
+        }
+        is_success, errors = is_challenge_phase_split_mapping_valid(
+            phase_ids, leaderboard_ids, dataset_split_ids, phase_split, 0
+        )
+        self.assertTrue(is_success)
+        self.assertEqual(errors, [])
+
+    def test_is_challenge_phase_split_mapping_valid_invalid(self):
+        phase_ids = [1]
+        leaderboard_ids = [2]
+        dataset_split_ids = [3]
+        phase_split = {
+            "challenge_phase_id": 9,
+            "leaderboard_id": 8,
+            "dataset_split_id": 7,
+        }
+        is_success, errors = is_challenge_phase_split_mapping_valid(
+            phase_ids, leaderboard_ids, dataset_split_ids, phase_split, 0
+        )
+        self.assertFalse(is_success)
+        self.assertTrue(any("Invalid" in e for e in errors))
+
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=True)
+    @mockpatch(
+        "challenges.challenge_config_utils.get_file_content",
+        return_value=b"abc",
+    )
+    def test_get_value_from_field_html(
+        self, mock_get_file_content, mock_isfile
+    ):
+        data = {"desc": "file.html"}
+        val = get_value_from_field(data, "/tmp", "desc")
+        self.assertEqual(val, "abc")
+
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=False)
+    def test_get_value_from_field_not_html(self, mock_isfile):
+        data = {"desc": "file.txt"}
+        val = get_value_from_field(data, "/tmp", "desc")
+        self.assertIsNone(val)
+
 
 @pytest.mark.django_db
 class TestValidateChallengeConfigUtil(unittest.TestCase):
@@ -623,12 +896,18 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             "no_codename_for_challenge_phase": "Codename is missing for challenge phase.",
             "duplicate_codename_for_phase": "Duplicate codename '{}' for phase '{}'.",
             "no_test_annotation_file_found": "No test annotation file found for phase '{}'.",
-            "is_submission_public_restricted": "Submission is public but restricted to select one submission for phase '{}'.",
+            "is_submission_public_restricted": (
+                "Submission is public but restricted to select one submission for phase '{}'."
+            ),
             "missing_dates_challenge_phase": "Missing start or end date for phase '{}'.",
             "start_date_greater_than_end_date_challenge_phase": "Start date is greater than end date for phase '{}'.",
-            "missing_option_in_submission_meta_attribute": "Missing options in submission meta attribute for phase '{}'.",
+            "missing_option_in_submission_meta_attribute": (
+                "Missing options in submission meta attribute for phase '{}'."
+            ),
             "invalid_submission_meta_attribute_types": "Invalid submission meta attribute type '{}' for phase '{}'.",
-            "missing_fields_in_submission_meta_attribute": "Missing fields '{}' in submission meta attribute for phase '{}'.",
+            "missing_fields_in_submission_meta_attribute": (
+                "Missing fields '{}' in submission meta attribute for phase '{}'."
+            ),
             "challenge_phase_schema_errors": "Challenge phase schema errors: {} - {}",
             "challenge_phase_addition": "Cannot add new challenge phase after challenge creation for phase '{}'.",
             "challenge_phase_not_found": "Challenge phase '{}' not found.",
@@ -998,7 +1277,8 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.validate_challenge_phases([2])
         self.assertEqual(
             self.util.error_messages[0],
-            "Challenge phase schema errors: 9 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
+            "Challenge phase schema errors: 9 - "
+            "{'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
         )
 
     def test_challenge_phase_not_found(self):
@@ -1026,7 +1306,8 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.validate_challenge_phases([2])
         self.assertEqual(
             self.util.error_messages[0],
-            "Challenge phase schema errors: 3 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
+            "Challenge phase schema errors: 3 -"
+            " {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
         )
 
     def test_check_tags(self):
