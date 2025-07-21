@@ -206,11 +206,13 @@
                     }
                 }
             }).then(function (filters) {
+                if (filters) {
                 vm.selecteddomain = filters.selecteddomain;
                 vm.selectedHostTeam = filters.selectedHostTeam;
                 vm.sortByTeam = filters.sortByTeam;
                 vm.filterStartDate = filters.filterStartDate;
-                vm.filterEndDate = filters.filterEndDate;
+                vm.filterEndDate = filters.filterEndDate
+                }
             });
         };
     }
