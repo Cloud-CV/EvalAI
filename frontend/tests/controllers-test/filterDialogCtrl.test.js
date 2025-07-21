@@ -44,7 +44,7 @@ describe('filterDialogCtrl', function () {
             selecteddomain: undefined,
             selectedHostTeam: null,
             sortByTeam: 'asc',
-            // filterStartDate and filterEndDate missing
+           
             domain_choices: [['All', 'All']],
             host_team_choices: []
         };
@@ -80,7 +80,7 @@ describe('filterDialogCtrl', function () {
             filterData: filterData
         });
 
-        // Change some values to ensure hide receives the *updated* scope values
+        
         $scope.selecteddomain = ['NLP'];
         $scope.selectedHostTeam = 'Team B';
         $scope.sortByTeam = 'desc';

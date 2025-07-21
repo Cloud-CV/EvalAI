@@ -371,7 +371,7 @@ describe('Unit tests for challenge list controller', function () {
             });
         
             it('should reset all filter values when resetFilter is called', function () {
-                // Set some filter values
+                
                 vm.selecteddomain = ['Computer Vision'];
                 vm.searchTitle = ['test'];
                 vm.selectedHostTeam = 'Test Team';
@@ -379,10 +379,10 @@ describe('Unit tests for challenge list controller', function () {
                 vm.filterStartDate = new Date('2023-01-01');
                 vm.filterEndDate = new Date('2023-12-31');
         
-                // Call resetFilter
+               
                 vm.resetFilter();
         
-                // Verify all values are reset
+                
                 expect(vm.selecteddomain).toEqual([]);
                 expect(vm.searchTitle).toEqual([]);
                 expect(vm.selectedHostTeam).toEqual('');
@@ -502,7 +502,7 @@ describe('Unit tests for challenge list controller', function () {
             });
             spyOn(console, 'log');
     
-            // Set some filter values
+            
             vm.selecteddomain = ['Computer Vision'];
             vm.selectedHostTeam = 'Team A';
             vm.sortByTeam = 'asc';
@@ -542,7 +542,7 @@ describe('Unit tests for challenge list controller', function () {
                 };
             });
     
-            // Set initial values
+            
             vm.selecteddomain = ['Computer Vision'];
             vm.selectedHostTeam = 'Team A';
             vm.sortByTeam = 'asc';
@@ -560,10 +560,10 @@ describe('Unit tests for challenge list controller', function () {
     
         it('should not throw if dialog is cancelled', function () {
             spyOn($mdDialog, 'show').and.callFake(function () {
-                return { then: function () { /* do nothing, simulates cancel */ } };
+                return { then: function () {} };
             });
     
-            // Set initial values
+            
             vm.selecteddomain = ['Computer Vision'];
             vm.selectedHostTeam = 'Team A';
             vm.sortByTeam = 'asc';
@@ -574,7 +574,7 @@ describe('Unit tests for challenge list controller', function () {
                 vm.openFilterDialog('fakeEvent');
             }).not.toThrow();
     
-            // Values should remain unchanged
+           
             expect(vm.selecteddomain).toEqual(['Computer Vision']);
             expect(vm.selectedHostTeam).toBe('Team A');
             expect(vm.sortByTeam).toBe('asc');

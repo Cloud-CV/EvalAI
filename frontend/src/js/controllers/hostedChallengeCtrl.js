@@ -152,7 +152,7 @@
             vm.host_team_choices = Array.from(hostTeamsSet).sort();
         }
 
-        // Delay extraction slightly to ensure data is populated
+        
         setTimeout(function () {
             extractUniqueHostTeams();
         }, 1000);

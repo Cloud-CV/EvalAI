@@ -6,14 +6,14 @@ describe('Unit tests for hosted challenge controller', function () {
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
     beforeEach(module(function($provide) {
-        // Create spies for each filter
+        
         var customTitleFilter = jasmine.createSpy('customTitleFilter').and.callFake(arr => arr.concat('title'));
         var customDomainFilter = jasmine.createSpy('customDomainFilter').and.callFake(arr => arr.concat('domain'));
         var customHostFilter = jasmine.createSpy('customHostFilter').and.callFake(arr => arr.concat('host'));
         var customDateRangeFilter = jasmine.createSpy('customDateRangeFilter').and.callFake(arr => arr.concat('date'));
         var orderBy = jasmine.createSpy('orderBy').and.callFake(arr => arr.concat('ordered'));
     
-        // Mock $filter service to return the spies
+        
         $provide.value('$filter', function(name) {
             switch (name) {
                 case 'customTitleFilter': return customTitleFilter;
@@ -24,7 +24,7 @@ describe('Unit tests for hosted challenge controller', function () {
             }
         });
     
-        // Attach spies to window for test assertions
+        
         window.customTitleFilter = customTitleFilter;
         window.customDomainFilter = customDomainFilter;
         window.customHostFilter = customHostFilter;
@@ -317,7 +317,7 @@ describe('Unit tests for hosted challenge controller', function () {
     describe('getCurrentChallengeList', function () {
         beforeEach(function () {
             vm = createController();
-            // Initialize challenges for testing if needed
+            
             vm.ongoingChallenges = [{ id: 1, name: 'Ongoing Challenge' }];
             vm.upcomingChallenges = [{ id: 2, name: 'Upcoming Challenge' }];
             vm.pastChallenges = [{ id: 3, name: 'Past Challenge' }];
@@ -339,17 +339,17 @@ describe('Unit tests for hosted challenge controller', function () {
         });
     
         it('should return an empty array when currentTab is an unknown value', function () {
-            vm.currentTab = 'unknown'; // This covers the 'else' branch
+            vm.currentTab = 'unknown'; 
             expect(vm.getCurrentChallengeList()).toEqual([]);
         });
     
         it('should return an empty array when currentTab is null', function () {
-            vm.currentTab = null; // Another case for the 'else' branch
+            vm.currentTab = null; 
             expect(vm.getCurrentChallengeList()).toEqual([]);
         });
     
         it('should return an empty array when currentTab is undefined', function () {
-            vm.currentTab = undefined; // Yet another case for the 'else' branch
+            vm.currentTab = undefined; 
             expect(vm.getCurrentChallengeList()).toEqual([]);
         });
     });
@@ -501,11 +501,11 @@ describe('Unit tests for hosted challenge controller', function () {
             });
     
             it('should NOT update controller filters when the dialog is cancelled', function() {
-                // Create a deferred and attach a catch to suppress unhandled rejection
+                
                 var deferred = $q.defer();
                 spyOn($mdDialog, 'show').and.returnValue(deferred.promise.catch(angular.noop));
                 vm.openFilterDialog(mockEvent);
-                deferred.reject(); // trigger the rejection
+                deferred.reject(); 
                 $rootScope.$apply();
                 expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
                 expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);

@@ -95,23 +95,23 @@
             parameters.token = null;
         }
 
-        // Clone base parameters
+        
         var baseParams = {};
         baseParams.token = userKey ? userKey : null;
 
-        // Call for ongoing challenges
+        
         var presentParams = angular.copy(baseParams);
         presentParams.url = 'challenges/challenge/present/approved/public';
         presentParams.method = 'GET';
         vm.getAllResults(presentParams, vm.currentList, "noneCurrentChallenge");
 
-        // Call for upcoming challenges
+        
         var futureParams = angular.copy(baseParams);
         futureParams.url = 'challenges/challenge/future/approved/public';
         futureParams.method = 'GET';
         vm.getAllResults(futureParams, vm.upcomingList, "noneUpcomingChallenge");
 
-        // Call for past challenges
+        
         var pastParams = angular.copy(baseParams);
         pastParams.url = 'challenges/challenge/past/approved/public';
         pastParams.method = 'GET';
@@ -145,7 +145,7 @@
             vm.host_team_choices = Array.from(hostTeamsSet).sort();
         }
 
-        // Delay extraction slightly to ensure data is populated
+       
         setTimeout(function () {
             extractUniqueHostTeams();
         }, 1000);
