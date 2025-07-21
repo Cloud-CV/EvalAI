@@ -4,19 +4,23 @@ import os
 import random
 import string
 import uuid
+from datetime import timedelta
 from http import HTTPStatus
 
 import yaml
 from accounts.models import JwtToken
 from base.utils import get_boto3_client, send_email
 from botocore.exceptions import ClientError
+from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.html import strip_tags
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.models import Submission
 
 from evalai.celery import app
 
@@ -1888,52 +1892,14 @@ def update_sqs_retention_period_task(challenge):
 
 
 def calculate_retention_period_days(challenge_end_date, challenge=None):
-    """
-    Calculate retention period in days based on challenge end date and challenge-level consent.
-
-    Args:
-        challenge_end_date (datetime): The end date of the challenge phase
-        challenge (Challenge, optional): Challenge object for custom retention policies
-
-    Returns:
-        int: Number of days for retention
-    """
-    from django.utils import timezone
-
-    now = timezone.now()
-
-    # Check if challenge has host consent for retention policy
+    """Calculate retention period in days based on challenge end date and consent."""
     if challenge and challenge.retention_policy_consent:
-        # Host has consented - use 30-day retention (or admin override)
-        if challenge.log_retention_days_override:
-            return challenge.log_retention_days_override
-        else:
-            # Default 30-day retention when host has consented
-            return 30
-
-    # No host consent - use indefinite retention (no automatic cleanup)
-    # Without consent, data is retained indefinitely for safety
-    if challenge_end_date > now:
-        # Challenge is still active, retain indefinitely
-        # Return a very large number to effectively make it indefinite
-        return 3653  # Maximum AWS CloudWatch retention period (10 years)
-    else:
-        # Challenge has ended, retain indefinitely
-        # Return maximum retention period
-        return 3653  # Maximum AWS CloudWatch retention period (10 years)
+        return challenge.log_retention_days_override or 30
+    return 3653  # Max AWS retention (10 years) for indefinite retention
 
 
 def map_retention_days_to_aws_values(days):
-    """
-    Map retention period in days to valid AWS CloudWatch retention values.
-
-    Args:
-        days (int): Desired retention period in days
-
-    Returns:
-        int: Valid AWS CloudWatch retention period
-    """
-    # AWS CloudWatch valid retention periods (in days)
+    """Map retention days to valid AWS CloudWatch retention values."""
     valid_periods = [
         1,
         3,
@@ -1953,158 +1919,85 @@ def map_retention_days_to_aws_values(days):
         1827,
         3653,
     ]
-
-    # Find the closest valid period that's >= requested days
-    for period in valid_periods:
-        if period >= days:
-            return period
-
-    # If requested days exceed maximum, use maximum
-    return valid_periods[-1]
+    return next((p for p in valid_periods if p >= days), valid_periods[-1])
 
 
 def set_cloudwatch_log_retention(challenge_pk, retention_days=None):
-    """
-    Set CloudWatch log retention policy for a challenge's log group.
-
-    Args:
-        challenge_pk (int): Challenge primary key
-        retention_days (int, optional): Retention period in days. If None, calculates based on challenge end date.
-
-    Returns:
-        dict: Response containing success/error status
-    """
+    """Set CloudWatch log retention policy for a challenge's log group."""
     from .models import Challenge, ChallengePhase
     from .utils import get_aws_credentials_for_challenge
 
     try:
-        # Check if challenge has an explicit override first
-        challenge_obj = Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(pk=challenge_pk)
 
-        # Check if challenge host has consented to retention policy
-        if not challenge_obj.retention_policy_consent:
+        if not challenge.retention_policy_consent:
             return {
-                "error": f"Challenge {challenge_pk} host has not consented to retention policy. "
-                "Please obtain consent before applying retention policies. "
-                "Without consent, data is retained indefinitely for safety.",
+                "error": f"Challenge {challenge_pk} host has not consented to retention policy. Please obtain consent before applying retention policies. Without consent, data is retained indefinitely for safety.",
                 "requires_consent": True,
-                "challenge_id": challenge_pk,
             }
 
-        # Get challenge phases to determine end date
         phases = ChallengePhase.objects.filter(challenge_id=challenge_pk)
         if not phases.exists():
             return {"error": f"No phases found for challenge {challenge_pk}"}
 
-        # Get the latest end date from all phases
         latest_end_date = max(
             phase.end_date for phase in phases if phase.end_date
         )
 
-        # Determine retention_days priority: CLI arg > model override > calculated
         if retention_days is None:
-            if challenge_obj.log_retention_days_override is not None:
-                retention_days = challenge_obj.log_retention_days_override
-            else:
-                retention_days = calculate_retention_period_days(
-                    latest_end_date, challenge_obj
-                )
+            retention_days = (
+                challenge.log_retention_days_override
+                or calculate_retention_period_days(latest_end_date, challenge)
+            )
 
-        # Map to valid AWS retention period
         aws_retention_days = map_retention_days_to_aws_values(retention_days)
 
         # Get log group name
         log_group_name = get_log_group_name(challenge_pk)
+        logs_client = get_boto3_client(
+            "logs", get_aws_credentials_for_challenge(challenge_pk)
+        )
 
-        # Get AWS credentials for the challenge
-        challenge_aws_keys = get_aws_credentials_for_challenge(challenge_pk)
-
-        # Set up CloudWatch Logs client
-        logs_client = get_boto3_client("logs", challenge_aws_keys)
-
-        # Set retention policy
         logs_client.put_retention_policy(
             logGroupName=log_group_name, retentionInDays=aws_retention_days
         )
 
         logger.info(
-            f"Set CloudWatch log retention for challenge {challenge_pk} "
-            f"to {aws_retention_days} days (host consent: {challenge_obj.retention_policy_consent}, "
-            f"30-day policy allowed: {challenge_obj.retention_policy_consent})"
+            f"Set CloudWatch log retention for challenge {challenge_pk} to {aws_retention_days} days"
         )
 
         return {
             "success": True,
             "retention_days": aws_retention_days,
             "log_group": log_group_name,
-            "message": f"Retention policy set to {aws_retention_days} days "
-            f"({'30-day policy applied' if challenge_obj.retention_policy_consent else 'indefinite retention (no consent)'})",
-            "host_consent": challenge_obj.retention_policy_consent,
+            "host_consent": challenge.retention_policy_consent,
         }
 
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        if error_code == "ResourceNotFoundException":
-            return {
-                "error": f"Log group not found for challenge {challenge_pk}",
-                "log_group": get_log_group_name(challenge_pk),
-            }
-        else:
-            logger.exception(
-                f"Failed to set log retention for challenge {challenge_pk}"
-            )
-            return {"error": str(e)}
     except Exception as e:
         logger.exception(
-            f"Unexpected error setting log retention for challenge {challenge_pk}"
+            f"Failed to set log retention for challenge {challenge_pk}"
         )
         return {"error": str(e)}
 
 
 def calculate_submission_retention_date(challenge_phase):
-    """
-    Calculate when a submission becomes eligible for retention cleanup.
-
-    Args:
-        challenge_phase: ChallengePhase object
-
-    Returns:
-        datetime: Date when submission artifacts can be deleted, or None if indefinite retention
-    """
+    """Calculate when a submission becomes eligible for retention cleanup."""
     from datetime import timedelta
 
-    if not challenge_phase.end_date:
+    if not challenge_phase.end_date or challenge_phase.is_public:
         return None
 
-    # Only trigger retention if phase is not public (not accepting submissions)
-    if challenge_phase.is_public:
-        return None
-
-    # Get challenge object for retention policies
     challenge = challenge_phase.challenge
-
-    # Check if challenge has host consent
     if challenge.retention_policy_consent:
-        # Use challenge-level retention policy (30 days)
         retention_days = calculate_retention_period_days(
             challenge_phase.end_date, challenge
         )
         return challenge_phase.end_date + timedelta(days=retention_days)
-    else:
-        # No host consent - indefinite retention (no automatic cleanup)
-        return None
+    return None
 
 
 def delete_submission_files_from_storage(submission):
-    """
-    Delete submission files from S3 storage while preserving database records.
-
-    Args:
-        submission: Submission object
-
-    Returns:
-        dict: Result of deletion operation
-    """
+    """Delete submission files from S3 storage while preserving database records."""
     from .utils import get_aws_credentials_for_challenge
 
     deleted_files = []
@@ -2136,10 +2029,8 @@ def delete_submission_files_from_storage(submission):
                         Bucket=bucket_name, Key=file_field.name
                     )
                     deleted_files.append(file_field.name)
-
                     # Clear the file field in the database
                     file_field.delete(save=False)
-
                 except ClientError as e:
                     error_code = e.response.get("Error", {}).get(
                         "Code", "Unknown"
@@ -2155,8 +2046,6 @@ def delete_submission_files_from_storage(submission):
                         )
 
         # Mark submission as having artifacts deleted
-        from django.utils import timezone
-
         submission.is_artifact_deleted = True
         submission.artifact_deletion_date = timezone.now()
         submission.save(
@@ -2187,161 +2076,81 @@ def delete_submission_files_from_storage(submission):
 
 @app.task
 def cleanup_expired_submission_artifacts():
-    """
-    Periodic task to clean up expired submission artifacts.
-    This task should be run daily via Celery Beat.
-    """
-    from django.utils import timezone
-    from jobs.models import Submission
-
+    """Periodic task to clean up expired submission artifacts."""
     logger.info("Starting cleanup of expired submission artifacts")
 
-    # Find submissions eligible for cleanup
-    now = timezone.now()
     eligible_submissions = Submission.objects.filter(
-        retention_eligible_date__lte=now,
-        retention_eligible_date__isnull=False,  # Exclude indefinite retention
+        retention_eligible_date__lte=timezone.now(),
+        retention_eligible_date__isnull=False,
         is_artifact_deleted=False,
     ).select_related("challenge_phase__challenge")
 
-    cleanup_stats = {
-        "total_processed": 0,
-        "successful_deletions": 0,
-        "failed_deletions": 0,
-        "errors": [],
-    }
-
     if not eligible_submissions.exists():
         logger.info("No submissions eligible for cleanup")
-        return cleanup_stats
+        return {
+            "total_processed": 0,
+            "successful_deletions": 0,
+            "failed_deletions": 0,
+        }
 
-    logger.info(
-        f"Found {eligible_submissions.count()} submissions eligible for cleanup"
-    )
+    successful_deletions = 0
+    failed_deletions = 0
+    errors = []
 
     for submission in eligible_submissions:
-        cleanup_stats["total_processed"] += 1
-
-        try:
-            result = delete_submission_files_from_storage(submission)
-            if result["success"]:
-                cleanup_stats["successful_deletions"] += 1
-                logger.info(
-                    f"Successfully cleaned up submission {submission.pk} from challenge {submission.challenge_phase.challenge.title}"
-                )
-            else:
-                cleanup_stats["failed_deletions"] += 1
-                cleanup_stats["errors"].append(
-                    {
-                        "submission_id": submission.pk,
-                        "challenge_id": submission.challenge_phase.challenge.pk,
-                        "error": result.get("error", "Unknown error"),
-                    }
-                )
-                logger.error(
-                    f"Failed to clean up submission {submission.pk}: {result.get('error', 'Unknown error')}"
-                )
-        except Exception as e:
-            cleanup_stats["failed_deletions"] += 1
-            cleanup_stats["errors"].append(
+        result = delete_submission_files_from_storage(submission)
+        if result["success"]:
+            successful_deletions += 1
+        else:
+            failed_deletions += 1
+            errors.append(
                 {
                     "submission_id": submission.pk,
                     "challenge_id": submission.challenge_phase.challenge.pk,
-                    "error": str(e),
+                    "error": result.get("error", "Unknown error"),
                 }
-            )
-            logger.exception(
-                f"Unexpected error cleaning up submission {submission.pk}"
             )
 
     logger.info(
-        f"Cleanup completed. Processed: {cleanup_stats['total_processed']}, "
-        f"Successful: {cleanup_stats['successful_deletions']}, "
-        f"Failed: {cleanup_stats['failed_deletions']}"
+        f"Cleanup completed: {successful_deletions} successful, {failed_deletions} failed"
     )
 
-    # Log errors for monitoring
-    if cleanup_stats["errors"]:
-        logger.error(f"Cleanup errors: {cleanup_stats['errors']}")
-
-    return cleanup_stats
+    return {
+        "total_processed": (
+            len(eligible_submissions)
+            if hasattr(eligible_submissions, "__len__")
+            else eligible_submissions.count()
+        ),
+        "successful_deletions": successful_deletions,
+        "failed_deletions": failed_deletions,
+        "errors": errors,
+    }
 
 
 @app.task
 def update_submission_retention_dates():
-    """
-    Task to update retention eligible dates for submissions based on challenge phase end dates.
-    This should be run when challenge phases are updated or periodically.
-    """
-    from challenges.models import ChallengePhase
-    from jobs.models import Submission
-
+    """Update retention dates for submissions based on current challenge settings."""
     logger.info("Updating submission retention dates")
 
+    # Get submissions that need retention date updates
+    submissions = Submission.objects.filter(
+        retention_eligible_date__isnull=True,
+        challenge_phase__end_date__isnull=False,
+        challenge_phase__is_public=False,
+    ).select_related("challenge_phase__challenge")
+
     updated_count = 0
-    errors = []
-
-    try:
-        # Get all challenge phases that have ended and are not public
-        ended_phases = ChallengePhase.objects.filter(
-            end_date__isnull=False, is_public=False
+    for submission in submissions:
+        retention_date = calculate_submission_retention_date(
+            submission.challenge_phase
         )
-
-        if not ended_phases.exists():
-            logger.info(
-                "No ended challenge phases found - no retention dates to update"
-            )
-            return {"updated_submissions": 0, "errors": []}
-
-        logger.info(
-            f"Found {ended_phases.count()} ended challenge phases to process"
-        )
-
-        for phase in ended_phases:
-            try:
-                retention_date = calculate_submission_retention_date(phase)
-                if retention_date:
-                    # Update submissions for this phase
-                    submissions_updated = Submission.objects.filter(
-                        challenge_phase=phase,
-                        retention_eligible_date__isnull=True,
-                        is_artifact_deleted=False,
-                    ).update(retention_eligible_date=retention_date)
-
-                    updated_count += submissions_updated
-
-                    if submissions_updated > 0:
-                        logger.info(
-                            f"Updated {submissions_updated} submissions for phase {phase.pk} "
-                            f"({phase.challenge.title}) with retention date {retention_date}"
-                        )
-                else:
-                    logger.debug(
-                        f"No retention date calculated for phase {phase.pk} - phase may still be public or indefinite retention"
-                    )
-
-            except Exception as e:
-                error_msg = f"Failed to update retention dates for phase {phase.pk}: {str(e)}"
-                logger.error(error_msg)
-                errors.append(
-                    {
-                        "phase_id": phase.pk,
-                        "challenge_id": phase.challenge.pk,
-                        "error": str(e),
-                    }
-                )
-
-    except Exception as e:
-        error_msg = f"Unexpected error during retention date update: {str(e)}"
-        logger.exception(error_msg)
-        errors.append({"error": str(e)})
+        if retention_date != submission.retention_eligible_date:
+            submission.retention_eligible_date = retention_date
+            submission.save(update_fields=["retention_eligible_date"])
+            updated_count += 1
 
     logger.info(f"Updated retention dates for {updated_count} submissions")
-
-    if errors:
-        logger.error(f"Retention date update errors: {errors}")
-
-    return {"updated_submissions": updated_count, "errors": errors}
+    return {"updated_count": updated_count}
 
 
 def send_template_email(
@@ -2352,49 +2161,23 @@ def send_template_email(
     sender_email=None,
     reply_to=None,
 ):
-    """
-    Send an email using Django templates instead of SendGrid.
-
-    Args:
-        recipient_email (str): Email address of the recipient
-        subject (str): Email subject line
-        template_name (str): Template name (e.g., 'challenges/retention_warning.html')
-        template_context (dict): Context data for the template
-        sender_email (str, optional): Sender email address. Defaults to CLOUDCV_TEAM_EMAIL
-        reply_to (str, optional): Reply-to email address
-
-    Returns:
-        bool: True if email was sent successfully, False otherwise
-    """
+    """Send email using template."""
     try:
-        # Use default sender if not provided
-        if not sender_email:
-            sender_email = settings.CLOUDCV_TEAM_EMAIL
-
-        # Render the HTML template
         html_content = render_to_string(template_name, template_context)
-
-        # Create plain text version by stripping HTML tags
         text_content = strip_tags(html_content)
 
-        # Create email message
         email = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
-            from_email=sender_email,
+            from_email=sender_email or settings.CLOUDCV_TEAM_EMAIL,
             to=[recipient_email],
             reply_to=[reply_to] if reply_to else None,
         )
-
-        # Attach HTML version
         email.attach_alternative(html_content, "text/html")
-
-        # Send the email
         email.send()
 
         logger.info(f"Email sent successfully to {recipient_email}")
         return True
-
     except Exception as e:
         logger.error(f"Failed to send email to {recipient_email}: {str(e)}")
         return False
@@ -2403,35 +2186,20 @@ def send_template_email(
 def send_retention_warning_email(
     challenge, recipient_email, submission_count, warning_date
 ):
-    """
-    Send retention warning email using Django template.
-
-    Args:
-        challenge: Challenge object
-        recipient_email (str): Email address of the recipient
-        submission_count (int): Number of submissions affected
-        warning_date (datetime): Date when cleanup will occur
-
-    Returns:
-        bool: True if email was sent successfully, False otherwise
-    """
-    # Prepare template context
+    """Send retention warning email to challenge host."""
     template_context = {
         "CHALLENGE_NAME": challenge.title,
-        "CHALLENGE_URL": f"{settings.EVALAI_API_SERVER}/web/challenges/challenge-page/{challenge.id}",
+        "CHALLENGE_DESCRIPTION": challenge.description,
         "SUBMISSION_COUNT": submission_count,
-        "RETENTION_DATE": warning_date.strftime("%B %d, %Y"),
-        "DAYS_REMAINING": 14,
+        "WARNING_DATE": warning_date.strftime("%Y-%m-%d"),
+        "CHALLENGE_URL": f"{settings.EVALAI_API_SERVER}/web/challenge/{challenge.pk}",
     }
 
-    # Add challenge image if available
     if challenge.image:
         template_context["CHALLENGE_IMAGE_URL"] = challenge.image.url
 
-    # Email subject
     subject = f"⚠️ Retention Warning: {challenge.title} - {submission_count} submissions will be deleted in 14 days"
 
-    # Send the email
     return send_template_email(
         recipient_email=recipient_email,
         subject=subject,
@@ -2443,40 +2211,20 @@ def send_retention_warning_email(
 
 @app.task
 def weekly_retention_notifications_and_consent_log():
-    """
-    Send warning notifications to challenge hosts 14 days before retention cleanup.
-    Also logs a summary of retention consent changes in the last week for admin awareness.
-    """
-    from datetime import timedelta
+    """Send warning notifications and log consent changes."""
+    logger.info("Processing retention notifications and consent logging")
 
-    from django.utils import timezone
-    from jobs.models import Submission
-
-    from .models import Challenge
-
-    logger.info(
-        "Checking for retention warning notifications and logging consent changes"
-    )
-
-    # Initialize notification counter
-    notifications_sent = 0
-
-    # Find submissions that will be cleaned up in 14 days
+    # Send warnings for submissions expiring in 14 days
     warning_date = timezone.now() + timedelta(days=14)
     warning_submissions = Submission.objects.filter(
         retention_eligible_date__date=warning_date.date(),
-        retention_eligible_date__isnull=False,  # Exclude indefinite retention
+        retention_eligible_date__isnull=False,
         is_artifact_deleted=False,
     ).select_related("challenge_phase__challenge__creator")
 
-    if not warning_submissions.exists():
-        logger.info("No submissions require retention warning notifications")
-    else:
-        logger.info(
-            f"Found {warning_submissions.count()} submissions requiring retention warnings"
-        )
-
-        # Group by challenge to send one email per challenge
+    notifications_sent = 0
+    if warning_submissions.exists():
+        # Group by challenge
         challenges_to_notify = {}
         for submission in warning_submissions:
             challenge = submission.challenge_phase.challenge
@@ -2487,117 +2235,37 @@ def weekly_retention_notifications_and_consent_log():
                 }
             challenges_to_notify[challenge.pk]["submission_count"] += 1
 
-        notifications_sent = 0
-        notification_errors = []
-
         for challenge_data in challenges_to_notify.values():
             challenge = challenge_data["challenge"]
             submission_count = challenge_data["submission_count"]
 
+            if not challenge.inform_hosts:
+                continue
+
             try:
-                # Skip if challenge doesn't want host notifications
-                if not challenge.inform_hosts:
-                    logger.info(
-                        f"Skipping notification for challenge {challenge.pk} - inform_hosts is False"
-                    )
-                    continue
-
-                # Send notification email to challenge hosts
-                if (
-                    not hasattr(settings, "EVALAI_API_SERVER")
-                    or not settings.EVALAI_API_SERVER
-                ):
-                    logger.error(
-                        "EVALAI_API_SERVER setting is missing - cannot generate challenge URL"
-                    )
-                    continue
-
-                # Get challenge host emails
-                try:
-                    emails = challenge.creator.get_all_challenge_host_email()
-                    if not emails:
-                        logger.warning(
-                            f"No host emails found for challenge {challenge.pk}"
-                        )
-                        continue
-                except Exception as e:
-                    logger.error(
-                        f"Failed to get host emails for challenge {challenge.pk}: {e}"
-                    )
-                    continue
-
-                # Send emails to all hosts
-                email_sent = False
+                emails = challenge.creator.get_all_challenge_host_email()
                 for email in emails:
-                    try:
-                        success = send_retention_warning_email(
-                            challenge=challenge,
-                            recipient_email=email,
-                            submission_count=submission_count,
-                            warning_date=warning_date,
-                        )
-                        if success:
-                            email_sent = True
-                            logger.info(
-                                f"Sent retention warning email to {email} for challenge {challenge.pk}"
-                            )
-                        else:
-                            logger.error(
-                                f"Failed to send retention warning email to {email} for challenge {challenge.pk}"
-                            )
-                            notification_errors.append(
-                                {
-                                    "challenge_id": challenge.pk,
-                                    "email": email,
-                                    "error": "Email sending failed",
-                                }
-                            )
-                    except Exception as e:
-                        logger.error(
-                            f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"
-                        )
-                        notification_errors.append(
-                            {
-                                "challenge_id": challenge.pk,
-                                "email": email,
-                                "error": str(e),
-                            }
-                        )
-
-                if email_sent:
-                    notifications_sent += 1
-                    logger.info(
-                        f"Sent retention warning for challenge {challenge.pk} ({submission_count} submissions)"
-                    )
-
+                    if send_retention_warning_email(
+                        challenge=challenge,
+                        recipient_email=email,
+                        submission_count=submission_count,
+                        warning_date=warning_date,
+                    ):
+                        notifications_sent += 1
+                        break  # One successful email per challenge is enough
             except Exception as e:
-                logger.exception(
-                    f"Failed to send retention warning for challenge {challenge.pk}"
-                )
-                notification_errors.append(
-                    {"challenge_id": challenge.pk, "error": str(e)}
+                logger.error(
+                    f"Failed to send retention warning email to {email} for challenge {challenge.pk}: {e}"
                 )
 
-        logger.info(
-            f"Sent {notifications_sent} retention warning notifications"
-        )
-
-        if notification_errors:
-            logger.error(f"Notification errors: {notification_errors}")
-
-    # --- CONSENT CHANGE LOGGING SECTION ---
-    now = timezone.now()
-    one_week_ago = now - timedelta(days=7)
+    # Log recent consent changes
+    one_week_ago = timezone.now() - timedelta(days=7)
     recent_consents = Challenge.objects.filter(
         retention_policy_consent=True,
         retention_policy_consent_date__gte=one_week_ago,
     ).order_by("-retention_policy_consent_date")
 
-    if not recent_consents.exists():
-        logger.info(
-            "[RetentionConsent] No retention consent changes in the last week."
-        )
-    else:
+    if recent_consents.exists():
         logger.info(
             f"[RetentionConsent] {recent_consents.count()} consent changes in the last week:"
         )
@@ -2625,17 +2293,14 @@ def weekly_retention_notifications_and_consent_log():
     return {"notifications_sent": notifications_sent}
 
 
-def update_challenge_log_retention_on_approval(challenge):
-    """
-    Update CloudWatch log retention when a challenge is approved.
-    Called from challenge_approval_callback.
-    """
+def update_challenge_log_retention(challenge):
+    """Update CloudWatch log retention for a challenge."""
     if not settings.DEBUG:
         try:
             result = set_cloudwatch_log_retention(challenge.pk)
-            if "error" not in result:
+            if result.get("success"):
                 logger.info(
-                    f"Updated log retention for approved challenge {challenge.pk}"
+                    f"Updated log retention for challenge {challenge.pk}"
                 )
             else:
                 logger.warning(
@@ -2647,55 +2312,23 @@ def update_challenge_log_retention_on_approval(challenge):
             )
 
 
+def update_challenge_log_retention_on_approval(challenge):
+    """Update CloudWatch log retention when a challenge is approved."""
+    update_challenge_log_retention(challenge)
+
+
 def update_challenge_log_retention_on_restart(challenge):
-    """
-    Update CloudWatch log retention when workers are restarted.
-    Called from restart_workers_signal_callback.
-    """
-    if not settings.DEBUG:
-        try:
-            result = set_cloudwatch_log_retention(challenge.pk)
-            if result.get("success"):
-                logger.info(
-                    f"Updated log retention for restarted challenge {challenge.pk}"
-                )
-        except Exception:
-            logger.exception(
-                f"Error updating log retention for restarted challenge {challenge.pk}"
-            )
+    """Update CloudWatch log retention when workers are restarted."""
+    update_challenge_log_retention(challenge)
 
 
 def update_challenge_log_retention_on_task_def_registration(challenge):
-    """
-    Update CloudWatch log retention when task definition is registered.
-    Called from register_task_def_by_challenge_pk.
-    """
-    if not settings.DEBUG:
-        try:
-            result = set_cloudwatch_log_retention(challenge.pk)
-            if result.get("success"):
-                logger.info(
-                    f"Updated log retention for challenge {challenge.pk} task definition"
-                )
-        except Exception:
-            logger.exception(
-                f"Error updating log retention for challenge {challenge.pk} task definition"
-            )
+    """Update CloudWatch log retention when task definition is registered."""
+    update_challenge_log_retention(challenge)
 
 
 def record_host_retention_consent(challenge_pk, user, consent_notes=None):
-    """
-    Record host consent for retention policy on a challenge.
-    This consent allows EvalAI admins to set a 30-day retention policy.
-
-    Args:
-        challenge_pk (int): Challenge primary key
-        user (User): User providing consent
-        consent_notes (str, optional): Additional notes about consent
-
-    Returns:
-        dict: Response containing success/error status
-    """
+    """Record host consent for retention policy on a challenge."""
     from django.utils import timezone
 
     from .models import Challenge
@@ -2703,14 +2336,11 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
 
-        # Check if user is a host of this challenge
         if not is_user_a_host_of_challenge(user, challenge_pk):
             return {
-                "error": "User is not authorized to provide retention consent for this challenge",
-                "requires_authorization": True,
+                "error": "User is not authorized to provide retention consent for this challenge"
             }
 
-        # Update challenge with consent information
         challenge.retention_policy_consent = True
         challenge.retention_policy_consent_date = timezone.now()
         challenge.retention_policy_consent_by = user
@@ -2719,14 +2349,12 @@ def record_host_retention_consent(challenge_pk, user, consent_notes=None):
         challenge.save()
 
         logger.info(
-            f"Retention policy consent recorded for challenge {challenge_pk} by user {user.username} "
-            f"(allows 30-day retention policy)"
+            f"Retention policy consent recorded for challenge {challenge_pk} by user {user.username}"
         )
 
         return {
             "success": True,
-            "message": f"Retention policy consent recorded for challenge {challenge.title}. "
-            f"EvalAI admins can now set a 30-day retention policy for this challenge.",
+            "message": f"Retention policy consent recorded for challenge {challenge.title}.",
             "consent_date": challenge.retention_policy_consent_date.isoformat(),
             "consent_by": user.username,
         }

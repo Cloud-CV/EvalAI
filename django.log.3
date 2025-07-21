@@ -1,0 +1,581 @@
+[2025-07-17 19:30:27] ERROR aws_utils An error occurred (Unknown) when calling the DeregisterTaskDefinition operation: Scaling inactive workers not supported
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 1037, in scale_resources
+    response = client.deregister_task_definition(
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (Unknown) when calling the DeregisterTaskDefinition operation: Scaling inactive workers not supported
+[2025-07-17 19:30:27] ERROR aws_utils Unexpected error setting log retention for challenge 123
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 1981, in set_cloudwatch_log_retention
+    challenge_obj = Challenge.objects.get(pk=challenge_pk)
+  File "/usr/local/lib/python3.9/site-packages/django/db/models/manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/django/db/models/query.py", line 406, in get
+    raise self.model.DoesNotExist(
+challenges.models.Challenge.DoesNotExist: Challenge matching query does not exist.
+[2025-07-17 19:30:27] ERROR aws_utils An error occurred (Unknown) when calling the RegisterTaskDefinition operation: Failed to register task definition
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 1078, in scale_resources
+    response = client.register_task_definition(**task_def)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (Unknown) when calling the RegisterTaskDefinition operation: Failed to register task definition
+[2025-07-17 19:30:27] ERROR aws_utils Unexpected error setting log retention for challenge 123
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 1981, in set_cloudwatch_log_retention
+    challenge_obj = Challenge.objects.get(pk=challenge_pk)
+  File "/usr/local/lib/python3.9/site-packages/django/db/models/manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/django/db/models/query.py", line 406, in get
+    raise self.model.DoesNotExist(
+challenges.models.Challenge.DoesNotExist: Challenge matching query does not exist.
+[2025-07-17 19:30:27] INFO aws_utils Set CloudWatch log retention for challenge 123 to 30 days (host consent: True, 30-day policy allowed: True)
+[2025-07-17 19:30:27] INFO aws_utils Set CloudWatch log retention for challenge 123 to 90 days (host consent: <MagicMock name='get().retention_policy_consent' id='281472448729872'>, 30-day policy allowed: <MagicMock name='get().retention_policy_consent' id='281472448729872'>)
+[2025-07-17 19:30:27] INFO aws_utils Set CloudWatch log retention for challenge 123 to 30 days (host consent: <MagicMock name='get().retention_policy_consent' id='281472430801680'>, 30-day policy allowed: <MagicMock name='get().retention_policy_consent' id='281472430801680'>)
+[2025-07-17 19:30:27] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-17 19:30:27] INFO aws_utils Found <MagicMock name='filter().select_related().count()' id='281472422129376'> submissions eligible for cleanup
+[2025-07-17 19:30:27] INFO aws_utils Cleanup completed. Processed: 0, Successful: 0, Failed: 0
+[2025-07-17 19:30:27] INFO aws_utils Updated log retention for approved challenge 123
+[2025-07-17 19:30:27] ERROR aws_utils Failed to send email to test@example.com: Template error
+[2025-07-17 19:30:27] INFO aws_utils Email sent successfully to test@example.com
+[2025-07-17 19:30:27] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-17 19:30:27] INFO aws_utils Found 1 submissions eligible for cleanup
+[2025-07-17 19:30:27] ERROR aws_utils Failed to clean up submission 142: S3 deletion failed
+[2025-07-17 19:30:27] INFO aws_utils Cleanup completed. Processed: 1, Successful: 0, Failed: 1
+[2025-07-17 19:30:27] ERROR aws_utils Cleanup errors: [{'submission_id': 142, 'challenge_id': 123, 'error': 'S3 deletion failed'}]
+[2025-07-17 19:30:27] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-17 19:30:27] INFO aws_utils No submissions eligible for cleanup
+[2025-07-17 19:30:27] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-17 19:30:27] INFO aws_utils Found 1 submissions eligible for cleanup
+[2025-07-17 19:30:27] INFO aws_utils Successfully cleaned up submission 143 from challenge Test Challenge
+[2025-07-17 19:30:27] INFO aws_utils Cleanup completed. Processed: 1, Successful: 1, Failed: 0
+[2025-07-17 19:30:27] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-17 19:30:27] INFO aws_utils Found 1 submissions requiring retention warnings
+[2025-07-17 19:30:27] INFO aws_utils Skipping notification for challenge 127 - inform_hosts is False
+[2025-07-17 19:30:27] INFO aws_utils Sent 0 retention warning notifications
+[2025-07-17 19:30:27] INFO aws_utils [RetentionConsent] No retention consent changes in the last week.
+[2025-07-17 19:30:28] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-17 19:30:28] INFO aws_utils Found 1 submissions requiring retention warnings
+[2025-07-17 19:30:28] ERROR aws_utils EVALAI_API_SERVER setting is missing - cannot generate challenge URL
+[2025-07-17 19:30:28] INFO aws_utils Sent 0 retention warning notifications
+[2025-07-17 19:30:28] INFO aws_utils [RetentionConsent] No retention consent changes in the last week.
+[2025-07-17 19:30:28] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-17 19:30:28] INFO aws_utils No submissions require retention warning notifications
+[2025-07-17 19:30:28] INFO aws_utils [RetentionConsent] No retention consent changes in the last week.
+[2025-07-17 19:30:28] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-17 19:30:28] INFO aws_utils Found 1 submissions requiring retention warnings
+[2025-07-17 19:30:28] INFO aws_utils Sent retention warning email to host@test.com for challenge 130
+[2025-07-17 19:30:28] INFO aws_utils Sent retention warning for challenge 130 (1 submissions)
+[2025-07-17 19:30:28] INFO aws_utils Sent 1 retention warning notifications
+[2025-07-17 19:30:28] INFO aws_utils [RetentionConsent] No retention consent changes in the last week.
+[2025-07-17 19:30:28] INFO aws_utils Retention policy consent recorded for challenge 133 by user testuser (allows 30-day retention policy)
+[2025-07-17 19:30:28] INFO aws_utils Updated log retention for approved challenge 139
+[2025-07-17 19:30:28] INFO aws_utils Updated log retention for restarted challenge 140
+[2025-07-17 19:30:28] INFO aws_utils Updated log retention for challenge 141 task definition
+[2025-07-17 19:30:28] WARNING aws_utils Failed to delete test_file.txt: An error occurred (AccessDenied) when calling the DeleteObject operation: Unknown
+[2025-07-17 19:30:28] INFO aws_utils Deleted 0 files for submission 148
+[2025-07-17 19:30:28] INFO aws_utils Deleted 0 files for submission 149
+[2025-07-17 19:30:30] WARNING aws_utils Failed to update log retention for challenge 144: Challenge 144 host has not consented to retention policy. Please obtain consent before applying retention policies. Without consent, data is retained indefinitely for safety.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 146 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 146 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 147 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 147 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 148 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 148 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 149 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 149 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 149 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 149 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 150 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 150 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 151 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 151 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 152 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 152 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 153 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 153 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 154 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 154 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 155 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 155 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 156 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 156 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 157 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 157 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 158 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 158 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 159 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 159 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:30] INFO aws_utils The worker service for challenge 160 was restarted, as evaluation_script was changed.
+[2025-07-17 19:30:30] WARNING aws_utils Worker(s) for challenge 160 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:33] INFO aws_utils The worker service for challenge 344 was restarted, as test_annotation was changed.
+[2025-07-17 19:30:33] WARNING aws_utils Worker(s) for challenge 344 couldn't restart! Error: Please select challenges with active workers only.
+[2025-07-17 19:30:36] INFO aws_utils Retention policy consent recorded for challenge 440 by user someuser (allows 30-day retention policy)
+[2025-07-17 19:30:36] INFO aws_utils Retention policy consent recorded for challenge 443 by user someuser (allows 30-day retention policy)
+[2025-07-17 19:30:51] ERROR aws_utils An error occurred (SomeError) when calling the CreateService operation: Unknown
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 364, in create_service_by_challenge_pk
+    response = client.create_service(**definition)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (SomeError) when calling the CreateService operation: Unknown
+[2025-07-17 19:30:51] ERROR aws_utils An error occurred (ServiceError) when calling the UpdateService operation: Unknown
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 413, in update_service_by_challenge_pk
+    response = client.update_service(**kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (ServiceError) when calling the UpdateService operation: Unknown
+[2025-07-17 19:30:51] ERROR aws_utils An error occurred (DeregisterError) when calling the DeregisterTaskDefinition operation: Unknown
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 458, in delete_service_by_challenge_pk
+    client.deregister_task_definition(
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (DeregisterError) when calling the DeregisterTaskDefinition operation: Unknown
+[2025-07-17 19:30:52] ERROR aws_utils An error occurred (DeleteServiceError) when calling the DeleteService operation: Unknown
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 454, in delete_service_by_challenge_pk
+    response = client.delete_service(**kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/local/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+botocore.exceptions.ClientError: An error occurred (DeleteServiceError) when calling the DeleteService operation: Unknown
+[2025-07-18 13:51:55] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 13:51:55] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent] 2 consent changes in the last week:
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 13:51:55] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 13:51:55] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 13:51:55] INFO aws_utils Found 2 submissions eligible for cleanup
+[2025-07-18 13:51:55] INFO aws_utils Deleted 0 files for submission 401
+[2025-07-18 13:51:55] INFO aws_utils Successfully cleaned up submission 401 from challenge Retention Test - With Consent
+[2025-07-18 13:51:55] INFO aws_utils Deleted 0 files for submission 403
+[2025-07-18 13:51:55] INFO aws_utils Successfully cleaned up submission 403 from challenge Retention Test - With Override
+[2025-07-18 13:51:55] INFO aws_utils Cleanup completed. Processed: 2, Successful: 2, Failed: 0
+[2025-07-18 14:24:38] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:24:38] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:24:38] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:24:38] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:24:38] INFO aws_utils Found 2 submissions eligible for cleanup
+[2025-07-18 14:24:38] ERROR aws_utils Error deleting files for submission 404
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 2135, in delete_submission_files_from_storage
+    s3_client.delete_object(
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 535, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 928, in _make_api_call
+    api_params = self._emit_api_params(
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 1043, in _emit_api_params
+    self.meta.events.emit(
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/handlers.py", line 278, in validate_bucket_name
+    if not VALID_BUCKET.search(bucket) and not VALID_S3_ARN.search(bucket):
+TypeError: expected string or bytes-like object
+[2025-07-18 14:24:38] ERROR aws_utils Failed to clean up submission 404: expected string or bytes-like object
+[2025-07-18 14:24:38] ERROR aws_utils Error deleting files for submission 405
+Traceback (most recent call last):
+  File "/code/apps/challenges/aws_utils.py", line 2135, in delete_submission_files_from_storage
+    s3_client.delete_object(
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 535, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 928, in _make_api_call
+    api_params = self._emit_api_params(
+  File "/usr/local/lib/python3.9/site-packages/botocore/client.py", line 1043, in _emit_api_params
+    self.meta.events.emit(
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "/usr/local/lib/python3.9/site-packages/botocore/handlers.py", line 278, in validate_bucket_name
+    if not VALID_BUCKET.search(bucket) and not VALID_S3_ARN.search(bucket):
+TypeError: expected string or bytes-like object
+[2025-07-18 14:24:38] ERROR aws_utils Failed to clean up submission 405: expected string or bytes-like object
+[2025-07-18 14:24:38] INFO aws_utils Cleanup completed. Processed: 2, Successful: 0, Failed: 2
+[2025-07-18 14:24:38] ERROR aws_utils Cleanup errors: [{'submission_id': 404, 'challenge_id': 25, 'error': 'expected string or bytes-like object'}, {'submission_id': 405, 'challenge_id': 26, 'error': 'expected string or bytes-like object'}]
+[2025-07-18 14:25:54] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:25:54] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:25:54] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:25:54] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:25:54] INFO aws_utils Found 2 submissions eligible for cleanup
+[2025-07-18 14:25:54] INFO aws_utils Deleted 4 files for submission 404
+[2025-07-18 14:25:54] INFO aws_utils Successfully cleaned up submission 404 from challenge Moto Test - Should Delete (30 days)
+[2025-07-18 14:25:54] INFO aws_utils Deleted 4 files for submission 405
+[2025-07-18 14:25:54] INFO aws_utils Successfully cleaned up submission 405 from challenge Moto Test - Should Delete (90 days override)
+[2025-07-18 14:25:54] INFO aws_utils Cleanup completed. Processed: 2, Successful: 2, Failed: 0
+[2025-07-18 14:26:28] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:26:28] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:26:28] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:26:28] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:26:28] INFO aws_utils No submissions eligible for cleanup
+[2025-07-18 14:27:11] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:27:11] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:27:11] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:27:11] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:27:11] INFO aws_utils No submissions eligible for cleanup
+[2025-07-18 14:30:43] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:30:43] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:30:43] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:30:43] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:30:43] INFO aws_utils No submissions eligible for cleanup
+[2025-07-18 14:31:08] INFO aws_utils Checking for retention warning notifications and logging consent changes
+[2025-07-18 14:31:08] INFO aws_utils No submissions require retention warning notifications
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] 5 consent changes in the last week:
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] ✅ 2025-07-16 14:23:40 | Challenge 28: Moto Test - Should NOT Delete (Too recent)
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 14:23:40 | Challenge 26: Moto Test - Should Delete (90 days override)
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] ✅ 2025-07-15 10:15:34 | Challenge 24: Retention Test - With Override
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user1
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 14:23:40 | Challenge 25: Moto Test - Should Delete (30 days)
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Consent by: moto_test_user1
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] ✅ 2025-07-13 10:12:25 | Challenge 22: Retention Test - With Consent
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Consent by: retention_test_user
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent]    Notes: Test consent for retention policy
+[2025-07-18 14:31:08] INFO aws_utils [RetentionConsent] End of weekly consent change summary.
+[2025-07-18 14:31:08] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 14:31:08] INFO aws_utils Found 2 submissions eligible for cleanup
+[2025-07-18 14:31:08] INFO aws_utils Deleted 4 files for submission 404
+[2025-07-18 14:31:08] INFO aws_utils Successfully cleaned up submission 404 from challenge Moto Test - Should Delete (30 days)
+[2025-07-18 14:31:08] INFO aws_utils Deleted 4 files for submission 405
+[2025-07-18 14:31:08] INFO aws_utils Successfully cleaned up submission 405 from challenge Moto Test - Should Delete (90 days override)
+[2025-07-18 14:31:08] INFO aws_utils Cleanup completed. Processed: 2, Successful: 2, Failed: 0
+[2025-07-18 15:08:34] INFO aws_utils Starting cleanup of expired submission artifacts
+[2025-07-18 15:08:34] INFO aws_utils No submissions eligible for cleanup
+[2025-07-21 17:13:34] ERROR signal Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0xffff8fb52bb0>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 84, in on_import_modules
+    self.worker_fixup.validate_models()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 122, in validate_models
+    self.django_setup()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 118, in django_setup
+    django.setup()
+  File "/usr/local/lib/python3.9/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/usr/local/lib/python3.9/site-packages/django/apps/registry.py", line 114, in populate
+    app_config.import_models()
+  File "/usr/local/lib/python3.9/site-packages/django/apps/config.py", line 211, in import_models
+    self.models_module = import_module(models_module_name)
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:34] ERROR signal Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0xffffaf7f2c10>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 84, in on_import_modules
+    self.worker_fixup.validate_models()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 122, in validate_models
+    self.django_setup()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 118, in django_setup
+    django.setup()
+  File "/usr/local/lib/python3.9/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/usr/local/lib/python3.9/site-packages/django/apps/registry.py", line 114, in populate
+    app_config.import_models()
+  File "/usr/local/lib/python3.9/site-packages/django/apps/config.py", line 211, in import_models
+    self.models_module = import_module(models_module_name)
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:34] ERROR signal Signal handler <promise@0xffff8fb84dc0 --> <bound method Celery._autodiscover_tasks of <Celery __main__ at 0xffff8fb94d00>>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 170, in __call__
+    return self.throw()
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 167, in __call__
+    retval = fun(*final_args, **final_kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 679, in _autodiscover_tasks
+    return self._autodiscover_tasks_from_names(packages, related_name)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 684, in _autodiscover_tasks_from_names
+    return self.loader.autodiscover_tasks(
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 223, in autodiscover_tasks
+    mod.__name__ for mod in autodiscover_tasks(packages or (),
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in autodiscover_tasks
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in <listcomp>
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 268, in find_related_module
+    return importlib.import_module('{0}.{1}'.format(package, related_name))
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/jobs/tasks.py", line 5, in <module>
+    from challenges.models import ChallengePhase
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:34] ERROR signal Signal handler <promise@0xffffaf824dc0 --> <bound method Celery._autodiscover_tasks of <Celery __main__ at 0xffffaf834d60>>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 170, in __call__
+    return self.throw()
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 167, in __call__
+    retval = fun(*final_args, **final_kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 679, in _autodiscover_tasks
+    return self._autodiscover_tasks_from_names(packages, related_name)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 684, in _autodiscover_tasks_from_names
+    return self.loader.autodiscover_tasks(
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 223, in autodiscover_tasks
+    mod.__name__ for mod in autodiscover_tasks(packages or (),
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in autodiscover_tasks
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in <listcomp>
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 268, in find_related_module
+    return importlib.import_module('{0}.{1}'.format(package, related_name))
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/jobs/tasks.py", line 5, in <module>
+    from challenges.models import ChallengePhase
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:35] ERROR signal Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0xffff9a74c1c0>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 84, in on_import_modules
+    self.worker_fixup.validate_models()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 122, in validate_models
+    self.django_setup()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 118, in django_setup
+    django.setup()
+  File "/usr/local/lib/python3.9/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/usr/local/lib/python3.9/site-packages/django/apps/registry.py", line 114, in populate
+    app_config.import_models()
+  File "/usr/local/lib/python3.9/site-packages/django/apps/config.py", line 211, in import_models
+    self.models_module = import_module(models_module_name)
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:35] ERROR signal Signal handler <promise@0xffff9a784dc0 --> <bound method Celery._autodiscover_tasks of <Celery __main__ at 0xffff9a794d30>>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 170, in __call__
+    return self.throw()
+  File "/usr/local/lib/python3.9/site-packages/vine/promises.py", line 167, in __call__
+    retval = fun(*final_args, **final_kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 679, in _autodiscover_tasks
+    return self._autodiscover_tasks_from_names(packages, related_name)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/base.py", line 684, in _autodiscover_tasks_from_names
+    return self.loader.autodiscover_tasks(
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 223, in autodiscover_tasks
+    mod.__name__ for mod in autodiscover_tasks(packages or (),
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in autodiscover_tasks
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 249, in <listcomp>
+    return [find_related_module(pkg, related_name) for pkg in packages]
+  File "/usr/local/lib/python3.9/site-packages/celery/loaders/base.py", line 268, in find_related_module
+    return importlib.import_module('{0}.{1}'.format(package, related_name))
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/jobs/tasks.py", line 5, in <module>
+    from challenges.models import ChallengePhase
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
+[2025-07-21 17:13:35] ERROR signal Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0xffff9db5f220>> raised: SyntaxError("unmatched ')'", ('/code/apps/challenges/aws_utils.py', 2220, 1, '):'))
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/utils/dispatch/signal.py", line 288, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 84, in on_import_modules
+    self.worker_fixup.validate_models()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 122, in validate_models
+    self.django_setup()
+  File "/usr/local/lib/python3.9/site-packages/celery/fixups/django.py", line 118, in django_setup
+    django.setup()
+  File "/usr/local/lib/python3.9/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/usr/local/lib/python3.9/site-packages/django/apps/registry.py", line 114, in populate
+    app_config.import_models()
+  File "/usr/local/lib/python3.9/site-packages/django/apps/config.py", line 211, in import_models
+    self.models_module = import_module(models_module_name)
+  File "/usr/local/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/code/apps/challenges/models.py", line 489, in <module>
+    post_save_connect("evaluation_script", Challenge)
+  File "/code/apps/challenges/models.py", line 478, in post_save_connect
+    import challenges.aws_utils as aws
+  File "/code/apps/challenges/aws_utils.py", line 2220
+    ):
+    ^
+SyntaxError: unmatched ')'
