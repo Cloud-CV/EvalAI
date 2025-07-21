@@ -3834,7 +3834,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         mock_settings.EVALAI_API_SERVER = "http://localhost"
 
         # Create submission with exact warning date
-        submission = Submission.objects.create(
+        Submission.objects.create(
             participant_team=ParticipantTeam.objects.create(
                 team_name="Test Team", created_by=self.user
             ),
@@ -3875,7 +3875,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         self, mock_now, mock_settings, mock_send_email
     ):
         """Test when no submissions require warnings."""
-        from datetime import datetime, timedelta
+        from datetime import datetime
 
         from challenges.aws_utils import (
             weekly_retention_notifications_and_consent_log,
@@ -3924,7 +3924,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         mock_settings.EVALAI_API_SERVER = "http://localhost"
 
         # Create submission with exact warning date
-        submission = Submission.objects.create(
+        Submission.objects.create(
             participant_team=ParticipantTeam.objects.create(
                 team_name="Test Team", created_by=self.user
             ),
@@ -3973,7 +3973,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         mock_settings.EVALAI_API_SERVER = None
 
         # Create submission with exact warning date
-        submission = Submission.objects.create(
+        Submission.objects.create(
             participant_team=ParticipantTeam.objects.create(
                 team_name="Test Team", created_by=self.user
             ),
@@ -4071,7 +4071,7 @@ class TestWeeklyRetentionNotificationsAndConsentLog(django.test.TestCase):
         mock_settings.EVALAI_API_SERVER = "http://localhost"
 
         # Create submission with exact warning date
-        submission = Submission.objects.create(
+        Submission.objects.create(
             participant_team=ParticipantTeam.objects.create(
                 team_name="Test Team", created_by=self.user
             ),
@@ -4516,7 +4516,7 @@ class TestCeleryTasksWithAWSMocking(django.test.TestCase):
         # Mock successful CloudWatch operation
         mock_logs_client.put_retention_policy.return_value = {}
 
-        result = update_submission_retention_dates()
+        update_submission_retention_dates()
 
         # Verify submission was updated
         submission.refresh_from_db()
@@ -4617,7 +4617,7 @@ class TestCeleryTasksWithAWSMocking(django.test.TestCase):
         # Serialize challenge for task
         serialized_challenge = serializers.serialize("json", [self.challenge])
 
-        result = setup_ec2(serialized_challenge)
+        setup_ec2(serialized_challenge)
 
         # Verify AWS interactions
         mock_get_boto3_client.assert_called()
@@ -4651,7 +4651,7 @@ class TestCeleryTasksWithAWSMocking(django.test.TestCase):
         # Serialize challenge for task
         serialized_challenge = serializers.serialize("json", [self.challenge])
 
-        result = update_sqs_retention_period_task(serialized_challenge)
+        update_sqs_retention_period_task(serialized_challenge)
 
         # Verify AWS interactions
         mock_get_boto3_client.assert_called()
@@ -4720,7 +4720,7 @@ class TestCeleryTasksWithAWSMocking(django.test.TestCase):
             serialized_challenge = serializers.serialize(
                 "json", [self.challenge]
             )
-            result = create_eks_nodegroup(serialized_challenge, "test-cluster")
+            create_eks_nodegroup(serialized_challenge, "test-cluster")
 
         # Verify AWS interactions
         mock_get_creds.assert_called_with(self.challenge.pk)
@@ -4769,7 +4769,7 @@ class TestCeleryTasksWithAWSMocking(django.test.TestCase):
         # Serialize challenge for task
         serialized_challenge = serializers.serialize("json", [self.challenge])
 
-        result = setup_eks_cluster(serialized_challenge)
+        setup_eks_cluster(serialized_challenge)
 
         # Verify AWS interactions
         mock_get_creds.assert_called_with(self.challenge.pk)
