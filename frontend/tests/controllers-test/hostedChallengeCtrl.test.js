@@ -502,8 +502,7 @@ describe('Unit tests for hosted challenge controller', function () {
     
             it('should NOT update controller filters when the dialog is cancelled', function() {
                 spyOn($mdDialog, 'show').and.returnValue($q.reject());
-                vm.openFilterDialog(mockEvent);
-                // Add a catch handler to suppress the unhandled rejection warning
+                $q.when(vm.openFilterDialog(mockEvent)).catch(angular.noop);
                 $rootScope.$apply();
                 expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
                 expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
