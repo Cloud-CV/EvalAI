@@ -594,6 +594,63 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for getWorkerConfiguration function', function () {
+
+        it('should handle missing challenge ID and show an error message', function () {
+            vm.challengeId = undefined;
+            spyOn(console, 'error');
+            vm.getWorkerConfiguration();
+            expect(console.error).toHaveBeenCalledWith("Challenge ID is undefined");
+            expect(vm.workerConfigError).toEqual("Challenge ID is missing.");
+        });
+
+        it('should fetch worker configuration successfully', function () {
+            vm.challengeId = 1;
+            var mockResponse = { data: { workerType: "testWorker", config: "testConfig" } };
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                parameters.callback.onSuccess(mockResponse);
+            });
+
+            vm.getWorkerConfiguration();
+
+            expect(vm.workerConfig).toEqual(mockResponse.data);
+        });
+
+        it('should handle errors when fetching worker configuration', function () {
+            vm.challengeId = 1;
+            var mockErrorResponse = { data: { error: "Network Error" } };
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                parameters.callback.onError(mockErrorResponse);
+            });
+
+            vm.getWorkerConfiguration();
+
+            expect(vm.workerConfigError).toEqual("Could not fetch worker configuration: Network Error"); // Check error message
+        });
+
+        it('should handle undefined error message gracefully', function () {
+            vm.challengeId = 1;
+            var mockErrorResponse = { data: {} };
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                parameters.callback.onError(mockErrorResponse);
+            });
+
+            vm.getWorkerConfiguration();
+
+            expect(vm.workerConfigError).toEqual("Could not fetch worker configuration: Unknown error"); // Ensure default error message is set
+        });
+
+        it('should proceed when challenge ID is defined', function () {
+            vm.challengeId = 1; 
+            spyOn(utilities, 'sendRequest');
+            vm.getWorkerConfiguration();
+
+            expect(utilities.sendRequest).toHaveBeenCalled();
+        });
+
+    });
+
+
     describe('Unit tests for displayDockerSubmissionInstructions function \
         `jobs/<challenge_id>/remaining_submissions`', function () {
         var success, successResponse;
