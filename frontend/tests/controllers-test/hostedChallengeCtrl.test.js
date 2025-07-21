@@ -6,11 +6,30 @@ describe('Unit tests for hosted challenge controller', function () {
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
     beforeEach(module(function($provide) {
-        $provide.value('customTitleFilter', jasmine.createSpy('customTitleFilter').and.callFake(function(arr, searchTitle) { return arr.concat('title'); }));
-        $provide.value('customDomainFilter', jasmine.createSpy('customDomainFilter').and.callFake(function(arr, selecteddomain) { return arr.concat('domain'); }));
-        $provide.value('customHostFilter', jasmine.createSpy('customHostFilter').and.callFake(function(arr, selectedHostTeam) { return arr.concat('host'); }));
-        $provide.value('customDateRangeFilter', jasmine.createSpy('customDateRangeFilter').and.callFake(function(arr, filterStartDate, filterEndDate) { return arr.concat('date'); }));
-        $provide.value('orderBy', jasmine.createSpy('orderBy').and.callFake(function(arr, field, reverse) { return arr.concat('ordered'); }));
+        // Create spies for each filter
+        var customTitleFilter = jasmine.createSpy('customTitleFilter').and.callFake(arr => arr.concat('title'));
+        var customDomainFilter = jasmine.createSpy('customDomainFilter').and.callFake(arr => arr.concat('domain'));
+        var customHostFilter = jasmine.createSpy('customHostFilter').and.callFake(arr => arr.concat('host'));
+        var customDateRangeFilter = jasmine.createSpy('customDateRangeFilter').and.callFake(arr => arr.concat('date'));
+        var orderBy = jasmine.createSpy('orderBy').and.callFake(arr => arr.concat('ordered'));
+    
+        // Mock $filter service to return the spies
+        $provide.value('$filter', function(name) {
+            switch (name) {
+                case 'customTitleFilter': return customTitleFilter;
+                case 'customDomainFilter': return customDomainFilter;
+                case 'customHostFilter': return customHostFilter;
+                case 'customDateRangeFilter': return customDateRangeFilter;
+                case 'orderBy': return orderBy;
+            }
+        });
+    
+        // Attach spies to window for test assertions
+        window.customTitleFilter = customTitleFilter;
+        window.customDomainFilter = customDomainFilter;
+        window.customHostFilter = customHostFilter;
+        window.customDateRangeFilter = customDateRangeFilter;
+        window.orderBy = orderBy;
     }));
 
     beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
@@ -336,19 +355,14 @@ describe('Unit tests for hosted challenge controller', function () {
     });
 
     describe('Filter function coverage for getFiltered*Challenges', function () {
-        var vm, customTitleFilter, customDomainFilter, customHostFilter, customDateRangeFilter, orderBy, $httpBackend;
+        var vm, $httpBackend;
     
-        beforeEach(inject(function (customTitleFilterSpy, customDomainFilterSpy, customHostFilterSpy, customDateRangeFilterSpy, orderBySpy, _$httpBackend_) {
-            customTitleFilter = customTitleFilterSpy;
-            customDomainFilter = customDomainFilterSpy;
-            customHostFilter = customHostFilterSpy;
-            customDateRangeFilter = customDateRangeFilterSpy;
-            orderBy = orderBySpy;
+        beforeEach(inject(function (_$httpBackend_) {
             $httpBackend = _$httpBackend_;
             $httpBackend.whenGET(/.*/).respond(200, { results: [] });
             vm = createController();
             $httpBackend.flush();
-    
+        
             // Set up sample data
             vm.ongoingChallenges = [{ id: 1 }];
             vm.upcomingChallenges = [{ id: 2 }];
@@ -363,33 +377,33 @@ describe('Unit tests for hosted challenge controller', function () {
         it('should call all filters in order for getFilteredOngoingChallenges', function () {
             vm.sortByTeam = 'desc';
             const result = vm.getFilteredOngoingChallenges();
-            expect(customTitleFilter).toHaveBeenCalledWith(vm.ongoingChallenges, vm.searchTitle);
-            expect(customDomainFilter).toHaveBeenCalled();
-            expect(customHostFilter).toHaveBeenCalled();
-            expect(customDateRangeFilter).toHaveBeenCalled();
-            expect(orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.ongoingChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
             expect(result).toContain('ordered');
         });
     
         it('should call all filters in order for getFilteredUpcomingChallenges', function () {
             vm.sortByTeam = 'asc';
             const result = vm.getFilteredUpcomingChallenges();
-            expect(customTitleFilter).toHaveBeenCalledWith(vm.upcomingChallenges, vm.searchTitle);
-            expect(customDomainFilter).toHaveBeenCalled();
-            expect(customHostFilter).toHaveBeenCalled();
-            expect(customDateRangeFilter).toHaveBeenCalled();
-            expect(orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', false);
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.upcomingChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', false);
             expect(result).toContain('ordered');
         });
     
         it('should call all filters in order for getFilteredPastChallenges', function () {
             vm.sortByTeam = 'desc';
             const result = vm.getFilteredPastChallenges();
-            expect(customTitleFilter).toHaveBeenCalledWith(vm.pastChallenges, vm.searchTitle);
-            expect(customDomainFilter).toHaveBeenCalled();
-            expect(customHostFilter).toHaveBeenCalled();
-            expect(customDateRangeFilter).toHaveBeenCalled();
-            expect(orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.pastChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
             expect(result).toContain('ordered');
         });
     
@@ -486,15 +500,19 @@ describe('Unit tests for hosted challenge controller', function () {
                 expect(vm.filterEndDate).toEqual(newFilters.filterEndDate);
             });
     
-            it('should NOT update controller filters when the dialog is cancelled', function() {
+            it('should NOT update controller filters when the dialog is cancelled', function(done) {
                 spyOn($mdDialog, 'show').and.returnValue($q.reject());
                 vm.openFilterDialog(mockEvent);
+                // Use $q to catch the rejection and then check expectations
                 $rootScope.$apply();
-                expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
-                expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
-                expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
-                expect(vm.filterStartDate).toEqual(initialFilterData.filterStartDate);
-                expect(vm.filterEndDate).toEqual(initialFilterData.filterEndDate);
+                setTimeout(function() {
+                    expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
+                    expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
+                    expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
+                    expect(vm.filterStartDate).toEqual(initialFilterData.filterStartDate);
+                    expect(vm.filterEndDate).toEqual(initialFilterData.filterEndDate);
+                    done();
+                }, 0);
             });
         });
     });
