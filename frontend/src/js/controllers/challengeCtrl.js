@@ -273,6 +273,29 @@
             $interval.cancel(vm.logs_poller);
         };
 
+        vm.getWorkerConfiguration = function () {
+            if (!vm.challengeId) {
+                console.error("Challenge ID is undefined");
+                vm.workerConfigError = "Challenge ID is missing.";
+                return;
+            }
+
+            parameters.url = 'challenges/' + vm.challengeId + '/get_worker_configuration/';
+            parameters.method = 'GET';
+            parameters.data = {};
+
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.workerConfig = response.data;
+                },
+                onError: function (response) {
+                    var errorMessage = response.data && response.data.error ? response.data.error : "Unknown error";
+                    vm.workerConfigError = "Could not fetch worker configuration: " + errorMessage;
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
          // highlight the specific entry of the leaderboard
         vm.highlightSpecificLeaderboardEntry = function (key) {
             key = '#' + key;
