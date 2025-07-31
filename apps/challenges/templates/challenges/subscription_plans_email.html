@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Subscription Plan Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-4">Subscription Plan Details for Your Challenge on EvalAI</h1>
+  <p class="mb-4">Hi {{ host_name }},</p>
+  <p class="mb-6">Thank you for your interest in hosting your challenge on EvalAI. We're excited to support your work.</p>
+
+  <p class="mb-4">We offer <strong>4 plans</strong> based on the compute needs of challenge hosts. Each plan is a monthly subscription (managed via Stripe) with no long-term commitment—you can cancel anytime once your challenge concludes. Stripe accepts all major payment methods and provides monthly receipts.</p>
+  <p class="mb-6">Each plan includes one always-on worker to handle submissions (except for the Remote Evaluation Plan, which relies on your own infrastructure). If you expect higher submission volume—especially near deadlines—we can scale easily by adding additional workers. These extra workers will be billed separately according to your selected plan.</p>
+
+  <h2 class="text-2xl font-semibold mt-8 mb-4">Available Plans</h2>
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full border-collapse">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="px-4 py-2 border">Feature</th>
+          <th class="px-4 py-2 border">Essentials<br><span class="text-sm">$125/mo</span></th>
+          <th class="px-4 py-2 border">Core<br><span class="text-sm">$250/mo</span></th>
+          <th class="px-4 py-2 border">Advanced<br><span class="text-sm">$850/mo</span></th>
+          <th class="px-4 py-2 border">Remote Evaluation<br><span class="text-sm">$100/mo</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Compute Tier</td>
+          <td class="px-4 py-2 border">0.5 vCPU, 1–4 GB RAM</td>
+          <td class="px-4 py-2 border">1 vCPU, 2–4 GB RAM</td>
+          <td class="px-4 py-2 border">1 vCPU, 4–16 GB RAM</td>
+          <td class="px-4 py-2 border">Bring your own compute</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Task Runtime</td>
+          <td class="px-4 py-2 border">24/7 for 30 days</td>
+          <td class="px-4 py-2 border">24/7 for 30 days</td>
+          <td class="px-4 py-2 border">24/7 for 30 days</td>
+          <td class="px-4 py-2 border">N/A</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Ephemeral Storage</td>
+          <td class="px-4 py-2 border">20 GB (expandable)</td>
+          <td class="px-4 py-2 border">20 GB (expandable)</td>
+          <td class="px-4 py-2 border">20 GB (expandable)</td>
+          <td class="px-4 py-2 border">N/A</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Concurrent Evaluations</td>
+          <td class="px-4 py-2 border">1 container</td>
+          <td class="px-4 py-2 border">1 container</td>
+          <td class="px-4 py-2 border">1 container</td>
+          <td class="px-4 py-2 border">N/A</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Custom Dependencies</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">N/A</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">Submissions + Leaderboard Hosting</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border font-medium">EvalAI Hosts the Evaluation</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">✔️</td>
+          <td class="px-4 py-2 border">❌</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="text-2xl font-semibold mt-8 mb-4">Plan Subscription Links</h2>
+  <ul class="list-disc list-inside space-y-2">
+    <li><a href="https://buy.stripe.com/9B600i8Zt2PI8gA8srcEw01" class="text-blue-600 underline">Essentials Plan</a></li>
+    <li><a href="https://buy.stripe.com/9B65kCcbF4XQdAUbEDcEw03" class="text-blue-600 underline">Core Plan</a></li>
+    <li><a href="https://buy.stripe.com/28E28q1x1gGy40kcIHcEw06" class="text-blue-600 underline">Advanced Plan</a></li>
+    <li><a href="https://buy.stripe.com/eVqfZg7Vp75Y8gA6kjcEw07" class="text-blue-600 underline">Remote Evaluation Plan</a></li>
+  </ul>
+
+  <p class="mt-6">If you're unsure about which plan is the best fit for your challenge, we recommend starting with the <strong>Essentials plan</strong> and upgrading as needed.</p>
+  <p class="mt-4">Please feel free to reach out if you have any questions or would like to discuss further.</p>
+  <p class="mt-6">Looking forward to supporting your challenge!<br>EvalAI Team</p>
+</div>
+{% endblock %}
