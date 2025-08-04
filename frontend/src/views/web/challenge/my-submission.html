@@ -13,8 +13,9 @@
             </div>
             <div class="row fs-16 w-300">
                 <div class="col s12 m6 l6">
-                    <md-select ng-model="challenge.phase.name" placeholder="Select phase" class="rm-margin">
-                        <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}"
+                <md-select ng-model="challenge.mySubmissionPhaseName" placeholder="Select phase" class="rm-margin">
+                    <md-option ui-sref="web.challenge-main.challenge-page.my-phase-submission({mySubmissionPhaseSlug: key.slug})"
+                        value="{{key.slug}}"
                             ng-repeat="key in challenge.phases.results">{{key.name}} <span
                                 class="new badge orange-background" data-badge-caption="Private"
                                 ng-if="key.showPrivate"></span></md-option>

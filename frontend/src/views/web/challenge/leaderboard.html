@@ -29,8 +29,9 @@
             <div class="col xs12 s6">
                 <span>
                     <md-select ng-model="challenge.phaseName" placeholder="Select Phase" class="rm-margin">
-                        <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})"
-                            value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}">
+                        <md-option
+                            ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSlug:key.challenge_phase_slug, splitCodename:key.dataset_split_codename})"
+                            value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}">                    
                             <span class="fs-16 w-300">Phase:
                             </span>{{key.challenge_phase_name}}, <span class="fs-16 w-300">Split: </span>
                             {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
@@ -40,17 +41,17 @@
                 </span>
             </div>
         </div>
-        <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled[challenge.phaseSplitId]">
+        <div class="row" ng-if="challenge.selectedPhaseSplit.is_multi_metric_leaderboard">
             <div class="col xs12 s6">
                 <span>
                     <md-select ng-model="challenge.orderLeaderboardBy" placeholder="Order by metric" class="rm-margin">
-                        <md-option value="{{key}}" ui-sref="web.challenge-main.challenge-page.phase-metric-leaderboard({phaseSplitId:challenge.phaseSplitId, metric:challenge.encodeMetricURI(key)})"
-                         ng-repeat="key in challenge.phaseSplitLeaderboardSchema[challenge.phaseSplitId].labels">
+                        <md-option value="{{key}}"
+                            ui-sref="web.challenge-main.challenge-page.phase-metric-leaderboard({phaseSlug:challenge.phaseSlug, splitCodename:challenge.splitCodename, metric:challenge.encodeMetricURI(key)})"
+                            ng-repeat="key in challenge.selectedPhaseSplit.leaderboard_schema.labels">
                             <span class="fs-16 w-300">{{key}}</span>
                     </md-select>
                 </span>
-            </div>
-        </div>
+            </div>  </div>
         <div class="row">
             <div class="horizontal-scroll">
                 <div class="col s12">

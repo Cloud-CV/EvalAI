@@ -137,7 +137,7 @@ logger = logging.getLogger(__name__)
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def challenge_submission(request, challenge_id, challenge_phase_id):
+def challenge_submission(request, challenge_id, challenge_phase_pk_or_slug, version):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
@@ -148,13 +148,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if version == 'v2':
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
+            )
+        except ChallengePhase.DoesNotExist:
+            response_data = {"error": "Challenge Phase does not exist"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular
@@ -313,7 +316,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_phase_id,
+                challenge_phase_pk_or_slug,
             )
             response_data = {
                 "message": "Please wait while your submission being evaluated!"
@@ -377,7 +380,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
         message = {
             "challenge_pk": challenge_id,
-            "phase_pk": challenge_phase_id,
+            "phase_pk": challenge_phase_pk_or_slug,
             "is_static_dataset_code_upload_submission": False,
         }
         if challenge.is_docker_based:
@@ -591,7 +594,7 @@ def change_submission_data_and_visibility(
 )
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle, UserRateThrottle])
-def leaderboard(request, challenge_phase_split_id):
+def leaderboard(request, challenge_pk, phase_slug, split_codename):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
 
@@ -603,9 +606,16 @@ def leaderboard(request, challenge_phase_split_id):
     """
 
     # check if the challenge exists or not
-    challenge_phase_split = get_challenge_phase_split_model(
-        challenge_phase_split_id
-    )
+    try:
+        challenge_phase_split = ChallengePhaseSplit.objects.get(
+            challenge_phase__challenge__pk=challenge_pk,
+            challenge_phase__slug=phase_slug,
+            dataset_split__codename=split_codename
+        )
+    except ChallengePhaseSplit.DoesNotExist:
+        response_data = {"error": "Leaderboard for the given phase and split does not exist."}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     order_by = request.GET.get("order_by")
     (
@@ -757,7 +767,7 @@ def leaderboard(request, challenge_phase_split_id):
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
+def get_all_entries_on_public_leaderboard(request, challenge_pk, phase_slug, split_codename):
     """
     Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
 
@@ -805,9 +815,15 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     ```
     """
     # check if the challenge exists or not
-    challenge_phase_split = get_challenge_phase_split_model(
-        challenge_phase_split_pk
-    )
+    try:
+        challenge_phase_split = ChallengePhaseSplit.objects.get(
+            challenge_phase__challenge__pk=challenge_pk,
+            challenge_phase__slug=phase_slug,
+            dataset_split__codename=split_codename
+        )
+    except ChallengePhaseSplit.DoesNotExist:
+        response_data = {"error": "Leaderboard for the given phase and split does not exist."}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 

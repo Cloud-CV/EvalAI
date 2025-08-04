@@ -24,7 +24,7 @@ urlpatterns = [
         name="get_challenge_phase_submission_analysis",
     ),
     re_path(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/count$",
+       r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)/count$",
         views.get_challenge_phase_submission_count_by_team,
         name="get_challenge_phase_submission_count_by_team",
     ),
@@ -44,7 +44,7 @@ urlpatterns = [
         r"^challenges/(?P<challenge_pk>[0-9]+)/download_all_participants/$",
         views.download_all_participants,
         name="download_all_participants",
-    ),
+    ),    
 ]
 
 app_name = "analytics"

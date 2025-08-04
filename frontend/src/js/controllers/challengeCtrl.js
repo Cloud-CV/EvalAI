@@ -15,6 +15,10 @@
         vm.showPrivateIds = [];
         vm.showLeaderboardToggle = true;
         vm.challengeId = $stateParams.challengeId;
+        vm.allSubmissionPhaseSlug = $stateParams.allSubmissionPhaseSlug;
+        vm.mySubmissionPhaseSlug = $stateParams.mySubmissionPhaseSlug;
+        vm.phaseSlug = $stateParams.phaseSlug;
+        vm.splitCodename = $stateParams.splitCodename;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
@@ -30,7 +34,7 @@
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
-        vm.phaseSplits = {};
+        vm.phaseSplits = []; 
         vm.hasPrizes = false;
         vm.has_sponsors = false;
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
@@ -685,7 +689,7 @@
                     if (vm.input_file) {
                         // vm.upload(vm.input_file);
                     }
-                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + "v1/" + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
@@ -790,6 +794,16 @@
                     vm.phases.results[j].time_zone = moment.tz.zone(timezone).abbr(offset);
                     vm.phases.results[j].gmt_zone = gmtZone;
                 }
+
+                // calling getResults function
+                if (vm.mySubmissionPhaseSlug) {
+                    vm.getResults(vm.mySubmissionPhaseSlug);
+                }
+
+                // calling getAllSubmissionResults function
+                if (vm.allSubmissionPhaseSlug) {
+                    vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
+                    }
 
                 for(var k=0; k<details.count; k++){
                     if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
@@ -940,13 +954,20 @@
                 if (details.length == 0) {
                     vm.isChallengeLeaderboardPrivate = true; 
                 }
-                for(var i=0; i<details.length; i++) {
-                    if (details[i].visibility !== challengePhaseVisibility.public) {
+                for (var i = 0; i < details.length; i++) {
+                    var split = details[i];
+                    if (split.visibility !== challengePhaseVisibility.public) {
                         vm.phaseSplits[i].showPrivate = true;
-                        vm.showPrivateIds.push(vm.phaseSplits[i].id);
+                        vm.showPrivateIds.push(split.id);
                     }
-                    vm.isMultiMetricLeaderboardEnabled[vm.phaseSplits[i].id] = vm.phaseSplits[i].is_multi_metric_leaderboard;
-                    vm.phaseSplitLeaderboardSchema[vm.phaseSplits[i].id] = vm.phaseSplits[i].leaderboard_schema;
+                    // This line is the key. It populates the object needed by the ng-if.
+                    vm.isMultiMetricLeaderboardEnabled[split.id] = split.is_multi_metric_leaderboard;
+
+                    vm.phaseSplitLeaderboardSchema[split.id] = split.leaderboard_schema;
+                }
+
+                if (vm.phaseSlug && vm.splitCodename) {
+                    vm.getLeaderboard(vm.phaseSlug, vm.splitCodename);
                 }
                 utilities.hideLoader();
             },
@@ -1023,19 +1044,20 @@
         // my submissions
         vm.isResult = false;
 
-        vm.startLeaderboard = function() {
+        vm.startLeaderboard = function () {
             vm.stopLeaderboard();
-            vm.poller = $interval(function() {
-                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            vm.poller = $interval(function () {
+                // Use the new slug-based URL format
+                parameters.url = `jobs/challenge/${vm.challengeId}/phase/${vm.phaseSlug}/split/${vm.splitCodename}/leaderboard/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
                 parameters.method = 'GET';
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var details = response.data;
                         if (vm.leaderboard.count !== details.results.count) {
                             vm.showLeaderboardUpdate = true;
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         var error = response.data;
                         utilities.storeData('emailError', error.detail);
                         $state.go('web.permission-denied');
@@ -1046,111 +1068,110 @@
                 utilities.sendRequest(parameters);
             }, 10000);
         };
-
-        vm.getLeaderboard = function(phaseSplitId) {
-            vm.stopLeaderboard = function() {
+        vm.getLeaderboard = function (phaseSlug, splitCodename) {
+            vm.stopLeaderboard = function () {
                 $interval.cancel(vm.poller);
             };
             vm.stopLeaderboard();
 
+            // Set view model properties from function arguments
+            vm.phaseSlug = phaseSlug;
+            vm.splitCodename = splitCodename;
+
             vm.isResult = true;
-            vm.phaseSplitId = phaseSplitId;
-            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
-
             vm.startLoader("Loading Leaderboard Items");
 
-            // get the selected phase split object
-            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
-            parameters.method = "GET";
-            parameters.data = {};
-            parameters.callback = {
-                onSuccess: function (response) {
-                    vm.selectedPhaseSplit = response.data;
-                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
-                        "Sort by best":"Sort by latest";
-                },
-                onError: function (response) {
-                    var error = response.data;
-                    vm.stopLoader();
-                    $rootScope.notify("error", error);
-                    return false;
-                }
-            };
-            utilities.sendRequest(parameters);
+            // Find the corresponding phase split object from the already loaded vm.phaseSplits
+            var currentPhaseSplit = vm.phaseSplits.find(ps => ps.challenge_phase_slug === phaseSlug && ps.dataset_split_codename === splitCodename);
+            if (currentPhaseSplit) {
+                vm.phaseSplitId = currentPhaseSplit.id;
+                vm.selectedPhaseSplit = currentPhaseSplit;
+            }
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.url = `jobs/challenge/${vm.challengeId}/phase/${phaseSlug}/split/${splitCodename}/leaderboard/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
             parameters.method = 'GET';
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    for (var j=0; j<vm.showPrivateIds.length; j++) {
-                        if (vm.showPrivateIds[j] == vm.phaseSplitId) {
-                            vm.showLeaderboardToggle = false;
-                            break;
+
+                    // *** START OF FIX ***
+                    // This block ensures both the visible columns AND the dropdown menu data are correctly set.
+                    if (vm.leaderboard && vm.leaderboard.length > 0) {
+                        var allMetricIndices = [];
+                        // Use the schema from the first leaderboard entry to populate the dropdown
+                        var labels = vm.leaderboard[0].leaderboard__schema.labels;
+                        for (var k = 0; k < labels.length; k++) {
+                            allMetricIndices.push(k.toString());
+                        }
+                        // This makes the columns visible
+                        vm.chosenMetrics = allMetricIndices;
+
+                        // This populates the metric sorting dropdown menu
+                        if (vm.phaseSplitId) {
+                            vm.phaseSplitLeaderboardSchema[vm.phaseSplitId] = vm.leaderboard[0].leaderboard__schema;
                         }
                     }
-                    for (var i=0; i<vm.leaderboard.length; i++) {
-                        if (vm.leaderboard[i].submission__submission_metadata == null){
+                    // *** END OF FIX ***
+
+                    for (var i = 0; i < vm.leaderboard.length; i++) {
+                        if (vm.leaderboard[i].submission__submission_metadata == null) {
                             vm.showSubmissionMetaAttributesOnLeaderboard = false;
                         }
                         else {
                             vm.showSubmissionMetaAttributesOnLeaderboard = true;
                         }
 
-                        var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
-                        var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
-                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.leaderboard[i].id] = i+1;
+                        vm.initial_ranking[vm.leaderboard[i].id] = i + 1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
                         if (duration._data.years != 0) {
                             var years = duration.asYears();
                             vm.leaderboard[i].submission__submitted_at = years;
-                            if (years.toFixed(0)==1) {
+                            if (years.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'year';
                             } else {
-                                vm.leaderboard[i].timeSpan= 'years';
+                                vm.leaderboard[i].timeSpan = 'years';
                             }
                         }
-                        else if (duration._data.months !=0) {
+                        else if (duration._data.months != 0) {
                             var months = duration.months();
                             vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
+                            if (months.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'month';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'months';
                             }
                         }
-                        else if (duration._data.days !=0) {
+                        else if (duration._data.days != 0) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
+                            if (days.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'day';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'days';
                             }
                         }
-                        else if (duration._data.hours !=0) {
+                        else if (duration._data.hours != 0) {
                             var hours = duration.asHours();
                             vm.leaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0)==1) {
+                            if (hours.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
                             }
                         }
-                        else if (duration._data.minutes !=0) {
+                        else if (duration._data.minutes != 0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
-                            if (minutes.toFixed(0)==1) {
+                            if (minutes.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'minute';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'minutes';
@@ -1159,27 +1180,30 @@
                         else if (duration._data.seconds != 0) {
                             var second = duration.asSeconds();
                             vm.leaderboard[i].submission__submitted_at = second;
-                            if (second.toFixed(0)==1) {
+                            if (second.toFixed(0) == 1) {
                                 vm.leaderboard[i].timeSpan = 'second';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'seconds';
                             }
                         }
                     }
-                    vm.phaseName = vm.phaseSplitId;
+
+                    if (currentPhaseSplit) {
+                        vm.phaseName = currentPhaseSplit.id;
+                    }
                     vm.startLeaderboard();
                     vm.stopLoader();
                     vm.scrollToEntryAfterLeaderboardLoads();
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     vm.leaderboard.error = error;
                     vm.stopLoader();
                 }
             };
-
             utilities.sendRequest(parameters);
         };
+       
         
         vm.showMetaAttributesDialog = function(ev, attributes){
             if (attributes != false){
@@ -1206,19 +1230,50 @@
             }
         };
 
-        vm.getResults = function(phaseId) {
-            // long polling (5s) for leaderboard
-            vm.start = function() {
+        vm.getResults = function (phaseSlug) {
+            // Stop any existing long polling to prevent multiple requests
+            vm.stopFetchingSubmissions();
+            vm.isResult = true;
+
+            // Set the slug for display purposes
+            vm.mySubmissionPhaseSlug = phaseSlug;
+
+            // Find the corresponding numeric ID from the list of phases
+            var numericPhaseId = null;
+            var all_phases = vm.phases.results;
+            for (var i = 0; i < all_phases.length; i++) {
+                // Use the slug to find the matching phase object
+                if (all_phases[i].slug === phaseSlug) {
+                    numericPhaseId = all_phases[i].id;
+
+                    // Set the other phase-specific variables here
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
+
+                    var attributes = all_phases[i].default_submission_meta_attributes;
+                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
+                    vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
+
+                    // Stop the loop once we've found the correct phase
+                    break;
+                }
+            }
+
+            // Now use the correct numeric ID for API calls that require it
+            // Set the numeric ID to a main variable for other functions to use.
+            vm.phaseId = numericPhaseId;
+
+            // Start a new poller with the correct data
+            vm.start = function () {
                 vm.stopFetchingSubmissions();
-                vm.poller = $interval(function() {
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+                vm.poller = $interval(function () {
+                    // Use the slug here because your backend URL pattern for submissions is `v2/<slug>`
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var details = response.data;
-
-                            // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
@@ -1236,100 +1291,77 @@
                                 }
                             }
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var error = response.data;
                             utilities.storeData('emailError', error.detail);
                             $state.go('web.permission-denied');
                             vm.stopLoader();
                         }
                     };
-
                     utilities.sendRequest(parameters);
                 }, 10000);
             };
 
-            vm.stopFetchingSubmissions = function() {
+            vm.stopFetchingSubmissions = function () {
                 $interval.cancel(vm.poller);
             };
-            vm.stopFetchingSubmissions();
-            vm.isResult = true;
-            if (phaseId !== undefined) {
-                vm.phaseId = phaseId;
-            }
 
-            var all_phases = vm.phases.results;
-            for (var i = 0; i < vm.phases.results.length; i++) {
-                if (all_phases[i].id == phaseId) {
-                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-                    vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
-
-                    var attributes = all_phases[i].default_submission_meta_attributes;
-                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
-                    vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
-                    break;
-                }
-            }
-
-            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count";
+            // API call to get submission count using the slug
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.submissionCount = details.participant_team_submission_count;
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                 }
             };
             utilities.sendRequest(parameters);
 
-            // loader for existing teams
+            // Initial load for submissions
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
-
             vm.startLoader("Loading Submissions");
-
-            // get submissions of a particular challenge phase
             vm.isNext = '';
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
 
+            // Use the slug in the URL for the initial submission fetch
             if (vm.filter_my_submission_by_team_name === '') {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
-                vm.phaseId + "/submission/";
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" +
+                    vm.mySubmissionPhaseSlug + "/submission/";
             } else {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
-                vm.phaseId + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" +
+                    vm.mySubmissionPhaseSlug + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
             }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                         vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
-                        // Set previous public submission id for phases with one public submission restriction
                         if (details.results[i].is_public) {
                             vm.previousPublicSubmissionId = details.results[i].id;
                         }
                     }
 
                     vm.submissionResult = details;
-
-                    vm.start();
+                    vm.start(); // Start the long polling after the first load
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
-
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -1338,7 +1370,6 @@
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
-
                     }
                     if (vm.submissionResult.previous === null) {
                         vm.isPrev = 'disabled';
@@ -1353,27 +1384,18 @@
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
-                    vm.load = function(url) {
-                        // loader for existing teams
+                    vm.load = function (url) {
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
-
                         vm.startLoader("Loading Submissions");
+
                         if (url !== null) {
-
-                            //store the header data in a variable
-                            var headers = {
-                                'Authorization': "Token " + userKey
-                            };
-
-                            //Add headers with in your request
-                            $http.get(url, { headers: headers }).then(function(response) {
-                                // reinitialized data
+                            var headers = { 'Authorization': "Token " + userKey };
+                            $http.get(url, { headers: headers }).then(function (response) {
                                 var details = response.data;
                                 vm.submissionResult = details;
 
-                                // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 150;
@@ -1395,21 +1417,20 @@
                             vm.stopLoader();
                         }
                     };
+                    vm.mySubmissionPhaseName = phaseSlug; // Use phaseSlug for display name
                     vm.stopLoader();
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     utilities.storeData('emailError', error.detail);
                     $state.go('web.permission-denied');
                     vm.stopLoader();
                 }
             };
-
             utilities.sendRequest(parameters);
         };
-
         vm.refreshSubmissionData = function() {
-
+        vm.phaseId = (vm.allSubmissionPhaseSlug == undefined) ? vm.mySubmissionPhaseSlug : vm.allSubmissionPhaseSlug;
             // get submissions of a particular challenge phase
 
             if (!vm.isResult) {
@@ -1424,7 +1445,7 @@
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -1521,7 +1542,7 @@
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.url = `jobs/challenge/${vm.challengeId}/phase/${vm.phaseSlug}/split/${vm.splitCodename}/leaderboard/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
@@ -1564,7 +1585,7 @@
         };
 
         // function for getting all submissions on leaderboard public/private
-        vm.getAllEntriesOnPublicLeaderboard = function(phaseSplitId) {
+        vm.getAllEntriesOnPublicLeaderboard = function (phaseSlug, splitCodename) {
             vm.stopLeaderboard = function() {
                 $interval.cancel(vm.poller);
             };
@@ -1581,7 +1602,7 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.url = `jobs/challenge/${vm.challengeId}/phase/${phaseSlug}/split/${splitCodename}/public_leaderboard_all_entries/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
@@ -1660,26 +1681,22 @@
             utilities.sendRequest(parameters);
         };
 
-        if (vm.phaseSplitId) {
-            vm.getLeaderboard(vm.phaseSplitId);
-        }
         vm.getAllEntries = false;
 
         // function for toggeling between public leaderboard and complete leaderboard [public/private]
-        vm.toggleLeaderboard = function(getAllEntries){
+        vm.toggleLeaderboard = function (getAllEntries) {
             vm.getAllEntries = getAllEntries;
-            if (vm.phaseSplitId) {
-                if (vm.getAllEntries){
+            if (vm.phaseSlug && vm.splitCodename) {
+                if (vm.getAllEntries) {
                     vm.getAllEntriesTestOption = "Exclude private submissions";
-                    vm.getAllEntriesOnPublicLeaderboard(vm.phaseSplitId);
-                }
-                else {
+                    vm.getAllEntriesOnPublicLeaderboard(vm.phaseSlug, vm.splitCodename);
+                } else {
                     vm.getAllEntriesTestOption = "Include private submissions";
-                    vm.getLeaderboard(vm.phaseSplitId);
+                    vm.getLeaderboard(vm.phaseSlug, vm.splitCodename);
                 }
             }
         };
-
+        
         // function to create new team for participating in challenge
         vm.createNewTeam = function() {
             vm.isLoader = true;
@@ -1779,38 +1796,48 @@
 
             utilities.sendRequest(parameters);
         };
-
-        vm.getAllSubmissionResults = function(phaseId) {
-            vm.stopFetchingSubmissions = function() {
+        vm.getAllSubmissionResults = function (phaseSlug) {
+            // Stop any existing polling
+            vm.stopFetchingSubmissions = function () {
                 $interval.cancel(vm.poller);
             };
-
             vm.stopFetchingSubmissions();
-            vm.isResult = true;
-            if (phaseId !== undefined) {
-                vm.phaseId = phaseId;
-            }
 
-            // loader for loading submissions.
+            vm.isResult = true;
+            vm.allSubmissionPhaseSlug = phaseSlug;
+
+            // Find the corresponding numeric ID for API calls that might need it.
+            var numericPhaseId = null;
+            var all_phases = vm.phases.results;
+            for (var i = 0; i < all_phases.length; i++) {
+                if (all_phases[i].slug === phaseSlug) {
+                    numericPhaseId = all_phases[i].id;
+                    break;
+                }
+            }
+            vm.phaseId = numericPhaseId;
+
+            // Start loading submissions
             vm.startLoader = loaderService.startLoader;
             vm.startLoader("Loading Submissions");
 
-            // get submissions of all the challenge phases
             vm.isNext = '';
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
+
+            // Use the slug in the URL because the backend expects it.
             if (vm.filter_all_submission_by_team_name === '') {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
-                vm.phaseId + "/submissions";
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v2/" +
+                    vm.allSubmissionPhaseSlug + "/submissions";
             } else {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
-                vm.phaseId + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v2/" +
+                    vm.allSubmissionPhaseSlug + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
             }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.submissionResult = details;
 
@@ -1833,7 +1860,6 @@
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
-
                     }
                     if (vm.submissionResult.previous === null) {
                         vm.isPrev = 'disabled';
@@ -1848,24 +1874,15 @@
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
-                    vm.load = function(url) {
-                        // loader for loading submissions
+                    vm.load = function (url) {
                         vm.startLoader = loaderService.startLoader;
                         vm.startLoader("Loading Submissions");
                         if (url !== null) {
-
-                            //store the header data in a variable
-                            var headers = {
-                                'Authorization': "Token " + userKey
-                            };
-
-                            //Add headers with in your request
-                            $http.get(url, { headers: headers }).then(function(response) {
-                                // reinitialized data
+                            var headers = { 'Authorization': "Token " + userKey };
+                            $http.get(url, { headers: headers }).then(function (response) {
                                 var details = response.data;
                                 vm.submissionResult = details;
 
-                                // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 150;
@@ -1887,9 +1904,10 @@
                             vm.stopLoader();
                         }
                     };
+                    vm.allSubmissionPhaseName = phaseSlug; // Use the slug for the name
                     vm.stopLoader();
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     utilities.storeData('emailError', error.detail);
                     $state.go('web.permission-denied');
@@ -2172,8 +2190,9 @@
         }];
 
         vm.downloadChallengeSubmissions = function() {
+            vm.phaseId = (vm.allSubmissionPhaseSlug == undefined) ? vm.mySubmissionPhaseSlug : vm.allSubmissionPhaseSlug;
             if (vm.phaseId) {
-                parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
+               parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v2/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
                     parameters.callback = {
