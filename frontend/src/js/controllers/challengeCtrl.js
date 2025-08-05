@@ -1586,13 +1586,22 @@
 
         // function for getting all submissions on leaderboard public/private
         vm.getAllEntriesOnPublicLeaderboard = function (phaseSlug, splitCodename) {
-            vm.stopLeaderboard = function() {
+            vm.stopLeaderboard = function () {
                 $interval.cancel(vm.poller);
             };
             vm.stopLeaderboard();
 
             vm.isResult = true;
-            vm.phaseSplitId = phaseSplitId;
+
+            // Find the corresponding phase split object to get its ID
+            var currentPhaseSplit = vm.phaseSplits.find(function (ps) {
+                return ps.challenge_phase_slug === phaseSlug && ps.dataset_split_codename === splitCodename;
+            });
+
+            if (currentPhaseSplit) {
+                vm.phaseSplitId = currentPhaseSplit.id;
+            }
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -1605,7 +1614,7 @@
             parameters.url = `jobs/challenge/${vm.challengeId}/phase/${phaseSlug}/split/${splitCodename}/public_leaderboard_all_entries/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
             parameters.method = 'GET';
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
 
@@ -1666,12 +1675,14 @@
                             }
                         }
                     }
-                    vm.phaseName = vm.phaseSplitId;
+                    if (currentPhaseSplit) {
+                        vm.phaseName = currentPhaseSplit.id;
+                    }
                     vm.startLeaderboard();
                     vm.stopLoader();
                     vm.scrollToEntryAfterLeaderboardLoads();
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     vm.leaderboard.error = error;
                     vm.stopLoader();
@@ -1680,7 +1691,6 @@
 
             utilities.sendRequest(parameters);
         };
-
         vm.getAllEntries = false;
 
         // function for toggeling between public leaderboard and complete leaderboard [public/private]
