@@ -916,6 +916,7 @@ describe('Unit tests for challenge controller', function () {
             }
         ];
 
+        // THIS IS THE BLOCK TO REPLACE
         beforeEach(function () {
             spyOn($interval, 'cancel');
             spyOn(vm, 'startLoader');
@@ -929,24 +930,40 @@ describe('Unit tests for challenge controller', function () {
                 results: [
                     {
                         id: 1,
+                        slug: "phase-1-slug",
                         name: "Challenge phase name",
                         description: "Challenge phase description",
-                        leaderboard_public: true
+                        leaderboard_public: true,
+                        is_restricted_to_select_one_submission: false,
+                        default_submission_meta_attributes: []
                     },
                 ]
             };
 
+            // Replace the mock function with the new version
             utilities.sendRequest = function (parameters) {
-                if ((submissionCountSuccess == true && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")) {
-                    parameters.callback.onSuccess({
-                        data: successResponse
-                    });
-                } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")){
-                    parameters.callback.onError({
-                        data: errorResponse
-                    });
+                // Check for submission count API call
+                if (parameters.url.includes('/count')) {
+                    if (submissionCountSuccess) {
+                        parameters.callback.onSuccess({
+                            data: successResponse
+                        });
+                    } else {
+                        parameters.callback.onError({
+                            data: errorResponse
+                        });
+                    }
+                    // Check for submission list API call
+                } else if (parameters.url.includes('/submission')) {
+                    if (submissionListSuccess) {
+                        parameters.callback.onSuccess({
+                            data: successResponse
+                        });
+                    } else {
+                        parameters.callback.onError({
+                            data: errorResponse
+                        });
+                    }
                 }
             };
         });
@@ -954,44 +971,45 @@ describe('Unit tests for challenge controller', function () {
         it('get the leaderboard of the current phase', function () {
             submissionCountSuccess = null;
             submissionListSuccess = null;
+            var phaseSlug = 'phase-1-slug'; // Use slug
             var phaseId = 1;
-            vm.getResults(phaseId);
+            vm.getResults(phaseSlug); // Call with slug
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
-            expect(vm.phaseId).toEqual(phaseId);
+            expect(vm.phaseId).toEqual(phaseId); // This will now pass
 
             expect(vm.currentPhaseLeaderboardPublic).toEqual(true);
         });
 
         it('get the submission count \
-            `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
+    `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
             submissionCountSuccess = true;
             submissionListSuccess = null;
-            var phaseId = 1;
+            var phaseSlug = 'phase-1-slug'; // Use slug
             successResponse = {
                 challenge_phase: 1,
                 participant_team_submission_count: 200
             };
-            vm.getResults(phaseId);
+            vm.getResults(phaseSlug); // Call with slug
             expect(vm.submissionCount).toEqual(successResponse.participant_team_submission_count);
         });
 
         it('backend error on getting submission count \
-            `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
+    `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
             submissionCountSuccess = false;
             submissionListSuccess = null;
-            var phaseId = 1;
+            var phaseSlug = 'phase-1-slug'; // Use slug
             errorResponse = 'error';
-            vm.getResults(phaseId);
+            vm.getResults(phaseSlug); // Call with slug
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
         });
 
         submission_list.forEach(response => {
             it('get submissions of a particular challenge phase when pagination next is ' + response.next + ' \
-                and previous is ' + response.previous + '`jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
+        and previous is ' + response.previous + '`jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
                 submissionListSuccess = true;
-                var phaseId = 1;
+                var phaseSlug = 'phase-1-slug'; // Use slug
                 successResponse = response;
                 successResponse.results = [
                     {
@@ -1003,10 +1021,10 @@ describe('Unit tests for challenge controller', function () {
                     }
                 ];
 
-                vm.getResults(phaseId);
+                vm.getResults(phaseSlug); // Call with slug
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
-                for (var i = 0; i < successResponse.results.length; i++){
+                for (var i = 0; i < successResponse.results.length; i++) {
                     expect(vm.submissionVisibility[successResponse.results[i].id]).toEqual(successResponse.results[i].is_public);
                     expect(vm.baselineStatus[successResponse.results[i].id] = successResponse.results[i].is_baseline);
                 }
@@ -1035,14 +1053,14 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('backend error on getting submissions of a particular challenge \
-            `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
+    `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
             submissionListSuccess = false;
             submissionCountSuccess = null;
-            var phaseId = 1;
+            var phaseSlug = 'phase-1-slug'; // Use slug
             errorResponse = {
                 detail: 'error'
             };
-            vm.getResults(phaseId);
+            vm.getResults(phaseSlug); // Call with slug
             expect(utilities.storeData).toHaveBeenCalledWith("emailError", errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(vm.stopLoader).toHaveBeenCalled();
@@ -1051,7 +1069,7 @@ describe('Unit tests for challenge controller', function () {
         it('to load data with pagination `load` function', function () {
             submissionListSuccess = true;
             submissionCountSuccess = null;
-            var phaseId = 1;
+            var phaseSlug = 'phase-1-slug'; // Use slug
             successResponse = {
                 results: [
                     {
@@ -1065,8 +1083,8 @@ describe('Unit tests for challenge controller', function () {
                 // get submissions response
                 next: "page=4",
                 previous: "page=2",
-            };      
-            vm.getResults(phaseId);
+            };
+            vm.getResults(phaseSlug); // Call with slug
             spyOn($http, 'get').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
                 return deferred.promise;
@@ -1078,7 +1096,7 @@ describe('Unit tests for challenge controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
     });
 
@@ -1341,9 +1359,8 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("error", "New team couldn't be created.");
         });
     });
-
     describe('Unit tests for getAllSubmissionResults function \
-        `challenges/<challenge_id>/challenge_phase/<phase_id>/submissions`', function() {
+    `challenges/<challenge_id>/challenge_phase/<phase_id>/submissions`', function () {
         var success, successResponse;
         var errorResponse = {
             detail: 'error'
@@ -1353,26 +1370,31 @@ describe('Unit tests for challenge controller', function () {
                 count: 0,
                 next: null,
                 previous: null,
+                results: []
             },
             {
                 count: 2,
                 next: null,
                 previous: null,
+                results: [{ id: 1, is_public: true, is_verified_by_host: false }]
             },
             {
                 count: 30,
                 next: 'page=5',
                 previous: null,
+                results: [{ id: 1, is_public: true, is_verified_by_host: false }]
             },
             {
                 count: 30,
                 next: null,
                 previous: 'page=3',
+                results: [{ id: 1, is_public: true, is_verified_by_host: false }]
             },
             {
                 count: 30,
                 next: 'page=4',
                 previous: 'page=2',
+                results: [{ id: 1, is_public: true, is_verified_by_host: false }]
             }
         ];
 
@@ -1383,6 +1405,13 @@ describe('Unit tests for challenge controller', function () {
             spyOn($interval, 'cancel');
             spyOn(utilities, 'storeData');
             spyOn($state, 'go');
+
+            // Add mock phases data for slug lookup
+            vm.phases = {
+                results: [
+                    { id: 1, slug: 'all-submissions-slug' }
+                ]
+            };
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -1397,12 +1426,14 @@ describe('Unit tests for challenge controller', function () {
             };
         });
 
+        // THIS IS THE FIRST BLOCK TO REPLACE
         submission_list.forEach(response => {
-            it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function() {
+            it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function () {
                 success = true;
                 successResponse = response;
-                var phaseId = 1
-                vm.getAllSubmissionResults(phaseId);
+                var phaseSlug = "all-submissions-slug"; // Use slug
+                var phaseId = 1;
+                vm.getAllSubmissionResults(phaseSlug); // Call with slug
                 vm.stopFetchingSubmissions();
                 expect($interval.cancel).toHaveBeenCalled();
                 expect(vm.isResult).toEqual(true);
@@ -1438,10 +1469,12 @@ describe('Unit tests for challenge controller', function () {
             });
         });
 
+        // THIS IS THE SECOND BLOCK TO REPLACE
         it('backend error', function () {
             success = false;
-            var phaseId = 1
-            vm.getAllSubmissionResults(phaseId);
+            var phaseSlug = "all-submissions-slug"; // Use slug
+            var phaseId = 1;
+            vm.getAllSubmissionResults(phaseSlug); // Call with slug
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
