@@ -848,24 +848,31 @@ describe('Unit tests for challenge controller', function () {
 
         it('successfully get the leaderboard', function () {
             success = true;
+            // MOCK RESPONSE with new, consistent data structure
             successResponse = {
-                results: {
-                    duration: 'year',
-                    results: [
-                        {
-                            id: 1,
-                            leaderboard__schema:
-                                {
-                                    labels: ['label1', 'label2'],
-                                    default_order_by: 'default_order_by',
-                                },
-                            submission__submitted_at: (new Date() - new Date().setFullYear(new Date().getFullYear() - 1)),
+                results: [
+                    {
+                        id: 1,
+                        leaderboard__schema: {
+                            labels: ['label1', 'label2'],
+                            default_order_by: 'default_order_by',
                         },
-                    ]
-                },
+                        // Use a valid ISO 8601 date string for consistency
+                        submission__submitted_at: new Date().toISOString(),
+                    },
+                ]
             };
-            var phaseSplitId = 1;
-            vm.getLeaderboard(phaseSplitId);
+            var phaseSlug = 'phase-slug';
+            var splitCodename = 'split-codename';
+
+            // Mock the phaseSplits array so the controller can find the phaseSplitId
+            vm.phaseSplits = [{
+                id: 1,
+                challenge_phase_slug: phaseSlug,
+                dataset_split_codename: splitCodename
+            }];
+
+            vm.getLeaderboard(phaseSlug, splitCodename);
             vm.stopLeaderboard();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
