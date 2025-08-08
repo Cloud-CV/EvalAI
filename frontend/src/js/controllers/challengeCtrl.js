@@ -1131,10 +1131,7 @@
                         if (duration.asYears() >= 1) {
                             timeValue = Math.floor(duration.asYears());
                             timeSpan = timeValue === 1 ? 'year' : 'years';
-                        } else if (duration.asMonths() >= 1) {
-                            timeValue = Math.floor(duration.asMonths());
-                            timeSpan = timeValue === 1 ? 'month' : 'months';
-                        } else if (duration.asDays() >= 1) {
+                        }  else if (duration.asDays() >= 1) {
                             timeValue = Math.floor(duration.asDays());
                             timeSpan = timeValue === 1 ? 'day' : 'days';
                         } else if (duration.asHours() >= 1) {
@@ -1598,9 +1595,6 @@
                         if (duration.asYears() >= 1) {
                             timeValue = Math.floor(duration.asYears());
                             timeSpan = timeValue === 1 ? 'year' : 'years';
-                        } else if (duration.asMonths() >= 1) {
-                            timeValue = Math.floor(duration.asMonths());
-                            timeSpan = timeValue === 1 ? 'month' : 'months';
                         } else if (duration.asDays() >= 1) {
                             timeValue = Math.floor(duration.asDays());
                             timeSpan = timeValue === 1 ? 'day' : 'days';
