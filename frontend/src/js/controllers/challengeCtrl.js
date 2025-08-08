@@ -1131,7 +1131,10 @@
                         if (duration.asYears() >= 1) {
                             timeValue = Math.floor(duration.asYears());
                             timeSpan = timeValue === 1 ? 'year' : 'years';
-                        }  else if (duration.asDays() >= 1) {
+                        } else if (duration.asMonths() >= 1) { // The new, correct block for months
+                            timeValue = Math.floor(duration.asMonths());
+                            timeSpan = timeValue === 1 ? 'month' : 'months';
+                        } else if (duration.asDays() >= 1) {
                             timeValue = Math.floor(duration.asDays());
                             timeSpan = timeValue === 1 ? 'day' : 'days';
                         } else if (duration.asHours() >= 1) {
@@ -1586,7 +1589,6 @@
                     for (var i = 0; i < vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i + 1;
-
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
@@ -1595,6 +1597,9 @@
                         if (duration.asYears() >= 1) {
                             timeValue = Math.floor(duration.asYears());
                             timeSpan = timeValue === 1 ? 'year' : 'years';
+                        } else if (duration.asMonths() >= 1) { 
+                            timeValue = Math.floor(duration.asMonths());
+                            timeSpan = timeValue === 1 ? 'month' : 'months';
                         } else if (duration.asDays() >= 1) {
                             timeValue = Math.floor(duration.asDays());
                             timeSpan = timeValue === 1 ? 'day' : 'days';
