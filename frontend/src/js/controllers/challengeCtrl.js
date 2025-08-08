@@ -1120,72 +1120,36 @@
                     // *** END OF FIX ***
 
                     for (var i = 0; i < vm.leaderboard.length; i++) {
-                        if (vm.leaderboard[i].submission__submission_metadata == null) {
-                            vm.showSubmissionMetaAttributesOnLeaderboard = false;
-                        }
-                        else {
-                            vm.showSubmissionMetaAttributesOnLeaderboard = true;
-                        }
-
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i + 1;
+
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
-                        if (duration._data.years != 0) {
-                            var years = duration.asYears();
-                            vm.leaderboard[i].submission__submitted_at = years;
-                            if (years.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'year';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'years';
-                            }
+                        var timeValue, timeSpan;
+
+                        if (duration.asYears() >= 1) {
+                            timeValue = Math.floor(duration.asYears());
+                            timeSpan = timeValue === 1 ? 'year' : 'years';
+                        } else if (duration.asMonths() >= 1) {
+                            timeValue = Math.floor(duration.asMonths());
+                            timeSpan = timeValue === 1 ? 'month' : 'months';
+                        } else if (duration.asDays() >= 1) {
+                            timeValue = Math.floor(duration.asDays());
+                            timeSpan = timeValue === 1 ? 'day' : 'days';
+                        } else if (duration.asHours() >= 1) {
+                            timeValue = Math.floor(duration.asHours());
+                            timeSpan = timeValue === 1 ? 'hour' : 'hours';
+                        } else if (duration.asMinutes() >= 1) {
+                            timeValue = Math.floor(duration.asMinutes());
+                            timeSpan = timeValue === 1 ? 'minute' : 'minutes';
+                        } else {
+                            timeValue = Math.floor(duration.asSeconds());
+                            timeSpan = timeValue === 1 ? 'second' : 'seconds';
                         }
-                        else if (duration._data.months != 0) {
-                            var months = duration.months();
-                            vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'month';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'months';
-                            }
-                        }
-                        else if (duration._data.days != 0) {
-                            var days = duration.asDays();
-                            vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'day';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'days';
-                            }
-                        }
-                        else if (duration._data.hours != 0) {
-                            var hours = duration.asHours();
-                            vm.leaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'hour';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'hours';
-                            }
-                        }
-                        else if (duration._data.minutes != 0) {
-                            var minutes = duration.asMinutes();
-                            vm.leaderboard[i].submission__submitted_at = minutes;
-                            if (minutes.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'minute';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'minutes';
-                            }
-                        }
-                        else if (duration._data.seconds != 0) {
-                            var second = duration.asSeconds();
-                            vm.leaderboard[i].submission__submitted_at = second;
-                            if (second.toFixed(0) == 1) {
-                                vm.leaderboard[i].timeSpan = 'second';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'seconds';
-                            }
-                        }
+
+                        vm.leaderboard[i].submission__submitted_at = timeValue;
+                        vm.leaderboard[i].timeSpan = timeSpan;
                     }
 
                     if (currentPhaseSplit) {
