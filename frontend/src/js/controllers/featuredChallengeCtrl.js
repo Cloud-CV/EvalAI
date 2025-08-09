@@ -142,7 +142,11 @@
                                 vm.leaderboard[i].timeSpan= 'years';
                             }
                         }
-                      
+                        else if (duration._data.months != 0 && duration.asDays() >= 60) {
+                            var months = duration.asMonths();
+                            vm.leaderboard[i].submission__submitted_at = months;
+                            vm.leaderboard[i].timeSpan = months.toFixed(0) == 1 ? 'month' : 'months';
+                        }
                         else if (duration.asDays() >= 1) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
