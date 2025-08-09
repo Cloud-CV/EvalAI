@@ -142,23 +142,11 @@
                                 vm.leaderboard[i].timeSpan= 'years';
                             }
                         }
-                        else if (duration._data.months !=0) {
-                            var months = duration.months();
-                            vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'month';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'months';
-                            }
-                        }
-                        else if (duration._data.days !=0) {
+                      
+                        else if (duration.asDays() >= 1) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'day';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'days';
-                            }
+                            vm.leaderboard[i].timeSpan = days.toFixed(0) == 1 ? 'day' : 'days';
                         }
                         else if (duration._data.hours !=0) {
                             var hours = duration.asHours();
