@@ -200,14 +200,15 @@ class TestChallengeUrls(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "version": 'v1',
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type,
             },
         )
         self.assertEqual(
             self.url,
-            "/api/challenges/{}/phase/{}/download_all_submissions/{}/".format(
-                self.challenge.pk, self.challenge_phase.pk, self.file_type
+            "/api/challenges/{}/phase/{}/{}/download_all_submissions/{}/".format(
+                self.challenge.pk, 'v1', self.challenge_phase.pk, self.file_type
             ),
         )
         resolver = resolve(self.url)

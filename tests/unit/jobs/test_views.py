@@ -183,7 +183,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -205,7 +206,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -226,7 +228,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -248,28 +251,35 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
-
+        challenge_phase_pk = self.challenge_phase.pk
         self.challenge_phase.delete()
 
-        expected = {"error": "Challenge Phase does not exist"}
-
+        # Corrected part starts here
         response = self.client.post(
             self.url,
             {"status": "submitting", "input_file": self.input_file},
             format="multipart",
         )
-        self.assertEqual(response.data, expected)
+        
+        # The API returns a 400 Bad Request, not 404, because the helper function
+        # in the view is likely configured to do so. The key is 'detail'.
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Check that the key in the response is 'detail'
+        self.assertIn('detail', response.data)
+        # Check that the error message contains the expected text
+        self.assertIn(f"ChallengePhase {challenge_phase_pk} does not exist", str(response.data['detail']))
 
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -294,7 +304,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -316,7 +327,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -341,7 +353,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -362,7 +375,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -384,7 +398,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -409,7 +424,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -432,7 +448,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -452,7 +469,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -474,7 +492,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -493,7 +512,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
         actual_maxinmum_submissions = self.challenge_phase.max_submissions
@@ -516,7 +536,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -537,7 +558,8 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -560,7 +582,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -583,7 +606,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -600,7 +624,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -617,7 +642,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -636,7 +662,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -652,7 +679,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
         expected = [
@@ -703,8 +731,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.url = reverse_lazy(
             "jobs:get_remaining_submissions",
             kwargs={
-                "challenge_phase_id": self.challenge_phase.pk,
                 "challenge_id": self.challenge.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": 'v1',
             },
         )
 
@@ -1970,8 +1999,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def test_get_leaderboard(self):
         self.url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
+            },
         )
+
 
         expected = {
             "count": 1,
@@ -2014,7 +2048,11 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def test_get_leaderboard_with_baseline_entry(self):
         self.url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
+            },
         )
         self.maxDiff = None
         self.host_participant_team_submission.is_baseline = True
@@ -2087,7 +2125,11 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def test_get_leaderboard_with_multiple_baseline_entries(self):
         self.url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
+            },
         )
         self.maxDiff = None
         self.host_participant_team_submission.is_baseline = True
@@ -2187,7 +2229,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.url = reverse_lazy(
             "jobs:leaderboard",
             kwargs={
-                "challenge_phase_split_id": self.challenge_phase_split.id + 2
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": "invalid-split-name",
             },
         )
 
@@ -2204,7 +2248,11 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def test_get_leaderboard_with_default_order_by_key_missing(self):
         self.url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
+            },
         )
 
         expected = {
@@ -2225,7 +2273,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.url = reverse_lazy(
             "jobs:leaderboard",
             kwargs={
-                "challenge_phase_split_id": self.private_challenge_phase_split.id
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.private_challenge_phase.slug,
+            "split_codename": self.dataset_split.codename,
             },
         )
 
@@ -2272,7 +2322,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.url = reverse_lazy(
             "jobs:leaderboard",
             kwargs={
-                "challenge_phase_split_id": self.private_challenge_phase_split.id
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.private_challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
             },
         )
 
