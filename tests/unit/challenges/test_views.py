@@ -3850,7 +3850,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
+                "leaderboard_schema": json.loads(self.challenge_phase_split.leaderboard.schema),
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
             }
         ]
@@ -3889,7 +3889,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
+                "leaderboard_schema": json.loads(self.challenge_phase_split.leaderboard.schema),
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
             },
             {
@@ -3901,7 +3901,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
+                "leaderboard_schema": json.loads(self.challenge_phase_split.leaderboard.schema),
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
             },
         ]
@@ -3925,7 +3925,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
+                "leaderboard_schema": json.loads(self.challenge_phase_split.leaderboard.schema),
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
             },
             {
@@ -3937,7 +3937,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
+                "leaderboard_schema": json.loads(self.challenge_phase_split.leaderboard.schema),
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
             },
         ]
