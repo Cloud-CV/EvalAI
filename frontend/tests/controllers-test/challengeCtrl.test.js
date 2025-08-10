@@ -978,9 +978,10 @@ describe('Unit tests for challenge controller', function () {
         it('get the leaderboard of the current phase', function () {
             submissionCountSuccess = null;
             submissionListSuccess = null;
-            var phaseSlug = 'phase-1-slug'; // Use slug
-            var phaseId = 1;
-            vm.getResults(phaseSlug); // Call with slug
+            var phaseSlug = 'phase-1-slug';
+            // Define the mock error object
+            errorResponse = { detail: 'error' };
+            vm.getResults(phaseSlug);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
@@ -1002,13 +1003,13 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.submissionCount).toEqual(successResponse.participant_team_submission_count);
         });
 
-        it('backend error on getting submission count \
-    `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
+        it('backend error on getting submission count...', function () {
             submissionCountSuccess = false;
             submissionListSuccess = null;
-            var phaseSlug = 'phase-1-slug'; // Use slug
-            errorResponse = 'error';
-            vm.getResults(phaseSlug); // Call with slug
+            var phaseSlug = 'phase-1-slug';
+            // Change the mock error to an object
+            errorResponse = { detail: 'error' };
+            vm.getResults(phaseSlug);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
         });
 
