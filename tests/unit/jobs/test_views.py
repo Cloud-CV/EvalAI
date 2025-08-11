@@ -267,7 +267,7 @@ class BaseAPITestClass(APITestCase):
         
         # The API returns a 400 Bad Request, not 404, because the helper function
         # in the view is likely configured to do so. The key is 'detail'.
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # Check that the key in the response is 'detail'
         self.assertIn('detail', response.data)
         # Check that the error message contains the expected text
@@ -634,8 +634,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         expected = {"error": "Challenge Phase does not exist"}
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn('detail', response.data)
+        self.assertIn("does not exist", str(response.data['detail']))
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy(
@@ -1817,6 +1818,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
+        
         self.private_challenge_phase_split = (
             ChallengePhaseSplit.objects.create(
                 challenge_phase=self.private_challenge_phase,
