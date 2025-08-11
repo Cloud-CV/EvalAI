@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import logging
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
@@ -12,6 +13,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 from hosts.models import ChallengeHost
 from participants.models import ParticipantTeam
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -190,6 +193,10 @@ class Challenge(TimeStampedModel):
     github_branch = models.CharField(
         max_length=200, null=True, blank=True, default=""
     )
+    # The github token used for authentication
+    github_token = models.CharField(
+        max_length=200, null=True, blank=True, default=""
+    )
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
@@ -313,6 +320,17 @@ def update_sqs_retention_period_for_challenge(
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def challenge_details_sync(sender, instance, created, **kwargs):
+    """Sync challenge details to GitHub when challenge is updated"""
+    if not created and instance.github_token and instance.github_repository:
+        try:
+            from challenges.github_utils import sync_challenge_to_github
+            sync_challenge_to_github(instance)
+        except Exception as e:
+            logger.error(f"Error in challenge_details_sync: {str(e)}")
 
 
 class DatasetSplit(TimeStampedModel):
@@ -439,6 +457,17 @@ class ChallengePhase(TimeStampedModel):
             *args, **kwargs
         )
         return challenge_phase_instance
+
+
+@receiver(signals.post_save, sender="challenges.ChallengePhase")
+def challenge_phase_details_sync(sender, instance, created, **kwargs):
+    """Sync challenge phase details to GitHub when challenge phase is updated"""
+    if not created and instance.challenge.github_token and instance.challenge.github_repository:
+        try:
+            from challenges.github_utils import sync_challenge_phase_to_github
+            sync_challenge_phase_to_github(instance)
+        except Exception as e:
+            logger.error(f"Error in challenge_phase_details_sync: {str(e)}")
 
 
 def post_save_connect(field_name, sender):

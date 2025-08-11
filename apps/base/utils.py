@@ -333,3 +333,10 @@ def is_user_a_staff(user):
         {bool} : True/False if the user is staff or not
     """
     return user.is_staff
+
+
+def deserialize_object(object):
+    deserialized_object = None
+    for obj in serializers.deserialize("json", object):
+        deserialized_object = obj.object
+    return deserialized_object
