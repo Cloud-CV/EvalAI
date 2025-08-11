@@ -985,7 +985,7 @@ describe('Unit tests for challenge controller', function () {
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
-            expect(vm.phaseId).toEqual(phaseId); // This will now pass
+            expect(vm.phaseId).toEqual(1); 
 
             expect(vm.currentPhaseLeaderboardPublic).toEqual(true);
         });
