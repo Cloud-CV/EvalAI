@@ -1386,7 +1386,8 @@
                 },
                 onError: function (response) {
                     var error = response.data;
-                    utilities.storeData('emailError', error.detail);
+                    var errorDetail = (error && error.detail) ? error.detail : error;
+                    utilities.storeData('emailError', errorDetail);
                     $state.go('web.permission-denied');
                     vm.stopLoader();
                 }
