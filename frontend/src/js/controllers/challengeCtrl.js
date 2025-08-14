@@ -1779,7 +1779,6 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            // Use the slug in the URL because the backend expects it.
             if (vm.filter_all_submission_by_team_name === '') {
                 parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v2/" +
                     vm.allSubmissionPhaseSlug + "/submissions";
