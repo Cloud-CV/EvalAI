@@ -1856,7 +1856,7 @@
                             vm.stopLoader();
                         }
                     };
-                    vm.allSubmissionPhaseName = phaseSlug; // Use the slug for the name
+                    vm.allSubmissionPhaseName = phaseSlug; 
                     vm.stopLoader();
                 },
                 onError: function (response) {
