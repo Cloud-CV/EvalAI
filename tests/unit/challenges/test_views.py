@@ -6331,8 +6331,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             )
             expected = {
                 "Success": (
-                    "Challenge Challenge "
-                    "Title has been created successfully and sent for review to EvalAI Admin."
+                    "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
                 )
             }
 
