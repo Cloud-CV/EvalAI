@@ -5974,6 +5974,13 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
 
+        # Verify github_repository is properly stored
+        challenge = Challenge.objects.first()
+        self.assertEqual(
+            challenge.github_repository,
+            "https://github.com/yourusername/repository",
+        )
+
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
     ):
