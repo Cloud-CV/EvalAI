@@ -1655,9 +1655,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             challenge_phases, challenge_phases_from_hosts
         ):
             for field in challenge_phase_fields:
-                challenge_phase_data[
-                    field
-                ] = challenge_phase_data_from_hosts.get(field)
+                challenge_phase_data[field] = (
+                    challenge_phase_data_from_hosts.get(field)
+                )
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(
@@ -1790,9 +1790,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     )
                 if serializer.is_valid():
                     serializer.save()
-                    challenge_phase_ids[
-                        str(data["id"])
-                    ] = serializer.instance.pk
+                    challenge_phase_ids[str(data["id"])] = (
+                        serializer.instance.pk
+                    )
                 else:
                     response_data = serializer.errors
                     raise RuntimeError()
@@ -2291,9 +2291,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2391,9 +2391,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2469,9 +2469,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
@@ -4035,9 +4035,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"leaderboard {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        leaderboard_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        leaderboard_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Challenge Phase
                     challenge_phase_ids = {}
@@ -4076,9 +4076,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"challenge phase {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        challenge_phase_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        challenge_phase_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Dataset Splits
                     yaml_file_data_of_dataset_split = yaml_file_data[
@@ -4094,9 +4094,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"dataset split {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        dataset_split_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        dataset_split_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Challenge Phase Splits
                     challenge_phase_splits_data = yaml_file_data[
@@ -4355,9 +4355,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        leaderboard_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        leaderboard_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"leaderboard update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4426,9 +4426,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        challenge_phase_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        challenge_phase_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"challenge phase update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4461,9 +4461,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        dataset_split_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        dataset_split_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"dataset split update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()

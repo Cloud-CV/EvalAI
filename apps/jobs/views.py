@@ -328,9 +328,9 @@ def challenge_submission(
             submission_meta_attributes = json.load(
                 request.data.get("submission_meta_attributes")
             )
-            request.data[
-                "submission_meta_attributes"
-            ] = submission_meta_attributes
+            request.data["submission_meta_attributes"] = (
+                submission_meta_attributes
+            )
 
         if request.data.get("is_public") is None:
             request.data["is_public"] = (
