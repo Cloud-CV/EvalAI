@@ -633,11 +633,9 @@ def leaderboard(request, challenge_pk, phase_slug, split_codename):
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
-    paginator, result_page = paginated_queryset(
-        response_data, request, pagination_class=StandardResultSetPagination()
-    )
-    response_data = result_page
-    return paginator.get_paginated_response(response_data)
+    paginator = StandardResultSetPagination()
+    result_page = paginator.paginate_queryset(response_data, request)
+    return paginator.get_paginated_response(result_page)
 
 
 @extend_schema(
