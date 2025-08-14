@@ -11,6 +11,7 @@ challenge-phases-setup
 dataset-splits
 yaml-reference
 edit-challenge-configuration
+lock-submission-visibility
 ```
 
 For evaluation setup and configuration, checkout the Evaluation section:
