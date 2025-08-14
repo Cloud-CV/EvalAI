@@ -30,17 +30,18 @@ urlpatterns = [
         views.resume_submission,
         name="resume_submission",
     ),
-   url(
-    r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/(?P<split_codename>[-a-zA-Z0-9_]+)/leaderboard/$",
-    views.leaderboard,
-    name="leaderboard_by_slug",
-),
-    
-   url(
-    r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/(?P<split_codename>[-a-zA-Z0-9_]+)/public_leaderboard_all_entries/$",
-    views.get_all_entries_on_public_leaderboard,
-    name="get_all_entries_on_public_leaderboard_by_slug",
-),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/"
+        r"(?P<split_codename>[-a-zA-Z0-9_]+)/leaderboard/$",
+        views.leaderboard,
+        name="leaderboard_by_slug",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/"
+        r"(?P<split_codename>[-a-zA-Z0-9_]+)/public_leaderboard_all_entries/$",
+        views.get_all_entries_on_public_leaderboard,
+        name="get_all_entries_on_public_leaderboard_by_slug",
+    ),
     url(
         r"^submission/(?P<submission_id>[0-9]+)$",
         views.get_submission_by_pk,

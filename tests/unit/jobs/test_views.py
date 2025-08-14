@@ -143,7 +143,7 @@ class BaseAPITestClass(APITestCase):
 
             self.private_challenge_phase = ChallengePhase.objects.create(
                 name="Private Challenge Phase",
-                slug="private-challenge-phase", 
+                slug="private-challenge-phase",
                 description="Description for Private Challenge Phase",
                 leaderboard_public=False,
                 max_submissions_per_day=10,
@@ -186,7 +186,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -209,7 +209,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -231,7 +231,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -254,7 +254,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         challenge_phase_pk = self.challenge_phase.pk
@@ -266,14 +266,17 @@ class BaseAPITestClass(APITestCase):
             {"status": "submitting", "input_file": self.input_file},
             format="multipart",
         )
-        
+
         # The API returns a 400 Bad Request, not 404, because the helper function
         # in the view is likely configured to do so. The key is 'detail'.
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # Check that the key in the response is 'detail'
-        self.assertIn('detail', response.data)
+        self.assertIn("detail", response.data)
         # Check that the error message contains the expected text
-        self.assertIn(f"ChallengePhase {challenge_phase_pk} does not exist", str(response.data['detail']))
+        self.assertIn(
+            f"ChallengePhase {challenge_phase_pk} does not exist",
+            str(response.data["detail"]),
+        )
 
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
         self.url = reverse_lazy(
@@ -281,7 +284,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -307,7 +310,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -330,7 +333,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -356,7 +359,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -378,7 +381,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -401,7 +404,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -427,7 +430,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -451,7 +454,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -472,7 +475,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -495,7 +498,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -515,7 +518,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         actual_maxinmum_submissions = self.challenge_phase.max_submissions
@@ -539,7 +542,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -561,7 +564,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -585,7 +588,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -609,7 +612,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -627,18 +630,15 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
         self.challenge_phase.delete()
-
-        expected = {"error": "Challenge Phase does not exist"}
-
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn('detail', response.data)
-        self.assertIn("does not exist", str(response.data['detail']))
+        self.assertIn("detail", response.data)
+        self.assertIn("does not exist", str(response.data["detail"]))
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy(
@@ -646,7 +646,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -666,7 +666,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -683,7 +683,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = [
@@ -736,7 +736,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -1808,7 +1808,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 class ChallengeLeaderboardTest(BaseAPITestClass):
     def setUp(self):
         super(ChallengeLeaderboardTest, self).setUp()
-        self.maxDiff = None 
+        self.maxDiff = None
 
         self.dataset_split = DatasetSplit.objects.create(
             name="Split 1", codename="split1"
@@ -1821,7 +1821,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
-        
         self.private_challenge_phase_split = (
             ChallengePhaseSplit.objects.create(
                 challenge_phase=self.private_challenge_phase,
@@ -2011,15 +2010,15 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             },
         )
 
-    # FIX 1: Remove the confusing duplicate leaderboard entry.
-    # This was likely causing an unhandled error in the view's logic.
+        # FIX 1: Remove the confusing duplicate leaderboard entry.
+        # This was likely causing an unhandled error in the view's logic.
         self.leaderboard_data_2.delete()
 
-    # FIX 2: Temporarily hide the host's submission to match the expected count of 1.
-    # This makes the test's expectation clear and valid.
+        # FIX 2: Temporarily hide the host's submission to match the expected count of 1.
+        # This makes the test's expectation clear and valid.
         self.host_participant_team_submission.is_public = False
         self.host_participant_team_submission.save()
-        
+
         expected = {
             "count": 1,
             "next": None,
@@ -2032,7 +2031,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "error": None,
-                   "filtering_error": 0,
+                    "filtering_error": 0,
                     "result": self.expected_results,
                     "filtering_score": self.filtering_score,
                     "leaderboard__schema": {
@@ -2049,20 +2048,19 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 }
             ],
         }
-    # Note: You don't need to convert 'expected' to an OrderedDict for this comparison.
+        # Note: You don't need to convert 'expected' to an OrderedDict for this comparison.
 
         response = self.client.get(self.url, {})
 
-    # Optional: Useful debugging step if the test fails
-    # if response.status_code != 200:
-    #     print(response.data)
+        # Optional: Useful debugging step if the test fails
+        # if response.status_code != 200:
+        #     print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], expected["count"])
         self.assertEqual(response.data["next"], expected["next"])
         self.assertEqual(response.data["previous"], expected["previous"])
         self.assertEqual(response.data["results"], expected["results"])
-
 
     def test_get_leaderboard_with_multiple_baseline_entries(self):
         self.url = reverse_lazy(
@@ -2088,8 +2086,12 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 {
                     "id": self.host_participant_leaderboard_data.id,
                     "submission__participant_team": self.host_participant_team_submission.participant_team.id,
-                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
-                    "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
+                    "submission__participant_team__team_name": (
+                        self.host_participant_team_submission.participant_team.team_name
+                    ),
+                    "submission__participant_team__team_url": (
+                        self.host_participant_team_submission.participant_team.team_url
+                    ),
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
                     "filtering_score": self.filtering_score_host_participant_team,
@@ -2132,8 +2134,12 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
                     "submission__participant_team": self.host_participant_team_submission_2.participant_team.id,
-                    "submission__participant_team__team_name": self.host_participant_team_submission_2.participant_team.team_name,
-                    "submission__participant_team__team_url": self.host_participant_team_submission_2.participant_team.team_url,
+                    "submission__participant_team__team_name": (
+                        self.host_participant_team_submission_2.participant_team.team_name
+                    ),
+                    "submission__participant_team__team_url": (
+                        self.host_participant_team_submission_2.participant_team.team_url
+                    ),
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team_2,
                     "filtering_score": self.filtering_score_host_participant_team_2,
@@ -2179,7 +2185,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         expected = {
             "error": "Leaderboard for the given phase and split does not exist."
-
         }
 
         response = self.client.get(self.url, {})
@@ -2216,7 +2221,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_slug": self.private_challenge_phase.slug,
-            "split_codename": self.dataset_split.codename,
+                "split_codename": self.dataset_split.codename,
             },
         )
 
@@ -2276,6 +2281,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class UpdateSubmissionTest(BaseAPITestClass):
     def setUp(self):

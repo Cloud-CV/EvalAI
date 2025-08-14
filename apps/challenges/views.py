@@ -506,7 +506,6 @@ def get_participant_teams_for_challenge(request, challenge_pk):
 def add_participant_team_to_challenge(
     request, challenge_pk, participant_team_pk
 ):
-
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -1422,9 +1421,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         ):
                             options = attribute.get("options")
                             if not options or not len(options):
-                                message = "Please include at least one option in attribute for challenge_phase {}".format(
-                                    data["id"]
-                                )
+                                message = "Please include at least one option in attribute"
+                                "for challenge_phase {}".format(data["id"])
                                 response_data = {"error": message}
                                 return Response(
                                     response_data,
@@ -1463,7 +1461,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         )
                 else:
                     missing_keys_string = ", ".join(missing_keys)
-                    message = "Please enter the following to the default submission meta attribute in phase {}: {}.".format(
+                    message = (
+                        "Please enter the following to the default submission"
+                    )
+                    " meta attribute in phase {}: {}.".format(
                         data["id"], missing_keys_string
                     )
                     response_data = {"error": message}
@@ -1654,9 +1655,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             challenge_phases, challenge_phases_from_hosts
         ):
             for field in challenge_phase_fields:
-                challenge_phase_data[field] = (
-                    challenge_phase_data_from_hosts.get(field)
-                )
+                challenge_phase_data[
+                    field
+                ] = challenge_phase_data_from_hosts.get(field)
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(
@@ -1789,9 +1790,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     )
                 if serializer.is_valid():
                     serializer.save()
-                    challenge_phase_ids[str(data["id"])] = (
-                        serializer.instance.pk
-                    )
+                    challenge_phase_ids[
+                        str(data["id"])
+                    ] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
                     raise RuntimeError()
@@ -2097,7 +2098,7 @@ def get_all_submissions_of_challenge(
 
     # To check for the corresponding challenge phase from the
     # challenge_phase_pk and challenge.
-    if version == 'v2':
+    if version == "v2":
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge
@@ -2117,7 +2118,6 @@ def get_all_submissions_of_challenge(
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
-
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         submissions = Submission.objects.filter(
@@ -2140,7 +2140,6 @@ def get_all_submissions_of_challenge(
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
-
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
@@ -2247,7 +2246,7 @@ def get_all_submissions_of_challenge(
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_submissions(
-   request, challenge_pk, challenge_phase_pk_or_slug, file_type, version
+    request, challenge_pk, challenge_phase_pk_or_slug, file_type, version
 ):
     """
     API endpoint to download all the submissions for a particular challenge as a csv
@@ -2266,7 +2265,7 @@ def download_all_submissions(
 
     # To check for the corresponding challenge phase from the
     # challenge_phase_pk and challenge.
-    if version == 'v2':
+    if version == "v2":
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge
@@ -2292,9 +2291,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
-                )
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2374,7 +2373,6 @@ def download_all_submissions(
             elif has_user_participated_in_challenge(
                 user=request.user, challenge_id=challenge_pk
             ):
-
                 # get participant team object for the user for a particular
                 # challenge.
                 participant_team_pk = (
@@ -2393,9 +2391,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
-                )
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2471,9 +2469,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
-                )
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
                 writer = csv.writer(response)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
@@ -2928,7 +2926,6 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_users_to_challenge(request, challenge_pk):
-
     challenge = get_challenge_model(challenge_pk)
 
     if not challenge.is_active or not challenge.approved_by_admin:
@@ -4038,9 +4035,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"leaderboard {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        leaderboard_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        leaderboard_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
 
                     # Create Challenge Phase
                     challenge_phase_ids = {}
@@ -4079,9 +4076,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"challenge phase {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        challenge_phase_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        challenge_phase_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
 
                     # Create Dataset Splits
                     yaml_file_data_of_dataset_split = yaml_file_data[
@@ -4097,9 +4094,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"dataset split {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        dataset_split_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        dataset_split_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
 
                     # Create Challenge Phase Splits
                     challenge_phase_splits_data = yaml_file_data[
@@ -4177,7 +4174,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = f"challenge phase split (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                            error_messages = (
+                                f"challenge phase split"
+                                f" (phase:{data['challenge_phase_id']},"
+                                f" leaderboard:{data['leaderboard_id']},"
+                                f" dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                            )
                             raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
@@ -4353,9 +4355,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        leaderboard_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        leaderboard_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
                     else:
                         error_messages = f"leaderboard update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4367,7 +4369,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phases_data,
                     files["challenge_test_annotation_files"],
                 ):
-
                     # Override the submission_meta_attributes when they are
                     # missing
                     submission_meta_attributes = data.get(
@@ -4425,9 +4426,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        challenge_phase_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        challenge_phase_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
                     else:
                         error_messages = f"challenge phase update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4460,9 +4461,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        dataset_split_ids[str(data["id"])] = (
-                            serializer.instance.pk
-                        )
+                        dataset_split_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
                     else:
                         error_messages = f"dataset split update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4556,7 +4557,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        error_messages = f"challenge phase split update (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                        error_messages = (
+                            f"challenge phase split update"
+                            f"(phase:{data['challenge_phase_id']},"
+                            f"leaderboard:{data['leaderboard_id']},"
+                            f"dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                        )
                         raise RuntimeError()
 
                 response_data = {
@@ -4611,7 +4617,11 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
-            "error": "You are not authorized to make this request. Please ask EvalAI admin to add you as a staff user for accessing this API."
+            "error": (
+                "You are not authorized "
+                "to make this request. Please ask EvalAI admin to "
+                "add you as a staff user for accessing this API."
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -4829,7 +4839,10 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             unfinished_phases.append(challenge_phase.name)
 
     if unfinished_phases:
-        error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
+        error_message = (
+            "The following challenge phases do not have finished submissions: "
+            f"{', '.join(unfinished_phases)}"
+        )
         return Response(
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
@@ -4879,13 +4892,19 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                error_message = (
+                    f"Sorry, there was an error sending approval request:"
+                    f" {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                )
                 return Response(
                     {"error": error_message},
                     status=status.HTTP_406_NOT_ACCEPTABLE,
                 )
         else:
-            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+            error_message = (
+                "Sorry, there was an error sending approval request:"
+                " No response received. Please try again."
+            )
             return Response(
                 {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
             )

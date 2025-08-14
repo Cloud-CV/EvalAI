@@ -40,7 +40,8 @@ urlpatterns = [
     ),
     # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(
-        r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/(?P<challenge_published>[A-Za-z]+)$",
+        r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/"
+        r"(?P<challenge_published>[A-Za-z]+)$",
         views.get_all_challenges,
         name="get_all_challenges",
     ),
@@ -96,7 +97,7 @@ urlpatterns = [
         name="get_all_submissions_of_challenge",
     ),
     url(
-       r"^(?P<challenge_pk>[0-9]+)/phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)"
+        r"^(?P<challenge_pk>[0-9]+)/phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)"
         r"/download_all_submissions/(?P<file_type>[A-Za-z]+)/$",
         views.download_all_submissions,
         name="download_all_submissions",

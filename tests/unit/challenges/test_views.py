@@ -746,8 +746,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -824,8 +822,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.update_submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -2763,7 +2759,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
 
 
 class ChallengePrizesTest(BaseAPITestClass):
-
     def setUp(self):
         super().setUp()
         self.challenge = Challenge.objects.create(
@@ -2823,7 +2818,6 @@ class ChallengePrizesTest(BaseAPITestClass):
 
 
 class ChallengeSponsorTest(BaseAPITestClass):
-
     def setUp(self):
         super().setUp()
         self.challenge = Challenge.objects.create(
@@ -2975,7 +2969,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3002,9 +2998,13 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3041,7 +3041,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3088,7 +3090,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3115,10 +3119,14 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
                 "allowed_submission_file_types": self.private_challenge_phase.allowed_submission_file_types,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.private_challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
@@ -3686,7 +3694,6 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
 
     @override_settings(MEDIA_ROOT="/tmp/evalai")
     def test_particular_challenge_phase_update(self):
-
         self.update_test_annotation = SimpleUploadedFile(
             "update_test_sample_file.txt",
             b"Dummy update file content",
@@ -3850,7 +3857,9 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3889,9 +3898,11 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
-                "dataset_split_codename": self.dataset_split.codename, 
+                "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3905,7 +3916,9 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split_host.name,
                 "dataset_split_codename": self.dataset_split_host.codename,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
@@ -3931,7 +3944,9 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3945,7 +3960,9 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split_host.name,
                 "dataset_split_codename": self.dataset_split_host.codename,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
@@ -4432,7 +4449,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {
@@ -4450,7 +4467,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk + 10,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {
@@ -4468,7 +4485,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase1.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         self.url_phase2 = reverse_lazy(
@@ -4476,7 +4493,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase2.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         self.client.force_authenticate(user=self.user5)
@@ -4533,7 +4550,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         self.client.force_authenticate(user=self.user6)
@@ -4587,7 +4604,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {
@@ -4600,7 +4617,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_all_challenges_submission_metrics(self):
-
         self.user8 = User.objects.create(
             username="admin_test",
             password="admin@123",
@@ -4741,7 +4757,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk + 10,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {
@@ -4762,7 +4778,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {
@@ -4781,7 +4797,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_pdf,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         expected = {"error": "The file type requested is not valid!"}
@@ -4796,7 +4812,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         response = self.client.get(self.url, {})
@@ -4809,7 +4825,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
         submissions = Submission.objects.filter(
@@ -4865,7 +4881,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -4883,7 +4899,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v1',
+                "version": "v1",
             },
         )
 
@@ -5401,9 +5417,13 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.private_challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
@@ -5437,7 +5457,9 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
@@ -5939,7 +5961,10 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 format="multipart",
             )
             expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+                "Success": (
+                    "Challenge Challenge Title has been "
+                    "created successfully and sent for review to EvalAI Admin."
+                )
             }
 
             self.assertEqual(response.status_code, 201)
@@ -6093,13 +6118,16 @@ class ValidateChallengeTest(APITestCase):
                 "Please add the submission guidelines.\n"
                 "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
                 "ERROR: Please add the start_date and end_date.\n"
-                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
+                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID:"
+                "1 is not a valid label.\n"
                 "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
                 " ERROR: There is no key for description in phase Dev Phase.\n"
                 "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
-                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1:"
+                " description, type\n"
                 "ERROR: Challenge phase 1 has the following schema errors:\n"
-                " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
+                " {'description': [ErrorDetail(string='This field is required.', code='required')], "
+                "'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
                 "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
                 "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
                 "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"

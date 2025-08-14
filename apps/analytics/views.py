@@ -148,7 +148,7 @@ def get_challenge_phase_submission_count_by_team(
     """
     challenge = get_challenge_model(challenge_pk)
 
-    if version == 'v2':
+    if version == "v2":
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge
@@ -351,10 +351,10 @@ def download_all_participants(request, challenge_pk):
             participant_teams, many=True, context={"request": request}
         )
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            "attachment; filename=participant_teams_{0}.csv".format(
-                challenge_pk
-            )
+        response[
+            "Content-Disposition"
+        ] = "attachment; filename=participant_teams_{0}.csv".format(
+            challenge_pk
         )
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
