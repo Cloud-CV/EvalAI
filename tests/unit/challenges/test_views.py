@@ -3876,8 +3876,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
+                "dataset_split_codename": self.dataset_split.codename,  
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": (
                     self.challenge_phase_split.show_leaderboard_by_latest_submission
@@ -3920,7 +3922,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
-                "dataset_split_codename": self.dataset_split_host.codename,
+                "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": (
                     self.challenge_phase_split_host.show_leaderboard_by_latest_submission
@@ -3977,8 +3979,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split_host.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
+                "dataset_split_codename": self.dataset_split_host.codename,
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": (
                     self.challenge_phase_split_host.show_leaderboard_by_latest_submission
