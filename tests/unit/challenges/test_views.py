@@ -6118,7 +6118,7 @@ class ValidateChallengeTest(APITestCase):
                 "Please add the submission guidelines.\n"
                 "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
                 "ERROR: Please add the start_date and end_date.\n"
-                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID:"
+                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: "
                 "1 is not a valid label.\n"
                 "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
                 " ERROR: There is no key for description in phase Dev Phase.\n"
