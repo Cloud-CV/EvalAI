@@ -6330,9 +6330,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 format="multipart",
             )
             expected = {
-                "Success": (
-                    "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
-                )
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
             }
 
             self.assertEqual(response.status_code, 201)
