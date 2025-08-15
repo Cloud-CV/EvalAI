@@ -1,6 +1,16 @@
-FROM node:14.20.0 AS node
+FROM node:14.21.3-bullseye AS base
 
 ARG NODE_ENV
+
+# Install Python2, symlink, and C++ build tools for node-gyp/node-sass
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python2 \
+    python-is-python2 \
+    make \
+    g++ && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /code
 
 # Add dependencies
@@ -26,5 +36,5 @@ FROM nginx:1.13-alpine
 # Adding NODE_ENV here as well since this is a multistage build
 ARG NODE_ENV
 COPY docker/prod/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
-COPY --from=node /code /code
+COPY --from=base /code /code
 COPY /ssl /etc/ssl
