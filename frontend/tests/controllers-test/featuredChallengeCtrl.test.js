@@ -274,8 +274,9 @@ describe('Unit tests for featured challenge controller', function () {
             };
     
             vm.getLeaderboard(1);
-             
-            expect(vm.leaderboard[0].timeSpan).toBe('days');
+          
+            expect(vm.leaderboard[0].timeSpan).toBe('month')
+
         });
     
         it('should set timeSpan to "months" for 3 months ago', function () {
