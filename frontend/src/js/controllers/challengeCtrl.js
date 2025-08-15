@@ -1,5 +1,5 @@
 // Invoking IIFE for challenge page
-(function() {
+(function () {
 
     'use strict';
     angular
@@ -34,7 +34,7 @@
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
-        vm.phaseSplits = []; 
+        vm.phaseSplits = [];
         vm.hasPrizes = false;
         vm.has_sponsors = false;
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
@@ -54,8 +54,8 @@
         vm.poller = null;
         vm.isChallengeHost = false;
         vm.isDockerBased = false;
-        vm.stopLeaderboard = function() {};
-        vm.stopFetchingSubmissions = function() {};
+        vm.stopLeaderboard = function () { };
+        vm.stopFetchingSubmissions = function () { };
         vm.currentDate = null;
         vm.isPublished = false;
         vm.approved_by_admin = false;
@@ -115,7 +115,7 @@
         var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
 
         vm.isStaticCodeUploadChallenge = false;
-        
+
         // get from backend
         vm.selectedWorkerResources = [512, 1024];
 
@@ -128,7 +128,7 @@
         // scroll to the selected entry after page has been rendered
         vm.scrollToEntryAfterLeaderboardLoads = function () {
             // get unique rank number from the url & if exists hightlight the entry
-            $timeout(function() {
+            $timeout(function () {
                 var elementId = $location.absUrl().split('?')[0].split('#')[1];
                 if (elementId) {
                     $anchorScroll.yOffset = 90;
@@ -180,23 +180,23 @@
 
         // API call to manage the worker from UI.
         // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
-        vm.manageWorker = function(action){
-            parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action +'/';
+        vm.manageWorker = function (action) {
+            parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action + '/';
             parameters.method = 'PUT';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
-                    if (details.action == "Success"){
+                    if (details.action == "Success") {
                         $rootScope.notify("success", "Worker(s) " + action + "ed succesfully.");
                     }
                     else {
                         $rootScope.notify("error", details.error);
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data.error;
-                    if (error == undefined){
+                    if (error == undefined) {
                         $rootScope.notify("error", "There was an error.");
                     }
                     else {
@@ -207,13 +207,13 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.sendApprovalRequest = function() {
+        vm.sendApprovalRequest = function () {
             parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
             parameters.method = 'GET';
             parameters.data = {};
-        
+
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var result = response.data;
                     if (result.error) {
                         $rootScope.notify("error", result.error);
@@ -221,7 +221,7 @@
                         $rootScope.notify("success", "Request sent successfully.");
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data.error;
                     if (error) {
                         $rootScope.notify("error", "There was an error: " + error);
@@ -230,10 +230,10 @@
                     }
                 }
             };
-        
+
             utilities.sendRequest(parameters);
         };
-        
+
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function () {
             vm.logs_poller = $interval(function () {
@@ -273,11 +273,11 @@
             }, 5000);
         };
 
-        vm.stopLoadingLogs = function(){
+        vm.stopLoadingLogs = function () {
             $interval.cancel(vm.logs_poller);
         };
 
-         // highlight the specific entry of the leaderboard
+        // highlight the specific entry of the leaderboard
         vm.highlightSpecificLeaderboardEntry = function (key) {
             key = '#' + key;
             // Remove highlight from previous clicked entry
@@ -292,13 +292,13 @@
         };
 
         // get names of the team that has participated in the current challenge
-        vm.getTeamName = function(challengeId) {
+        vm.getTeamName = function (challengeId) {
             parameters.url = 'challenges/' + challengeId + '/participant_team/team_detail';
             parameters.method = 'GET';
-            parameters.data={};
+            parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
-                     var details = response.data;
+                onSuccess: function (response) {
+                    var details = response.data;
                     vm.participated_team_name = details["team_name"];
                     vm.eligible_to_submit = details["approved"];
                 },
@@ -306,7 +306,7 @@
             utilities.sendRequest(parameters);
         };
 
-            vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
+        vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
             if (isDockerBased && isParticipated == true && vm.eligible_to_submit) {
                 parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
@@ -375,7 +375,7 @@
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/';
         parameters.data = {};
         parameters.callback = {
-            onSuccess: function(response) {
+            onSuccess: function (response) {
                 var details = response.data;
                 vm.page = details;
                 var offset = new Date(vm.page.start_date).getTimezoneOffset();
@@ -392,7 +392,7 @@
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.allowHostCancelSubmissions = details.allow_host_cancel_submissions,
-                vm.allowCancelRunningSubmissions = details.allow_cancel_running_submissions;
+                    vm.allowCancelRunningSubmissions = details.allow_cancel_running_submissions;
                 vm.allowParticipantsResubmissions = details.allow_participants_resubmissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_participant_approval = details.manual_participant_approval;
@@ -415,10 +415,10 @@
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             vm.prizes = response.data;
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var error = response.data;
                             $rootScope.notify("error", error);
                         }
@@ -433,10 +433,10 @@
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             vm.sponsors = response.data;
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var error = response.data;
                             $rootScope.notify("error", error);
                         }
@@ -451,7 +451,7 @@
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var details = response.data;
                             vm.currentDate = details.datetime_now;
                             for (var i in details.challenge_participant_team_list) {
@@ -476,7 +476,7 @@
                                 parameters.url = 'participants/participant_team';
                                 parameters.method = 'GET';
                                 parameters.callback = {
-                                    onSuccess: function(response) {
+                                    onSuccess: function (response) {
                                         var status = response.status;
                                         var details = response.data;
                                         if (status == 200) {
@@ -513,7 +513,7 @@
 
 
                                             // select team from existing list
-                                            vm.selectExistTeam = function() {
+                                            vm.selectExistTeam = function () {
 
                                                 // loader for existing teams
                                                 vm.isExistLoader = true;
@@ -527,14 +527,14 @@
                                                 parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/' + vm.teamId;
                                                 parameters.method = 'POST';
                                                 parameters.callback = {
-                                                    onSuccess: function() {
+                                                    onSuccess: function () {
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                                                         vm.getTeamName(vm.challengeId);
                                                         vm.stopLoader();
                                                     },
-                                                    onError: function(response) {
+                                                    onError: function (response) {
                                                         if (response.status == 404) {
                                                             var error = "Please select a team first!";
                                                         } else {
@@ -548,7 +548,7 @@
                                             };
 
                                             // to load data with pagination
-                                            vm.load = function(url) {
+                                            vm.load = function (url) {
                                                 // loader for existing teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
@@ -564,7 +564,7 @@
                                                     };
 
                                                     //Add headers with in your request
-                                                    $http.get(url, { headers: headers }).then(function(response) {
+                                                    $http.get(url, { headers: headers }).then(function (response) {
                                                         // reinitialized data
                                                         var details = response.data;
                                                         vm.existTeam = details;
@@ -591,7 +591,7 @@
                                         }
                                         utilities.hideLoader();
                                     },
-                                    onError: function(response) {
+                                    onError: function (response) {
                                         var error = response.data;
                                         utilities.storeData('emailError', error.detail);
                                         $state.go('web.permission-denied');
@@ -605,7 +605,7 @@
                             vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                             utilities.hideLoader();
                         },
-                        onError: function() {
+                        onError: function () {
                             utilities.hideLoader();
                         }
                     };
@@ -615,7 +615,7 @@
                 utilities.hideLoader();
 
             },
-            onError: function(response) {
+            onError: function (response) {
                 var error = response.data;
                 $rootScope.notify("error", error.error);
                 $state.go('web.dashboard');
@@ -637,11 +637,11 @@
                 participationModalText = 'Open participation in the challenge?';
             }
             var confirm = $mdDialog.confirm()
-                          .title(participationModalText)
-                          .ariaLabel('')
-                          .targetEvent(ev)
-                          .ok('Yes, I\'m sure')
-                          .cancel('No');
+                .title(participationModalText)
+                .ariaLabel('')
+                .targetEvent(ev)
+                .ok('Yes, I\'m sure')
+                .cancel('No');
 
             $mdDialog.show(confirm).then(function () {
                 var challengeHostList = utilities.getData("challengeCreator");
@@ -657,20 +657,20 @@
                     "is_registration_open": !isRegistrationOpen
                 };
                 parameters.callback = {
-                    onSuccess: function() {
+                    onSuccess: function () {
                         vm.isRegistrationOpen = !vm.isRegistrationOpen;
                         $rootScope.notify('success', 'Participation is ' + participationState + ' successfully');
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         var details = response.data;
                         $rootScope.notify('error', details.error);
                     }
                 };
                 utilities.sendRequest(parameters);
-            }, function() {});
+            }, function () { });
         };
 
-        vm.makeSubmission = function() {
+        vm.makeSubmission = function () {
             if (vm.isParticipated && vm.eligible_to_submit) {
                 var fileVal = angular.element(".file-path").val();
                 if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
@@ -721,12 +721,12 @@
 
                     parameters.token = userKey;
                     parameters.callback = {
-                        onSuccess: function() {
+                        onSuccess: function () {
                             // vm.input_file.name = '';
 
                             angular.forEach(
                                 angular.element("input[type='file']"),
-                                function(inputElem) {
+                                function (inputElem) {
                                     angular.element(inputElem).val(null);
                                 }
                             );
@@ -748,7 +748,7 @@
                             vm.metaAttributesforCurrentSubmission = null;
                             vm.stopLoader();
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var status = response.status;
                             var error = response.data;
 
@@ -762,7 +762,7 @@
                             if (status == 404) {
                                 vm.subErrors.msg = "Please select phase!";
                             } else {
-                                if (error.error){
+                                if (error.error) {
                                     vm.subErrors.msg = error.error;
                                 } else {
                                     vm.subErrors.msg = error.input_file[0];
@@ -781,34 +781,34 @@
         parameters.method = 'GET';
         parameters.data = {};
         parameters.callback = {
-            onSuccess: function(response) {
+            onSuccess: function (response) {
                 var details = response.data;
                 vm.phases = details;
-                for (var i=0; i<details.count; i++) {
+                for (var i = 0; i < details.count; i++) {
                     if (details.results[i].is_public == false) {
                         vm.phases.results[i].showPrivate = true;
                     }
                 }
-                for (var j=0; j<vm.phases.results.length; j++){
+                for (var j = 0; j < vm.phases.results.length; j++) {
                     var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
                     vm.phases.results[j].time_zone = moment.tz.zone(timezone).abbr(offset);
                     vm.phases.results[j].gmt_zone = gmtZone;
                 }
 
-                // calling getResults function
+
                 if (vm.mySubmissionPhaseSlug) {
                     vm.getResults(vm.mySubmissionPhaseSlug);
                 }
 
-                // calling getAllSubmissionResults function
+
                 if (vm.allSubmissionPhaseSlug) {
                     vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
-                    }
+                }
 
-                for(var k=0; k<details.count; k++){
-                    if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
+                for (var k = 0; k < details.count; k++) {
+                    if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null) {
                         var attributes = details.results[k].submission_meta_attributes;
-                        attributes.forEach(function(attribute){
+                        attributes.forEach(function (attribute) {
                             if (attribute["type"] == "checkbox") {
                                 attribute["values"] = [];
                             }
@@ -816,11 +816,11 @@
                                 attribute["value"] = null;
                             }
                         });
-                        data = {"phaseId":details.results[k].id, "attributes": attributes};
+                        data = { "phaseId": details.results[k].id, "attributes": attributes };
                         vm.submissionMetaAttributes.push(data);
                     }
                     else {
-                        var data = {"phaseId":details.results[k].id, "attributes": null};
+                        var data = { "phaseId": details.results[k].id, "attributes": null };
                         vm.submissionMetaAttributes.push(data);
                     }
                     if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
@@ -844,7 +844,7 @@
                         });
                     } else {
                         vm.defaultSubmissionMetaAttributes.push({
-                            "phaseId":details.results[k].id,
+                            "phaseId": details.results[k].id,
                             "defaultAttributes": {}
                         });
                     }
@@ -855,7 +855,7 @@
                 }
                 utilities.hideLoader();
             },
-            onError: function(response) {
+            onError: function (response) {
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -865,27 +865,27 @@
 
         utilities.sendRequest(parameters);
 
-        vm.loadPhaseAttributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
-            vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
+        vm.loadPhaseAttributes = function (phaseId) { // Loads attributes of a phase into vm.submissionMetaAttributes
+            vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function (element) {
                 return element["phaseId"] == phaseId;
             }).attributes;
-            vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
+            vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function (element) {
                 return element["phaseId"] == phaseId;
             }).allowedSubmissionFileTypes;
             // load default meta attributes visibility for current phase
-            vm.currentPhaseMetaAttributesVisibility = vm.defaultSubmissionMetaAttributes.find(function(element) {
+            vm.currentPhaseMetaAttributesVisibility = vm.defaultSubmissionMetaAttributes.find(function (element) {
                 return element["phaseId"] == phaseId;
             }).defaultAttributes;
-            vm.currentPhaseLeaderboardPublic = vm.phaseLeaderboardPublic.find(function(element) {
+            vm.currentPhaseLeaderboardPublic = vm.phaseLeaderboardPublic.find(function (element) {
                 return element["phaseId"] == phaseId;
             }).leaderboardPublic;
             vm.subErrors.msg = "";
         };
 
-        vm.getDefaultMetaAttributesDict = function(defaultMetaAttributes) {
+        vm.getDefaultMetaAttributesDict = function (defaultMetaAttributes) {
             var defaultMetaAttributesDict = {};
             if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
-                defaultMetaAttributes.forEach(function(attribute) {
+                defaultMetaAttributes.forEach(function (attribute) {
                     var attributeName = attribute["name"];
                     var is_visible = attribute["is_visible"];
                     defaultMetaAttributesDict[attributeName] = is_visible;
@@ -894,10 +894,10 @@
             return defaultMetaAttributesDict;
         };
 
-        vm.clearMetaAttributeValues = function(){
-            if (vm.metaAttributesforCurrentSubmission != null){
-                vm.metaAttributesforCurrentSubmission.forEach(function(attribute){
-                    if (attribute.type == 'checkbox'){
+        vm.clearMetaAttributeValues = function () {
+            if (vm.metaAttributesforCurrentSubmission != null) {
+                vm.metaAttributesforCurrentSubmission.forEach(function (attribute) {
+                    if (attribute.type == 'checkbox') {
                         attribute.values = [];
                     }
                     else {
@@ -907,10 +907,10 @@
             }
         };
 
-        vm.isCurrentSubmissionMetaAttributeValid = function() {
+        vm.isCurrentSubmissionMetaAttributeValid = function () {
             var isMetaAttributeValid = true;
             if (vm.metaAttributesforCurrentSubmission !== null) {
-                vm.metaAttributesforCurrentSubmission.forEach(function(attribute) {
+                vm.metaAttributesforCurrentSubmission.forEach(function (attribute) {
                     if (attribute.required == true) {
                         if (attribute.type == "checkbox") {
                             if (attribute.values.length === 0) {
@@ -927,15 +927,15 @@
             return isMetaAttributeValid;
         };
 
-        vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
-                var idx = attribute.values.indexOf(value);
-                if (idx > -1) {
-                  attribute.values.splice(idx, 1);
-                }
-                else {
-                  attribute.values.push(value);
-                }
-            };
+        vm.toggleSelection = function toggleSelection(attribute, value) { // Make sure this modifies the reference object.
+            var idx = attribute.values.indexOf(value);
+            if (idx > -1) {
+                attribute.values.splice(idx, 1);
+            }
+            else {
+                attribute.values.push(value);
+            }
+        };
 
         var challengePhaseVisibility = {
             owner_and_host: 1,
@@ -943,16 +943,16 @@
             public: 3,
         };
 
-        // get details of the particular challenge phase split
+
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
         parameters.data = {};
         parameters.callback = {
-            onSuccess: function(response) {
+            onSuccess: function (response) {
                 var details = response.data;
                 vm.phaseSplits = details;
                 if (details.length == 0) {
-                    vm.isChallengeLeaderboardPrivate = true; 
+                    vm.isChallengeLeaderboardPrivate = true;
                 }
                 for (var i = 0; i < details.length; i++) {
                     var split = details[i];
@@ -971,7 +971,7 @@
                 }
                 utilities.hideLoader();
             },
-            onError: function(response) {
+            onError: function (response) {
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -983,7 +983,7 @@
 
         // define a custom sorting function
         vm.lastKey = null;
-        vm.sortFunction = function(key) {
+        vm.sortFunction = function (key) {
             // check which column is selected
             // so that the values can be parsed properly
             if (vm.sortColumn === 'date') {
@@ -995,17 +995,17 @@
             else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
             }
-            else if (vm.sortColumn === 'string'){
-                // sort teams alphabetically
+            else if (vm.sortColumn === 'string') {
+
                 return key.submission__participant_team__team_name;
             }
-            else if (vm.sortColumn == 'exec'){
+            else if (vm.sortColumn == 'exec') {
                 return key.submission__execution_time;
             }
             return 0;
         };
 
-        vm.sortLeaderboard = function(scope, column, index) {
+        vm.sortLeaderboard = function (scope, column, index) {
             if (index == null || index == undefined) {
                 scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
             } else {
@@ -1015,7 +1015,7 @@
             scope.sortColumn = column;
         };
 
-        vm.isMetricOrderedAscending = function(metric) {
+        vm.isMetricOrderedAscending = function (metric) {
             let schema = vm.leaderboard[0].leaderboard__schema;
             let metadata = schema.metadata;
             if (metadata != null && metadata != undefined) {
@@ -1028,7 +1028,7 @@
             return false;
         };
 
-        vm.getLabelDescription = function(metric) {
+        vm.getLabelDescription = function (metric) {
             let schema = vm.leaderboard[0].leaderboard__schema;
             let metadata = schema.metadata;
             if (metadata != null && metadata != undefined) {
@@ -1074,7 +1074,7 @@
             };
             vm.stopLeaderboard();
 
-            // Set view model properties from function arguments
+
             vm.phaseSlug = phaseSlug;
             vm.splitCodename = splitCodename;
 
@@ -1100,24 +1100,24 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
 
-                    // *** START OF FIX ***
-                    // This block ensures both the visible columns AND the dropdown menu data are correctly set.
+
+
                     if (vm.leaderboard && vm.leaderboard.length > 0) {
                         var allMetricIndices = [];
-                        // Use the schema from the first leaderboard entry to populate the dropdown
+
                         var labels = vm.leaderboard[0].leaderboard__schema.labels;
                         for (var k = 0; k < labels.length; k++) {
                             allMetricIndices.push(k.toString());
                         }
-                        // This makes the columns visible
+
                         vm.chosenMetrics = allMetricIndices;
 
-                        // This populates the metric sorting dropdown menu
+
                         if (vm.phaseSplitId) {
                             vm.phaseSplitLeaderboardSchema[vm.phaseSplitId] = vm.leaderboard[0].leaderboard__schema;
                         }
                     }
-                    // *** END OF FIX ***
+
 
                     for (var i = 0; i < vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
@@ -1167,17 +1167,17 @@
             };
             utilities.sendRequest(parameters);
         };
-       
-        
-        vm.showMetaAttributesDialog = function(ev, attributes){
-            if (attributes != false){
+
+
+        vm.showMetaAttributesDialog = function (ev, attributes) {
+            if (attributes != false) {
                 vm.metaAttributesData = [];
-                attributes.forEach(function(attribute){
+                attributes.forEach(function (attribute) {
                     if (attribute.type != "checkbox") {
-                        vm.metaAttributesData.push({"name": attribute.name, "value": attribute.value});
+                        vm.metaAttributesData.push({ "name": attribute.name, "value": attribute.value });
                     }
                     else {
-                        vm.metaAttributesData.push({"name": attribute.name, "values": attribute.values});
+                        vm.metaAttributesData.push({ "name": attribute.name, "values": attribute.values });
                     }
                 });
 
@@ -1195,22 +1195,22 @@
         };
 
         vm.getResults = function (phaseSlug) {
-            // Stop any existing long polling to prevent multiple requests
+
             vm.stopFetchingSubmissions();
             vm.isResult = true;
 
-            // Set the slug for display purposes
+
             vm.mySubmissionPhaseSlug = phaseSlug;
 
-            // Find the corresponding numeric ID from the list of phases
+
             var numericPhaseId = null;
             var all_phases = vm.phases.results;
             for (var i = 0; i < all_phases.length; i++) {
-                // Use the slug to find the matching phase object
+
                 if (all_phases[i].slug === phaseSlug) {
                     numericPhaseId = all_phases[i].id;
 
-                    // Set the other phase-specific variables here
+
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
 
@@ -1218,20 +1218,20 @@
                     var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
                     vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
 
-                    // Stop the loop once we've found the correct phase
+
                     break;
                 }
             }
 
-            // Now use the correct numeric ID for API calls that require it
-            // Set the numeric ID to a main variable for other functions to use.
+
+
             vm.phaseId = numericPhaseId;
 
-            // Start a new poller with the correct data
+
             vm.start = function () {
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function () {
-                    // Use the slug here because your backend URL pattern for submissions is `v2/<slug>`
+
                     parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
@@ -1270,7 +1270,7 @@
                 $interval.cancel(vm.poller);
             };
 
-            // API call to get submission count using the slug
+
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
             parameters.data = {};
@@ -1286,7 +1286,7 @@
             };
             utilities.sendRequest(parameters);
 
-            // Initial load for submissions
+
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
@@ -1394,8 +1394,8 @@
             };
             utilities.sendRequest(parameters);
         };
-        vm.refreshSubmissionData = function() {
-        vm.phaseId = (vm.allSubmissionPhaseSlug == undefined) ? vm.mySubmissionPhaseSlug : vm.allSubmissionPhaseSlug;
+        vm.refreshSubmissionData = function () {
+            vm.phaseId = (vm.allSubmissionPhaseSlug == undefined) ? vm.mySubmissionPhaseSlug : vm.allSubmissionPhaseSlug;
             // get submissions of a particular challenge phase
 
             if (!vm.isResult) {
@@ -1414,7 +1414,7 @@
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.submissionResult = details;
 
@@ -1458,7 +1458,7 @@
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
-                onError: function() {
+                onError: function () {
                     vm.stopLoader();
                 }
             };
@@ -1466,17 +1466,17 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.reRunSubmission = function(submissionObject) {
+        vm.reRunSubmission = function (submissionObject) {
             submissionObject.classList = ['spin', 'progress-indicator'];
             parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     $rootScope.notify("success", response.data.success);
                     submissionObject.classList = [''];
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                     submissionObject.classList = [''];
@@ -1485,17 +1485,17 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.resumeSubmission = function(submissionObject) {
+        vm.resumeSubmission = function (submissionObject) {
             submissionObject.classList2 = ['progress-indicator'];
             parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     $rootScope.notify("success", response.data.success);
                     submissionObject.classList2 = [''];
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                     submissionObject.classList2 = [''];
@@ -1504,19 +1504,19 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.refreshLeaderboard = function() {
+        vm.refreshLeaderboard = function () {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = `jobs/challenge/${vm.challengeId}/phase/${vm.phaseSlug}/split/${vm.splitCodename}/leaderboard/?page_size=1000&order_by=${vm.orderLeaderboardBy}`;
             parameters.method = 'GET';
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     vm.leaderboard.error = error;
                     vm.stopLoader();
@@ -1526,7 +1526,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.toggleShowLeaderboardByLatest = function() {
+        vm.toggleShowLeaderboardByLatest = function () {
             parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
             parameters.method = "PATCH";
             parameters.data = {
@@ -1537,7 +1537,7 @@
                     vm.selectedPhaseSplit = response.data;
                     vm.getLeaderboard(vm.selectedPhaseSplit.id);
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
-                        "Sort by best":"Sort by latest";
+                        "Sort by best" : "Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1598,7 +1598,7 @@
                         if (duration.asYears() >= 1) {
                             timeValue = Math.floor(duration.asYears());
                             timeSpan = timeValue === 1 ? 'year' : 'years';
-                        } else if (duration.asMonths() >= 1) { 
+                        } else if (duration.asMonths() >= 1) {
                             timeValue = Math.floor(duration.asMonths());
                             timeSpan = timeValue === 1 ? 'month' : 'months';
                         } else if (duration.asDays() >= 1) {
@@ -1649,9 +1649,9 @@
                 }
             }
         };
-        
+
         // function to create new team for participating in challenge
-        vm.createNewTeam = function() {
+        vm.createNewTeam = function () {
             vm.isLoader = true;
             vm.loaderTitle = '';
             vm.newContainer = angular.element('.new-team-card');
@@ -1665,7 +1665,7 @@
                 "team_url": vm.team.url
             };
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function () {
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
@@ -1675,7 +1675,7 @@
                     parameters.url = 'participants/participant_team';
                     parameters.method = 'GET';
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var status = response.status;
                             var details = response.data;
                             if (status == 200) {
@@ -1703,13 +1703,13 @@
                                 vm.stopLoader();
                             }
                         },
-                        onError: function() {
+                        onError: function () {
                             vm.stopLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
@@ -1720,7 +1720,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.setWorkerResources = function() {
+        vm.setWorkerResources = function () {
             parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
             parameters.method = 'PUT';
             parameters.data = {
@@ -1728,17 +1728,17 @@
                 "worker_memory": vm.selectedWorkerResources[1],
             };
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     $rootScope.notify("success", response.data["Success"]);
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};
                 },
-                onError: function(response) {
+                onError: function (response) {
                     vm.team.error = true;
                     vm.stopLoader();
                     let requestError = '';
-                    if (typeof(response.data) == 'string') {
+                    if (typeof (response.data) == 'string') {
                         requestError = response.data;
                     } else {
                         requestError = response.data["error"];
@@ -1750,7 +1750,7 @@
             utilities.sendRequest(parameters);
         };
         vm.getAllSubmissionResults = function (phaseSlug) {
-            // Stop any existing polling
+
             vm.stopFetchingSubmissions = function () {
                 $interval.cancel(vm.poller);
             };
@@ -1759,7 +1759,7 @@
             vm.isResult = true;
             vm.allSubmissionPhaseSlug = phaseSlug;
 
-            // Find the corresponding numeric ID for API calls that might need it.
+
             var numericPhaseId = null;
             var all_phases = vm.phases.results;
             for (var i = 0; i < all_phases.length; i++) {
@@ -1856,7 +1856,7 @@
                             vm.stopLoader();
                         }
                     };
-                    vm.allSubmissionPhaseName = phaseSlug; 
+                    vm.allSubmissionPhaseName = phaseSlug;
                     vm.stopLoader();
                 },
                 onError: function (response) {
@@ -1869,83 +1869,83 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.changeSubmissionVisibility = function(submission_id, submissionVisibility) {
+        vm.changeSubmissionVisibility = function (submission_id, submissionVisibility) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": submissionVisibility
             };
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var status = response.status;
                     var message = "";
                     if (status === 200) {
-                      var detail = response.data;
-                      if (detail['is_public'] == true) {
-                        message = "The submission is made public.";
-                      }
-                      else {
-                        message = "The submission is made private.";
-                      }
-                      $rootScope.notify("success", message);
-                      if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
-                        $mdDialog.hide();
-                        if (vm.previousPublicSubmissionId != submission_id) {
-                            vm.submissionVisibility[vm.previousPublicSubmissionId] = false;
-                            vm.previousPublicSubmissionId = submission_id;
-                        } else {
-                            vm.previousPublicSubmissionId = null;
+                        var detail = response.data;
+                        if (detail['is_public'] == true) {
+                            message = "The submission is made public.";
                         }
-                        vm.submissionVisibility[submission_id] = submissionVisibility;
-                      }
+                        else {
+                            message = "The submission is made private.";
+                        }
+                        $rootScope.notify("success", message);
+                        if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
+                            $mdDialog.hide();
+                            if (vm.previousPublicSubmissionId != submission_id) {
+                                vm.submissionVisibility[vm.previousPublicSubmissionId] = false;
+                                vm.previousPublicSubmissionId = submission_id;
+                            } else {
+                                vm.previousPublicSubmissionId = null;
+                            }
+                            vm.submissionVisibility[submission_id] = submissionVisibility;
+                        }
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     var status = response.status;
                     if (status === 400 || status === 403) {
-                       $rootScope.notify("error", error.error);
+                        $rootScope.notify("error", error.error);
                     }
                     if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
-                       $mdDialog.hide();
-                       vm.submissionVisibility[submission_id] = !vm.submissionVisibility[submission_id];
+                        $mdDialog.hide();
+                        vm.submissionVisibility[submission_id] = !vm.submissionVisibility[submission_id];
                     }
                 }
             };
             utilities.sendRequest(parameters);
         };
 
-        vm.activateCollapsible = function() {
+        vm.activateCollapsible = function () {
             angular.element('.collapsible').collapsible();
         };
 
-        vm.team_approval_list = function(){
+        vm.team_approval_list = function () {
             var parameters = {};
             parameters.token = utilities.getData('userKey');
             parameters.url = 'challenges/challenge/' + $stateParams.challengeId + '/get_participant_teams';
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     vm.approved_teams = response.data;
                     vm.activateCollapsible();
                 },
-                onError: function() {
+                onError: function () {
                     $rootScope.notify("error", "Some error occured.Please try again.");
                 }
             };
             utilities.sendRequest(parameters);
         };
 
-        vm.showapprovalparticipantteamDialog = function(challengeId, participant_team_id, approved_status) {
+        vm.showapprovalparticipantteamDialog = function (challengeId, participant_team_id, approved_status) {
             if (approved_status) {
                 vm.dialog = {};
                 vm.dialog.challengeId = challengeId;
                 vm.dialog.participant_team_id = participant_team_id;
                 vm.dialog.approved_status = approved_status;
-                $mdDialog.show({ 
-                    scope: $scope, 
-                    preserveScope: true, 
+                $mdDialog.show({
+                    scope: $scope,
+                    preserveScope: true,
                     templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-approvalConfirm.html',
                 });
             }
@@ -1953,28 +1953,28 @@
                 vm.check_approval_status(challengeId, participant_team_id, approved_status, false);
             }
         };
-        
 
-        vm.check_approval_status = function(challengeId, participant_team_id, approved_status, formvalid){
+
+        vm.check_approval_status = function (challengeId, participant_team_id, approved_status, formvalid) {
             var parameters = {};
             parameters.token = utilities.getData('userKey');
             parameters.method = 'POST';
-            if(approved_status) {
+            if (approved_status) {
                 if (formvalid) {
-                        parameters.url = 'challenges/challenge/' + challengeId + '/approve_participant_team/' + participant_team_id;
-                        parameters.callback = {
-                            onSuccess: function(response) {
-                                if(response.status == 201){
-                                    $rootScope.notify("success", "Participant Team Approved successfully.");
-                                }
-                            },
-                            onError: function(response) {
-                                $rootScope.notify("error", response.data.error);
+                    parameters.url = 'challenges/challenge/' + challengeId + '/approve_participant_team/' + participant_team_id;
+                    parameters.callback = {
+                        onSuccess: function (response) {
+                            if (response.status == 201) {
+                                $rootScope.notify("success", "Participant Team Approved successfully.");
                             }
-                        };
-                        utilities.sendRequest(parameters);
-                        $mdDialog.hide();
-                    }
+                        },
+                        onError: function (response) {
+                            $rootScope.notify("error", response.data.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                    $mdDialog.hide();
+                }
                 else {
                     $mdDialog.hide();
                     $state.reload();
@@ -1983,12 +1983,12 @@
             else {
                 parameters.url = 'challenges/challenge/' + challengeId + '/disapprove_participant_team/' + participant_team_id;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        if(response.status == 204){
+                    onSuccess: function (response) {
+                        if (response.status == 204) {
                             $rootScope.notify("success", "Participant Team Disapproved successfully.");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $rootScope.notify("error", response.data.error);
                         $state.reload();
                     }
@@ -1998,21 +1998,21 @@
         };
 
 
-        vm.changeBaselineStatus = function(submission_id) {
+        vm.changeBaselineStatus = function (submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_baseline": vm.baselineStatus[submission_id]
             };
             parameters.callback = {
-                onSuccess: function() {},
-                onError: function() {}
+                onSuccess: function () { },
+                onError: function () { }
             };
 
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function(phaseID) {
+        vm.showRemainingSubmissions = function (phaseID) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
@@ -2021,11 +2021,11 @@
             parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions/";
             parameters.method = 'GET';
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var status = response.status;
                     for (var phase in response.data.phases) {
                         if (response.data.phases[phase].id == phaseID) {
-                           var details = response.data.phases[phase].limits;
+                            var details = response.data.phases[phase].limits;
                         }
                     }
                     if (status === 200) {
@@ -2042,7 +2042,7 @@
                             vm.message = details;
                             vm.showClock = true;
                             vm.disableSubmit = true;
-                            vm.countDownTimer = function() {
+                            vm.countDownTimer = function () {
                                 vm.remainingTime = vm.message.remaining_time;
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
                                 vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
@@ -2059,14 +2059,14 @@
                                     vm.remainingSeconds--;
                                 }
                             };
-                            setInterval(function() {
+                            setInterval(function () {
                                 $rootScope.$apply(vm.countDownTimer);
                             }, 1000);
                             vm.countDownTimer();
                         }
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var details = response.data;
                     vm.stopLoader();
                     $rootScope.notify("error", details.error);
@@ -2079,76 +2079,76 @@
         vm.fields = [{
             'label': 'Team Name',
             'id': 'participant_team'
-        },{
+        }, {
             'label': 'Team Members',
             'id': 'participant_team_members'
-        },{
+        }, {
             'label': 'Team Members Email Id',
             'id': 'participant_team_members_email'
-        },{
+        }, {
             'label': 'Team Members Affiliation',
             'id': 'participant_team_members_affiliation'
-        },{
+        }, {
             'label': 'Challenge Phase',
             'id': 'challenge_phase'
-        },{
+        }, {
             'label': 'Status',
             'id': 'status'
-        },{
+        }, {
             'label': 'Created By',
             'id': 'created_by'
-        },{
+        }, {
             'label': 'Execution Time',
             'id': 'execution_time'
-        },{
+        }, {
             'label': 'Submission Number',
             'id': 'submission_number'
-        },{
+        }, {
             'label': 'Submitted File',
             'id': 'input_file'
-        },{
+        }, {
             'label': 'Stdout File',
             'id': 'stdout_file'
-        },{
+        }, {
             'label': 'Stderr File',
             'id': 'stderr_file'
-        },{
+        }, {
             'label': 'Environment Log File',
             'id': 'environment_log_file'
-        },{
+        }, {
             'label': 'Submitted At',
             'id': 'created_at'
-        },{
+        }, {
             'label': 'Submission Result File',
             'id': 'submission_result_file'
-        },{
+        }, {
             'label': 'Submission Metadata File',
             'id': 'submission_metadata_file'
-        },{
+        }, {
             'label': 'Method Name',
             'id': 'method_name'
-        },{
+        }, {
             'label': 'Method Description',
             'id': 'method_description'
-        },{
+        }, {
             'label': 'Publication URL',
             'id': 'publication_url'
-        },{
+        }, {
             'label': 'Project URL',
             'id': 'project_url'
-        },{
+        }, {
             'label': 'Submission Meta Attributes',
             'id': 'submission_meta_attributes'
         }];
 
-        vm.downloadChallengeSubmissions = function() {
+        vm.downloadChallengeSubmissions = function () {
             vm.phaseId = (vm.allSubmissionPhaseSlug == undefined) ? vm.mySubmissionPhaseSlug : vm.allSubmissionPhaseSlug;
             if (vm.phaseId) {
-               parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v2/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
+                parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v2/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var details = response.data;
                             var anchor = angular.element('<a/>');
                             anchor.attr({
@@ -2156,7 +2156,7 @@
                                 download: 'all_submissions.csv'
                             })[0].click();
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var details = response.data;
                             $rootScope.notify('error', details.error);
                         }
@@ -2166,14 +2166,14 @@
                 else {
                     parameters.method = "POST";
                     var fieldsExport = [];
-                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                    for (var i = 0; i < vm.fields.length; i++) {
                         if (vm.fieldsToGet.includes(vm.fields[i].id)) {
                             fieldsExport.push(vm.fields[i].id);
                         }
                     }
                     parameters.data = fieldsExport;
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var details = response.data;
                             var anchor = angular.element('<a/>');
                             anchor.attr({
@@ -2181,7 +2181,7 @@
                                 download: 'all_submissions.csv'
                             })[0].click();
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             var details = response.data;
                             $rootScope.notify('error', details.error);
                         }
@@ -2195,9 +2195,9 @@
         };
 
         vm.isOptionChecked = function (option, attribute) {
-            if(
+            if (
                 attribute.values.findIndex((el) => {
-                    return el===option;
+                    return el === option;
                 }) !== -1
             ) {
                 return true;
@@ -2228,7 +2228,7 @@
             });
         };
 
-        vm.showVisibilityDialog = function(submissionId, submissionVisibility) {
+        vm.showVisibilityDialog = function (submissionId, submissionVisibility) {
             vm.submissionId = submissionId;
             // Show modal only when submission is being made public
             if (submissionVisibility) {
@@ -2243,26 +2243,26 @@
                     vm.changeSubmissionVisibility(submissionId, submissionVisibility);
                 }
             } else {
-                // Case when a submission is made private
+
                 vm.changeSubmissionVisibility(submissionId, submissionVisibility);
             }
         };
 
-        vm.cancelSubmission = function(submissionId) {
+        vm.cancelSubmission = function (submissionId) {
             parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
             parameters.method = 'PATCH';
             parameters.data = {
                 "status": "cancelled",
             };
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var status = response.status;
                     if (status === 200) {
                         $mdDialog.hide();
                         $rootScope.notify("success", "Submission cancelled successfully!");
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     $mdDialog.hide();
                     var error = response.data;
                     $rootScope.notify("error", error);
@@ -2272,7 +2272,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showCancelSubmissionDialog = function(submissionId, status) {
+        vm.showCancelSubmissionDialog = function (submissionId, status) {
             if (!vm.allowCancelRunningSubmissions && status != "submitted") {
                 $rootScope.notify("error", "Only unproccessed submissions can be cancelled");
                 return;
@@ -2285,11 +2285,11 @@
             });
         };
 
-        vm.hideDialog = function() {
+        vm.hideDialog = function () {
             $mdDialog.hide();
         };
 
-        vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
+        vm.updateSubmissionMetaData = function (updateSubmissionMetaDataForm) {
             if (updateSubmissionMetaDataForm) {
                 parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;
                 parameters.method = 'PATCH';
@@ -2301,17 +2301,17 @@
                     "submission_metadata": vm.currentSubmissionMetaData
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The data is successfully updated!");
-                            if(vm.currentSubmissionMetaData != null) {
+                            if (vm.currentSubmissionMetaData != null) {
                                 vm.submissionMetaData.submission_metadata = JSON.parse(JSON.stringify(vm.currentSubmissionMetaData));
                             }
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         var error = response.data;
                         $rootScope.notify("error", error);
@@ -2324,20 +2324,20 @@
             }
         };
 
-        vm.verifySubmission = function(submissionId, isVerified) {
+        vm.verifySubmission = function (submissionId, isVerified) {
             parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_verified_by_host": isVerified,
             };
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var status = response.status;
                     if (status === 200) {
                         $rootScope.notify("success", "Verification status updated successfully!");
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                 }
@@ -2345,13 +2345,13 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.isStarred = function() {
+        vm.isStarred = function () {
             // Get the stars count and user specific starred or unstarred
             parameters.url = "challenges/" + vm.challengeId + "/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.count = details['count'] || 0;
                     vm.is_starred = details['is_starred'];
@@ -2361,17 +2361,17 @@
                         vm.caption = 'Unstar';
                     }
                 },
-                onError: function() {}
+                onError: function () { }
             };
             utilities.sendRequest(parameters);
         };
 
-        vm.starChallenge = function() {
+        vm.starChallenge = function () {
             parameters.url = "challenges/" + vm.challengeId + "/";
             parameters.method = 'POST';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var details = response.data;
                     vm.count = details['count'];
                     vm.is_starred = details['is_starred'];
@@ -2381,7 +2381,7 @@
                         vm.caption = 'Star';
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                 }
@@ -2390,7 +2390,7 @@
         };
 
         // Edit challenge overview
-        vm.overviewDialog = function(ev) {
+        vm.overviewDialog = function (ev) {
             vm.tempDesc = vm.page.description;
             $mdDialog.show({
                 scope: $scope,
@@ -2401,7 +2401,7 @@
             });
         };
 
-        vm.editChallengeOverview = function(editChallengeOverviewForm) {
+        vm.editChallengeOverview = function (editChallengeOverviewForm) {
             if (editChallengeOverviewForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2417,14 +2417,14 @@
 
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The description is successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.description = vm.tempDesc;
                         var error = response.data;
@@ -2440,7 +2440,7 @@
         };
 
         // Delete challenge
-        vm.deleteChallengeDialog = function(ev) {
+        vm.deleteChallengeDialog = function (ev) {
             vm.titleInput = "";
             $mdDialog.show({
                 scope: $scope,
@@ -2451,21 +2451,21 @@
             });
         };
 
-        vm.deleteChallenge = function(deleteChallengeForm) {
-            if (deleteChallengeForm){
+        vm.deleteChallenge = function (deleteChallengeForm) {
+            if (deleteChallengeForm) {
                 var parameters = {};
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/disable";
                 parameters.method = 'POST';
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
-                        if (status === 204){
+                        if (status === 204) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The Challenge is successfully deleted!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         var error = response.data;
                         $rootScope.notify("error", error);
@@ -2479,7 +2479,7 @@
         };
 
         // Edit submission guidelines
-        vm.submissionGuidelinesDialog = function(ev) {
+        vm.submissionGuidelinesDialog = function (ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
             $mdDialog.show({
                 scope: $scope,
@@ -2490,7 +2490,7 @@
             });
         };
 
-        vm.editSubmissionGuideline = function(editSubmissionGuidelinesForm) {
+        vm.editSubmissionGuideline = function (editSubmissionGuidelinesForm) {
             if (editSubmissionGuidelinesForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2506,14 +2506,14 @@
 
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The submission guidelines is successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.submission_guidelines = vm.tempSubmissionGuidelines;
                         var error = response.data;
@@ -2529,7 +2529,7 @@
         };
 
         // Edit Evaluation Criteria
-        vm.evaluationCriteriaDialog = function(ev) {
+        vm.evaluationCriteriaDialog = function (ev) {
             vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
@@ -2540,7 +2540,7 @@
             });
         };
 
-        vm.editEvaluationCriteria = function(editEvaluationCriteriaForm) {
+        vm.editEvaluationCriteria = function (editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2555,14 +2555,14 @@
                     "evaluation_details": vm.page.evaluation_details
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The evaluation details is successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.evaluation_details = vm.tempEvaluationCriteria;
                         var error = response.data;
@@ -2580,7 +2580,7 @@
 
 
         // Edit Evaluation Script
-        vm.evaluationScriptDialog = function(ev) {
+        vm.evaluationScriptDialog = function (ev) {
             vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
@@ -2591,10 +2591,10 @@
             });
         };
 
-        vm.editEvalScript = function(editEvaluationCriteriaForm) {
+        vm.editEvalScript = function (editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
                 if (vm.editEvaluationScript === undefined || vm.editEvaluationScript === null
-                     || vm.editEvaluationScript === "") {
+                    || vm.editEvaluationScript === "") {
                     var error = "Please upload a valid evaluation script!";
                     $mdDialog.hide();
                     $rootScope.notify("error", error);
@@ -2613,14 +2613,14 @@
                 parameters.method = 'PATCH';
                 parameters.data = formData;
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The evaluation script is successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.evaluation_details = vm.tempEvaluationCriteria;
                         var error = response.data;
@@ -2638,7 +2638,7 @@
 
 
         // Edit Terms and Conditions
-        vm.termsAndConditionsDialog = function(ev) {
+        vm.termsAndConditionsDialog = function (ev) {
             vm.tempTermsAndConditions = vm.page.terms_and_conditions;
             $mdDialog.show({
                 scope: $scope,
@@ -2649,7 +2649,7 @@
             });
         };
 
-        vm.editTermsAndConditions = function(editTermsAndConditionsForm) {
+        vm.editTermsAndConditions = function (editTermsAndConditionsForm) {
             if (editTermsAndConditionsForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2664,14 +2664,14 @@
                     "terms_and_conditions": vm.page.terms_and_conditions
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The terms and conditions are successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.terms_and_conditions = vm.tempTermsAndConditions;
                         var error = response.data;
@@ -2686,7 +2686,7 @@
         };
 
         // Edit Challenge Title
-        vm.challengeTitleDialog = function(ev) {
+        vm.challengeTitleDialog = function (ev) {
             vm.tempChallengeTitle = vm.page.title;
             $mdDialog.show({
                 scope: $scope,
@@ -2697,7 +2697,7 @@
             });
         };
 
-        vm.editChallengeTitle = function(editChallengeTitleForm) {
+        vm.editChallengeTitle = function (editChallengeTitleForm) {
             if (editChallengeTitleForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2712,14 +2712,14 @@
                     "title": vm.page.title
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The challenge title is  successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.title = vm.tempChallengeTitle;
                         var error = response.data;
@@ -2733,7 +2733,7 @@
             }
         };
 
-        vm.challengePhaseDialog = function(ev, phase) {
+        vm.challengePhaseDialog = function (ev, phase) {
             vm.page.challenge_phase = phase;
             vm.page.max_submissions_per_day = phase.max_submissions_per_day;
             vm.page.max_submissions_per_month = phase.max_submissions_per_month;
@@ -2751,7 +2751,7 @@
             });
         };
 
-        vm.editChallengePhase = function(editChallengePhaseForm) {
+        vm.editChallengePhase = function (editChallengePhaseForm) {
             if (editChallengePhaseForm) {
                 vm.challengePhaseId = vm.page.challenge_phase.id;
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
@@ -2764,13 +2764,13 @@
                 formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
                 formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
-                formData.append("max_concurrent_submissions_allowed", vm.page.challenge_phase.max_concurrent_submissions_allowed); 
+                formData.append("max_concurrent_submissions_allowed", vm.page.challenge_phase.max_concurrent_submissions_allowed);
                 if (vm.testAnnotationFile) {
                     formData.append("test_annotation", vm.testAnnotationFile);
                 }
                 parameters.data = formData;
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         utilities.hideLoader();
                         if (status === 200) {
@@ -2778,7 +2778,7 @@
                             $rootScope.notify("success", "The challenge phase details are successfully updated!");
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         utilities.hideLoader();
                         $mdDialog.hide();
                         var error = response.data;
@@ -2792,12 +2792,12 @@
                 parameters.method = 'GET';
                 parameters.data = {};
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var details = response.data;
                         vm.phases = details;
                         utilities.hideLoader();
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         var error = response.data;
                         utilities.storeData('emailError', error.detail);
                         $state.go('web.permission-denied');
@@ -2809,7 +2809,7 @@
             }
         };
 
-        vm.publishChallenge = function(ev) {
+        vm.publishChallenge = function (ev) {
             ev.stopPropagation();
             vm.toggleChallengeState = null;
             vm.publishDesc = null;
@@ -2819,13 +2819,13 @@
                 vm.toggleChallengeState = "public";
 
             var confirm = $mdDialog.confirm()
-                          .title('Make this challenge ' + vm.toggleChallengeState + '?')
-                          .ariaLabel('')
-                          .targetEvent(ev)
-                          .ok('Yes')
-                          .cancel('No');
+                .title('Make this challenge ' + vm.toggleChallengeState + '?')
+                .ariaLabel('')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel('No');
 
-            $mdDialog.show(confirm).then(function() {
+            $mdDialog.show(confirm).then(function () {
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
                 parameters.method = 'PATCH';
                 parameters.data = {
@@ -2833,14 +2833,14 @@
                 };
                 vm.isPublished = !vm.isPublished;
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The challenge was successfully made " + vm.toggleChallengeState);
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $mdDialog.hide();
                         vm.page.description = vm.tempDesc;
                         var error = response.data;
@@ -2849,13 +2849,13 @@
                 };
 
                 utilities.sendRequest(parameters);
-            }, function() {
-            // Nope
+            }, function () {
+                // Nope
             });
         };
 
         // Edit Challenge Start and End Date
-        vm.challengeDateDialog = function(ev) {
+        vm.challengeDateDialog = function (ev) {
             vm.challengeStartDate = moment(vm.page.start_date);
             vm.challengeEndDate = moment(vm.page.end_date);
             $mdDialog.show({
@@ -2867,7 +2867,7 @@
             });
         };
 
-        vm.editChallengeDate = function(editChallengeDateForm) {
+        vm.editChallengeDate = function (editChallengeDateForm) {
             if (editChallengeDateForm) {
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
@@ -2884,7 +2884,7 @@
                         "end_date": vm.challengeEndDate
                     };
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var status = response.status;
                             utilities.hideLoader();
                             if (status === 200) {
@@ -2894,7 +2894,7 @@
                                 $rootScope.notify("success", "The challenge start and end date is successfully updated!");
                             }
                         },
-                        onError: function(response) {
+                        onError: function (response) {
                             utilities.hideLoader();
                             $mdDialog.hide();
                             var error = response.data;
@@ -2911,7 +2911,7 @@
             }
         };
 
-        vm.editchallengeTagDialog = function(ev) {
+        vm.editchallengeTagDialog = function (ev) {
             vm.tags = vm.page.list_tags;
             vm.domain_choices();
             $mdDialog.show({
@@ -2923,7 +2923,7 @@
             });
         };
 
-        vm.editChallengeTag = function(editChallengeTagDomainForm) {
+        vm.editChallengeTag = function (editChallengeTagDomainForm) {
             var new_tags;
             if (!editChallengeTagDomainForm) {
                 $mdDialog.hide();
@@ -2944,7 +2944,7 @@
                 "domain": vm.domain
             };
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var status = response.status;
                     utilities.hideLoader();
                     if (status === 200) {
@@ -2953,7 +2953,7 @@
                         $mdDialog.hide();
                     }
                 },
-                onError: function(response) {
+                onError: function (response) {
                     utilities.hideLoader();
                     $mdDialog.hide();
                     var error = response.data;
@@ -2964,12 +2964,12 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.domain_choices = function() {
+        vm.domain_choices = function () {
             parameters.url = "challenges/challenge/get_domain_choices/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var domain_choices = response.data;
                     for (var i = 0; i < domain_choices.length; i++) {
                         if (domain_choices[i][0] == vm.page.domain) {
@@ -2978,7 +2978,7 @@
                     }
                     vm.domainoptions = domain_choices;
                 },
-                onError: function(response) {
+                onError: function (response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
                 }
@@ -2986,20 +2986,20 @@
             utilities.sendRequest(parameters);
         };
 
-        $scope.$on('$destroy', function() {
+        $scope.$on('$destroy', function () {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
             vm.stopLoadingLogs();
         });
 
-        $rootScope.$on('$stateChangeStart', function() {
+        $rootScope.$on('$stateChangeStart', function () {
             vm.phase = {};
             vm.isResult = false;
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
 
-        vm.showConfirmation = function(message){
+        vm.showConfirmation = function (message) {
             $rootScope.notify("success", message);
         };
 
@@ -3024,11 +3024,11 @@
             }
         };
 
-        vm.encodeMetricURI = function(metric) {
+        vm.encodeMetricURI = function (metric) {
             return encodeURIComponent(metric);
         };
 
-        vm.deregisterdialog = function(ev) {
+        vm.deregisterdialog = function (ev) {
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -3038,36 +3038,36 @@
             });
         };
 
-        vm.deregister = function(deregisterformvalid) {
+        vm.deregister = function (deregisterformvalid) {
             if (deregisterformvalid) {
                 parameters.url = 'challenges/challenge/' + vm.challengeId + '/deregister/';
                 parameters.method = 'POST';
                 parameters.data = {};
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function (response) {
                         var status = response.status;
                         if (status === 200) {
                             $rootScope.notify("success", "You have successfully deregistered from the challenge.");
                             $mdDialog.hide();
                             $state.go('web.challenge-main.challenge-page.overview');
-                            setTimeout(function() {
-                            $state.reload();
+                            setTimeout(function () {
+                                $state.reload();
                             }, 100);
                         }
                     },
-                    onError: function(response) {
+                    onError: function (response) {
                         $rootScope.notify("error", response.data.error);
                         $mdDialog.hide();
                     }
                 };
-            utilities.sendRequest(parameters);
+                utilities.sendRequest(parameters);
             }
             else {
                 $mdDialog.hide();
             }
         };
 
-        vm.openLeaderboardDropdown = function() {
+        vm.openLeaderboardDropdown = function () {
             if (vm.chosenMetrics == undefined) {
                 var index = [];
                 for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
@@ -3079,18 +3079,18 @@
             vm.leaderboardDropdown = !vm.leaderboardDropdown;
         };
 
-        vm.getTrophySize = function(rank) {
+        vm.getTrophySize = function (rank) {
             switch (rank) {
                 case 1:
-                  return 'trophy-gold';
+                    return 'trophy-gold';
                 case 2:
-                  return 'trophy-silver';
+                    return 'trophy-silver';
                 case 3:
-                  return 'trophy-bronze';
+                    return 'trophy-bronze';
                 // Add more cases for other ranks if needed
                 default:
-                  return 'trophy-black'; // Default size, change this according to your preference
-              }
+                    return 'trophy-black'; // Default size, change this according to your preference
+            }
         };
 
     }

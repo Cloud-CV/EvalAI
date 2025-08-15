@@ -267,12 +267,10 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
 
-        # The API returns a 400 Bad Request, not 404, because the helper function
-        # in the view is likely configured to do so. The key is 'detail'.
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        # Check that the key in the response is 'detail'
+
         self.assertIn("detail", response.data)
-        # Check that the error message contains the expected text
+
         self.assertIn(
             f"ChallengePhase {challenge_phase_pk} does not exist",
             str(response.data["detail"]),
@@ -2010,12 +2008,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             },
         )
 
-        # FIX 1: Remove the confusing duplicate leaderboard entry.
-        # This was likely causing an unhandled error in the view's logic.
         self.leaderboard_data_2.delete()
 
-        # FIX 2: Temporarily hide the host's submission to match the expected count of 1.
-        # This makes the test's expectation clear and valid.
         self.host_participant_team_submission.is_public = False
         self.host_participant_team_submission.save()
 
@@ -2048,13 +2042,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 }
             ],
         }
-        # Note: You don't need to convert 'expected' to an OrderedDict for this comparison.
 
         response = self.client.get(self.url, {})
-
-        # Optional: Useful debugging step if the test fails
-        # if response.status_code != 200:
-        #     print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], expected["count"])

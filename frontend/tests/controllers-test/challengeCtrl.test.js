@@ -5,7 +5,7 @@ describe('Unit tests for challenge controller', function () {
 
     var $controller, createController, $injector, $rootScope, $state, $scope, utilities, $http, $interval, $mdDialog, moment, vm;
 
-    beforeEach(inject(function (_$controller_, _$injector_,  _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
+    beforeEach(inject(function (_$controller_, _$injector_, _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
         $controller = _$controller_;
         $injector = _$injector_;
         $rootScope = _$rootScope_;
@@ -15,10 +15,10 @@ describe('Unit tests for challenge controller', function () {
         $interval = _$interval_;
         $mdDialog = _$mdDialog_;
         moment = _moment_;
-        
+
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeCtrl', {$scope: $scope});
+            return $controller('ChallengeCtrl', { $scope: $scope });
         };
         vm = $controller('ChallengeCtrl', { $scope: $scope });
     }));
@@ -99,22 +99,22 @@ describe('Unit tests for challenge controller', function () {
                 }
 
                 if ((challengePhaseSuccess == true && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
-                (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
-                (challengePhaseSplitSuccess == true && parameters.url == 'challenges/undefined/challenge_phase_split') ||
-                (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
-                (participantTeamSuccess == true && parameters.url == 'participants/participant_team') ||
-                (selectExistTeamSuccess == true && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
+                    (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
+                    (challengePhaseSplitSuccess == true && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                    (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                    (participantTeamSuccess == true && parameters.url == 'participants/participant_team') ||
+                    (selectExistTeamSuccess == true && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
 
                     parameters.callback.onSuccess({
                         status: 200,
                         data: successResponse
                     });
                 } else if ((challengePhaseSuccess == false && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
-                (challengeSuccess == false && parameters.url == 'challenges/challenge/undefined/') ||
-                (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split') ||
-                (participantTeamChallengeSuccess == false && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
-                (participantTeamSuccess == false && parameters.url == 'participants/participant_team') ||
-                (selectExistTeamSuccess == false && parameters.url == 'challenges/challenge/undefined/participant_team/null')){
+                    (challengeSuccess == false && parameters.url == 'challenges/challenge/undefined/') ||
+                    (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                    (participantTeamChallengeSuccess == false && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                    (participantTeamSuccess == false && parameters.url == 'participants/participant_team') ||
+                    (selectExistTeamSuccess == false && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
 
                     parameters.callback.onError({
                         data: errorResponse,
@@ -213,8 +213,9 @@ describe('Unit tests for challenge controller', function () {
 
         team_list.forEach(response => {
             it('pagination next is ' + response.next + ' and previous is ' + response.previous + '\
-                `participants/participant_team`', function () {;
-                challengeSuccess = true;    
+                `participants/participant_team`', function () {
+                ;
+                challengeSuccess = true;
                 participantTeamChallengeSuccess = true;
                 participantTeamSuccess = true;
                 selectExistTeamSuccess = null;
@@ -446,7 +447,7 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             utilities.storeData('userKey', 'encrypted key');
-       
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -460,7 +461,7 @@ describe('Unit tests for challenge controller', function () {
             var headers = {
                 'Authorization': "Token " + utilities.getData('userKey')
             };
-            expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
         });
 
         it('backend error of the particular challenge `challenges/challenge/<challenge_id>/', function () {
@@ -511,7 +512,7 @@ describe('Unit tests for challenge controller', function () {
                 expect(vm.phases.results[i].showPrivate).toBeTruthy();
             }
 
-            for(var i = 0; i < successResponse.results.length; i++){
+            for (var i = 0; i < successResponse.results.length; i++) {
                 var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
                 expect(vm.phases.results[i].time_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
             }
@@ -564,7 +565,7 @@ describe('Unit tests for challenge controller', function () {
             vm.isParticipated = true;
             vm = createController();
             expect(vm.phaseSplits).toEqual(successResponse);
-            for(var i = 0; i < successResponse.length; i++) {
+            for (var i = 0; i < successResponse.length; i++) {
                 if (successResponse[i].visibility != challengePhaseVisibility.public) {
                     expect(vm.phaseSplits[i].showPrivate).toBeTruthy();
                 }
@@ -627,7 +628,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: true,
                             remaining_submissions_today_count: 12,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -637,7 +638,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('maxExceeded');
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
@@ -651,7 +652,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: false,
                             remaining_submissions_today_count: 12,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -661,7 +662,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showSubmissionNumbers');
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
@@ -675,7 +676,7 @@ describe('Unit tests for challenge controller', function () {
                         limits: {
                             submission_limit_exceeded: false,
                             remaining_submissions_today_count: 0,
-                            remaining_time: 12/12/12,
+                            remaining_time: 12 / 12 / 12,
                         }
                     },
                 ]
@@ -685,7 +686,7 @@ describe('Unit tests for challenge controller', function () {
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
-            for (var i=0; i < details.length; i++) {
+            for (var i = 0; i < details.length; i++) {
                 expect(vm.eachPhase).toEqual(details[i]);
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showClock');
 
@@ -722,7 +723,7 @@ describe('Unit tests for challenge controller', function () {
             success: 'success',
         };
 
-        beforeEach(function() {
+        beforeEach(function () {
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
             spyOn($rootScope, 'notify');
@@ -848,7 +849,7 @@ describe('Unit tests for challenge controller', function () {
 
         it('successfully get the leaderboard', function () {
             success = true;
-            // MOCK RESPONSE with new, consistent data structure
+
             successResponse = {
                 results: [
                     {
@@ -857,7 +858,7 @@ describe('Unit tests for challenge controller', function () {
                             labels: ['label1', 'label2'],
                             default_order_by: 'default_order_by',
                         },
-                        // Use a valid ISO 8601 date string for consistency
+
                         submission__submitted_at: new Date().toISOString(),
                     },
                 ]
@@ -865,7 +866,7 @@ describe('Unit tests for challenge controller', function () {
             var phaseSlug = 'phase-slug';
             var splitCodename = 'split-codename';
 
-            // Mock the phaseSplits array so the controller can find the phaseSplitId
+
             vm.phaseSplits = [{
                 id: 1,
                 challenge_phase_slug: phaseSlug,
@@ -923,7 +924,7 @@ describe('Unit tests for challenge controller', function () {
             }
         ];
 
-        // THIS IS THE BLOCK TO REPLACE
+
         beforeEach(function () {
             spyOn($interval, 'cancel');
             spyOn(vm, 'startLoader');
@@ -947,9 +948,9 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
 
-            // Replace the mock function with the new version
+
             utilities.sendRequest = function (parameters) {
-                // Check for submission count API call
+
                 if (parameters.url.includes('/count')) {
                     if (submissionCountSuccess) {
                         parameters.callback.onSuccess({
@@ -979,13 +980,13 @@ describe('Unit tests for challenge controller', function () {
             submissionCountSuccess = null;
             submissionListSuccess = null;
             var phaseSlug = 'phase-1-slug';
-            // Define the mock error object
+
             errorResponse = { detail: 'error' };
             vm.getResults(phaseSlug);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
-            expect(vm.phaseId).toEqual(1); 
+            expect(vm.phaseId).toEqual(1);
 
             expect(vm.currentPhaseLeaderboardPublic).toEqual(true);
         });
@@ -994,12 +995,12 @@ describe('Unit tests for challenge controller', function () {
     `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
             submissionCountSuccess = true;
             submissionListSuccess = null;
-            var phaseSlug = 'phase-1-slug'; // Use slug
+            var phaseSlug = 'phase-1-slug';
             successResponse = {
                 challenge_phase: 1,
                 participant_team_submission_count: 200
             };
-            vm.getResults(phaseSlug); // Call with slug
+            vm.getResults(phaseSlug);
             expect(vm.submissionCount).toEqual(successResponse.participant_team_submission_count);
         });
 
@@ -1007,7 +1008,7 @@ describe('Unit tests for challenge controller', function () {
             submissionCountSuccess = false;
             submissionListSuccess = null;
             var phaseSlug = 'phase-1-slug';
-            // Change the mock error to an object
+
             errorResponse = { detail: 'error' };
             vm.getResults(phaseSlug);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
@@ -1017,7 +1018,7 @@ describe('Unit tests for challenge controller', function () {
             it('get submissions of a particular challenge phase when pagination next is ' + response.next + ' \
         and previous is ' + response.previous + '`jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
                 submissionListSuccess = true;
-                var phaseSlug = 'phase-1-slug'; // Use slug
+                var phaseSlug = 'phase-1-slug';
                 successResponse = response;
                 successResponse.results = [
                     {
@@ -1029,7 +1030,7 @@ describe('Unit tests for challenge controller', function () {
                     }
                 ];
 
-                vm.getResults(phaseSlug); // Call with slug
+                vm.getResults(phaseSlug);
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
                 for (var i = 0; i < successResponse.results.length; i++) {
@@ -1064,11 +1065,11 @@ describe('Unit tests for challenge controller', function () {
     `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
             submissionListSuccess = false;
             submissionCountSuccess = null;
-            var phaseSlug = 'phase-1-slug'; // Use slug
+            var phaseSlug = 'phase-1-slug';
             errorResponse = {
                 detail: 'error'
             };
-            vm.getResults(phaseSlug); // Call with slug
+            vm.getResults(phaseSlug);
             expect(utilities.storeData).toHaveBeenCalledWith("emailError", errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(vm.stopLoader).toHaveBeenCalled();
@@ -1077,7 +1078,7 @@ describe('Unit tests for challenge controller', function () {
         it('to load data with pagination `load` function', function () {
             submissionListSuccess = true;
             submissionCountSuccess = null;
-            var phaseSlug = 'phase-1-slug'; // Use slug
+            var phaseSlug = 'phase-1-slug';
             successResponse = {
                 results: [
                     {
@@ -1088,11 +1089,11 @@ describe('Unit tests for challenge controller', function () {
                         is_baseline: true
                     }
                 ],
-                // get submissions response
+
                 next: "page=4",
                 previous: "page=2",
             };
-            vm.getResults(phaseSlug); // Call with slug
+            vm.getResults(phaseSlug);
             spyOn($http, 'get').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
                 return deferred.promise;
@@ -1414,7 +1415,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'storeData');
             spyOn($state, 'go');
 
-            // Add mock phases data for slug lookup
+
             vm.phases = {
                 results: [
                     { id: 1, slug: 'all-submissions-slug' }
@@ -1434,14 +1435,14 @@ describe('Unit tests for challenge controller', function () {
             };
         });
 
-        // THIS IS THE FIRST BLOCK TO REPLACE
+
         submission_list.forEach(response => {
             it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function () {
                 success = true;
                 successResponse = response;
-                var phaseSlug = "all-submissions-slug"; // Use slug
+                var phaseSlug = "all-submissions-slug";
                 var phaseId = 1;
-                vm.getAllSubmissionResults(phaseSlug); // Call with slug
+                vm.getAllSubmissionResults(phaseSlug);
                 vm.stopFetchingSubmissions();
                 expect($interval.cancel).toHaveBeenCalled();
                 expect(vm.isResult).toEqual(true);
@@ -1477,12 +1478,12 @@ describe('Unit tests for challenge controller', function () {
             });
         });
 
-        // THIS IS THE SECOND BLOCK TO REPLACE
+
         it('backend error', function () {
             success = false;
-            var phaseSlug = "all-submissions-slug"; // Use slug
+            var phaseSlug = "all-submissions-slug";
             var phaseId = 1;
-            vm.getAllSubmissionResults(phaseSlug); // Call with slug
+            vm.getAllSubmissionResults(phaseSlug);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
             expect(vm.isResult).toEqual(true);
@@ -1523,43 +1524,43 @@ describe('Unit tests for challenge controller', function () {
 
     describe('Unit tests for showapprovalparticipantteamDialog function', function () {
         var $mdDialog;
-        
+
         beforeEach(function () {
             $mdDialog = $injector.get('$mdDialog');
         });
-    
+
         it('should open dialog when approved_status is true', function () {
             var $mdDialogOpened = false;
             $mdDialog.show = jasmine.createSpy().and.callFake(function () {
                 $mdDialogOpened = true;
             });
-            
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
-            
+
             vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
-            
+
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toEqual(true);
         });
-    
+
         it('should call check_approval_status when approved_status is false', function () {
             vm.check_approval_status = jasmine.createSpy();
-            
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = false;
-            
+
             vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
-            
+
             expect(vm.check_approval_status).toHaveBeenCalledWith(challengeId, participant_team_id, approved_status, false);
         });
     });
 
     describe('Unit tests for check_approval_status function', function () {
         var success, errorResponse, secondfunction;
-    
+
         beforeEach(function () {
             spyOn($rootScope, 'notify');
             spyOn($state, 'reload');
@@ -1580,38 +1581,38 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
         });
-    
+
         it('should handle successful approval of participant team', function () {
             success = true;
-    
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
             var formvalid = true;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Approved successfully.');
             expect($mdDialog.hide).toHaveBeenCalled();
         });
-    
+
         it('should handle error during approval of participant team', function () {
             success = false;
             secondfunction = false;
             errorResponse = {
-                    error: 'Approval failed'
+                error: 'Approval failed'
             };
-    
+
             var challengeId = '123';
             var participant_team_id = '456';
             var approved_status = true;
             var formvalid = true;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Approval failed');
         });
-    
+
         it('should handle disapproval of participant team', function () {
             success = false;
             secondfunction = true;
@@ -1619,9 +1620,9 @@ describe('Unit tests for challenge controller', function () {
             var participant_team_id = '456';
             var approved_status = false;
             var formvalid = false;
-    
+
             vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
-    
+
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Disapproved successfully.');
             expect($state.reload).not.toHaveBeenCalled();
         });
@@ -1817,7 +1818,7 @@ describe('Unit tests for challenge controller', function () {
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
             vm.submissionMetaData = {
-                submission_metadata : null
+                submission_metadata: null
             };
             vm.currentSubmissionMetaData = [
                 {
@@ -1831,7 +1832,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'SingleOptionAttribute',
                     type: 'radio',
                     value: null,
-                    options: ['A','B','C'],
+                    options: ['A', 'B', 'C'],
                     $$hashKey: 'object:43',
                     description: 'Sample',
                 },
@@ -1839,7 +1840,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'MultipleChoiceAttribute',
                     type: 'checkbox',
                     values: [],
-                    options: ['alpha','beta','gamma'],
+                    options: ['alpha', 'beta', 'gamma'],
                     $$hashKey: 'object:44',
                     description: 'Sample',
                 },
@@ -1865,7 +1866,7 @@ describe('Unit tests for challenge controller', function () {
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
             vm.submissionMetaData = {
-                submission_metadata : null
+                submission_metadata: null
             };
             vm.currentSubmissionMetaData = [
                 {
@@ -1879,7 +1880,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'SingleOptionAttribute',
                     type: 'radio',
                     value: null,
-                    options: ['A','B','C'],
+                    options: ['A', 'B', 'C'],
                     $$hashKey: 'object:43',
                     description: 'Sample',
                 },
@@ -1887,7 +1888,7 @@ describe('Unit tests for challenge controller', function () {
                     name: 'MultipleChoiceAttribute',
                     type: 'checkbox',
                     values: [],
-                    options: ['alpha','beta','gamma'],
+                    options: ['alpha', 'beta', 'gamma'],
                     $$hashKey: 'object:44',
                     description: 'Sample',
                 },
@@ -2636,7 +2637,7 @@ describe('Unit tests for challenge controller', function () {
         it('valid `edit challenge phase` form & successfull edit', function () {
             var editChallengePhaseForm = true;
             success = true;
-            vm.page.challenge_phase ={
+            vm.page.challenge_phase = {
                 id: 1,
                 name: "challenge phase name",
                 description: "challenge phase description",
@@ -2657,7 +2658,7 @@ describe('Unit tests for challenge controller', function () {
         it('valid `edit challenge phase` form & backend error', function () {
             var editChallengePhaseForm = true;
             success = false;
-            vm.page.challenge_phase ={
+            vm.page.challenge_phase = {
                 id: 1,
                 name: "challenge phase name",
                 description: "challenge phase description",
@@ -2707,7 +2708,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `public` to `private`', function () {
-            vm.isPublished = true; 
+            vm.isPublished = true;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();
@@ -2715,7 +2716,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `private` to `public`', function () {
-            vm.isPublished = false; 
+            vm.isPublished = false;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();

@@ -174,7 +174,7 @@ class TestJobsUrls(BaseAPITestClass):
             "jobs:leaderboard_by_slug",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "phase_slug": self.challenge_phase.slug,  # You may need to set slug in setUp if not present
+                "phase_slug": self.challenge_phase.slug,
                 "split_codename": self.dataset_split.codename,
             },
         )
