@@ -5961,7 +5961,10 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Verify email function was called with correct challenge
         mock_send_email.assert_called_once_with(self.challenge)
+
+        # Verify success logging
 
         mock_logger.info.assert_any_call(
             "Subscription plans email sent successfully for challenge {}".format(
@@ -6001,13 +6004,18 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Verify email function was called
         mock_send_email.assert_called_once_with(self.challenge)
+
+        # Verify error logging
 
         mock_logger.error.assert_any_call(
             "Failed to send subscription plans email for challenge {}: {}".format(
                 self.challenge.pk, "Email service unavailable"
             )
         )
+
+        # Verify approval process continues despite email failure
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -6025,9 +6033,11 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         """Test that email is not sent when challenge doesn't exist"""
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
-            kwargs={"challenge_pk": 99999},
+            kwargs={"challenge_pk": 99999},  # Non-existent challenge
         )
         response = self.client.get(url)
+
+        # Verify email function was not called for non-existent challenge
 
         mock_send_email.assert_not_called()
 
@@ -6037,6 +6047,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     @mock.patch("challenges.views.send_subscription_plans_email")
     def test_request_challenge_approval_user_not_host(self, mock_send_email):
         """Test that email is not sent when user is not challenge host"""
+
+        # Create a different user who is not a challenge host
 
         other_user = User.objects.create(
             username="otheruser",
@@ -6050,6 +6062,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             verified=True,
         )
 
+        # Authenticate as the other user
+
         self.client.force_authenticate(user=other_user)
 
         url = reverse_lazy(
@@ -6057,6 +6071,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             kwargs={"challenge_pk": self.challenge.pk},
         )
         response = self.client.get(url)
+
+        # Verify email function was not called for unauthorized user
 
         mock_send_email.assert_not_called()
 
@@ -6071,7 +6087,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         responses.add(
             responses.POST,
             settings.APPROVAL_WEBHOOK_URL,
-            body=b"error",
+            body=b"error",  # Simulate webhook failure
             status=200,
             content_type="text/plain",
         )
@@ -6082,7 +6098,10 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Verify email function was called despite webhook failure
         mock_send_email.assert_called_once_with(self.challenge)
+
+        # Webhook failure should result in error response
 
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("error", response.data)
@@ -6099,6 +6118,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             content_type="text/plain",
         )
 
+        # Simulate SMTP error
+
         from smtplib import SMTPException
 
         mock_send_email.side_effect = SMTPException(
@@ -6111,7 +6132,10 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Verify email function was called
         mock_send_email.assert_called_once_with(self.challenge)
+
+        # Approval should continue despite SMTP error
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -6121,6 +6145,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self, mock_send_email
     ):
         """Test email integration with challenge that has multiple phases"""
+
+        # Create additional challenge phase
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             additional_phase = ChallengePhase.objects.create(
@@ -6138,8 +6164,11 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 ),
             )
 
+        # Create a finished submission for the additional phase to satisfy the submission check
         from jobs.models import Submission
         from participants.models import Participant
+
+        # Ensure participant team is associated with the challenge and user is a participant
 
         self.challenge.participant_teams.add(self.participant_team)
         Participant.objects.get_or_create(
@@ -6152,7 +6181,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             participant_team=self.participant_team,
             challenge_phase=additional_phase,
             created_by=self.user,
-            status="submitted",
+            status="submitted",  # Start with submitted status
             input_file=SimpleUploadedFile(
                 "test_input.txt", b"test input", content_type="text/plain"
             ),
@@ -6162,6 +6191,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             publication_url="http://testserver/",
             is_public=True,
         )
+
+        # Manually update the status to finished after creation to bypass any automatic processing
 
         submission.status = "finished"
         submission.save()
@@ -6180,6 +6211,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Verify email function was called with the challenge
+
         mock_send_email.assert_called_once_with(self.challenge)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -6190,6 +6223,8 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self, mock_send_email
     ):
         """Test that email is not sent when submission check fails"""
+
+        # Create a challenge phase without finished submissions
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             ChallengePhase.objects.create(
@@ -6213,7 +6248,10 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
         response = self.client.get(url)
 
+        # Email should NOT be sent when submission check fails
         mock_send_email.assert_not_called()
+
+        # The request should fail due to unfinished submissions
 
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn(
@@ -6324,6 +6362,8 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(DatasetSplit.objects.count(), 1)
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+        # Verify github_repository is properly stored
 
         challenge = Challenge.objects.first()
         self.assertEqual(
