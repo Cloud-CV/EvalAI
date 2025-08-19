@@ -27,7 +27,7 @@ class UserStatus(TimeStampedModel):
     status = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         app_label = "accounts"
@@ -48,7 +48,7 @@ class Profile(TimeStampedModel):
     linkedin_url = models.URLField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return "{}".format(self.user)
+        return f"{self.user}"
 
     class Meta:
         app_label = "accounts"
@@ -65,7 +65,7 @@ class JwtToken(TimeStampedModel):
     refresh_token = models.CharField(max_length=512, blank=False, null=True)
 
     def __str__(self):
-        return "{}".format(self.user)
+        return f"{self.user}"
 
     class Meta:
         app_label = "accounts"
