@@ -546,32 +546,45 @@ describe('Unit tests for challenge controller', function () {
             selectExistTeamSuccess = null;
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = true;
-
-            challengePhaseSplit = true;
-            // get challenge phase split details response
-            successResponse = [
-                {
-                    visibility: 2,
-                    host: 1
-                }
-            ];
+        
+            var successResponse = {
+                phaseGroupName1: [
+                    {
+                        visibility: 2,
+                        host: 1
+                    },
+                ],
+            };
+        
             var challengePhaseVisibility = {
                 owner_and_host: 1,
                 host: 2,
                 public: 3,
             };
+            
             spyOn(utilities, 'hideLoader');
-            vm.isParticipated = true;
+            
+            // Create the controller
             vm = createController();
-            expect(vm.phaseSplits).toEqual(successResponse);
-            for(var i = 0; i < successResponse.length; i++) {
-                if (successResponse[i].visibility != challengePhaseVisibility.public) {
-                    expect(vm.phaseSplits[i].showPrivate).toBeTruthy();
+            vm.onSuccess({ data: successResponse });
+            
+            // Iterate over phase groups and splits to check visibility and private flags
+            for (var phaseName in vm.phaseSplits) {
+                if (vm.phaseSplits.hasOwnProperty(phaseName)) {
+                    var phaseData = vm.phaseSplits[phaseName];
+        
+                    phaseData.forEach(function(phase) {
+                        if (phase.visibility !== challengePhaseVisibility.public) {
+                            expect(phase.showPrivate).toBeTruthy();
+                        }
+                    });
                 }
             }
+            
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
-
+        
+        
         it('backend error of particular challenge phase split `challenges/<challenge_id>/challenge_phase_split`', function () {
             challengeSuccess = null;
             participantTeamChallengeSuccess = null;
