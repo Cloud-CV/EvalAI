@@ -14,7 +14,10 @@ from base.utils import (
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from moto import mock_ecr, mock_sts
+from participants.models import ParticipantTeam
 
 from .models import (
     Challenge,
@@ -24,7 +27,6 @@ from .models import (
     ChallengeSponsor,
     DatasetSplit,
     Leaderboard,
-    ParticipantTeam,
 )
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
@@ -456,6 +458,106 @@ def send_emails(emails, template_id, template_data):
             recipient=email,
             template_id=template_id,
             template_data=template_data,
+        )
+
+
+def send_subscription_plans_email(challenge):
+    """
+    Sends email with subscription plan details to challenge hosts when they request approval
+    Arguments:
+        challenge {Class Object} -- Challenge model object
+    """
+    try:
+        # Get challenge host emails
+        challenge_host_emails = (
+            challenge.creator.get_all_challenge_host_email()
+        )
+
+        if not challenge_host_emails:
+            logger.warning(
+                "No challenge host emails found for challenge {}".format(
+                    challenge.pk
+                )
+            )
+            return
+
+        # Prepare template context
+        challenge_url = "{}/web/challenges/challenge-page/{}".format(
+            getattr(settings, "EVALAI_API_SERVER", "http://localhost:8000"),
+            challenge.pk,
+        )
+        challenge_manage_url = (
+            "{}/web/challenges/challenge-page/{}/manage".format(
+                getattr(
+                    settings, "EVALAI_API_SERVER", "http://localhost:8000"
+                ),
+                challenge.pk,
+            )
+        )
+
+        context = {
+            "challenge_name": challenge.title,
+            "challenge_url": challenge_url,
+            "challenge_manage_url": challenge_manage_url,
+            "challenge_id": challenge.pk,
+            "host_team_name": challenge.creator.team_name,
+            "support_email": getattr(
+                settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
+            ),
+        }
+
+        # Add challenge image if available
+        if challenge.image:
+            context["challenge_image_url"] = challenge.image.url
+
+        # Render the HTML template
+        html_content = render_to_string(
+            "challenges/subscription_plans_email.html", context
+        )
+
+        # Create the email subject
+        subject = f"EvalAI Subscription Plans - Challenge: {challenge.title}"
+
+        # Send emails to all challenge hosts
+        emails_sent = 0
+        for email in challenge_host_emails:
+            try:
+                # Send subscription plans email to challenge host
+                email_message = EmailMultiAlternatives(
+                    subject=subject,
+                    body="Please view this email in HTML format.",  # Plain text fallback
+                    from_email=getattr(
+                        settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
+                    ),
+                    to=[email],
+                )
+                email_message.attach_alternative(html_content, "text/html")
+                email_message.send()
+
+                emails_sent += 1
+                logger.info(
+                    "Subscription plans email sent to {} for challenge {}".format(
+                        email, challenge.pk
+                    )
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to send subscription plans email to {} for challenge {}: {}".format(
+                        email, challenge.pk, str(e)
+                    )
+                )
+
+        logger.info(
+            "Sent subscription plans email to {}/{} hosts for challenge {}".format(
+                emails_sent, len(challenge_host_emails), challenge.pk
+            )
+        )
+
+    except Exception as e:
+        logger.error(
+            "Error sending subscription plans email for challenge {}: {}".format(
+                challenge.pk, str(e)
+            )
         )
 
 
