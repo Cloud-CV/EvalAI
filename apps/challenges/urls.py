@@ -14,7 +14,7 @@ urlpatterns = [
         name="get_challenge_detail",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/participant_team/team_detail$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/participant_team/team_detail$",
         views.participant_team_detail_for_challenge,
         name="participant_team_detail_for_challenge",
     ),
@@ -38,7 +38,6 @@ urlpatterns = [
         views.challenge_phase_detail,
         name="get_challenge_phase_detail",
     ),
-    # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(
         r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/(?P<challenge_published>[A-Za-z]+)$",
         views.get_all_challenges,

@@ -197,6 +197,8 @@ class Challenge(TimeStampedModel):
     github_token = models.CharField(
         max_length=200, null=True, blank=True, default=""
     )
+    # Simple sync tracking
+    last_github_sync = models.DateTimeField(null=True, blank=True)
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
@@ -315,22 +317,41 @@ def update_sqs_retention_period_for_challenge(
     if not created and is_model_field_changed(instance, field_name):
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_sqs_retention_period_task.delay(serialized_obj)
-        # Update challenge
+        # Update challenge - but prevent signal recursion
         curr = getattr(instance, "{}".format(field_name))
         challenge = instance
         challenge._original_sqs_retention_period = curr
-        challenge.save()
+        # Use update() to avoid triggering signals again
+        Challenge.objects.filter(id=challenge.id).update(_original_sqs_retention_period=curr)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
 def challenge_details_sync(sender, instance, created, **kwargs):
     """Sync challenge details to GitHub when challenge is updated"""
+    # Prevent recursive calls by checking if this is a signal-triggered save
+    if hasattr(instance, '_signal_save_in_progress'):
+        logger.info(f"Skipping GitHub sync for challenge {instance.id} - signal save already in progress")
+        return
+        
+    logger.info(f"Challenge signal triggered: created={created}, id={instance.id}, github_repo={instance.github_repository}, github_token={'YES' if instance.github_token else 'NO'}")
     if not created and instance.github_token and instance.github_repository:
         try:
-            from challenges.github_utils import sync_challenge_to_github
-            sync_challenge_to_github(instance)
+            # Mark that we're doing a signal-triggered operation
+            instance._signal_save_in_progress = True
+            
+            from challenges.github_utils import github_challenge_sync
+            logger.info(f"Starting GitHub sync for challenge {instance.id}")
+            github_challenge_sync(instance.id)
+            
+            # Clear the flag
+            delattr(instance, '_signal_save_in_progress')
         except Exception as e:
             logger.error(f"Error in challenge_details_sync: {str(e)}")
+            # Clear the flag even on error
+            if hasattr(instance, '_signal_save_in_progress'):
+                delattr(instance, '_signal_save_in_progress')
+    else:
+        logger.info(f"Skipping GitHub sync: created={created}, has_token={bool(instance.github_token)}, has_repo={bool(instance.github_repository)}")
 
 
 class DatasetSplit(TimeStampedModel):
@@ -462,12 +483,16 @@ class ChallengePhase(TimeStampedModel):
 @receiver(signals.post_save, sender="challenges.ChallengePhase")
 def challenge_phase_details_sync(sender, instance, created, **kwargs):
     """Sync challenge phase details to GitHub when challenge phase is updated"""
+    logger.info(f"ChallengePhase signal triggered: created={created}, id={instance.id}, challenge_id={instance.challenge.id}")
     if not created and instance.challenge.github_token and instance.challenge.github_repository:
         try:
-            from challenges.github_utils import sync_challenge_phase_to_github
-            sync_challenge_phase_to_github(instance)
+            from challenges.github_utils import github_challenge_phase_sync
+            logger.info(f"Starting GitHub sync for challenge phase {instance.id}")
+            github_challenge_phase_sync(instance.id)
         except Exception as e:
             logger.error(f"Error in challenge_phase_details_sync: {str(e)}")
+    else:
+        logger.info(f"Skipping GitHub sync: created={created}, challenge_has_token={bool(instance.challenge.github_token)}, challenge_has_repo={bool(instance.challenge.github_repository)}")
 
 
 def post_save_connect(field_name, sender):

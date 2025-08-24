@@ -159,6 +159,7 @@ from .utils import (
     send_subscription_plans_email,
 )
 
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -211,6 +212,7 @@ def challenge_list(request, challenge_host_team_pk):
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
+            
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -333,6 +335,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
+            
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
@@ -1094,6 +1097,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if serializer.is_valid():
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
