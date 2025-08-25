@@ -1,28 +1,28 @@
 import logging
-import yaml
-from django.utils import timezone
+import threading
 from .models import Challenge, ChallengePhase
 from .github_interface import GithubInterface
 
 logger = logging.getLogger(__name__)
 
+# Thread-local storage to prevent recursive GitHub sync calls
+_github_sync_context = threading.local()
 
-# Global set to track challenges currently being synced
-_sync_in_progress = set()
 
-def github_challenge_sync(challenge_id):
+def github_challenge_sync(challenge_id, changed_field):
     """
     Simple sync from EvalAI to GitHub
     This is the core function that keeps GitHub in sync with EvalAI
     """
-    # Prevent multiple simultaneous syncs for the same challenge
-    if challenge_id in _sync_in_progress:
-        logger.info(f"Challenge {challenge_id} sync already in progress, skipping")
-        return False
-    
     try:
-        # Mark this challenge as being synced
-        _sync_in_progress.add(challenge_id)
+        # Set flag to prevent recursive calls
+        _github_sync_context.skip_github_sync = True
+        _github_sync_context.change_source = 'github'
+        
+        # Ensure changed_field is a string
+        if not isinstance(changed_field, str):
+            logger.error(f"Invalid changed_field type: {type(changed_field)}, expected string")
+            return False
         
         challenge = Challenge.objects.get(id=challenge_id)
         
@@ -37,8 +37,8 @@ def github_challenge_sync(challenge_id):
             challenge.github_token
         )
         
-        # Update challenge config in GitHub
-        success = github_interface.update_challenge_config(challenge)
+        # Update challenge config in GitHub with the specific changed field
+        success = github_interface.update_challenge_config(challenge, changed_field)
         
         if success:
             logger.info(f"Successfully synced challenge {challenge_id} to GitHub")
@@ -54,15 +54,27 @@ def github_challenge_sync(challenge_id):
         logger.error(f"Error syncing challenge {challenge_id} to GitHub: {str(e)}")
         return False
     finally:
-        # Always remove from in-progress set
-        _sync_in_progress.discard(challenge_id)
+        # Always clean up the flags
+        if hasattr(_github_sync_context, 'skip_github_sync'):
+            delattr(_github_sync_context, 'skip_github_sync')
+        if hasattr(_github_sync_context, 'change_source'):
+            delattr(_github_sync_context, 'change_source')
 
 
-def github_challenge_phase_sync(challenge_phase_id):
+def github_challenge_phase_sync(challenge_phase_id, changed_field):
     """
     Sync challenge phase from EvalAI to GitHub
     """
     try:
+        # Set flag to prevent recursive calls
+        _github_sync_context.skip_github_sync = True
+        _github_sync_context.change_source = 'github'
+        
+        # Ensure changed_field is a string
+        if not isinstance(changed_field, str):
+            logger.error(f"Invalid changed_field type: {type(changed_field)}, expected string")
+            return False
+        
         challenge_phase = ChallengePhase.objects.get(id=challenge_phase_id)
         challenge = challenge_phase.challenge
         
@@ -77,8 +89,8 @@ def github_challenge_phase_sync(challenge_phase_id):
             challenge.github_token
         )
         
-        # Update challenge phase config in GitHub
-        success = github_interface.update_challenge_phase_config(challenge_phase)
+        # Update challenge phase config in GitHub with the specific changed field
+        success = github_interface.update_challenge_phase_config(challenge_phase, changed_field)
         
         if success:
             logger.info(f"Successfully synced challenge phase {challenge_phase_id} to GitHub")
@@ -91,5 +103,11 @@ def github_challenge_phase_sync(challenge_phase_id):
         logger.error(f"Challenge phase {challenge_phase_id} not found")
         return False
     except Exception as e:
-        logger.error(f"Error syncing challenge phase {challenge_phase_id} to GitHub: {str(e)}")
+        logger.error(f"Error syncing challenge phase {challenge_phase_id} to GitHub")
         return False
+    finally:
+        # Always clean up the flags
+        if hasattr(_github_sync_context, 'skip_github_sync'):
+            delattr(_github_sync_context, 'skip_github_sync')
+        if hasattr(_github_sync_context, 'change_source'):
+            delattr(_github_sync_context, 'change_source')
