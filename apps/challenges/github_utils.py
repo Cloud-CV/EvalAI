@@ -41,7 +41,6 @@ def github_challenge_sync(challenge_id, changed_field):
         success = github_interface.update_challenge_config(challenge, changed_field)
         
         if success:
-            logger.info(f"Successfully synced challenge {challenge_id} to GitHub")
             return True
         else:
             logger.error(f"Failed to sync challenge {challenge_id} to GitHub")
@@ -93,7 +92,6 @@ def github_challenge_phase_sync(challenge_phase_id, changed_field):
         success = github_interface.update_challenge_phase_config(challenge_phase, changed_field)
         
         if success:
-            logger.info(f"Successfully synced challenge phase {challenge_phase_id} to GitHub")
             return True
         else:
             logger.error(f"Failed to sync challenge phase {challenge_phase_id} to GitHub")

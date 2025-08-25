@@ -60,7 +60,7 @@ def reset_github_sync_context():
     # also clear payload keys
     if hasattr(_github_request_local, 'payload_keys'):
         delattr(_github_request_local, 'payload_keys')
-    logger.info("GitHub sync context reset for new request")
+    # reset per-request sync context
 
 
 class GitHubSyncMiddleware(MiddlewareMixin):
@@ -438,11 +438,10 @@ def challenge_details_sync(sender, instance, created, **kwargs):
         return
         
     # By default, allow UI changes to trigger GitHub sync
-    logger.info(f"Challenge signal triggered: created={created}, id={instance.id}, github_repo={instance.github_repository}, github_token={'YES' if instance.github_token else 'NO'}")
+    # proceed only for updates with github configured
     if not created and instance.github_token and instance.github_repository:
         try:
             from challenges.github_utils import github_challenge_sync
-            logger.info(f"Starting GitHub sync for challenge {instance.id}")
             _github_request_context.mark_syncing(challenge_id=instance.id)
             
             # Get the changed field from update_fields if available
@@ -450,24 +449,24 @@ def challenge_details_sync(sender, instance, created, **kwargs):
             if kwargs.get('update_fields'):
                 # Django provides update_fields when using .save(update_fields=['field_name'])
                 changed_field = list(kwargs['update_fields'])[0] if kwargs['update_fields'] else None
-                logger.info(f"Detected changed field: {changed_field}")
+                pass
             # Infer from request payload if not provided
             if not changed_field:
                 inferred = _infer_changed_field_from_request(instance)
                 if inferred:
                     changed_field = inferred
-                    logger.info(f"Inferred changed field from request: {changed_field}")
+                    pass
             
             # Require a specific changed field to proceed (single-field commit intent)
             if not isinstance(changed_field, str) or not changed_field:
-                logger.info("No specific changed field detected; skipping GitHub sync for challenge")
+                # skip if we cannot determine a single changed field
                 return
             
             github_challenge_sync(instance.id, changed_field=changed_field)
         except Exception as e:
             logger.error(f"Error in challenge_details_sync: {str(e)}")
     else:
-        logger.info(f"Skipping GitHub sync: created={created}, has_token={bool(instance.github_token)}, has_repo={bool(instance.github_repository)}")
+        pass
 
 
 class DatasetSplit(TimeStampedModel):
@@ -615,11 +614,10 @@ def challenge_phase_details_sync(sender, instance, created, **kwargs):
         return
         
     # By default, allow UI changes to trigger GitHub sync
-    logger.info(f"ChallengePhase signal triggered: created={created}, id={instance.id}, challenge_id={instance.challenge.id}")
+    # proceed only for updates with github configured
     if not created and instance.challenge.github_token and instance.challenge.github_repository:
         try:
             from challenges.github_utils import github_challenge_phase_sync
-            logger.info(f"Starting GitHub sync for challenge phase {instance.id}")
             _github_request_context.mark_syncing(phase_id=instance.id)
             
             # Get the changed field from update_fields if available
@@ -627,24 +625,24 @@ def challenge_phase_details_sync(sender, instance, created, **kwargs):
             if kwargs.get('update_fields'):
                 # Django provides update_fields when using .save(update_fields=['field_name'])
                 changed_field = list(kwargs['update_fields'])[0] if kwargs['update_fields'] else None
-                logger.info(f"Detected changed field: {changed_field}")
+                pass
             # Infer from request payload if not provided
             if not changed_field:
                 inferred = _infer_changed_field_from_request(instance)
                 if inferred:
                     changed_field = inferred
-                    logger.info(f"Inferred changed field from request: {changed_field}")
+                    pass
             
             # Require a specific changed field to proceed (single-field commit intent)
             if not isinstance(changed_field, str) or not changed_field:
-                logger.info("No specific changed field detected; skipping GitHub sync for challenge phase")
+                # skip if we cannot determine a single changed field
                 return
             
             github_challenge_phase_sync(instance.id, changed_field=changed_field)
         except Exception as e:
             logger.error(f"Error in challenge_phase_details_sync: {str(e)}")
     else:
-        logger.info(f"Skipping GitHub sync: created={created}, challenge_has_token={bool(instance.challenge.github_token)}, challenge_has_repo={bool(instance.github_repository)}")
+        pass
 
 
 def post_save_connect(field_name, sender):

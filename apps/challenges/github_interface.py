@@ -167,7 +167,6 @@ class GithubInterface:
                 current_text = self.get_data_from_path(file_path)
                 new_text = self._read_text_from_file_field(getattr(challenge, changed_field, None))
                 if new_text is None or new_text == current_text:
-                    logger.info(f"No content change for file field '{changed_field}'")
                     return True
                 return True if self.update_data_from_path(file_path, new_text, changed_field) else False
             
@@ -180,7 +179,6 @@ class GithubInterface:
                     return False
                 # Skip if value unchanged to avoid empty commit
                 if config_data.get(changed_field) == processed_value:
-                    logger.info(f"No change detected for '{changed_field}', skipping commit")
                     return True
                 config_data[changed_field] = processed_value
             else:
@@ -248,7 +246,6 @@ class GithubInterface:
                 current_text = self.get_data_from_path(file_path)
                 new_text = self._read_text_from_file_field(getattr(challenge_phase, changed_field, None))
                 if new_text is None or new_text == current_text:
-                    logger.info(f"No content change for file field '{changed_field}' in phase")
                     return True
                 return True if self.update_data_from_path(file_path, new_text, changed_field) else False
             
@@ -261,7 +258,6 @@ class GithubInterface:
                     return False
                 # Skip if unchanged
                 if config_data['challenge_phases'][target_index].get(yaml_key) == processed_value:
-                    logger.info(f"No change detected for phase '{yaml_key}', skipping commit")
                     return True
                 config_data['challenge_phases'][target_index][yaml_key] = processed_value
             else:
