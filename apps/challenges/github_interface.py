@@ -188,7 +188,7 @@ class GithubInterface:
                 return False
             
             # Convert back to YAML
-            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True)
+            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True, sort_keys=False)
             
             # Add documentation header
             header_comment = "# If you are not sure what all these fields mean, please refer our documentation here:\n# https://evalai.readthedocs.io/en/latest/configuration.html\n"
@@ -269,7 +269,7 @@ class GithubInterface:
                 return False
             
             # Convert back to YAML
-            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True)
+            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True, sort_keys=False)
             
             # Update the file in GitHub
             success = self.update_data_from_path("challenge_config.yaml", yaml_content, changed_field)
