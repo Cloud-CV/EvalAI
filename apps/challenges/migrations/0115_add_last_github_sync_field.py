@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0114_add_github_token_field'),
+        ("challenges", "0114_add_github_token_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='last_github_sync',
+            model_name="challenge",
+            name="last_github_sync",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

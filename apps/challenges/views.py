@@ -159,7 +159,6 @@ from .utils import (
     send_subscription_plans_email,
 )
 
-
 logger = logging.getLogger(__name__)
 
 try:
@@ -212,7 +211,7 @@ def challenge_list(request, challenge_host_team_pk):
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
-            
+
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -325,17 +324,17 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         else:
             serializer = ZipChallengeSerializer(
                 challenge,
-                    data=request.data,
-                    context={
-                        "challenge_host_team": challenge_host_team,
-                        "request": request,
-                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
-                    },
-                )
+                data=request.data,
+                context={
+                    "challenge_host_team": challenge_host_team,
+                    "request": request,
+                    "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
+                },
+            )
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
-            
+
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
@@ -1097,7 +1096,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if serializer.is_valid():
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
-            
+
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
@@ -3992,7 +3991,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
-                            "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
+                            "github_token": request.data.get(
+                                "GITHUB_AUTH_TOKEN"
+                            ),
                             "worker_image_url": worker_image_url,
                         },
                     )

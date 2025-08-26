@@ -1,20 +1,21 @@
 from __future__ import unicode_literals
+
+import json
 import logging
 import threading
-import json
-from django.core.handlers.wsgi import WSGIRequest
-from django.utils.deprecation import MiddlewareMixin
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
+from django.core.handlers.wsgi import WSGIRequest
 from django.db import models
 from django.db.models import signals
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.deprecation import MiddlewareMixin
 from hosts.models import ChallengeHost
 from participants.models import ParticipantTeam
 
@@ -23,13 +24,14 @@ logger = logging.getLogger(__name__)
 # Thread-local storage to prevent recursive GitHub sync calls
 _github_sync_context = threading.local()
 
+
 # Request-level context to track GitHub sync operations
 class GitHubSyncContext:
     def __init__(self):
         self.is_syncing = False
         self.synced_challenges = set()
         self.synced_phases = set()
-    
+
     def mark_syncing(self, challenge_id=None, phase_id=None):
         """Mark that we're currently syncing"""
         self.is_syncing = True
@@ -37,7 +39,7 @@ class GitHubSyncContext:
             self.synced_challenges.add(challenge_id)
         if phase_id:
             self.synced_phases.add(phase_id)
-    
+
     def is_already_synced(self, challenge_id=None, phase_id=None):
         """Check if we've already synced this challenge/phase in this request"""
         if challenge_id and challenge_id in self.synced_challenges:
@@ -45,6 +47,7 @@ class GitHubSyncContext:
         if phase_id and phase_id in self.synced_phases:
             return True
         return False
+
 
 # Global context for the current request
 _github_request_context = GitHubSyncContext()
@@ -58,14 +61,14 @@ def reset_github_sync_context():
     global _github_request_context
     _github_request_context = GitHubSyncContext()
     # also clear payload keys
-    if hasattr(_github_request_local, 'payload_keys'):
-        delattr(_github_request_local, 'payload_keys')
+    if hasattr(_github_request_local, "payload_keys"):
+        delattr(_github_request_local, "payload_keys")
     # reset per-request sync context
 
 
 class GitHubSyncMiddleware(MiddlewareMixin):
     """Middleware to reset GitHub sync context on each request and capture payload keys"""
-    
+
     def process_request(self, request):
         """Reset context at the start of each request; capture payload keys for inference"""
         reset_github_sync_context()
@@ -73,15 +76,15 @@ class GitHubSyncMiddleware(MiddlewareMixin):
             keys = []
             if request.method in ("PATCH", "PUT", "POST"):
                 # Try JSON body first
-                if getattr(request, 'body', None):
+                if getattr(request, "body", None):
                     try:
-                        payload = json.loads(request.body.decode('utf-8'))
+                        payload = json.loads(request.body.decode("utf-8"))
                         if isinstance(payload, dict):
                             keys = list(payload.keys())
                     except Exception:
                         keys = []
                 # Fallback to POST dict
-                if not keys and hasattr(request, 'POST'):
+                if not keys and hasattr(request, "POST"):
                     try:
                         keys = list(request.POST.keys())
                     except Exception:
@@ -97,13 +100,20 @@ def _infer_changed_field_from_request(model_instance):
     Returns a field name string or None.
     """
     try:
-        keys = getattr(_github_request_local, 'payload_keys', []) or []
+        keys = getattr(_github_request_local, "payload_keys", []) or []
         if not keys:
             return None
         # Prefer keys that actually exist on the model
         for key in keys:
             # Ignore meta and non-model keys
-            if key in {"id", "pk", "challenge", "phase", "created_at", "modified_at"}:
+            if key in {
+                "id",
+                "pk",
+                "challenge",
+                "phase",
+                "created_at",
+                "modified_at",
+            }:
                 continue
             if hasattr(model_instance, key):
                 return key
@@ -423,32 +433,49 @@ def update_sqs_retention_period_for_challenge(
 def challenge_details_sync(sender, instance, created, **kwargs):
     """Sync challenge details to GitHub when challenge is updated"""
     # Skip if this is a bot-triggered save to prevent recursive calls
-    if hasattr(_github_sync_context, 'skip_github_sync') and _github_sync_context.skip_github_sync:
-        logger.info(f"Skipping GitHub sync for challenge {instance.id} - recursive call prevented")
+    if (
+        hasattr(_github_sync_context, "skip_github_sync")
+        and _github_sync_context.skip_github_sync
+    ):
+        logger.info(
+            f"Skipping GitHub sync for challenge {instance.id} - recursive call prevented"
+        )
         return
-        
+
     # Skip if this is a GitHub-sourced change (not from UI)
-    if hasattr(_github_sync_context, 'change_source') and _github_sync_context.change_source == 'github':
-        logger.info(f"Skipping GitHub sync for challenge {instance.id} - change sourced from GitHub")
+    if (
+        hasattr(_github_sync_context, "change_source")
+        and _github_sync_context.change_source == "github"
+    ):
+        logger.info(
+            f"Skipping GitHub sync for challenge {instance.id} - change sourced from GitHub"
+        )
         return
-        
+
     # Skip if we've already synced this challenge in this request
     if _github_request_context.is_already_synced(challenge_id=instance.id):
-        logger.info(f"Skipping GitHub sync for challenge {instance.id} - already synced in this request")
+        logger.info(
+            f"Skipping GitHub sync for challenge {instance.id} - already synced in this request"
+        )
         return
-        
+
     # By default, allow UI changes to trigger GitHub sync
     # proceed only for updates with github configured
     if not created and instance.github_token and instance.github_repository:
         try:
             from challenges.github_utils import github_challenge_sync
+
             _github_request_context.mark_syncing(challenge_id=instance.id)
-            
+
             # Get the changed field from update_fields if available
             changed_field = None
-            if kwargs.get('update_fields'):
+            if kwargs.get("update_fields"):
                 # Django provides update_fields when using .save(update_fields=['field_name'])
-                changed_field = list(kwargs['update_fields'])[0] if kwargs['update_fields'] else None
+                changed_field = (
+                    list(kwargs["update_fields"])[0]
+                    if kwargs["update_fields"]
+                    else None
+                )
                 pass
             # Infer from request payload if not provided
             if not changed_field:
@@ -456,12 +483,12 @@ def challenge_details_sync(sender, instance, created, **kwargs):
                 if inferred:
                     changed_field = inferred
                     pass
-            
+
             # Require a specific changed field to proceed (single-field commit intent)
             if not isinstance(changed_field, str) or not changed_field:
                 # skip if we cannot determine a single changed field
                 return
-            
+
             github_challenge_sync(instance.id, changed_field=changed_field)
         except Exception as e:
             logger.error(f"Error in challenge_details_sync: {str(e)}")
@@ -599,32 +626,53 @@ class ChallengePhase(TimeStampedModel):
 def challenge_phase_details_sync(sender, instance, created, **kwargs):
     """Sync challenge phase details to GitHub when challenge phase is updated"""
     # Skip if this is a bot-triggered save to prevent recursive calls
-    if hasattr(_github_sync_context, 'skip_github_sync') and _github_sync_context.skip_github_sync:
-        logger.info(f"Skipping GitHub sync for challenge phase {instance.id} - recursive call prevented")
+    if (
+        hasattr(_github_sync_context, "skip_github_sync")
+        and _github_sync_context.skip_github_sync
+    ):
+        logger.info(
+            f"Skipping GitHub sync for challenge phase {instance.id} - recursive call prevented"
+        )
         return
-        
+
     # Skip if this is a GitHub-sourced change (not from UI)
-    if hasattr(_github_sync_context, 'change_source') and _github_sync_context.change_source == 'github':
-        logger.info(f"Skipping GitHub sync for challenge phase {instance.id} - change sourced from GitHub")
+    if (
+        hasattr(_github_sync_context, "change_source")
+        and _github_sync_context.change_source == "github"
+    ):
+        logger.info(
+            f"Skipping GitHub sync for challenge phase {instance.id} - change sourced from GitHub"
+        )
         return
-        
+
     # Skip if we've already synced this phase in this request
     if _github_request_context.is_already_synced(phase_id=instance.id):
-        logger.info(f"Skipping GitHub sync for challenge phase {instance.id} - already synced in this request")
+        logger.info(
+            f"Skipping GitHub sync for challenge phase {instance.id} - already synced in this request"
+        )
         return
-        
+
     # By default, allow UI changes to trigger GitHub sync
     # proceed only for updates with github configured
-    if not created and instance.challenge.github_token and instance.challenge.github_repository:
+    if (
+        not created
+        and instance.challenge.github_token
+        and instance.challenge.github_repository
+    ):
         try:
             from challenges.github_utils import github_challenge_phase_sync
+
             _github_request_context.mark_syncing(phase_id=instance.id)
-            
+
             # Get the changed field from update_fields if available
             changed_field = None
-            if kwargs.get('update_fields'):
+            if kwargs.get("update_fields"):
                 # Django provides update_fields when using .save(update_fields=['field_name'])
-                changed_field = list(kwargs['update_fields'])[0] if kwargs['update_fields'] else None
+                changed_field = (
+                    list(kwargs["update_fields"])[0]
+                    if kwargs["update_fields"]
+                    else None
+                )
                 pass
             # Infer from request payload if not provided
             if not changed_field:
@@ -632,13 +680,15 @@ def challenge_phase_details_sync(sender, instance, created, **kwargs):
                 if inferred:
                     changed_field = inferred
                     pass
-            
+
             # Require a specific changed field to proceed (single-field commit intent)
             if not isinstance(changed_field, str) or not changed_field:
                 # skip if we cannot determine a single changed field
                 return
-            
-            github_challenge_phase_sync(instance.id, changed_field=changed_field)
+
+            github_challenge_phase_sync(
+                instance.id, changed_field=changed_field
+            )
         except Exception as e:
             logger.error(f"Error in challenge_phase_details_sync: {str(e)}")
     else:

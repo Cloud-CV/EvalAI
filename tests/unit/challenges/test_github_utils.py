@@ -2,15 +2,14 @@ import json
 import logging
 from unittest.mock import Mock, patch
 
-from django.test import TestCase
-from django.utils import timezone
-
-from challenges.models import Challenge, ChallengePhase
 from challenges.github_utils import (
     GithubInterface,
-    sync_challenge_to_github,
     sync_challenge_phase_to_github,
+    sync_challenge_to_github,
 )
+from challenges.models import Challenge, ChallengePhase
+from django.test import TestCase
+from django.utils import timezone
 
 
 class TestGithubInterface(TestCase):
@@ -47,7 +46,7 @@ class TestGithubInterface(TestCase):
         mock_get.return_value = mock_response
 
         result = self.github.get_file_contents("test.json")
-        
+
         self.assertEqual(result, {"content": "test content"})
         mock_get.assert_called_once()
 
@@ -59,7 +58,7 @@ class TestGithubInterface(TestCase):
         mock_get.return_value = mock_response
 
         result = self.github.get_file_contents("test.json")
-        
+
         self.assertIsNone(result)
 
     @patch("challenges.github_utils.requests.put")
@@ -70,8 +69,10 @@ class TestGithubInterface(TestCase):
         mock_response.json.return_value = {"sha": "test_sha"}
         mock_put.return_value = mock_response
 
-        result = self.github.update_text_file("test.json", "content", "message", "sha")
-        
+        result = self.github.update_text_file(
+            "test.json", "content", "message", "sha"
+        )
+
         self.assertEqual(result, {"sha": "test_sha"})
         mock_put.assert_called_once()
 
@@ -82,17 +83,24 @@ class TestGithubInterface(TestCase):
         mock_response.status_code = 400
         mock_put.return_value = mock_response
 
-        result = self.github.update_text_file("test.json", "content", "message", "sha")
-        
+        result = self.github.update_text_file(
+            "test.json", "content", "message", "sha"
+        )
+
         self.assertIsNone(result)
 
     @patch("challenges.github_utils.GithubInterface.get_file_contents")
     @patch("challenges.github_utils.GithubInterface.update_text_file")
-    def test_update_json_if_changed_existing_changed(self, mock_update_text, mock_get):
+    def test_update_json_if_changed_existing_changed(
+        self, mock_update_text, mock_get
+    ):
         """When existing JSON differs, it should commit with updated content"""
         old_data = {"a": 1}
         old_text = json.dumps(old_data, sort_keys=True)
-        mock_get.return_value = {"sha": "test_sha", "content": old_text.encode("utf-8").decode("utf-8")}  # content will be base64-decoded internally; provide as raw for simplicity
+        mock_get.return_value = {
+            "sha": "test_sha",
+            "content": old_text.encode("utf-8").decode("utf-8"),
+        }  # content will be base64-decoded internally; provide as raw for simplicity
         mock_update_text.return_value = {"sha": "new_sha"}
 
         new_data = {"a": 2}
@@ -157,14 +165,14 @@ class TestGithubSync(TestCase):
     def test_sync_challenge_to_github_no_token(self):
         """Test challenge sync when no GitHub token is configured"""
         self.challenge.github_token = ""
-        
+
         with self.assertLogs(level=logging.WARNING):
             sync_challenge_to_github(self.challenge)
 
     def test_sync_challenge_to_github_no_repo(self):
         """Test challenge sync when no GitHub repository is configured"""
         self.challenge.github_repository = ""
-        
+
         with self.assertLogs(level=logging.WARNING):
             sync_challenge_to_github(self.challenge)
 
@@ -185,14 +193,14 @@ class TestGithubSync(TestCase):
     def test_sync_challenge_phase_to_github_no_token(self):
         """Test challenge phase sync when no GitHub token is configured"""
         self.challenge.github_token = ""
-        
+
         with self.assertLogs(level=logging.WARNING):
             sync_challenge_phase_to_github(self.challenge_phase)
 
     def test_sync_challenge_phase_to_github_no_repo(self):
         """Test challenge phase sync when no GitHub repository is configured"""
         self.challenge.github_repository = ""
-        
+
         with self.assertLogs(level=logging.WARNING):
             sync_challenge_phase_to_github(self.challenge_phase)
 
@@ -208,7 +216,7 @@ class TestGithubSync(TestCase):
         call_args = mock_github.update_json_if_changed.call_args
         self.assertEqual(call_args[0][0], "challenge.json")  # path
         challenge_data = call_args[0][1]  # data
-        
+
         # Check that key fields are present
         self.assertEqual(challenge_data["title"], "Test Challenge")
         self.assertEqual(challenge_data["description"], "Test Description")
@@ -227,8 +235,8 @@ class TestGithubSync(TestCase):
         call_args = mock_github.update_json_if_changed.call_args
         self.assertEqual(call_args[0][0], "phases/test_phase.json")  # path
         phase_data = call_args[0][1]  # data
-        
+
         # Check that key fields are present
         self.assertEqual(phase_data["name"], "Test Phase")
         self.assertEqual(phase_data["description"], "Test Phase Description")
-        self.assertEqual(phase_data["codename"], "test_phase") 
+        self.assertEqual(phase_data["codename"], "test_phase")

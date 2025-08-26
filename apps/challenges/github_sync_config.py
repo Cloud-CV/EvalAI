@@ -4,7 +4,7 @@
 
 challenge_non_file_fields = [
     "title",
-    "short_description", 
+    "short_description",
     "leaderboard_description",
     "remote_evaluation",
     "is_docker_based",
@@ -56,6 +56,6 @@ challenge_phase_file_fields = [
 # Additional sections that should be synced
 challenge_additional_sections = [
     "leaderboard",
-    "dataset_splits", 
+    "dataset_splits",
     "challenge_phase_splits",
 ]

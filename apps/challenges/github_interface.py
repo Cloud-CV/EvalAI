@@ -1,6 +1,7 @@
-import requests
 import base64
 import logging
+
+import requests
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -74,16 +75,18 @@ class GithubInterface:
         Ref: https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
         """
         url = URLS.get("contents").format(self.GITHUB_REPOSITORY, path)
-        
+
         # Get existing content to get SHA (required for updates)
         existing_content = self.get_content_from_path(path)
-        
+
         # Create specific commit message
         if changed_field:
-            commit_message = f"evalai_bot: Update {path} - changed field: {changed_field}"
+            commit_message = (
+                f"evalai_bot: Update {path} - changed field: {changed_field}"
+            )
         else:
             commit_message = self.COMMIT_PREFIX.format(path)
-        
+
         if existing_content and existing_content.get("sha"):
             # File exists, update it
             data = {
@@ -99,7 +102,7 @@ class GithubInterface:
                 "branch": self.BRANCH,
                 "content": content,
             }
-        
+
         response = self.make_request(url, "PUT", data=data)
         return response
 
@@ -153,49 +156,74 @@ class GithubInterface:
                     if not isinstance(config_data, dict):
                         config_data = {}
                 except yaml.YAMLError:
-                    logger.warning("Existing challenge_config.yaml is not valid YAML, starting fresh")
+                    logger.warning(
+                        "Existing challenge_config.yaml is not valid YAML, starting fresh"
+                    )
                     config_data = {}
             else:
                 config_data = {}
-            
+
             # File fields logic (update the referenced file content)
             if changed_field in {"evaluation_script"}:
                 file_path = config_data.get(changed_field)
                 if not file_path:
-                    logger.warning(f"No path for '{changed_field}' in challenge_config.yaml; skipping file update")
+                    logger.warning(
+                        f"No path for '{changed_field}' in challenge_config.yaml; skipping file update"
+                    )
                     return False
                 current_text = self.get_data_from_path(file_path)
-                new_text = self._read_text_from_file_field(getattr(challenge, changed_field, None))
+                new_text = self._read_text_from_file_field(
+                    getattr(challenge, changed_field, None)
+                )
                 if new_text is None or new_text == current_text:
                     return True
-                return True if self.update_data_from_path(file_path, new_text, changed_field) else False
-            
+                return (
+                    True
+                    if self.update_data_from_path(
+                        file_path, new_text, changed_field
+                    )
+                    else False
+                )
+
             # Non-file field: update YAML key with processed value
             if hasattr(challenge, changed_field):
                 current_value = getattr(challenge, changed_field)
-                processed_value = self._process_field_value(changed_field, current_value)
+                processed_value = self._process_field_value(
+                    changed_field, current_value
+                )
                 if processed_value is None:
-                    logger.warning(f"Could not process changed field: {changed_field}")
+                    logger.warning(
+                        f"Could not process changed field: {changed_field}"
+                    )
                     return False
                 # Skip if value unchanged to avoid empty commit
                 if config_data.get(changed_field) == processed_value:
                     return True
                 config_data[changed_field] = processed_value
             else:
-                logger.error(f"Field {changed_field} not found on challenge model")
+                logger.error(
+                    f"Field {changed_field} not found on challenge model"
+                )
                 return False
-            
+
             # Convert back to YAML
-            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True, sort_keys=False)
-            
+            yaml_content = yaml.dump(
+                config_data,
+                default_flow_style=False,
+                allow_unicode=True,
+                sort_keys=False,
+            )
+
             # Add documentation header
             header_comment = "# If you are not sure what all these fields mean, please refer our documentation here:\n# https://evalai.readthedocs.io/en/latest/configuration.html\n"
             yaml_content = header_comment + yaml_content
-            
+
             # Update the file in GitHub
-            success = self.update_data_from_path("challenge_config.yaml", yaml_content, changed_field)
+            success = self.update_data_from_path(
+                "challenge_config.yaml", yaml_content, changed_field
+            )
             return True if success else False
-                
+
         except Exception as e:
             logger.error(f"Error updating challenge config: {str(e)}")
             return False
@@ -214,63 +242,99 @@ class GithubInterface:
                     if not isinstance(config_data, dict):
                         config_data = {}
                 except yaml.YAMLError:
-                    logger.warning("Existing challenge_config.yaml is not valid YAML, starting fresh")
+                    logger.warning(
+                        "Existing challenge_config.yaml is not valid YAML, starting fresh"
+                    )
                     config_data = {}
             else:
                 config_data = {}
-            
+
             # Initialize challenge_phases section if it doesn't exist
-            if 'challenge_phases' not in config_data:
-                config_data['challenge_phases'] = []
-            
+            if "challenge_phases" not in config_data:
+                config_data["challenge_phases"] = []
+
             # Locate the target phase by codename
             target_index = None
-            for i, phase in enumerate(config_data['challenge_phases']):
-                if phase.get('codename') == getattr(challenge_phase, 'codename', None):
+            for i, phase in enumerate(config_data["challenge_phases"]):
+                if phase.get("codename") == getattr(
+                    challenge_phase, "codename", None
+                ):
                     target_index = i
                     break
             if target_index is None:
-                logger.error(f"Phase with codename {getattr(challenge_phase, 'codename', None)} not found")
+                logger.error(
+                    f"Phase with codename {getattr(challenge_phase, 'codename', None)} not found"
+                )
                 return False
-            
+
             # File field mapping in YAML
             yaml_key_map = {"test_annotation": "test_annotation_file"}
             yaml_key = yaml_key_map.get(changed_field, changed_field)
-            
+
             # File field for phase: update referenced file content
             if changed_field in {"test_annotation"}:
-                file_path = config_data['challenge_phases'][target_index].get(yaml_key)
+                file_path = config_data["challenge_phases"][target_index].get(
+                    yaml_key
+                )
                 if not file_path:
-                    logger.warning(f"No path for '{yaml_key}' in challenge_config.yaml; skipping file update")
+                    logger.warning(
+                        f"No path for '{yaml_key}' in challenge_config.yaml; skipping file update"
+                    )
                     return False
                 current_text = self.get_data_from_path(file_path)
-                new_text = self._read_text_from_file_field(getattr(challenge_phase, changed_field, None))
+                new_text = self._read_text_from_file_field(
+                    getattr(challenge_phase, changed_field, None)
+                )
                 if new_text is None or new_text == current_text:
                     return True
-                return True if self.update_data_from_path(file_path, new_text, changed_field) else False
-            
+                return (
+                    True
+                    if self.update_data_from_path(
+                        file_path, new_text, changed_field
+                    )
+                    else False
+                )
+
             # Non-file field: update YAML entry for that phase
             if hasattr(challenge_phase, changed_field):
                 value = getattr(challenge_phase, changed_field)
-                processed_value = self._process_field_value(changed_field, value)
+                processed_value = self._process_field_value(
+                    changed_field, value
+                )
                 if processed_value is None:
-                    logger.warning(f"Could not process changed phase field: {changed_field}")
+                    logger.warning(
+                        f"Could not process changed phase field: {changed_field}"
+                    )
                     return False
                 # Skip if unchanged
-                if config_data['challenge_phases'][target_index].get(yaml_key) == processed_value:
+                if (
+                    config_data["challenge_phases"][target_index].get(yaml_key)
+                    == processed_value
+                ):
                     return True
-                config_data['challenge_phases'][target_index][yaml_key] = processed_value
+                config_data["challenge_phases"][target_index][
+                    yaml_key
+                ] = processed_value
             else:
-                logger.error(f"Field {changed_field} not found on challenge_phase model")
+                logger.error(
+                    f"Field {changed_field} not found on challenge_phase model"
+                )
                 return False
-            
+
             # Convert back to YAML
-            yaml_content = yaml.dump(config_data, default_flow_style=False, allow_unicode=True, sort_keys=False)
-            
+            yaml_content = yaml.dump(
+                config_data,
+                default_flow_style=False,
+                allow_unicode=True,
+                sort_keys=False,
+            )
+
             # Update the file in GitHub
-            success = self.update_data_from_path("challenge_config.yaml", yaml_content, changed_field)
+            success = self.update_data_from_path(
+                "challenge_config.yaml", yaml_content, changed_field
+            )
             return True if success else False
-                
+
         except Exception as e:
             logger.error(f"Error updating challenge phase config: {str(e)}")
             return False
@@ -282,41 +346,52 @@ class GithubInterface:
         """
         if value is None:
             return None
-        
+
         try:
-            if field in ['start_date', 'end_date'] and hasattr(value, 'strftime'):
-                return value.strftime('%Y-%m-%d %H:%M:%S')
-            elif field in ['description', 'evaluation_details', 'terms_and_conditions', 'submission_guidelines'] and value:
+            if field in ["start_date", "end_date"] and hasattr(
+                value, "strftime"
+            ):
+                return value.strftime("%Y-%m-%d %H:%M:%S")
+            elif (
+                field
+                in [
+                    "description",
+                    "evaluation_details",
+                    "terms_and_conditions",
+                    "submission_guidelines",
+                ]
+                and value
+            ):
                 # Extract the actual content from HTML fields
-                if hasattr(value, 'read'):
+                if hasattr(value, "read"):
                     try:
                         value.seek(0)
-                        content = value.read().decode('utf-8')
+                        content = value.read().decode("utf-8")
                         return content
                     except Exception:
                         return str(value)
                 else:
                     return str(value)
-            elif field in ['image', 'evaluation_script'] and value:
+            elif field in ["image", "evaluation_script"] and value:
                 # For YAML, store filename/path if available
-                if hasattr(value, 'name'):
+                if hasattr(value, "name"):
                     return value.name
                 else:
                     return str(value)
             elif isinstance(value, (list, tuple)):
                 clean_list = []
                 for item in value:
-                    if hasattr(item, 'pk'):
+                    if hasattr(item, "pk"):
                         clean_list.append(item.pk)
-                    elif hasattr(item, 'id'):
+                    elif hasattr(item, "id"):
                         clean_list.append(item.id)
                     else:
                         clean_list.append(item)
                 return clean_list
             else:
-                if hasattr(value, 'pk'):
+                if hasattr(value, "pk"):
                     return value.pk
-                elif hasattr(value, 'id'):
+                elif hasattr(value, "id"):
                     return value.id
                 else:
                     return value

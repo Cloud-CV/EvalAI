@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0113_add_github_branch_field_and_unique_constraint'),
+        ("challenges", "0113_add_github_branch_field_and_unique_constraint"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='github_token',
-            field=models.CharField(blank=True, default='', max_length=200, null=True),
+            model_name="challenge",
+            name="github_token",
+            field=models.CharField(
+                blank=True, default="", max_length=200, null=True
+            ),
         ),
     ]
