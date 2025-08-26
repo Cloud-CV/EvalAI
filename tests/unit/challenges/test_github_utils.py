@@ -8,9 +8,9 @@ from challenges.github_utils import (
     github_challenge_sync,
 )
 from challenges.models import Challenge, ChallengePhase
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
-from django.contrib.auth.models import User
 from hosts.models import ChallengeHostTeam
 
 
@@ -98,12 +98,16 @@ class TestGithubInterface(TestCase):
 
         self.assertIsNone(result)
 
-    @patch("challenges.github_interface.GithubInterface.update_content_from_path")
+    @patch(
+        "challenges.github_interface.GithubInterface.update_content_from_path"
+    )
     def test_update_data_from_path_encodes_and_calls_update(self, mock_update):
         """update_data_from_path should base64-encode and call update_content_from_path"""
         mock_update.return_value = {"sha": "new_sha"}
         text = "hello"
-        result = self.github.update_data_from_path("test.json", text, changed_field="title")
+        result = self.github.update_data_from_path(
+            "test.json", text, changed_field="title"
+        )
 
         self.assertEqual(result, {"sha": "new_sha"})
         mock_update.assert_called_once()
@@ -114,7 +118,9 @@ class TestGithubSync(TestCase):
 
     def setUp(self):
         # Create a test challenge with GitHub configuration
-        self.user = User.objects.create(username="owner", email="o@example.com")
+        self.user = User.objects.create(
+            username="owner", email="o@example.com"
+        )
         self.host_team = ChallengeHostTeam.objects.create(
             team_name="team", created_by=self.user
         )
@@ -146,7 +152,9 @@ class TestGithubSync(TestCase):
 
         github_challenge_sync(self.challenge.id, changed_field="title")
 
-        mock_github_class.assert_called_once_with("test/repo", "master", "test_token")
+        mock_github_class.assert_called_once_with(
+            "test/repo", "master", "test_token"
+        )
         mock_github.update_challenge_config.assert_called_once()
 
     def test_sync_challenge_to_github_no_token(self):
@@ -168,22 +176,30 @@ class TestGithubSync(TestCase):
         mock_github_class.return_value = mock_github
         mock_github.update_challenge_phase_config.return_value = True
 
-        github_challenge_phase_sync(self.challenge_phase.id, changed_field="name")
+        github_challenge_phase_sync(
+            self.challenge_phase.id, changed_field="name"
+        )
 
-        mock_github_class.assert_called_once_with("test/repo", "master", "test_token")
+        mock_github_class.assert_called_once_with(
+            "test/repo", "master", "test_token"
+        )
         mock_github.update_challenge_phase_config.assert_called_once()
 
     def test_sync_challenge_phase_to_github_no_token(self):
         """Test challenge phase sync when no GitHub token is configured"""
         self.challenge.github_token = ""
         with self.assertLogs(level=logging.WARNING):
-            github_challenge_phase_sync(self.challenge_phase.id, changed_field="name")
+            github_challenge_phase_sync(
+                self.challenge_phase.id, changed_field="name"
+            )
 
     def test_sync_challenge_phase_to_github_no_repo(self):
         """Test challenge phase sync when no GitHub repository is configured"""
         self.challenge.github_repository = ""
         with self.assertLogs(level=logging.WARNING):
-            github_challenge_phase_sync(self.challenge_phase.id, changed_field="name")
+            github_challenge_phase_sync(
+                self.challenge_phase.id, changed_field="name"
+            )
 
     @patch("challenges.github_utils.GithubInterface")
     def test_sync_challenge_calls_update(self, mock_github_class):
@@ -200,5 +216,7 @@ class TestGithubSync(TestCase):
         mock_github = Mock()
         mock_github_class.return_value = mock_github
 
-        github_challenge_phase_sync(self.challenge_phase.id, changed_field="name")
+        github_challenge_phase_sync(
+            self.challenge_phase.id, changed_field="name"
+        )
         mock_github.update_challenge_phase_config.assert_called_once()

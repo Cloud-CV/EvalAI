@@ -1,26 +1,25 @@
 from unittest.mock import patch
 
-from django.test import TestCase
-from django.utils import timezone
-from django.contrib.auth.models import User
-
-from hosts.models import ChallengeHostTeam
-
+from challenges import models as challenge_models
 from challenges.models import (
     Challenge,
     ChallengePhase,
     GitHubSyncMiddleware,
     reset_github_sync_context,
 )
-
-from challenges import models as challenge_models
+from django.contrib.auth.models import User
+from django.test import TestCase
+from django.utils import timezone
+from hosts.models import ChallengeHostTeam
 
 
 class TestGithubSyncSignals(TestCase):
 
     def setUp(self):
         # minimal creator for Challenge
-        self.user = User.objects.create(username="owner", email="o@example.com")
+        self.user = User.objects.create(
+            username="owner", email="o@example.com"
+        )
         self.host_team = ChallengeHostTeam.objects.create(
             team_name="team", created_by=self.user
         )
@@ -56,7 +55,9 @@ class TestGithubSyncSignals(TestCase):
         self.assertEqual(kwargs.get("changed_field"), "title")
 
     @patch("challenges.github_utils.github_challenge_phase_sync")
-    def test_phase_post_save_calls_sync_with_update_fields(self, mock_phase_sync):
+    def test_phase_post_save_calls_sync_with_update_fields(
+        self, mock_phase_sync
+    ):
         self.phase.name = "Updated Phase"
         self.phase.save(update_fields=["name"])
 
@@ -73,7 +74,7 @@ class TestGithubSyncSignals(TestCase):
         # Simulate a PATCH request payload captured by middleware
         class _Req:
             method = "PATCH"
-            body = b"{\n  \"title\": \"MW Title\"\n}"
+            body = b'{\n  "title": "MW Title"\n}'
 
         mw = GitHubSyncMiddleware()
         mw.process_request(_Req())
@@ -106,7 +107,9 @@ class TestGithubSyncSignals(TestCase):
     @patch("challenges.github_utils.github_challenge_sync")
     def test_no_sync_without_github_config(self, mock_sync, _mock_approval_cb):
         self.challenge.github_token = ""
-        self.challenge.save(update_fields=["github_token"])  # change without config
+        self.challenge.save(
+            update_fields=["github_token"]
+        )  # change without config
         mock_sync.assert_not_called()
 
     @patch("challenges.aws_utils.challenge_approval_callback")
@@ -115,7 +118,7 @@ class TestGithubSyncSignals(TestCase):
         # Start request, middleware captures keys
         class _Req:
             method = "PATCH"
-            body = b"{\n  \"title\": \"One\"\n}"
+            body = b'{\n  "title": "One"\n}'
 
         mw = GitHubSyncMiddleware()
         mw.process_request(_Req())
@@ -131,7 +134,9 @@ class TestGithubSyncSignals(TestCase):
 
     @patch("challenges.aws_utils.challenge_approval_callback")
     @patch("challenges.github_utils.github_challenge_sync")
-    def test_skip_when_change_source_is_github(self, mock_sync, _mock_approval_cb):
+    def test_skip_when_change_source_is_github(
+        self, mock_sync, _mock_approval_cb
+    ):
         # Simulate a GitHub-sourced change via models' sync context
         challenge_models._github_sync_context.change_source = "github"
         try:
@@ -144,7 +149,9 @@ class TestGithubSyncSignals(TestCase):
 
     @patch("challenges.aws_utils.challenge_approval_callback")
     @patch("challenges.github_utils.github_challenge_sync")
-    def test_no_changed_field_inference_means_no_sync(self, mock_sync, _mock_approval_cb):
+    def test_no_changed_field_inference_means_no_sync(
+        self, mock_sync, _mock_approval_cb
+    ):
         # Ensure no payload keys available to infer
         reset_github_sync_context()
         self.challenge.title = "Still Updated"
@@ -153,12 +160,12 @@ class TestGithubSyncSignals(TestCase):
 
     @patch("challenges.aws_utils.challenge_approval_callback")
     @patch("challenges.github_utils.github_challenge_sync")
-    def test_multiple_update_fields_prefers_first(self, mock_sync, _mock_approval_cb):
+    def test_multiple_update_fields_prefers_first(
+        self, mock_sync, _mock_approval_cb
+    ):
         self.challenge.title = "A"
         self.challenge.description = "B"
         self.challenge.save(update_fields=["title", "description"])
         _args, kwargs = mock_sync.call_args
         # Order of update_fields is non-deterministic (Django converts to set), accept either
         assert kwargs.get("changed_field") in {"title", "description"}
-
-
