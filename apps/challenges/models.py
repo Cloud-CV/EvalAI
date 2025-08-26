@@ -302,8 +302,6 @@ class Challenge(TimeStampedModel):
     github_token = models.CharField(
         max_length=200, null=True, blank=True, default=""
     )
-    # Simple sync tracking
-    last_github_sync = models.DateTimeField(null=True, blank=True)
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
