@@ -3122,6 +3122,130 @@
               }
         };
 
+        // Retention consent logic for challenge hosts
+        vm.retentionConsentChecked = false;
+        vm.retentionConsentInfo = null;
+        vm.retentionConsentLoading = true;
+        vm.retentionConsentError = null;
+        vm.retentionConsentSaving = false;
+
+        // Fetch retention consent status
+        vm.fetchRetentionConsentStatus = function() {
+            vm.retentionConsentLoading = true;
+            vm.retentionConsentError = null;
+            var parameters = {
+                url: 'challenges/' + vm.challengeId + '/retention-consent-status/',
+                method: 'GET',
+                token: userKey,
+                data: {},
+                callback: {
+                    onSuccess: function(response) {
+                        var data = response.data;
+                        vm.retentionConsentChecked = !!data.has_consent;
+                        vm.retentionConsentInfo = {
+                            consent_by: data.consent_by,
+                            consent_date: data.consent_date,
+                            notes: data.retention_notes
+                        };
+                        vm.retentionConsentLoading = false;
+                    },
+                    onError: function(response) {
+                        vm.retentionConsentError = response.data && response.data.error ? response.data.error : 'Failed to load retention consent status.';
+                        vm.retentionConsentLoading = false;
+                    }
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        // Call on init if host
+        $scope.$watch(function() { return vm.isChallengeHost }, function(newVal) {
+            if (newVal) {
+                vm.fetchRetentionConsentStatus();
+            }
+        });
+        
+        // Also call on initial load if already a host
+        if (vm.isChallengeHost) {
+            vm.fetchRetentionConsentStatus();
+        }
+
+        // Toggle retention consent with template dialog
+        vm.toggleRetentionConsent = function(ev) {
+            // Prevent action if loading
+            if (vm.retentionConsentLoading) {
+                return;
+            }
+            
+            // Determine consent state and show appropriate dialog
+            var consentState = vm.retentionConsentChecked ? 'withdraw' : 'provide';
+            var dialogTitle, dialogContent, okText;
+            
+            if (consentState === 'provide') {
+                dialogTitle = 'Provide Retention Policy Consent';
+                dialogContent = 'By providing consent, you allow EvalAI admins to set a 30-day retention policy for this challenge. This means submission files, logs, and evaluation outputs may be deleted after 30 days to reduce storage costs. Without consent, data is retained longer for safety.';
+                okText = 'Yes, I consent';
+            } else {
+                dialogTitle = 'Withdraw Retention Policy Consent';
+                dialogContent = 'By withdrawing consent, EvalAI will retain your challenge data longer for safety and compliance. You may provide consent again at any time.';
+                okText = 'Yes, withdraw consent';
+            }
+            
+            var confirm = $mdDialog.confirm()
+                          .title(dialogTitle)
+                          .textContent(dialogContent)
+                          .ariaLabel('Retention Policy Consent')
+                          .targetEvent(ev)
+                          .ok(okText)
+                          .cancel('Cancel');
+            
+            $mdDialog.show(confirm).then(function () {
+                // User clicked "Yes" - toggle consent status
+                vm.retentionConsentChecked = !vm.retentionConsentChecked;
+                actuallyToggleRetentionConsent();
+            }, function() {
+                // User clicked "Cancel" - do nothing
+            });
+        };
+
+        function actuallyToggleRetentionConsent() {
+            vm.retentionConsentSaving = true;
+            vm.retentionConsentError = null;
+            
+            // Determine success message
+            var consentState = vm.retentionConsentChecked ? 'provided' : 'withdrawn';
+            
+            var parameters = {
+                url: 'challenges/' + vm.challengeId + '/update-retention-consent/',
+                method: 'POST',
+                token: userKey,
+                data: { consent: vm.retentionConsentChecked },
+                callback: {
+                    onSuccess: function(response) {
+                        if (vm.retentionConsentChecked) {
+                            vm.retentionConsentInfo = {
+                                consent_by: response.data.consent_by,
+                                consent_date: response.data.consent_date,
+                                notes: response.data.notes
+                            };
+                        } else {
+                            vm.retentionConsentInfo = null;
+                        }
+                        vm.retentionConsentSaving = false;
+                        $rootScope.notify('success', 'Retention policy consent ' + consentState + ' successfully');
+                    },
+                    onError: function(response) {
+                        vm.retentionConsentError = response.data && response.data.error ? response.data.error : 'Failed to update retention consent.';
+                        // Revert checkbox
+                        vm.retentionConsentChecked = !vm.retentionConsentChecked;
+                        vm.retentionConsentSaving = false;
+                        $rootScope.notify('error', vm.retentionConsentError);
+                    }
+                }
+            };
+            utilities.sendRequest(parameters);
+        }
+
     }
 
 })();

@@ -15,6 +15,8 @@ import os
 import sys
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, "apps")
@@ -212,6 +214,32 @@ AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
+# Celery Beat Schedule for Periodic Tasks
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-expired-submission-artifacts": {
+        "task": "challenges.aws_utils.cleanup_expired_submission_artifacts",
+        "schedule": crontab(
+            hour=2, minute=0, day_of_month=1
+        ),  # Monthly on the 1st at 2 AM UTC
+    },
+    "weekly-retention-notifications-and-consent-log": {
+        "task": "challenges.aws_utils.weekly_retention_notifications_and_consent_log",
+        "schedule": crontab(
+            hour=10, minute=0, day_of_week=1
+        ),  # Weekly on Mondays at 10 AM UTC
+    },
+    "update-submission-retention-dates": {
+        "task": "challenges.aws_utils.update_submission_retention_dates",
+        "schedule": crontab(
+            hour=1, minute=0, day_of_week=0
+        ),  # Weekly on Sundays at 1 AM UTC
+    },
+}
+
+# Celery timezone configuration
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
+
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -273,6 +301,16 @@ LOGGING = {
         "django.db.backends": {
             "handlers": ["mail_admins", "console"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "challenges.aws_utils": {
+            "handlers": ["console", "logfile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery": {
+            "handlers": ["console", "logfile"],
+            "level": "INFO",
             "propagate": False,
         },
     },

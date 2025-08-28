@@ -2714,4 +2714,38 @@ describe('Unit tests for challenge controller', function () {
             expect($mdDialogOpened).toBe(true);
         });
     });
+
+    describe('Retention Consent Toggle', function () {
+        var $mdDialog, $rootScope, $controller, $scope, vm;
+        beforeEach(inject(function (_$mdDialog_, _$rootScope_, _$controller_) {
+            $mdDialog = _$mdDialog_;
+            $rootScope = _$rootScope_;
+            $scope = $rootScope.$new();
+            vm = _$controller_('ChallengeCtrl', { $scope: $scope });
+        }));
+
+        it('should open a dialog when retention consent toggle is clicked', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+            // Set required properties to ensure the function doesn't return early
+            vm.retentionConsentChecked = true;
+            vm.retentionConsentLoading = false; // This is the key - must be false to proceed
+            vm.challengeId = 123; // Set a challenge ID
+            vm.toggleRetentionConsent({});
+            expect($mdDialog.show).toHaveBeenCalled();
+        });
+
+        it('should not open a dialog when retention consent is loading', function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+            vm.retentionConsentChecked = true;
+            vm.retentionConsentLoading = true; // This should prevent the dialog from showing
+            vm.toggleRetentionConsent({});
+            expect($mdDialog.show).not.toHaveBeenCalled();
+        });
+    });
 });

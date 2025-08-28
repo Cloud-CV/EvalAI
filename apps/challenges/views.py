@@ -5101,3 +5101,284 @@ def modify_leaderboard_data(request):
         # Serialize and return the updated data
         response_data = {"message": "Leaderboard data updated successfully!"}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def provide_retention_consent(request, challenge_pk):
+    """
+    API endpoint for challenge hosts to provide retention policy consent.
+
+    Query Parameters:
+     - ``notes``: Optional notes about the consent (optional)
+
+    Returns:
+        dict: Success/error response with consent details
+    """
+    from .aws_utils import record_host_retention_consent
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # Check if user is a host of this challenge
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "You are not authorized to provide retention consent for this challenge"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    # Check if consent already exists
+    if challenge.retention_policy_consent:
+        response_data = {
+            "message": "Retention policy consent already provided",
+            "consent_date": (
+                challenge.retention_policy_consent_date.isoformat()
+                if challenge.retention_policy_consent_date
+                else None
+            ),
+            "consent_by": (
+                challenge.retention_policy_consent_by.username
+                if challenge.retention_policy_consent_by
+                else None
+            ),
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    # Get optional notes
+    notes = request.data.get("notes", "")
+
+    # Record the consent
+    result = record_host_retention_consent(challenge_pk, request.user, notes)
+
+    if result.get("success"):
+        response_data = {
+            "message": result["message"],
+            "consent_date": result["consent_date"],
+            "consent_by": result["consent_by"],
+            "challenge_id": challenge_pk,
+            "challenge_title": challenge.title,
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        response_data = {
+            "error": result.get("error", "Failed to record consent")
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_retention_consent_status(request, challenge_pk):
+    """
+    API endpoint to get retention policy consent status for a challenge.
+
+    Returns:
+        dict: Consent status and details
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+
+    response_data = {
+        "challenge_id": challenge_pk,
+        "challenge_title": challenge.title,
+        "has_consent": challenge.retention_policy_consent,
+        "is_host": is_host,
+        "can_provide_consent": is_host
+        and not challenge.retention_policy_consent,
+    }
+
+    if challenge.retention_policy_consent:
+        response_data.update(
+            {
+                "consent_date": (
+                    challenge.retention_policy_consent_date.isoformat()
+                    if challenge.retention_policy_consent_date
+                    else None
+                ),
+                "consent_by": (
+                    challenge.retention_policy_consent_by.username
+                    if challenge.retention_policy_consent_by
+                    else None
+                ),
+                "retention_notes": challenge.retention_policy_notes,
+            }
+        )
+
+    # Add custom retention policy information
+    if challenge.retention_policy_consent:
+        response_data.update(
+            {
+                "custom_policies": {
+                    "log_retention_days_override": challenge.log_retention_days_override,
+                }
+            }
+        )
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_challenge_retention_info(request, challenge_pk):
+    """
+    API endpoint to get comprehensive retention policy information for challenge management.
+    This is used in the challenge management dashboard.
+
+    Returns:
+        dict: Complete retention policy information and consent status
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    is_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+
+    # Get challenge phases for retention calculation
+    phases = challenge.challengephase_set.all()
+    latest_end_date = None
+    if phases.exists():
+        latest_end_date = max(
+            phase.end_date for phase in phases if phase.end_date
+        )
+
+    # Calculate default retention periods
+    from .aws_utils import (
+        calculate_retention_period_days,
+        map_retention_days_to_aws_values,
+    )
+
+    default_retention_days = None
+    if latest_end_date:
+        default_retention_days = calculate_retention_period_days(
+            latest_end_date, challenge
+        )
+        default_retention_days = map_retention_days_to_aws_values(
+            default_retention_days
+        )
+
+    response_data = {
+        "challenge_id": challenge_pk,
+        "challenge_title": challenge.title,
+        "retention_policy": {
+            "has_consent": challenge.retention_policy_consent,
+            "consent_date": (
+                challenge.retention_policy_consent_date.isoformat()
+                if challenge.retention_policy_consent_date
+                else None
+            ),
+            "consent_by": (
+                challenge.retention_policy_consent_by.username
+                if challenge.retention_policy_consent_by
+                else None
+            ),
+            "notes": challenge.retention_policy_notes,
+        },
+        "user_permissions": {
+            "is_host": is_host,
+            "can_provide_consent": is_host
+            and not challenge.retention_policy_consent,
+            "can_manage_retention": is_host
+            and challenge.retention_policy_consent,
+        },
+        "current_policies": {
+            "log_retention_days_override": challenge.log_retention_days_override,
+        },
+        "calculated_retention": {
+            "default_retention_days": default_retention_days,
+            "latest_phase_end_date": (
+                latest_end_date.isoformat() if latest_end_date else None
+            ),
+        },
+        "policy_descriptions": {
+            "log_retention": "CloudWatch log retention period in days for the entire challenge",
+        },
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_retention_consent(request, challenge_pk):
+    """
+    API endpoint to update retention policy consent status.
+    This is called from the challenge management interface with a simple checkbox.
+
+    Query Parameters:
+     - ``consent``: Boolean indicating consent status (required)
+     - ``notes``: Optional notes about the consent
+
+    Returns:
+        dict: Success/error response
+    """
+    from .aws_utils import record_host_retention_consent
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # Check if user is a host of this challenge
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "You are not authorized to update retention consent for this challenge"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    consent = request.data.get("consent")
+    notes = request.data.get("notes", "")
+
+    if consent is None:
+        response_data = {"error": "Consent status is required"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if consent:
+        # Record consent
+        result = record_host_retention_consent(
+            challenge_pk, request.user, notes
+        )
+        if result.get("success"):
+            response_data = {
+                "message": "Retention policy consent recorded successfully",
+                "consent_date": result["consent_date"],
+                "consent_by": result["consent_by"],
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data = {
+                "error": result.get("error", "Failed to record consent")
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        # Remove consent (if needed for compliance)
+        challenge.retention_policy_consent = False
+        challenge.retention_policy_consent_date = None
+        challenge.retention_policy_consent_by = None
+        challenge.retention_policy_notes = notes if notes else None
+        challenge.save()
+
+        response_data = {
+            "message": "Retention policy consent removed",
+            "consent_date": None,
+            "consent_by": None,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)

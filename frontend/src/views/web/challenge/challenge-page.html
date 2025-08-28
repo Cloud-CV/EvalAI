@@ -114,6 +114,30 @@
                     </div>
                     <div class="toggle-participation-text fs-16 w-300">Toggle Participation</div>
                 </div>
+                
+                <!-- Retention Policy Consent Toggle -->
+                <div class="pd-20" ng-if="challenge.isChallengeHost">
+                    <div ng-click="challenge.toggleRetentionConsent($event)"
+                        class="btn-switch display-inline-block"
+                        ng-class="{'btn-switch--on':challenge.retentionConsentChecked}"
+                        ng-disabled="challenge.retentionConsentLoading">
+                        <div class="btn-switch-circle"
+                            ng-class="{'btn-switch-circle--on': challenge.retentionConsentChecked}">
+                        </div>
+                    </div>
+                    <div class="toggle-participation-text fs-16 w-300">
+                        <span ng-if="challenge.retentionConsentLoading">Loading...</span>
+                        <span ng-if="!challenge.retentionConsentLoading">
+                            <span ng-if="challenge.retentionConsentChecked">Retention Consent: Active</span>
+                            <span ng-if="!challenge.retentionConsentChecked">Retention Consent: Not Provided</span>
+                        </span>
+                    </div>
+                    <div class="retention-consent-status fs-14 w-300" ng-if="challenge.retentionConsentChecked && challenge.retentionConsentInfo && !challenge.retentionConsentLoading">
+                        <span class="green-text">Consent provided by {{challenge.retentionConsentInfo.consent_by}} on {{challenge.retentionConsentInfo.consent_date | date:'shortDate'}}</span>
+                    </div>
+                </div>
+                
+
 
             </div>
         </div>

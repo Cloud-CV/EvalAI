@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import pytest
 import rest_framework
+from challenges.aws_utils import calculate_submission_retention_date
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -217,3 +218,86 @@ class TestSubmissionModel:
                 is_public=True,
                 submitted_at=timezone.now().replace(day=3),
             )
+
+
+class SubmissionRetentionModelTests(TestCase):
+
+    def setUp(self):
+        """Set up test data"""
+        from django.contrib.auth.models import User
+        from hosts.models import ChallengeHostTeam
+
+        self.user = User.objects.create(
+            username="hostuser", email="host@test.com", password="password"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            start_date=timezone.now() - timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30),
+            creator=self.challenge_host_team,
+            retention_policy_consent=True,  # Ensure consent is given
+        )
+
+        self.challenge_phase = ChallengePhase.objects.create(
+            challenge=self.challenge,
+            name="Test Phase",
+            start_date=timezone.now() - timedelta(days=20),
+            end_date=timezone.now() + timedelta(days=10),
+            is_public=False,
+        )
+
+    def test_retention_date_calculation_basic(self):
+        """Test basic retention date calculation"""
+        retention_date = calculate_submission_retention_date(
+            self.challenge_phase
+        )
+        expected_date = self.challenge_phase.end_date + timedelta(days=30)
+        self.assertEqual(retention_date, expected_date)
+
+    def test_retention_date_public_phase(self):
+        """Test that public phases don't trigger retention"""
+        self.challenge_phase.is_public = True
+        self.challenge_phase.save()
+
+        retention_date = calculate_submission_retention_date(
+            self.challenge_phase
+        )
+        self.assertIsNone(retention_date)
+
+    def test_retention_date_no_end_date(self):
+        """Test phases without end dates"""
+        self.challenge_phase.end_date = None
+        self.challenge_phase.save()
+
+        retention_date = calculate_submission_retention_date(
+            self.challenge_phase
+        )
+        self.assertIsNone(retention_date)
+
+    def test_submission_retention_fields_default(self):
+        """Test default values for retention fields"""
+        from django.contrib.auth.models import User
+        from participants.models import ParticipantTeam
+
+        user = User.objects.create(
+            username="participantuser",
+            email="participant@test.com",
+            password="password",
+        )
+        participant_team = ParticipantTeam.objects.create(
+            team_name="Test Participant Team", created_by=user
+        )
+        submission = Submission.objects.create(
+            challenge_phase=self.challenge_phase,
+            participant_team=participant_team,
+            created_by=user,
+            status="submitted",
+            is_public=True,
+        )
+
+        self.assertIsNone(submission.retention_eligible_date)
+        self.assertFalse(submission.is_artifact_deleted)
+        self.assertIsNone(submission.artifact_deletion_date)
