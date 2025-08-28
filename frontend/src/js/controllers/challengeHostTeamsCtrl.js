@@ -371,7 +371,6 @@
 
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
                 .textContent('Enter the email address of the person')
@@ -409,6 +408,50 @@
             $state.go('web.challenge-create');
         };
 
+        vm.openInvitationDialog = function(ev,hostTeamId) {
+            ev.stopPropagation();
+            
+            // Create a prompt dialog to receive the email address
+            var prompt = $mdDialog.prompt()
+                .title('Generate Invitation Link')
+                .textContent('Enter the email address to generate an invite URL')
+                .placeholder('Email address')
+                .ariaLabel('Invite Email')
+                .targetEvent(ev)
+                .ok('Generate')
+                .cancel('Cancel');
+        
+            $mdDialog.show(prompt).then(function(result) {
+                // Validate the received email address
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!result || !emailRegex.test(result)) {
+                    $rootScope.notify("error", "Please enter a valid email address");
+                    return;
+                }
+                
+                var parameters = {
+                    url: 'hosts/team/invite/', 
+                    method: 'POST',
+                    data: {
+                        "email": result,
+                        "team_id":hostTeamId
+                    },
+                    token: userKey,
+                    callback: {
+                        onSuccess: function() {
+                            $rootScope.notify("success", "Invitation link sent to " + result);
+                        },
+                        onError: function(response) {
+                            var error = response.data.error || "An error occurred while sending the invitation.";
+                            $rootScope.notify("error", error);
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters);
+            });
+        };
+        
+        
     }
 
 })();

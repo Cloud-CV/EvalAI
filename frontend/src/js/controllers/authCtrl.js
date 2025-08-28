@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope','$window'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, $state, $rootScope, $window)  {
         var vm = this;
         // condition for showing password strength
         vm.showPasswordStrength = false;
@@ -85,6 +85,26 @@
             $rootScope.canShowConfirmPassword = false;
         };
 
+        // Check for pending invitations and handle redirect
+        vm.checkPendingInvitation = function() {
+            var pendingInvitationKey = $window.sessionStorage.getItem('pendingInvitationKey');
+            var redirectAfterLogin = $window.sessionStorage.getItem('redirectAfterLogin');
+            
+            if (pendingInvitationKey && redirectAfterLogin === 'web.challenge-host-team-invitation-accept') {
+                // Clear redirect flag but keep the invitation key for the accept page
+                $window.sessionStorage.removeItem('redirectAfterLogin');
+                $window.sessionStorage.setItem('justCompletedLogin', 'true');
+                
+                // Redirect to invitation page with the key parameter
+                $state.go(redirectAfterLogin, {
+                    invitation_key: pendingInvitationKey,
+                    justLoggedIn: true
+                });
+                return true;
+            }
+            return false;
+        };
+
         // Function to signup
         vm.userSignUp = function(signupFormValid) {
             if (signupFormValid) {
@@ -118,7 +138,10 @@
                                 onSuccess: function(response) {
                                     if (response.status == 200) {
                                         utilities.storeData('userKey', response.data.token);
-                                        if ($rootScope.previousState) {
+                                        // Check for pending invitations first
+                                        if (vm.checkPendingInvitation()) {
+                                            vm.stopLoader();
+                                        } else if ($rootScope.previousState) {
                                             $state.go($rootScope.previousState);
                                             vm.stopLoader();
                                         } else {
@@ -169,14 +192,11 @@
                                     vm.FormError = response.data.password1[0];
                                 } else if (isPassword2_valid) {
                                     vm.FormError = response.data.password2[0];
-
                                 }
-
                             } catch (error) {
                                 $rootScope.notify("error", error);
                             }
                         }
-
                         vm.stopLoader();
                     }
                 };
@@ -222,7 +242,6 @@
         vm.userLogin = function(loginFormValid) {
             if (loginFormValid) {
                 vm.startLoader("Taking you to EvalAI!");
-                // call utility service
                 var parameters = {};
                 parameters.url = 'auth/login/';
                 parameters.method = 'POST';
@@ -235,7 +254,11 @@
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
                             vm.setRefreshJWT();
-                            if ($rootScope.previousState) {
+                            
+                            // Check for pending invitations first
+                            if (vm.checkPendingInvitation()) {
+                                vm.stopLoader();
+                            } else if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();
                             } else {
@@ -266,7 +289,6 @@
                 vm.stopLoader();
             }
         };
-
 
         // function to check password strength
         vm.checkStrength = function(password) {

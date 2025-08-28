@@ -162,6 +162,20 @@
             authenticate: true
         };
 
+        var accept_host_invitation = {
+            name: 'web.challenge-host-team-invitation-accept',
+            parent: "web",
+            url: '/team-invitation/:invitation_key',
+            templateUrl: baseUrl + '/web/host-team-invite-accept.html',
+            title: 'Accept Host Team Invitation',
+            controller: 'challengeHostTeamInvitationAcceptCtrl',
+            controllerAs: 'inviteAccept',
+            authenticate: false
+        };
+                
+
+        
+
         var challenge_create = {
             name: "web.challenge-create",
             parent: "web",
@@ -454,6 +468,7 @@
             authenticate: true
         };
 
+
         var permission_denied = {
             name: "web.permission-denied",
             parent: "web",
@@ -597,6 +612,8 @@
             controllerAs: "submission_files",
         };
 
+
+
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(privacy_policy);
@@ -653,6 +670,7 @@
         $stateProvider.state(featured_challenge_phase_leaderboard);
 
         $stateProvider.state(host_challenge);
+        $stateProvider.state(accept_host_invitation);
 
         $stateProvider.state(profile);
         $stateProvider.state(auth_token);
@@ -676,6 +694,8 @@
             var state = $injector.get('$state');
             state.go('error-404');
             return $location.path();
+        
+
         });
     }
 
@@ -722,6 +742,7 @@
             }
 
         });
+        
 
         $rootScope.$on('$stateChangeStart', function(event, to, params) {
             if (to.redirectTo) {
@@ -801,5 +822,6 @@
         if (!$rootScope.isAuth) {
             // checkToken();
         }
+
     }
 })();

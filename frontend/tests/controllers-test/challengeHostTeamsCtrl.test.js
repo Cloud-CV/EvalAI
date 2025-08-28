@@ -466,4 +466,178 @@ describe('Unit tests for challenge host team controller', function () {
             expect($state.go).toHaveBeenCalledWith('web.challenge-create');
         });
     });
+
+    describe('Unit tests for openInvitationDialog function', function () {
+        var $q;
+        
+        beforeEach(function () {
+            $q = $injector.get('$q');
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $q.defer();
+                return deferred.promise;
+            });
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest');
+            
+            // Mock the initial HTTP request that happens in controller initialization
+            spyOn($http, 'get').and.returnValue($q.when({ data: {} }));
+            
+            // Mock $httpBackend to handle any unexpected requests
+            var $httpBackend = $injector.get('$httpBackend');
+            $httpBackend.whenGET(/.*/).respond(200, {});
+            $httpBackend.whenPOST(/.*/).respond(200, {});
+        });
+
+        it('should open dialog to generate invitation link', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var prompt = $mdDialog.prompt()
+                .title('Generate Invitation Link')
+                .textContent('Enter the email address to generate an invite URL')
+                .placeholder('Email address')
+                .ariaLabel('Invite Email')
+                .targetEvent(ev)
+                .ok('Generate')
+                .cancel('Cancel');
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            expect($mdDialog.show).toHaveBeenCalledWith(prompt);
+        });
+
+        it('should handle successful invitation generation', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var email = 'test@example.com';
+            
+            // Mock successful dialog result
+            $mdDialog.show.and.returnValue($q.when(email));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            expect(utilities.sendRequest).toHaveBeenCalledWith({
+                url: 'hosts/team/invite/',
+                method: 'POST',
+                data: {
+                    email: email,
+                    team_id: hostTeamId
+                },
+                token: utilities.getData('userKey'),
+                callback: jasmine.any(Object)
+            });
+            
+            // Test success callback
+            var callback = utilities.sendRequest.calls.mostRecent().args[0].callback;
+            callback.onSuccess();
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Invitation link sent to ' + email);
+        });
+
+        it('should handle invitation generation error', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var email = 'test@example.com';
+            var errorMessage = 'User not found';
+            
+            // Mock successful dialog result
+            $mdDialog.show.and.returnValue($q.when(email));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            // Test error callback
+            var callback = utilities.sendRequest.calls.mostRecent().args[0].callback;
+            callback.onError({ data: { error: errorMessage } });
+            expect($rootScope.notify).toHaveBeenCalledWith('error', errorMessage);
+        });
+
+        it('should handle invitation generation error without error field', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var email = 'test@example.com';
+            
+            // Mock successful dialog result
+            $mdDialog.show.and.returnValue($q.when(email));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            // Test error callback with no error field
+            var callback = utilities.sendRequest.calls.mostRecent().args[0].callback;
+            callback.onError({ data: {} });
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'An error occurred while sending the invitation.');
+        });
+
+        it('should validate email format and show error for invalid email', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var invalidEmail = 'invalid-email';
+            
+            // Mock dialog result with invalid email
+            $mdDialog.show.and.returnValue($q.when(invalidEmail));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Please enter a valid email address');
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        });
+
+        it('should handle empty email input', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var emptyEmail = '';
+            
+            // Mock dialog result with empty email
+            $mdDialog.show.and.returnValue($q.when(emptyEmail));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Please enter a valid email address');
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        });
+
+        it('should handle dialog cancellation', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            
+            // Mock dialog cancellation by returning a resolved promise with null/undefined
+            $mdDialog.show.and.returnValue($q.when(null));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Please enter a valid email address');
+        });
+
+        it('should handle null email input', function () {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            var nullEmail = null;
+            
+            // Mock dialog result with null email
+            $mdDialog.show.and.returnValue($q.when(nullEmail));
+            
+            vm.openInvitationDialog(ev, hostTeamId);
+            
+            // Wait for the promise to resolve
+            $rootScope.$digest();
+            
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Please enter a valid email address');
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
+        });
+    });
 });
