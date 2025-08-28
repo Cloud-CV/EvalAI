@@ -295,7 +295,7 @@ REST_AUTH_SERIALIZERS = {
 
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
-CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+CLOUDCV_TEAM_EMAIL = "team@eval.ai"
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
@@ -325,7 +325,7 @@ DRF_SPECTACULAR_SETTINGS = {
     "TITLE": "EvalAI API",
     "DESCRIPTION": "EvalAI Documentation",
     "VERSION": "v1",
-    "CONTACT": {"email": "team@cloudcv.org"},
+    "CONTACT": {"email": "team@eval.ai"},
     "LICENSE": {"name": "BSD License"},
 }
 
