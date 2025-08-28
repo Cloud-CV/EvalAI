@@ -156,6 +156,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     send_emails,
+    send_subscription_plans_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -3898,7 +3899,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_queryset = Challenge.objects.filter(
-        github_repository=request.data["GITHUB_REPOSITORY"],
+        github_repository=request.data["GITHUB_REPOSITORY"], is_disabled=False
     )
 
     if challenge_queryset:
@@ -4812,6 +4813,14 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     and send approval request for the challenge
     """
     challenge = get_challenge_model(challenge_pk)
+
+    # Check if the user is a host of this challenge
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to request approval for this challenge!"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
     unfinished_phases = []
 
@@ -4828,6 +4837,22 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         return Response(
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
+
+    # Send subscription plans email to challenge hosts
+    try:
+        send_subscription_plans_email(challenge)
+        logger.info(
+            "Subscription plans email sent successfully for challenge {}".format(
+                challenge_pk
+            )
+        )
+    except Exception as e:
+        logger.error(
+            "Failed to send subscription plans email for challenge {}: {}".format(
+                challenge_pk, str(e)
+            )
+        )
+        # Continue with the approval process even if email fails
 
     if not settings.DEBUG:
         try:
@@ -4870,7 +4895,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         if webhook_response:
             if webhook_response.content.decode("utf-8") == "ok":
                 response_data = {
-                    "message": "Approval request sent!",
+                    "message": "Approval request sent! You should also receive an email with subscription plan details.",
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
