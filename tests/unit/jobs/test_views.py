@@ -2478,7 +2478,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
         # }
         self.client.force_authenticate(user=self.challenge_host.user)
         response = self.client.put(self.url, self.data)
-        # Fix the travis build by un-commenting this line.
+        # Fix the build by un-commenting this line.
         # self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
