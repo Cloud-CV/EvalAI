@@ -311,4 +311,119 @@ describe('Unit tests for analytics controller', function() {
 			expect($rootScope.isAuth).toBeFalsy();
 		});
 	});
+
+	describe('Unit tests for downloadChallengeParticipantTeams', function () {
+		var $rootScope, $controller, $scope, utilities, vm;
+
+		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+			$controller = _$controller_;
+			$rootScope = _$rootScope_;
+			utilities = _utilities_;
+			$scope = $rootScope.$new();
+			vm = $controller('AnalyticsCtrl', { $scope: $scope });
+			vm.challengeId = 123; 
+			spyOn(utilities, 'sendRequest');
+		}));
+
+		it('should send GET request and trigger download on success', function () {
+			
+			var anchorMock = [{ click: jasmine.createSpy('click') }];
+			anchorMock.attr = function () { return anchorMock; };
+			spyOn(window.angular, 'element').and.returnValue(anchorMock);
+
+			utilities.sendRequest.and.callFake(function (params) {
+				
+				params.callback.onSuccess({ data: "csvdata" });
+			});
+
+			vm.downloadChallengeParticipantTeams();
+
+			expect(utilities.sendRequest).toHaveBeenCalled();
+			var params = utilities.sendRequest.calls.mostRecent().args[0];
+			expect(params.url).toBe("analytics/challenges/123/download_all_participants/");
+			expect(params.method).toBe("GET");
+			
+			expect(window.angular.element).toHaveBeenCalled();
+			expect(anchorMock[0].click).toHaveBeenCalled();
+		});
+
+		it('should notify error on error callback', function () {
+			spyOn($rootScope, 'notify');
+			utilities.sendRequest.and.callFake(function (params) {
+				params.callback.onError({ data: { error: "Download failed" } });
+			});
+
+			vm.downloadChallengeParticipantTeams();
+
+			expect(utilities.sendRequest).toHaveBeenCalled();
+			expect($rootScope.notify).toHaveBeenCalledWith('error', "Download failed");
+		});
+	});
+
+	describe('Unit tests for lastSubmissionTime update logic', function () {
+		var $controller, $rootScope, $scope, utilities, vm;
+	
+		beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_) {
+			$controller = _$controller_;
+			$rootScope = _$rootScope_;
+			utilities = _utilities_;
+			$scope = $rootScope.$new();
+			vm = $controller('AnalyticsCtrl', { $scope: $scope });
+		}));
+	
+		it('should update lastSubmissionTime for matching challenge phase via real controller code', function () {
+			
+			vm.lastSubmissionTime = {};
+			vm.challengeId = 42;
+			vm.challengeList = [{id: 42}];
+	
+			var matchingPhase = 20;
+			var timestamp = "2024-06-01T12:00:00Z";
+	
+			var callCount = 0;
+			spyOn(utilities, 'sendRequest').and.callFake(function(params) {
+				callCount++;
+				if (callCount === 1) {
+					
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							results: [{id: matchingPhase}]
+						}
+					});
+				} else if (callCount === 2) {
+					
+					params.callback.onSuccess({
+						status: 200,
+						data: {participant_team_count: 1}
+					});
+				} else if (callCount === 3) {
+					
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							challenge_phase: matchingPhase,
+							total_submissions: 0,
+							participant_team_count: 0
+						}
+					});
+				} else if (callCount === 4) {
+					
+					params.callback.onSuccess({
+						status: 200,
+						data: {
+							challenge_phase: matchingPhase,
+							last_submission_timestamp_in_challenge_phase: timestamp
+						}
+					});
+				}
+			});
+	
+			
+			vm.showChallengeAnalysis();
+	
+			
+			expect(vm.lastSubmissionTime[matchingPhase]).toBe(timestamp);
+		});
+	});
 });

@@ -884,6 +884,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
                         "github_repository": self.challenge1.github_repository,
+                        "github_branch": self.challenge1.github_branch,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -981,6 +982,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
                 "github_repository": self.challenge1.github_repository,
+                "github_branch": self.challenge1.github_branch,
             }
         ]
 

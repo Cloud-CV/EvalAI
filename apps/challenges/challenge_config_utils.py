@@ -311,7 +311,6 @@ error_message_dict = {
     "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
-    "docker_based_challenge": "ERROR: New Docker based challenges are not supported starting March 15, 2025.",
 }
 
 
@@ -1065,12 +1064,6 @@ class ValidateChallengeConfigUtil:
                     ].format(prize["amount"])
                     self.error_messages.append(message)
 
-    def check_docker_based_challenge(self):
-        if "is_docker_based" in self.yaml_file_data:
-            if self.yaml_file_data["is_docker_based"]:
-                message = self.error_messages_dict["docker_based_challenge"]
-                self.error_messages.append(message)
-
 
 def validate_challenge_config_util(
     request,
@@ -1191,9 +1184,6 @@ def validate_challenge_config_util(
 
     # Check for Prize
     val_config_util.check_prizes()
-
-    # Check for Docker based challenge
-    val_config_util.check_docker_based_challenge()
 
     return (
         val_config_util.error_messages,
