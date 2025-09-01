@@ -137,7 +137,9 @@ logger = logging.getLogger(__name__)
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def challenge_submission(request, challenge_id, challenge_phase_id):
+def challenge_submission(
+    request, challenge_id, challenge_phase_pk_or_slug, version
+):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
@@ -148,13 +150,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if version == "v2":
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
+            )
+        except ChallengePhase.DoesNotExist:
+            response_data = {"error": "Challenge Phase does not exist"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular
@@ -197,7 +202,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return paginator.get_paginated_response(response_data)
 
     elif request.method == "POST":
-
         # check if the challenge is active or not
         if not challenge.is_active:
             response_data = {"error": "Challenge is not active"}
@@ -313,7 +317,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_phase_id,
+                challenge_phase_pk_or_slug,
             )
             response_data = {
                 "message": "Please wait while your submission being evaluated!"
@@ -377,7 +381,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
         message = {
             "challenge_pk": challenge_id,
-            "phase_pk": challenge_phase_id,
+            "phase_pk": challenge_phase_pk_or_slug,
             "is_static_dataset_code_upload_submission": False,
         }
         if challenge.is_docker_based:
@@ -591,7 +595,7 @@ def change_submission_data_and_visibility(
 )
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle, UserRateThrottle])
-def leaderboard(request, challenge_phase_split_id):
+def leaderboard(request, challenge_pk, phase_slug, split_codename):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
 
@@ -603,9 +607,18 @@ def leaderboard(request, challenge_phase_split_id):
     """
 
     # check if the challenge exists or not
-    challenge_phase_split = get_challenge_phase_split_model(
-        challenge_phase_split_id
-    )
+    try:
+        challenge_phase_split = ChallengePhaseSplit.objects.get(
+            challenge_phase__challenge__pk=challenge_pk,
+            challenge_phase__slug=phase_slug,
+            dataset_split__codename=split_codename,
+        )
+    except ChallengePhaseSplit.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard for the given phase and split does not exist."
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     order_by = request.GET.get("order_by")
     (
@@ -623,11 +636,9 @@ def leaderboard(request, challenge_phase_split_id):
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
-    paginator, result_page = paginated_queryset(
-        response_data, request, pagination_class=StandardResultSetPagination()
-    )
-    response_data = result_page
-    return paginator.get_paginated_response(response_data)
+    paginator = StandardResultSetPagination()
+    result_page = paginator.paginate_queryset(response_data, request)
+    return paginator.get_paginated_response(result_page)
 
 
 @extend_schema(
@@ -757,7 +768,9 @@ def leaderboard(request, challenge_phase_split_id):
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
+def get_all_entries_on_public_leaderboard(
+    request, challenge_pk, phase_slug, split_codename
+):
     """
     Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
 
@@ -805,9 +818,17 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     ```
     """
     # check if the challenge exists or not
-    challenge_phase_split = get_challenge_phase_split_model(
-        challenge_phase_split_pk
-    )
+    try:
+        challenge_phase_split = ChallengePhaseSplit.objects.get(
+            challenge_phase__challenge__pk=challenge_pk,
+            challenge_phase__slug=phase_slug,
+            dataset_split__codename=split_codename,
+        )
+    except ChallengePhaseSplit.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard for the given phase and split does not exist."
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
@@ -999,11 +1020,17 @@ def get_submission_by_pk(request, submission_id):
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
+                    "description": (
+                        "Final status of submission (can take one of these values):"
+                        " CANCELLED/FAILED/FINISHED"
+                    ),
                 },
                 "result": {
                     "type": "array",
-                    "description": "Submission results in array format. API will throw an error if any split and/or metric is missing",
+                    "description": (
+                        "Submission results in array format."
+                        " API will throw an error if any split and/or metric is missing"
+                    ),
                     "items": {
                         "type": "object",
                         "properties": {
@@ -1138,7 +1165,8 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
-     - ``environment_log``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**code upload challenge only**)
+     - ``environment_log``: Environment error after evaluation, e.g.
+        "Failed due to attempted action being invalid" (**code upload challenge only**)
      - ``submission_status``: Status of submission after evaluation
         (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
@@ -1435,7 +1463,10 @@ def update_submission(request, challenge_pk):
                 },
                 "result": {
                     "type": "array",
-                    "description": "Submission results in array format. An error is thrown if any split and/or metric is missing",
+                    "description": (
+                        "Submission results in array format. "
+                        "An error is thrown if any split and/or metric is missing"
+                    ),
                     "items": {
                         "type": "object",
                         "properties": {
@@ -2101,7 +2132,6 @@ def resume_submission(request, submission_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submissions_for_challenge(request, challenge_pk):
-
     challenge = get_challenge_model(challenge_pk)
 
     if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(
@@ -2701,7 +2731,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+         Response Object -- An object containing the presignd url and submission id,
+         or an error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {
@@ -2877,7 +2908,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         challenge_phase_pk {int} -- Challenge phase primary key
         submission_pk {int} -- Submission primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+         Response Object -- An object containing the presignd url and
+         submission id, or an error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {

@@ -221,14 +221,12 @@ class GetParticipantTeamTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
 
     def test_get_participant_team_count(self):
-
         expected = {"participant_team_count": 1}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_participant_team_count_when_challenge_does_not_exist(self):
-
         self.url = reverse_lazy(
             "analytics:get_participant_team_count",
             kwargs={"challenge_pk": self.challenge.pk + 10},
@@ -256,14 +254,12 @@ class GetParticipantCountTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team3)
 
     def test_get_participant_team_count(self):
-
         expected = {"participant_count": 2}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_participant_team_count_when_challenge_doe_not_exist(self):
-
         self.url = reverse_lazy(
             "analytics:get_participant_count",
             kwargs={"challenge_pk": self.challenge.pk + 10},
@@ -301,7 +297,6 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         )
 
     def test_get_participant_team_count_when_challenge_does_not_exist(self):
-
         self.url = reverse_lazy(
             "analytics:get_submission_count",
             kwargs={
@@ -380,7 +375,8 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": "v1",
             },
         )
 
@@ -443,7 +439,8 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": "v1",
             },
         )
 
@@ -463,7 +460,8 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
+                "version": "v1",
             },
         )
 
@@ -486,7 +484,8 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": "v1",
             },
         )
 
@@ -509,7 +508,8 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
+                "version": "v1",
             },
         )
 

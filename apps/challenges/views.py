@@ -507,7 +507,6 @@ def get_participant_teams_for_challenge(request, challenge_pk):
 def add_participant_team_to_challenge(
     request, challenge_pk, participant_team_pk
 ):
-
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -1423,9 +1422,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         ):
                             options = attribute.get("options")
                             if not options or not len(options):
-                                message = "Please include at least one option in attribute for challenge_phase {}".format(
-                                    data["id"]
-                                )
+                                message = "Please include at least one option in attribute"
+                                "for challenge_phase {}".format(data["id"])
                                 response_data = {"error": message}
                                 return Response(
                                     response_data,
@@ -1464,7 +1462,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         )
                 else:
                     missing_keys_string = ", ".join(missing_keys)
-                    message = "Please enter the following to the default submission meta attribute in phase {}: {}.".format(
+                    message = (
+                        "Please enter the following to the default submission"
+                    )
+                    " meta attribute in phase {}: {}.".format(
                         data["id"], missing_keys_string
                     )
                     response_data = {"error": message}
@@ -2088,7 +2089,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_submissions_of_challenge(
-    request, challenge_pk, challenge_phase_pk
+    request, challenge_pk, challenge_phase_pk_or_slug, version
 ):
     """
     Returns all the submissions for a particular challenge
@@ -2098,24 +2099,26 @@ def get_all_submissions_of_challenge(
 
     # To check for the corresponding challenge phase from the
     # challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {
-            "error": "Challenge Phase {} does not exist".format(
-                challenge_phase_pk
+    if version == "v2":
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
-        }
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except ChallengePhase.DoesNotExist:
+            response_data = {
+                "error": "Challenge Phase {} does not exist".format(
+                    challenge_phase_pk_or_slug
+                )
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    else:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     # To check for the user as a host of the challenge from the request and
     # challenge_pk.
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
-
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         submissions = Submission.objects.filter(
@@ -2138,7 +2141,6 @@ def get_all_submissions_of_challenge(
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
-
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
@@ -2245,7 +2247,7 @@ def get_all_submissions_of_challenge(
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_submissions(
-    request, challenge_pk, challenge_phase_pk, file_type
+    request, challenge_pk, challenge_phase_pk_or_slug, file_type, version
 ):
     """
     API endpoint to download all the submissions for a particular challenge as a csv
@@ -2264,18 +2266,20 @@ def download_all_submissions(
 
     # To check for the corresponding challenge phase from the
     # challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {
-            "error": "Challenge Phase {} does not exist".format(
-                challenge_phase_pk
+    if version == "v2":
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
-        }
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
+        except ChallengePhase.DoesNotExist:
+            response_data = {
+                "error": "Challenge Phase {} does not exist".format(
+                    challenge_phase_pk_or_slug
+                )
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    else:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
     if request.method == "GET":
         if file_type == "csv":
             if is_user_a_host_of_challenge(
@@ -2370,7 +2374,6 @@ def download_all_submissions(
             elif has_user_participated_in_challenge(
                 user=request.user, challenge_id=challenge_pk
             ):
-
                 # get participant team object for the user for a particular
                 # challenge.
                 participant_team_pk = (
@@ -2924,7 +2927,6 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_users_to_challenge(request, challenge_pk):
-
     challenge = get_challenge_model(challenge_pk)
 
     if not challenge.is_active or not challenge.approved_by_admin:
@@ -4173,7 +4175,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = f"challenge phase split (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                            error_messages = (
+                                f"challenge phase split"
+                                f" (phase:{data['challenge_phase_id']},"
+                                f" leaderboard:{data['leaderboard_id']},"
+                                f" dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                            )
                             raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
@@ -4363,7 +4370,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phases_data,
                     files["challenge_test_annotation_files"],
                 ):
-
                     # Override the submission_meta_attributes when they are
                     # missing
                     submission_meta_attributes = data.get(
@@ -4552,7 +4558,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        error_messages = f"challenge phase split update (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                        error_messages = (
+                            f"challenge phase split update"
+                            f"(phase:{data['challenge_phase_id']},"
+                            f"leaderboard:{data['leaderboard_id']},"
+                            f"dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                        )
                         raise RuntimeError()
 
                 response_data = {
@@ -4607,7 +4618,11 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
-            "error": "You are not authorized to make this request. Please ask EvalAI admin to add you as a staff user for accessing this API."
+            "error": (
+                "You are not authorized "
+                "to make this request. Please ask EvalAI admin to "
+                "add you as a staff user for accessing this API."
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -4833,7 +4848,10 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             unfinished_phases.append(challenge_phase.name)
 
     if unfinished_phases:
-        error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
+        error_message = (
+            "The following challenge phases do not have finished submissions: "
+            f"{', '.join(unfinished_phases)}"
+        )
         return Response(
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
@@ -4899,13 +4917,19 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                error_message = (
+                    f"Sorry, there was an error sending approval request:"
+                    f" {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                )
                 return Response(
                     {"error": error_message},
                     status=status.HTTP_406_NOT_ACCEPTABLE,
                 )
         else:
-            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+            error_message = (
+                "Sorry, there was an error sending approval request:"
+                " No response received. Please try again."
+            )
             return Response(
                 {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
             )

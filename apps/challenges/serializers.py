@@ -21,7 +21,6 @@ from .models import (
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
     domain_name = serializers.SerializerMethodField()
 
@@ -100,7 +99,6 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
 
     def __init__(self, *args, **kwargs):
@@ -177,6 +175,8 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
     dataset_split_name = serializers.SerializerMethodField()
     challenge_phase_name = serializers.SerializerMethodField()
     leaderboard_schema = serializers.SerializerMethodField()
+    challenge_phase_slug = serializers.SerializerMethodField()
+    dataset_split_codename = serializers.SerializerMethodField()
 
     class Meta:
         model = ChallengePhaseSplit
@@ -186,6 +186,8 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "challenge_phase",
             "challenge_phase_name",
             "dataset_split_name",
+            "challenge_phase_slug",
+            "dataset_split_codename",
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
@@ -201,6 +203,12 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     def get_challenge_phase_name(self, obj):
         return obj.challenge_phase.name
+
+    def get_challenge_phase_slug(self, obj):
+        return obj.challenge_phase.slug
+
+    def get_dataset_split_codename(self, obj):
+        return obj.dataset_split.codename
 
 
 class ChallengeConfigSerializer(serializers.ModelSerializer):
@@ -354,7 +362,6 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
 
 class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
 
     def __init__(self, *args, **kwargs):
@@ -412,7 +419,6 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
 
 
 class StarChallengeSerializer(serializers.ModelSerializer):
-
     count = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -502,7 +508,6 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
 
 
 class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
-
     challenge_id = serializers.SerializerMethodField()
     leaderboard = serializers.SerializerMethodField()
     leaderboard_decimal_precision = serializers.SerializerMethodField()

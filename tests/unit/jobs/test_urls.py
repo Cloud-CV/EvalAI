@@ -156,13 +156,14 @@ class TestJobsUrls(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "version": "v1",
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
             },
         )
         self.assertEqual(
             self.url,
-            "/api/jobs/challenge/{}/challenge_phase/{}/submission/".format(
-                self.challenge.pk, self.challenge_phase.pk
+            "/api/jobs/challenge/{}/challenge_phase/{}/{}/submission/".format(
+                self.challenge.pk, "v1", self.challenge_phase.pk
             ),
         )
         resolver = resolve(self.url)
@@ -170,17 +171,23 @@ class TestJobsUrls(BaseAPITestClass):
 
     def test_leaderboard(self):
         self.url = reverse_lazy(
-            "jobs:leaderboard",
-            kwargs={"challenge_phase_split_id": self.challenge_phase_split.pk},
+            "jobs:leaderboard_by_slug",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_slug": self.challenge_phase.slug,
+                "split_codename": self.dataset_split.codename,
+            },
         )
         self.assertEqual(
             self.url,
-            "/api/jobs/challenge_phase_split/{}/leaderboard/".format(
-                self.challenge_phase_split.pk
+            "/api/jobs/challenge/{}/phase/{}/split/{}/leaderboard/".format(
+                self.challenge.pk,
+                self.challenge_phase.slug,
+                self.dataset_split.codename,
             ),
         )
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, "jobs:leaderboard")
+        self.assertEqual(resolver.view_name, "jobs:leaderboard_by_slug")
 
     def test_get_submission_by_pk(self):
         self.url = reverse_lazy(

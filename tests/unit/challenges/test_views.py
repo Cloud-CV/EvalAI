@@ -751,8 +751,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -830,8 +828,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.update_submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -2996,7 +2992,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3023,9 +3021,13 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3062,7 +3064,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3109,7 +3113,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -3136,10 +3142,14 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
                 "allowed_submission_file_types": self.private_challenge_phase.allowed_submission_file_types,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.private_challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
@@ -3866,10 +3876,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
+                "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3905,10 +3919,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
+                "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3917,10 +3935,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split_host.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
+                "dataset_split_codename": self.dataset_split_host.codename,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
@@ -3941,10 +3963,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
+                "dataset_split_codename": self.dataset_split.codename,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
@@ -3953,10 +3979,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "id": self.challenge_phase_split_host.id,
                 "challenge_phase": self.challenge_phase.id,
                 "challenge_phase_name": self.challenge_phase.name,
+                "challenge_phase_slug": self.challenge_phase.slug,
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
+                "dataset_split_codename": self.dataset_split_host.codename,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": (
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
+                ),
                 "show_execution_time": False,
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
@@ -4442,7 +4472,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": "v1",
             },
         )
         expected = {
@@ -4459,16 +4490,17 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk + 10,
+                "version": "v1",
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "ChallengePhase {} does not exist".format(
                 self.challenge5_phase3.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
@@ -4476,14 +4508,16 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase1.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase1.pk,
+                "version": "v1",
             },
         )
         self.url_phase2 = reverse_lazy(
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase2.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase2.pk,
+                "version": "v1",
             },
         )
         self.client.force_authenticate(user=self.user5)
@@ -4539,7 +4573,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": "v1",
             },
         )
         self.client.force_authenticate(user=self.user6)
@@ -4592,7 +4627,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": "v1",
             },
         )
         expected = {
@@ -4744,8 +4780,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
         expected = {
@@ -4764,17 +4801,18 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "ChallengePhase {} does not exist".format(
                 self.challenge_phase.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_file_type_is_not_csv(self):
@@ -4782,8 +4820,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_pdf,
+                "version": "v1",
             },
         )
         expected = {"error": "The file type requested is not valid!"}
@@ -4796,8 +4835,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
         response = self.client.get(self.url, {})
@@ -4808,8 +4848,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
         submissions = Submission.objects.filter(
@@ -4863,8 +4904,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
 
@@ -4880,8 +4922,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": "v1",
             },
         )
 
@@ -5399,9 +5442,13 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": (
+                    self.private_challenge_phase.is_restricted_to_select_one_submission
+                ),
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.private_challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
@@ -5435,7 +5482,9 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
@@ -5916,6 +5965,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_called_once_with(self.challenge)
 
         # Verify success logging
+
         mock_logger.info.assert_any_call(
             "Subscription plans email sent successfully for challenge {}".format(
                 self.challenge.pk
@@ -5958,6 +6008,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_called_once_with(self.challenge)
 
         # Verify error logging
+
         mock_logger.error.assert_any_call(
             "Failed to send subscription plans email for challenge {}: {}".format(
                 self.challenge.pk, "Email service unavailable"
@@ -5965,6 +6016,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
         # Verify approval process continues despite email failure
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
@@ -5986,6 +6038,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         response = self.client.get(url)
 
         # Verify email function was not called for non-existent challenge
+
         mock_send_email.assert_not_called()
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -5994,7 +6047,9 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     @mock.patch("challenges.views.send_subscription_plans_email")
     def test_request_challenge_approval_user_not_host(self, mock_send_email):
         """Test that email is not sent when user is not challenge host"""
+
         # Create a different user who is not a challenge host
+
         other_user = User.objects.create(
             username="otheruser",
             password="other_password",
@@ -6008,6 +6063,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
         # Authenticate as the other user
+
         self.client.force_authenticate(user=other_user)
 
         url = reverse_lazy(
@@ -6017,6 +6073,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         response = self.client.get(url)
 
         # Verify email function was not called for unauthorized user
+
         mock_send_email.assert_not_called()
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -6045,6 +6102,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_called_once_with(self.challenge)
 
         # Webhook failure should result in error response
+
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("error", response.data)
 
@@ -6061,6 +6119,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
         # Simulate SMTP error
+
         from smtplib import SMTPException
 
         mock_send_email.side_effect = SMTPException(
@@ -6077,6 +6136,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_called_once_with(self.challenge)
 
         # Approval should continue despite SMTP error
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @responses.activate
@@ -6085,7 +6145,9 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self, mock_send_email
     ):
         """Test email integration with challenge that has multiple phases"""
+
         # Create additional challenge phase
+
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             additional_phase = ChallengePhase.objects.create(
                 name="Additional Phase",
@@ -6107,6 +6169,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         from participants.models import Participant
 
         # Ensure participant team is associated with the challenge and user is a participant
+
         self.challenge.participant_teams.add(self.participant_team)
         Participant.objects.get_or_create(
             user=self.user,
@@ -6130,6 +6193,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
         # Manually update the status to finished after creation to bypass any automatic processing
+
         submission.status = "finished"
         submission.save()
 
@@ -6148,6 +6212,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         response = self.client.get(url)
 
         # Verify email function was called with the challenge
+
         mock_send_email.assert_called_once_with(self.challenge)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -6158,7 +6223,9 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self, mock_send_email
     ):
         """Test that email is not sent when submission check fails"""
+
         # Create a challenge phase without finished submissions
+
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             ChallengePhase.objects.create(
                 name="Unfinished Phase",
@@ -6185,6 +6252,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_not_called()
 
         # The request should fail due to unfinished submissions
+
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn(
             "do not have finished submissions", response.data["error"]
@@ -6296,6 +6364,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
 
         # Verify github_repository is properly stored
+
         challenge = Challenge.objects.first()
         self.assertEqual(
             challenge.github_repository,
@@ -6409,13 +6478,16 @@ class ValidateChallengeTest(APITestCase):
                 "Please add the submission guidelines.\n"
                 "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
                 "ERROR: Please add the start_date and end_date.\n"
-                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
+                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: "
+                "1 is not a valid label.\n"
                 "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
                 " ERROR: There is no key for description in phase Dev Phase.\n"
                 "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
-                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: "
+                "description, type\n"
                 "ERROR: Challenge phase 1 has the following schema errors:\n"
-                " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
+                " {'description': [ErrorDetail(string='This field is required.', code='required')], "
+                "'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
                 "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
                 "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
                 "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"

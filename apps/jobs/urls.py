@@ -11,7 +11,7 @@ urlpatterns = [
     ),
     url(
         r"^challenge/(?P<challenge_id>[0-9]+)/"
-        r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/submission/$",
+        r"challenge_phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)/submission/$",
         views.challenge_submission,
         name="challenge_submission",
     ),
@@ -31,14 +31,16 @@ urlpatterns = [
         name="resume_submission",
     ),
     url(
-        r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/"
+        r"(?P<split_codename>[-a-zA-Z0-9_]+)/leaderboard/$",
         views.leaderboard,
-        name="leaderboard",
+        name="leaderboard_by_slug",
     ),
     url(
-        r"^phase_split/(?P<challenge_phase_split_pk>[0-9]+)/public_leaderboard_all_entries/$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phase/(?P<phase_slug>[-a-zA-Z0-9_]+)/split/"
+        r"(?P<split_codename>[-a-zA-Z0-9_]+)/public_leaderboard_all_entries/$",
         views.get_all_entries_on_public_leaderboard,
-        name="get_all_entries_on_public_leaderboard",
+        name="get_all_entries_on_public_leaderboard_by_slug",
     ),
     url(
         r"^submission/(?P<submission_id>[0-9]+)$",
