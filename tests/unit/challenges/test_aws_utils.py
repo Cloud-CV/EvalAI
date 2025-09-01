@@ -6,7 +6,10 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
+    challenge_approval_callback,
     create_ec2_instance,
+    create_eks_cluster,
+    create_eks_cluster_subnets,
     create_eks_nodegroup,
     create_service_by_challenge_pk,
     delete_log_group,
@@ -15,6 +18,7 @@ from challenges.aws_utils import (
     describe_ec2_instance,
     get_code_upload_setup_meta_for_challenge,
     get_logs_from_cloudwatch,
+    register_task_def_by_challenge_pk,
     restart_ec2_instance,
     restart_workers,
     restart_workers_signal_callback,
@@ -429,7 +433,6 @@ def test_delete_service_client_error(mock_challenge, mock_client):
 
 
 class TestServiceManager:
-
     @pytest.fixture
     def mock_client(self):
         return MagicMock()
@@ -836,6 +839,26 @@ class TestDescribeEC2Instance(unittest.TestCase):
                 }
             },
         )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.logger")
+    def test_describe_ec2_instance_exception(
+        self, mock_logger, mock_get_boto3_client
+    ):
+        mock_ec2 = MagicMock()
+        mock_get_boto3_client.return_value = mock_ec2
+
+        exception = Exception("Some error")
+        exception.response = {"Error": "SomeError"}
+        mock_ec2.describe_instances.side_effect = exception
+
+        challenge = MagicMock()
+        challenge.ec2_instance_id = "i-1234567890abcdef0"
+
+        result = describe_ec2_instance(challenge)
+
+        assert result == {"error": {"Error": "SomeError"}}
+        mock_logger.exception.assert_called_once_with(exception)
 
 
 class TestStartEC2Instance(unittest.TestCase):
@@ -1319,7 +1342,8 @@ class TestUpdateSQSRetentionPeriod(unittest.TestCase):
         self.assertEqual(
             result,
             {
-                "error": "An error occurred (QueueDoesNotExist) when calling the GetQueueUrl operation: The queue does not exist"
+                "error": "An error occurred (QueueDoesNotExist) when calling the "
+                "GetQueueUrl operation: The queue does not exist"
             },
         )
 
@@ -1865,7 +1889,6 @@ class TestScaleResources(unittest.TestCase):
         ) as mock_task_definition, patch(
             "challenges.aws_utils.eval"
         ) as mock_eval:
-
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {
                 "some_key": "some_value"
@@ -1958,7 +1981,6 @@ class TestScaleResources(unittest.TestCase):
         ) as mock_task_definition, patch(
             "challenges.aws_utils.eval"
         ) as mock_eval:
-
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {
                 "some_key": "some_value"
@@ -2020,7 +2042,6 @@ class TestScaleResources(unittest.TestCase):
         ) as mock_task_definition, patch(
             "challenges.aws_utils.eval"
         ) as mock_eval:
-
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {
                 "some_key": "some_value"
@@ -2369,6 +2390,123 @@ class TestRestartWorkersSignalCallback(TestCase):
         # Assert that the function returns None when DEBUG is True
         self.assertIsNone(result)
 
+    @patch("challenges.aws_utils.send_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.restart_workers")
+    def test_restart_workers_signal_callback_email_sent(
+        self, mock_restart_workers, mock_settings, mock_send_email
+    ):
+        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
+        }
+        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.DEBUG = False
+
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.id = 1
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = None
+        mock_challenge.inform_hosts = True
+        mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host1@test.com",
+            "host2@test.com",
+        ]
+
+        mock_restart_workers.return_value = {"count": 1, "failures": []}
+
+        instance = mock_challenge
+
+        restart_workers_signal_callback(
+            sender=None, instance=instance, field_name="evaluation_script"
+        )
+
+        assert mock_send_email.call_count == 2
+        for call in mock_send_email.call_args_list:
+            args, kwargs = call
+            assert kwargs["recipient"] in ["host1@test.com", "host2@test.com"]
+            assert kwargs["template_id"] == "template_id"
+            assert (
+                kwargs["template_data"]["CHALLENGE_NAME"] == "Test Challenge"
+            )
+            assert (
+                kwargs["template_data"]["FILE_UPDATED"] == "Evaluation script"
+            )
+
+    @patch("challenges.aws_utils.send_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.restart_workers")
+    def test_restart_workers_signal_callback_email_with_image(
+        self, mock_restart_workers, mock_settings, mock_send_email
+    ):
+        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
+        }
+        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.DEBUG = False
+
+        mock_image = MagicMock()
+        mock_image.url = "http://eval.ai/image.png"
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.id = 1
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = mock_image
+        mock_challenge.inform_hosts = True
+        mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host1@test.com"
+        ]
+
+        mock_restart_workers.return_value = {"count": 1, "failures": []}
+
+        instance = mock_challenge
+
+        restart_workers_signal_callback(
+            sender=None, instance=instance, field_name="evaluation_script"
+        )
+
+        mock_send_email.assert_called_once()
+        args, kwargs = mock_send_email.call_args
+        assert (
+            kwargs["template_data"]["CHALLENGE_IMAGE_URL"]
+            == "http://eval.ai/image.png"
+        )
+
+    @patch("challenges.aws_utils.send_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.restart_workers")
+    def test_restart_workers_signal_callback_no_inform_hosts(
+        self, mock_restart_workers, mock_settings, mock_send_email
+    ):
+        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
+        }
+        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.DEBUG = False
+
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.id = 1
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = None
+        mock_challenge.inform_hosts = False
+        mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host1@test.com"
+        ]
+
+        mock_restart_workers.return_value = {"count": 1, "failures": []}
+
+        instance = mock_challenge
+
+        restart_workers_signal_callback(
+            sender=None, instance=instance, field_name="evaluation_script"
+        )
+
+        mock_send_email.assert_not_called()
+
 
 class TestGetLogsFromCloudwatch(TestCase):
     @patch("challenges.aws_utils.settings", DEBUG=True)
@@ -2391,7 +2529,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         )
 
         expected_logs = [
-            "The worker logs in the development environment are available on the terminal. Please use docker-compose logs -f worker to view the logs."
+            "The worker logs in the development environment are available on the terminal. "
+            "Please use docker-compose logs -f worker to view the logs."
         ]
 
         self.assertEqual(logs, expected_logs)
@@ -2606,6 +2745,60 @@ class TestGetLogsFromCloudwatch(TestCase):
             f"Expected 'Delete failed' in {args[0]}",
         )
 
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_get_logs_from_cloudwatch_with_pagination(
+        self, mock_settings, mock_get_boto3_client
+    ):
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+
+        mock_client.filter_log_events.side_effect = [
+            {
+                "events": [
+                    {"message": "Log message 1"},
+                    {"message": "Log message 2"},
+                ],
+                "nextToken": "token123",
+            },
+            {
+                "events": [
+                    {"message": "Log message 3"},
+                    {"message": "Log message 4"},
+                ],
+                "nextToken": None,
+            },
+        ]
+
+        log_group_name = "dummy_group"
+        log_stream_prefix = "dummy_prefix"
+        start_time = 123456789
+        end_time = 123456999
+        pattern = ""
+        limit = 10
+
+        logs = get_logs_from_cloudwatch(
+            log_group_name,
+            log_stream_prefix,
+            start_time,
+            end_time,
+            pattern,
+            limit,
+        )
+
+        expected_logs = [
+            "Log message 1",
+            "Log message 2",
+            "Log message 3",
+            "Log message 4",
+        ]
+
+        self.assertEqual(logs, expected_logs)
+        assert mock_client.filter_log_events.call_count == 2
+
+        _, kwargs = mock_client.filter_log_events.call_args
+        assert kwargs["nextToken"] is None or kwargs["nextToken"] == "token123"
+
 
 class TestCreateEKSNodegroup(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
@@ -2629,7 +2822,6 @@ class TestCreateEKSNodegroup(unittest.TestCase):
         mock_get_code_upload_setup_meta_for_challenge,
         mock_get_boto3_client,
     ):
-
         # Setup mock objects and functions
         mock_settings.ENVIRONMENT = "test-env"
         mock_challenge = MagicMock()
@@ -2692,7 +2884,6 @@ class TestCreateEKSNodegroup(unittest.TestCase):
         mock_get_code_upload_setup_meta_for_challenge,
         mock_get_boto3_client,
     ):
-
         # Setup mock objects and functions
         mock_settings.ENVIRONMENT = "test-env"
         mock_challenge = MagicMock()
@@ -3042,3 +3233,695 @@ class TestSetupEC2(TestCase):
         mock_update_sqs_retention_period.assert_called_once_with(
             mock_challenge_obj
         )
+
+
+class TestRegisterTaskDefByChallengePk:
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.container_definition_code_upload_worker")
+    @patch("challenges.aws_utils.container_definition_submission_worker")
+    @patch("challenges.aws_utils.task_definition_static_code_upload_worker")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_static_dataset_code_upload_success(
+        self,
+        mock_get_aws_credentials,
+        mock_task_def_code_upload_worker,
+        mock_task_def_static_code_upload_worker,
+        mock_container_def_submission_worker,
+        mock_container_def_code_upload_worker,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.is_docker_based = True
+        mock_challenge.is_static_dataset_code_upload = True
+        mock_challenge.worker_image_url = None
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        mock_cluster = MagicMock()
+        mock_cluster.name = "cluster"
+        mock_cluster.cluster_endpoint = "endpoint"
+        mock_cluster.cluster_ssl = "ssl"
+        mock_cluster.efs_id = "efs"
+        mock_cluster_get.return_value = mock_cluster
+
+        mock_token = MagicMock()
+        mock_token.refresh_token = "token"
+        mock_jwt_get.return_value = mock_token
+
+        mock_container_def_code_upload_worker.format.return_value = (
+            "'code_upload_container'"
+        )
+        mock_container_def_submission_worker.format.return_value = (
+            "'submission_container'"
+        )
+        mock_task_def_static_code_upload_worker.format.return_value = (
+            "{'family': 'test'}"
+        )
+
+        mock_get_aws_credentials.return_value = {}
+
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda x: {"family": "test"},
+        ):
+            response = register_task_def_by_challenge_pk(
+                mock_client, "queue", mock_challenge
+            )
+
+        assert "family" in response or "Error" in response
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_non_static_dataset_code_upload_success(
+        self,
+        mock_get_aws_credentials,
+        mock_task_def_code_upload_worker,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.is_docker_based = True
+        mock_challenge.is_static_dataset_code_upload = False
+        mock_challenge.worker_image_url = None
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        mock_cluster = MagicMock()
+        mock_cluster.name = "cluster"
+        mock_cluster.cluster_endpoint = "endpoint"
+        mock_cluster.cluster_ssl = "ssl"
+        mock_cluster.efs_id = "efs"
+        mock_cluster_get.return_value = mock_cluster
+
+        mock_token = MagicMock()
+        mock_token.refresh_token = "token"
+        mock_jwt_get.return_value = mock_token
+
+        mock_task_def_code_upload_worker.format.return_value = (
+            "{'family': 'test'}"
+        )
+        mock_get_aws_credentials.return_value = {}
+
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda x: {"family": "test"},
+        ):
+            response = register_task_def_by_challenge_pk(
+                mock_client, "queue", mock_challenge
+            )
+
+        assert "family" in response or "Error" in response
+
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_challenge_evaluation_cluster_client_error(
+        self, mock_get_aws_credentials, mock_cluster_get
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.is_docker_based = True
+        mock_challenge.worker_image_url = None
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        error_response = {"Error": {"Code": "SomeError"}}
+        mock_cluster_get.side_effect = ClientError(error_response, "GetObject")
+        mock_get_aws_credentials.return_value = {}
+
+        response = register_task_def_by_challenge_pk(
+            mock_client, "queue", mock_challenge
+        )
+        assert response == error_response
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.container_definition_code_upload_worker")
+    @patch("challenges.aws_utils.container_definition_submission_worker")
+    @patch("challenges.aws_utils.task_definition_static_code_upload_worker")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_static_dataset_code_upload_with_custom_worker_image(
+        self,
+        mock_get_aws_credentials,
+        mock_task_def_code_upload_worker,
+        mock_task_def_static_code_upload_worker,
+        mock_container_def_submission_worker,
+        mock_container_def_code_upload_worker,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.is_docker_based = True
+        mock_challenge.is_static_dataset_code_upload = True
+        mock_challenge.worker_image_url = "custom_image"
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        mock_cluster = MagicMock()
+        mock_cluster.name = "cluster"
+        mock_cluster.cluster_endpoint = "endpoint"
+        mock_cluster.cluster_ssl = "ssl"
+        mock_cluster.efs_id = "efs"
+        mock_cluster_get.return_value = mock_cluster
+
+        mock_token = MagicMock()
+        mock_token.refresh_token = "token"
+        mock_jwt_get.return_value = mock_token
+
+        mock_container_def_code_upload_worker.format.return_value = (
+            "'code_upload_container'"
+        )
+        mock_container_def_submission_worker.format.return_value = (
+            "'submission_container'"
+        )
+        mock_task_def_static_code_upload_worker.format.return_value = (
+            "{'family': 'test'}"
+        )
+
+        mock_get_aws_credentials.return_value = {}
+
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda x: {"family": "test"},
+        ):
+            response = register_task_def_by_challenge_pk(
+                mock_client, "queue", mock_challenge
+            )
+
+        assert "family" in response or "Error" in response
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.container_definition_code_upload_worker")
+    @patch("challenges.aws_utils.container_definition_submission_worker")
+    @patch("challenges.aws_utils.task_definition_static_code_upload_worker")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_register_task_def_success(
+        self,
+        mock_get_aws_credentials,
+        mock_task_def_code_upload_worker,
+        mock_task_def_static_code_upload_worker,
+        mock_container_def_submission_worker,
+        mock_container_def_code_upload_worker,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.worker_image_url = None
+        mock_challenge.is_docker_based = True
+        mock_challenge.is_static_dataset_code_upload = False
+        mock_challenge.task_def_arn = None
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        mock_cluster = MagicMock()
+        mock_cluster.name = "cluster"
+        mock_cluster.cluster_endpoint = "endpoint"
+        mock_cluster.cluster_ssl = "ssl"
+        mock_cluster.efs_id = "efs"
+        mock_cluster_get.return_value = mock_cluster
+
+        mock_token = MagicMock()
+        mock_token.refresh_token = "token"
+        mock_jwt_get.return_value = mock_token
+
+        mock_task_def_code_upload_worker.format.return_value = (
+            "{'family': 'test'}"
+        )
+        mock_get_aws_credentials.return_value = {}
+
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda x: {"family": "test"},
+        ):
+            mock_client.register_task_definition.return_value = {
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+                "taskDefinition": {
+                    "taskDefinitionArn": "arn:aws:ecs:task-def"
+                },
+            }
+
+            response = register_task_def_by_challenge_pk(
+                mock_client, "queue", mock_challenge
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.task_def_arn == "arn:aws:ecs:task-def"
+        mock_challenge.save.assert_called_once()
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.container_definition_code_upload_worker")
+    @patch("challenges.aws_utils.container_definition_submission_worker")
+    @patch("challenges.aws_utils.task_definition_static_code_upload_worker")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_register_task_def_failure(
+        self,
+        mock_get_aws_credentials,
+        mock_task_def_code_upload_worker,
+        mock_task_def_static_code_upload_worker,
+        mock_container_def_submission_worker,
+        mock_container_def_code_upload_worker,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.worker_image_url = None
+        mock_challenge.is_docker_based = True
+        mock_challenge.is_static_dataset_code_upload = False
+        mock_challenge.task_def_arn = None
+        mock_challenge.creator.created_by = "user"
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        mock_cluster = MagicMock()
+        mock_cluster.name = "cluster"
+        mock_cluster.cluster_endpoint = "endpoint"
+        mock_cluster.cluster_ssl = "ssl"
+        mock_cluster.efs_id = "efs"
+        mock_cluster_get.return_value = mock_cluster
+
+        mock_token = MagicMock()
+        mock_token.refresh_token = "token"
+        mock_jwt_get.return_value = mock_token
+
+        mock_task_def_code_upload_worker.format.return_value = (
+            "{'family': 'test'}"
+        )
+        mock_get_aws_credentials.return_value = {}
+
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda x: {"family": "test"},
+        ):
+            error_response = {"Error": {"Code": "SomeError"}}
+            mock_client.register_task_definition.side_effect = ClientError(
+                error_response, "RegisterTaskDefinition"
+            )
+
+            response = register_task_def_by_challenge_pk(
+                mock_client, "queue", mock_challenge
+            )
+
+        assert response == error_response
+
+    @patch(
+        "challenges.aws_utils.COMMON_SETTINGS_DICT",
+        {"EXECUTION_ROLE_ARN": None},
+    )
+    def test_register_task_def_no_execution_role(self):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.worker_image_url = None
+        mock_challenge.is_docker_based = False
+        mock_challenge.task_def_arn = None
+        mock_challenge.pk = 1
+        mock_challenge.queue = "queue"
+        mock_challenge.worker_cpu_cores = 2
+        mock_challenge.worker_memory = 4096
+        mock_challenge.ephemeral_storage = 21
+
+        response = register_task_def_by_challenge_pk(
+            mock_client, "queue", mock_challenge
+        )
+
+        assert (
+            response["ResponseMetadata"]["HTTPStatusCode"]
+            == HTTPStatus.BAD_REQUEST
+        )
+        assert "TASK_EXECUTION_ROLE_ARN" in response["Error"]
+
+
+class TestCreateEksClusterSubnets:
+    @patch("challenges.aws_utils.create_eks_cluster.delay")
+    @patch("challenges.aws_utils.uuid.uuid4")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.serializers.ChallengeEvaluationClusterSerializer")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_subnets_success(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_serializer,
+        mock_get_cluster,
+        mock_uuid4,
+        mock_create_eks_cluster_delay,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_challenge_obj.subnet_1_cidr = "10.0.1.0/24"
+        mock_challenge_obj.subnet_2_cidr = "10.0.2.0/24"
+        mock_challenge_obj.vpc_cidr = "10.0.0.0/16"
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+        mock_get_aws_credentials.return_value = {"AWS_REGION": "us-east-1"}
+        mock_client = MagicMock()
+        mock_get_boto3_client.side_effect = [
+            mock_client,
+            MagicMock(),
+        ]  # ec2, efs
+
+        mock_client.create_vpc.return_value = {"Vpc": {"VpcId": "vpc-123"}}
+        mock_client.create_internet_gateway.return_value = {
+            "InternetGateway": {"InternetGatewayId": "igw-123"}
+        }
+        mock_client.create_route_table.return_value = {
+            "RouteTable": {"RouteTableId": "rtb-123"}
+        }
+        mock_client.create_subnet.side_effect = [
+            {"Subnet": {"SubnetId": "subnet-1"}},
+            {"Subnet": {"SubnetId": "subnet-2"}},
+        ]
+        mock_client.create_security_group.side_effect = [
+            {"GroupId": "sg-1"},
+            {"GroupId": "sg-2"},
+        ]
+        mock_uuid4.return_value = "uuid-1234"
+        efs_client_mock = MagicMock()
+        mock_get_boto3_client.side_effect = [
+            mock_client,
+            efs_client_mock,
+        ]  # ec2, efs
+        efs_client_mock.create_file_system.return_value = {
+            "FileSystemId": "efs-123"
+        }
+        mock_get_cluster.return_value = MagicMock()
+        mock_serializer.return_value.is_valid.return_value = True
+
+        create_eks_cluster_subnets('{"some": "data"}')
+
+        assert mock_client.create_vpc.called
+        assert mock_client.create_internet_gateway.called
+        assert mock_client.create_route_table.called
+        assert mock_client.create_subnet.call_count == 2
+        assert mock_client.create_security_group.call_count == 2
+        assert efs_client_mock.create_file_system.called
+        assert mock_serializer.return_value.save.called
+        assert mock_create_eks_cluster_delay.called
+
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_subnets_vpc_client_error(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_logger,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+        mock_get_aws_credentials.return_value = {"AWS_REGION": "us-east-1"}
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+
+        mock_client.create_vpc.side_effect = ClientError(
+            {"Error": {"Code": "SomeError"}}, "CreateVpc"
+        )
+
+        create_eks_cluster_subnets('{"some": "data"}')
+
+        assert mock_logger.exception.called
+
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_subnets_other_client_error(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+        mock_logger,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_challenge_obj.subnet_1_cidr = "10.0.1.0/24"
+        mock_challenge_obj.subnet_2_cidr = "10.0.2.0/24"
+        mock_challenge_obj.vpc_cidr = "10.0.0.0/16"
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+        mock_get_aws_credentials.return_value = {"AWS_REGION": "us-east-1"}
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+
+        mock_client.create_vpc.return_value = {"Vpc": {"VpcId": "vpc-123"}}
+        mock_client.modify_vpc_attribute.return_value = None
+        mock_client.create_internet_gateway.return_value = {
+            "InternetGateway": {"InternetGatewayId": "igw-123"}
+        }
+        mock_client.attach_internet_gateway.return_value = None
+        mock_client.get_waiter.return_value = MagicMock(wait=MagicMock())
+        mock_client.create_route_table.return_value = {
+            "RouteTable": {"RouteTableId": "rtb-123"}
+        }
+        mock_client.create_subnet.side_effect = [
+            {"Subnet": {"SubnetId": "subnet-1"}},
+            {"Subnet": {"SubnetId": "subnet-2"}},
+        ]
+        mock_client.create_security_group.side_effect = [
+            {"GroupId": "sg-1"},
+            {"GroupId": "sg-2"},
+        ]
+
+        mock_client.authorize_security_group_ingress.side_effect = ClientError(
+            {"Error": {"Code": "SomeError"}}, "AuthorizeSecurityGroupIngress"
+        )
+
+        create_eks_cluster_subnets('{"some": "data"}')
+
+        assert mock_logger.exception.called
+
+
+class TestCreateEksCluster:
+    @patch("challenges.aws_utils.create_eks_nodegroup.delay")
+    @patch("challenges.aws_utils.NamedTemporaryFile")
+    @patch("challenges.aws_utils.yaml.dump")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.serializers.ChallengeEvaluationClusterSerializer")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_success(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_code_upload_setup_meta,
+        mock_get_boto3_client,
+        mock_serializer,
+        mock_get_cluster,
+        mock_yaml_dump,
+        mock_tempfile,
+        mock_create_eks_nodegroup_delay,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_challenge_obj.title = "Test Challenge"
+        mock_challenge_obj.approved_by_admin = True
+        mock_challenge_obj.is_docker_based = True
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+        mock_get_aws_credentials.return_value = {"AWS_REGION": "us-east-1"}
+        mock_cluster_meta = {
+            "EKS_CLUSTER_ROLE_ARN": "arn:role",
+            "SUBNET_1": "subnet-1",
+            "SUBNET_2": "subnet-2",
+            "SUBNET_SECURITY_GROUP": "sg-1",
+        }
+        mock_get_code_upload_setup_meta.return_value = mock_cluster_meta
+        mock_client = MagicMock()
+        mock_get_boto3_client.side_effect = [mock_client, MagicMock()]
+        mock_client.create_cluster.return_value = {"cluster": "created"}
+        mock_client.get_waiter.return_value = MagicMock(wait=MagicMock())
+        mock_client.describe_cluster.return_value = {
+            "cluster": {
+                "certificateAuthority": {"data": "cert"},
+                "endpoint": "endpoint",
+            }
+        }
+        mock_get_cluster.return_value = MagicMock(
+            efs_id="efs-1",
+            subnet_1_id="subnet-1",
+            subnet_2_id="subnet-2",
+            efs_security_group_id="sg-efs",
+        )
+        mock_serializer.return_value.is_valid.return_value = True
+        mock_yaml_dump.return_value = "yaml_config"
+        mock_tempfile.return_value.write = MagicMock()
+
+        create_eks_cluster('{"some": "data"}')
+
+        assert mock_client.create_cluster.called
+        assert mock_client.get_waiter.called
+        assert mock_client.describe_cluster.called
+        assert mock_serializer.return_value.save.called
+        assert mock_create_eks_nodegroup_delay.called
+
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_client_error(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_code_upload_setup_meta,
+        mock_get_boto3_client,
+        mock_logger,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_challenge_obj.title = "Test Challenge"
+        mock_challenge_obj.approved_by_admin = True
+        mock_challenge_obj.is_docker_based = True
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+        mock_get_aws_credentials.return_value = {"AWS_REGION": "us-east-1"}
+        mock_cluster_meta = {
+            "EKS_CLUSTER_ROLE_ARN": "arn:role",
+            "SUBNET_1": "subnet-1",
+            "SUBNET_2": "subnet-2",
+            "SUBNET_SECURITY_GROUP": "sg-1",
+        }
+        mock_get_code_upload_setup_meta.return_value = mock_cluster_meta
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.create_cluster.side_effect = ClientError(
+            {"Error": {"Code": "SomeError"}}, "CreateCluster"
+        )
+
+        create_eks_cluster('{"some": "data"}')
+
+        assert mock_logger.exception.called
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    def test_create_eks_cluster_not_approved_or_not_docker(
+        self,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials,
+        mock_get_code_upload_setup_meta,
+        mock_get_boto3_client,
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_challenge_obj = MagicMock()
+        mock_challenge_obj.pk = 1
+        mock_challenge_obj.title = "Test Challenge"
+        mock_challenge_obj.approved_by_admin = False
+        mock_challenge_obj.is_docker_based = False
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge_obj)]
+
+        create_eks_cluster('{"some": "data"}')
+
+        assert not mock_get_boto3_client.called
+
+
+class TestChallengeApprovalCallback(TestCase):
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.delete_workers")
+    def test_disapprove_challenge_with_workers_and_delete_failure(
+        self, mock_delete_workers, mock_logger
+    ):
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = 2
+        challenge.id = 42
+        challenge._original_approved_by_admin = True
+        challenge.approved_by_admin = False
+
+        mock_delete_workers.return_value = {
+            "count": 0,
+            "failures": [{"message": "Delete failed"}],
+        }
+
+        challenge_approval_callback(
+            sender=None, instance=challenge, field_name="approved_by_admin"
+        )
+
+        mock_logger.error.assert_called_once()
+        args, kwargs = mock_logger.error.call_args
+        assert "couldn't be deleted! Error: Delete failed" in args[0]
+
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.delete_workers")
+    def test_disapprove_challenge_with_workers_and_delete_success(
+        self, mock_delete_workers, mock_logger
+    ):
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = 2
+        challenge.id = 42
+        challenge._original_approved_by_admin = True
+        challenge.approved_by_admin = False
+
+        mock_delete_workers.return_value = {
+            "count": 1,
+            "failures": [],
+        }
+
+        challenge_approval_callback(
+            sender=None, instance=challenge, field_name="approved_by_admin"
+        )
+
+        mock_logger.error.assert_not_called()
