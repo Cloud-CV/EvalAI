@@ -16,8 +16,9 @@ omit =
     scripts/seed.py
     node_modules/
     bower_components/
+    manage.py
+    evalai/wsgi.py
 source = evalai/
-data_file = .coverage
 
 [report]
 exclude_lines =

@@ -92,7 +92,7 @@ module.exports = function(config) {
         includeAllSources: true,
         dir: 'coverage/frontend/',
         reporters: [
-            { type: "lcovonly", file: "lcov.info" },
+            { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
             { type: 'text-summary' }
         ]
     }
