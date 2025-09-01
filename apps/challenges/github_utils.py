@@ -58,9 +58,7 @@ def github_challenge_sync(challenge_id, changed_field):
         logger.error(f"Challenge {challenge_id} not found")
         return False
     except Exception:
-        logger.exception(
-            f"Error syncing challenge {challenge_id} to GitHub"
-        )
+        logger.exception(f"Error syncing challenge {challenge_id} to GitHub")
         return False
     finally:
         # Always clean up the flags
