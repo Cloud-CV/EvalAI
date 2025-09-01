@@ -8,9 +8,29 @@ coverage:
   range: "70...100"
 
   status:
-    project: yes
-    patch: yes
-    changes: no
+    project:
+      default: false        # we'll define explicit checks instead of the default
+      backend:
+        flags: backend
+        target: 70%         # set your real target
+        threshold: 1%       # allow small swings
+      frontend:
+        flags: frontend
+        target: 70%
+        threshold: 2%
+    patch:
+      default:
+        target: 0%          # require that changed lines are covered; raise as you like
+
+flags:
+  backend:
+    paths:
+      - evalai/
+      - apps/
+  frontend:
+    paths:
+      - frontend/
+      - frontend_v2/
 
 comment:
   layout: "header, diff, flags, files, changes, sunburst, uncovered, tree, footer"
