@@ -54,7 +54,6 @@ module.exports = function(config) {
         'karma-jasmine',
         'karma-chrome-launcher',
         'karma-coverage',
-        'karma-coveralls',
         'karma-brief-reporter',
     ],
 
@@ -91,9 +90,9 @@ module.exports = function(config) {
 
     coverageReporter: {
         includeAllSources: true,
-        dir: 'coverage/',
+        dir: 'coverage/frontend/',
         reporters: [
-            { type: "lcov" },
+            { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
             { type: 'text-summary' }
         ]
     }

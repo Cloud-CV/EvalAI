@@ -46,7 +46,7 @@ jobs:
 
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml || travis_terminate 1;
 
         # Check Code Quality
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
@@ -63,8 +63,11 @@ jobs:
           echo 'All code quality checks passed!'" || travis_terminate 1;
 
       after_success:
-        - bash <(curl -s https://codecov.io/bash)
-        - coveralls --rcfile=.coveragerc
+        # Upload backend coverage to Codecov
+        - bash <(curl -s https://codecov.io/bash) -f coverage-backend.xml -F backend
+        
+        # Upload frontend coverage to Codecov
+        - bash <(curl -s https://codecov.io/bash) -f coverage/frontend/lcov.info -F frontend
 
     - stage: Package & Deployment
       name: Push & Deploy Services
