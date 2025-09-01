@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9.21-bullseye
 
 ENV PYTHONUNBUFFERED 1
 
