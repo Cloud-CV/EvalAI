@@ -9,6 +9,7 @@ from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import (
     ChallengePhaseCreateSerializer,
+    ChallengePhaseSerializer,
     PWCChallengeLeaderboardSerializer,
     UserInvitationSerializer,
 )
@@ -127,7 +128,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -158,7 +161,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -188,7 +193,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -198,7 +205,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             )
 
     def test_challenge_phase_create_serializer(self):
-
         data = self.challenge_phase_create_serializer.data
 
         self.assertEqual(
@@ -281,7 +287,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
         self,
     ):
-
         data = (
             self.challenge_phase_create_serializer_without_max_submissions_per_month.data
         )
@@ -362,7 +367,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def test_challenge_phase_create_serializer_without_max_concurrent_submissions_allowed(
         self,
     ):
-
         data = (
             self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed.data
         )
@@ -440,7 +444,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
-
         serializer = ChallengePhaseCreateSerializer(data=self.serializer_data)
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
@@ -559,3 +562,15 @@ class AddSponsorsToChallengeTests(TestCase):
 
         # Ensure the function does not return any error response (meaning it worked correctly)
         self.assertIsNone(result)
+
+
+class TestChallengePhaseSerializer(TestCase):
+    def test_challenge_phase_serializer_sets_challenge_in_data(self):
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 123
+
+        context = {"challenge": mock_challenge}
+        data = {}
+
+        serializer = ChallengePhaseSerializer(data=data, context=context)
+        assert serializer.initial_data["challenge"] == 123
