@@ -2,20 +2,29 @@ language: python
 sudo: required
 os: linux
 dist: focal
-virt: vm
 services:
   - docker
   - xvfb
+
 python:
   - '3.9.21'
+
+# Enhanced caching strategy
 cache:
   directories:
     - $HOME/.cache/pip
+    - $HOME/.cache/docker
+    - $HOME/.npm
+    - $HOME/.bower
+    - node_modules
+    - bower_components
 
 env:
   global:
     - COMPOSE_BAKE=true
     - COMPOSE_BAKE_ARGS="--build-arg PIP_NO_CACHE_DIR=1"
+    - DOCKER_BUILDKIT=1
+    - COMPOSE_DOCKER_CLI_BUILD=1
 
 before_install:
   - sudo rm -f /etc/boto.cfg
@@ -24,9 +33,12 @@ before_install:
   - pip install --upgrade pip
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
-  - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-  - ulimit -u 16384 # Increase process/thread limit
-  - ulimit -n 4096 # Increase open file limit
+  - echo "parallel = 4" >> $HOME/.config/pip/pip.conf  # Increased parallelism
+  - ulimit -u 16384
+  - ulimit -n 4096
+  # Enable Docker BuildKit for faster builds
+  - echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
+  - sudo service docker restart
 
 install:
   - pip install awscli==1.18.66
@@ -34,34 +46,78 @@ install:
 jobs:
   fast_finish: true
   include:
-    - stage: Build, Test & Check Code Quality
-      name: Build, Test & Check Code Quality
+    # Stage 1: Build Docker images in parallel
+    - stage: Build
+      name: Build Core Services
       script:
-        # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
-        - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
+        - docker-compose build django db sqs || travis_terminate 1;
 
-        # Frontend Tests
-        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
+    - stage: Build
+      name: Build Frontend
+      script:
+        - docker-compose build nodejs || travis_terminate 1;
+
+    - stage: Build
+      name: Build Worker (Python 3.7)
+      script:
+        - docker-compose --profile worker_py3_7 build worker_py3_7 || travis_terminate 1;
+
+    - stage: Build
+      name: Build Worker (Python 3.8)
+      script:
+        - docker-compose --profile worker_py3_8 build worker_py3_8 || travis_terminate 1;
+
+    - stage: Build
+      name: Build Worker (Python 3.9)
+      script:
+        - docker-compose --profile worker_py3_9 build worker_py3_9 || travis_terminate 1;
+
+    # Stage 2: Run tests in parallel
+    - stage: Test
+      name: Frontend Tests
+      script:
+        - docker-compose run --rm nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
 
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml || travis_terminate 1;
 
-        # Check Code Quality
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
-          echo 'Installing black, flake8, pylint and isort...' &&
-          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+    # Stage 3: Code quality checks in parallel
+    - stage: Code Quality
+      name: Black & isort
+      script:
+        - docker-compose run --rm -e DJANGO_SETTINGS_MODULE=settings.dev django bash -c "
+          pip install black==24.8.0 isort==5.12.0 &&
           echo 'Running black check...' &&
-          black --check --diff ./ || { echo 'Black check failed!'; travis_terminate 1; } &&
+          black --check --diff ./ &&
           echo 'Running isort check...' &&
-          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; travis_terminate 1; } &&
-          echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; travis_terminate 1; } &&
-          echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; travis_terminate 1; } &&
-          echo 'All code quality checks passed!'" || travis_terminate 1;
+          isort --check-only --diff --profile=black ./ &&
+          echo 'Black and isort checks passed!'" || travis_terminate 1;
 
+    - stage: Code Quality
+      name: Flake8
+      script:
+        - docker-compose run --rm -e DJANGO_SETTINGS_MODULE=settings.dev django bash -c "
+          pip install flake8==3.8.2 &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ &&
+          echo 'Flake8 check passed!'" || travis_terminate 1;
+
+    - stage: Code Quality
+      name: Pylint
+      script:
+        - docker-compose run --rm -e DJANGO_SETTINGS_MODULE=settings.dev django bash -c "
+          pip install pylint==3.3.6 &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ &&
+          echo 'Pylint check passed!'" || travis_terminate 1;
+
+    # Stage 4: Coverage reporting
+    - stage: Coverage
+      name: Coverage Report
+      script:
+        - echo "Coverage reporting handled by backend tests"
       after_success:
         # Upload backend coverage to Codecov
         - bash <(curl -s https://codecov.io/bash) -f coverage-backend.xml -F backend
