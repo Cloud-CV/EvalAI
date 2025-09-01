@@ -30,7 +30,6 @@ flags:
   frontend:
     paths:
       - frontend/
-      - frontend_v2/
 
 comment:
   layout: "header, diff, flags, files, changes, sunburst, uncovered, tree, footer"
