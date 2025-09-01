@@ -1,13 +1,22 @@
 # Base stage with common dependencies
 FROM node:18.19.0-bullseye AS base
 
+# Set environment variables for better npm performance
+ENV NODE_ENV=production
+ENV NPM_CONFIG_LOGLEVEL=verbose
+ENV NPM_CONFIG_PROGRESS=true
+ENV NPM_CONFIG_FETCH_TIMEOUT=600000
+ENV NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000
+ENV NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000
+
 # Install Python2, symlink, and C++ build tools for node-gyp/node-sass
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python2 \
     python-is-python2 \
     make \
-    g++ && \
+    g++ \
+    curl && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -15,13 +24,21 @@ WORKDIR /code
 # Copy package files first for better caching
 COPY package.json bower.json gulpfile.js .eslintrc karma.conf.js .npmrc ./
 
-# Install global dependencies first with optimizations
-RUN npm install -g bower gulp gulp-cli karma-cli qs --no-audit --no-fund && \
+# Configure npm with better settings for Docker builds
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set progress true && \
+    npm config set loglevel verbose && \
+    npm config set maxsockets 50
+
+# Install global dependencies first with optimizations and progress
+RUN npm install -g bower gulp gulp-cli karma-cli qs --no-audit --no-fund --progress --verbose && \
     npm link gulp && \
     npm cache clean -f
 
-# Install project dependencies with optimizations
-RUN npm install --only=production --no-audit --no-fund --prefer-offline && \
+# Install project dependencies with optimizations and progress
+RUN npm install --only=production --no-audit --no-fund --prefer-offline --progress --verbose && \
     bower install --allow-root
 
 # AMD64-specific stage

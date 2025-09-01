@@ -16,14 +16,21 @@ WORKDIR /code
 # Copy package files first for better caching
 COPY package.json bower.json gulpfile.js .eslintrc karma.conf.js .npmrc ./
 
+# Configure npm with better settings for Docker builds
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set progress true && \
+    npm config set loglevel verbose
+
 # Install global dependencies
-RUN npm install -g bower gulp gulp-cli qs && \
-    npm install phantomjs-prebuilt && \
+RUN npm install -g bower gulp gulp-cli qs --progress && \
+    npm install phantomjs-prebuilt --progress && \
     npm link gulp && \
     npm cache clean -f
 
 # Install project dependencies with optimizations
-RUN npm install --only=production --no-audit --no-fund --prefer-offline && \
+RUN npm install --only=production --no-audit --no-fund --prefer-offline --progress && \
     bower install --allow-root
 
 # Copy frontend source
