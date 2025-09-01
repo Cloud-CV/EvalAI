@@ -60,7 +60,6 @@ coverage:
     - "*/bower_components/*"       # Bower dependencies
     
     # Frontend (not Python)
-    - "frontend/"                  # frontend directory
     - "frontend_v2/"               # frontend v2 directory
     
     # Other non-essential files
