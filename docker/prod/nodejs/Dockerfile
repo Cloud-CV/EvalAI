@@ -1,4 +1,4 @@
-FROM node:14.21.3-bullseye AS base
+FROM node:18.19.0-bullseye AS base
 
 ARG NODE_ENV
 
@@ -13,22 +13,21 @@ RUN apt-get update && \
 
 WORKDIR /code
 
-# Add dependencies
-ADD ./package.json /code
-ADD ./bower.json /code
-ADD ./gulpfile.js /code
-ADD ./.eslintrc /code
-ADD ./karma.conf.js /code
+# Copy package files first for better caching
+COPY package.json bower.json gulpfile.js .eslintrc karma.conf.js .npmrc ./
 
-# Install Prerequisites
-RUN npm install -g bower gulp gulp-cli
-RUN npm install phantomjs-prebuilt
-RUN npm link gulp
-RUN npm cache clean -f
-RUN npm install
-RUN npm install -g qs
-RUN bower install --allow-root
-ADD frontend /code/frontend
+# Install global dependencies
+RUN npm install -g bower gulp gulp-cli qs && \
+    npm install phantomjs-prebuilt && \
+    npm link gulp && \
+    npm cache clean -f
+
+# Install project dependencies with optimizations
+RUN npm install --only=production --no-audit --no-fund --prefer-offline && \
+    bower install --allow-root
+
+# Copy frontend source
+COPY frontend /code/frontend
 
 RUN gulp ${NODE_ENV}
 

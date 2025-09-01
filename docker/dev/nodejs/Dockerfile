@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:14.21.3-bullseye AS base
+FROM node:18.19.0-bullseye AS base
 
 # Install Python2, symlink, and C++ build tools for node-gyp/node-sass
 RUN apt-get update && \
@@ -12,35 +12,36 @@ RUN apt-get update && \
 
 WORKDIR /code
 
-# Add dependencies
-ADD ./package.json /code
-ADD ./bower.json /code
-ADD ./gulpfile.js /code
-ADD ./.eslintrc /code
-ADD ./karma.conf.js /code
+# Copy package files first for better caching
+COPY package.json bower.json gulpfile.js .eslintrc karma.conf.js .npmrc ./
 
-# Install Prerequisites
-RUN npm install -g bower gulp gulp-cli
-RUN npm link gulp
-RUN npm cache clean -f
-RUN npm install
-RUN npm install -g karma-cli
-RUN npm install -g qs
-RUN bower install --allow-root
+# Install global dependencies first with optimizations
+RUN npm install -g bower gulp gulp-cli karma-cli qs --no-audit --no-fund && \
+    npm link gulp && \
+    npm cache clean -f
+
+# Install project dependencies with optimizations
+RUN npm install --only=production --no-audit --no-fund --prefer-offline && \
+    bower install --allow-root
 
 # AMD64-specific stage
 FROM base AS amd64
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get update && apt-get install -yq google-chrome-stable libxss1
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+    apt-get update && apt-get install -yq google-chrome-stable libxss1 && \
+    rm -rf /var/lib/apt/lists/*
 
 # ARM64-specific stage
 FROM base AS arm64
-RUN apt-get update && apt-get install -yq chromium libxss1
-RUN ln -sf /usr/bin/chromium /usr/bin/google-chrome
+RUN apt-get update && apt-get install -yq chromium libxss1 && \
+    ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
+    rm -rf /var/lib/apt/lists/*
 
 # Final stage - automatically selects the right architecture
 FROM ${TARGETARCH:-amd64}
+
+# Copy source code
+COPY . /code/
 
 # Set common command and expose port
 CMD ["gulp", "dev:runserver"]
