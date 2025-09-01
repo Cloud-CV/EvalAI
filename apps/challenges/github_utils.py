@@ -57,9 +57,9 @@ def github_challenge_sync(challenge_id, changed_field):
     except Challenge.DoesNotExist:
         logger.error(f"Challenge {challenge_id} not found")
         return False
-    except Exception as e:
-        logger.error(
-            f"Error syncing challenge {challenge_id} to GitHub: {str(e)}"
+    except Exception:
+        logger.exception(
+            f"Error syncing challenge {challenge_id} to GitHub"
         )
         return False
     finally:
@@ -119,8 +119,8 @@ def github_challenge_phase_sync(challenge_phase_id, changed_field):
     except ChallengePhase.DoesNotExist:
         logger.error(f"Challenge phase {challenge_phase_id} not found")
         return False
-    except Exception as e:
-        logger.error(
+    except Exception:
+        logger.exception(
             f"Error syncing challenge phase {challenge_phase_id} to GitHub"
         )
         return False
