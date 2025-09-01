@@ -49,6 +49,7 @@
     "karma-cli": "^2.0.0",
     "karma-coverage": "^1.1.2",
     "karma-jasmine": "^2.0.1",
+    "karma-junit-reporter": "^4.0.0",
     "puppeteer": "^1.16.0"
   }
 }
