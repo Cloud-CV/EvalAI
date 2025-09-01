@@ -17,6 +17,7 @@ omit =
     node_modules/
     bower_components/
 source = evalai/
+data_file = .coverage
 
 [report]
 exclude_lines =

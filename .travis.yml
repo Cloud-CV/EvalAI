@@ -64,7 +64,7 @@ jobs:
 
       after_success:
         - bash <(curl -s https://codecov.io/bash)
-        - coveralls --rcfile=.coveragerc
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django coveralls --rcfile=.coveragerc
 
     - stage: Package & Deployment
       name: Push & Deploy Services
