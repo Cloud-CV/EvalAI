@@ -1,3 +1,6 @@
+import json
+
+
 import os
 import unittest
 from datetime import timedelta
@@ -403,3 +406,17 @@ class TestDataEncoding(unittest.TestCase):
     def test_decode_data_empty_list(self):
         data = []
         self.assertEqual(decode_data(data), [])
+
+
+class TestDeserializeObject(TestCase):
+    def test_deserialize_object_returns_model_instance(self):
+        from django.contrib.auth.models import User
+        from django.core import serializers as dj_serializers
+        from apps.base.utils import deserialize_object
+
+        user = User.objects.create(username="alice", email="alice@example.com")
+        serialized = dj_serializers.serialize("json", [user])
+        obj = deserialize_object(serialized)
+        self.assertIsNotNone(obj)
+        self.assertIsInstance(obj, User)
+        self.assertEqual(obj.pk, user.pk)

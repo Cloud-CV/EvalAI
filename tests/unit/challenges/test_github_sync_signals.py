@@ -149,6 +149,25 @@ class TestGithubSyncSignals(TestCase):
 
     @patch("challenges.aws_utils.challenge_approval_callback")
     @patch("challenges.github_utils.github_challenge_sync")
+    def test_skip_when_skip_github_sync_flag_set(
+        self, mock_sync, _mock_approval_cb
+    ):
+        # When internal skip flag is set, no sync should happen
+        challenge_models._github_sync_context.skip_github_sync = True
+        try:
+            self.challenge.title = "Ignored by flag"
+            self.challenge.save(update_fields=["title"])
+            mock_sync.assert_not_called()
+        finally:
+            if hasattr(
+                challenge_models._github_sync_context, "skip_github_sync"
+            ):
+                delattr(
+                    challenge_models._github_sync_context, "skip_github_sync"
+                )
+
+    @patch("challenges.aws_utils.challenge_approval_callback")
+    @patch("challenges.github_utils.github_challenge_sync")
     def test_no_changed_field_inference_means_no_sync(
         self, mock_sync, _mock_approval_cb
     ):
@@ -169,3 +188,22 @@ class TestGithubSyncSignals(TestCase):
         _args, kwargs = mock_sync.call_args
         # Order of update_fields is non-deterministic (Django converts to set), accept either
         assert kwargs.get("changed_field") in {"title", "description"}
+
+    @patch("challenges.github_utils.github_challenge_phase_sync")
+    def test_phase_middleware_infers_changed_field_and_triggers_sync(
+        self, mock_phase_sync
+    ):
+        # Simulate request payload for phase update
+        class _Req:
+            method = "PATCH"
+            body = b'{\n  "name": "New Phase Name"\n}'
+
+        mw = challenge_models.GitHubSyncMiddleware()
+        mw.process_request(_Req())
+
+        self.phase.name = "New Phase Name"
+        self.phase.save()
+
+        mock_phase_sync.assert_called_once()
+        _args, kwargs = mock_phase_sync.call_args
+        self.assertEqual(kwargs.get("changed_field"), "name")
