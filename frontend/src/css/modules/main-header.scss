@@ -10,7 +10,7 @@
         background-color: rgba(255, 255, 255, 0.9);
         box-shadow: 0 0 0 0 #000;
         position: fixed;
-        top: 0;
+        top: 100px;
         left: 0;
         padding: 0 100px;
         transition: all 0.1s ease-in-out;
@@ -38,6 +38,23 @@
     nav.grad-shadow-1 {
         box-shadow: 0 0 10px $light-black;
     }
+}
+.announcement-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100px;
+    width: 100%;
+    z-index: 1000;
+    background-color: $dark-gray;
+    color: $light-gray;
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    /* horizontally center */
+    align-items: center;
+    /* vertically center */
 }
 
 @media only screen and (max-width: $med-screen) {

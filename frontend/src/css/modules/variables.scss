@@ -11,15 +11,15 @@ $light-gray: #adb4d0;
 $med-gray: #3c3e49;
 $dark-gray: #252833;
 $dust-gray: #1a1b1f;
-$blue: #3B9EB9;
-$wait-blue:#5843A3;
+$blue: #3b9eb9;
+$wait-blue: #5843a3;
 
 /*green shades*/
 
 $med-green: rgb(8, 160, 3);
 
 /*red shades*/
-$med-red: #DB3232;
+$med-red: #db3232;
 
 /*black shades*/
 
@@ -32,8 +32,8 @@ $dark-black: #4d4d4d;
 
 $highlight: #ffaf4b;
 $highlight-dark: #ff7b2e;
-$med-orange: #DF9C3E;
-$hover-orange: #DA8F27;
+$med-orange: #df9c3e;
+$hover-orange: #da8f27;
 
 /*transparent*/
 
@@ -53,7 +53,7 @@ $link-hover-light: #fff;
 /*loader variable*/
 
 $loader-size: 70px;
-$loader-dot-size: ($loader-size / 5);
+$loader-dot-size: calc($loader-size / 5);
 $loader-height: $loader-dot-size;
 $loader-dot-color: #ffaf4b;
 
