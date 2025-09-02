@@ -27,9 +27,6 @@ before_install:
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
   - ulimit -u 16384 # Increase process/thread limit
   - ulimit -n 4096 # Increase open file limit
-  # Start Xvfb for Chrome headless testing
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3 # Give Xvfb time to start
 
 install:
   - pip install awscli==1.18.66

@@ -19,7 +19,8 @@ RUN apt-get update && \
     curl \
     wget \
     gnupg \
-    ca-certificates && \
+    ca-certificates \
+    xvfb && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
