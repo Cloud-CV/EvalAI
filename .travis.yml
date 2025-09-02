@@ -36,9 +36,12 @@ before_install:
   - echo "parallel = 4" >> $HOME/.config/pip/pip.conf  # Increased parallelism
   - ulimit -u 16384
   - ulimit -n 4096
-  # Enable Docker BuildKit for faster builds
-  - echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
-  - sudo service docker restart
+  # Enable Docker BuildKit for faster builds (safe write)
+  - sudo mkdir -p /etc/docker
+  - sudo tee /etc/docker/daemon.json >/dev/null <<'JSON'
+    {"features": {"buildkit": true}}
+    JSON
+  - sudo service docker restart || true
 
 install:
   - pip install awscli==1.18.66
