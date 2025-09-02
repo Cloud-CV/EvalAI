@@ -27,7 +27,7 @@ In recent years, it has become increasingly difficult to compare an algorithm so
 
 - **Evaluation inside environments**: EvalAI lets participants submit code for their agent in the form of docker images which are evaluated against test environments on the evaluation server. During evaluation, the worker fetches the image, test environment, and the model snapshot and spins up a new container to perform evaluation.
 
-- **CLI support**: [evalai-cli](https://github.com/Cloud-CV/evalai-cli){:target="_blank"} is designed to extend the functionality of the EvalAI web application to your command line to make the platform more accessible and terminal-friendly.
+- **CLI support**: <a href="https://github.com/Cloud-CV/evalai-cli" target="_blank">evalai-cli</a> is designed to extend the functionality of the EvalAI web application to your command line to make the platform more accessible and terminal-friendly.
 
 - **Portability**: EvalAI is designed with keeping in mind scalability and portability of such a system from the very inception of the idea. Most of the components rely heavily on open-source technologies – Docker, Django, Node.js, and PostgreSQL.
 
@@ -42,7 +42,7 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
 The steps are:
 
-1. Install [docker](https://docs.docker.com/install/){:target="_blank"} and [docker-compose](https://docs.docker.com/compose/install/){:target="_blank"} on your machine.
+1. Install <a href="https://docs.docker.com/install/" target="_blank">docker</a> and <a href="https://docs.docker.com/compose/install/" target="_blank">docker-compose</a> on your machine.
 
 2. Get the source code on to your machine via git.
 
@@ -75,13 +75,13 @@ The steps are:
     docker-compose --profile worker --profile statsd up --build
     ```
 
-4. That's it. Open web browser and hit the URL [http://127.0.0.1:8888](http://127.0.0.1:8888){:target="_blank"}. Three users will be created by default which are listed below -
+4. That's it. Open web browser and hit the URL <a href="http://127.0.0.1:8888" target="_blank">http://127.0.0.1:8888</a>. Three users will be created by default which are listed below -
 
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
 
-If you are facing any issue during installation, please see our [common errors during installation](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation){:target="_blank"} page.
+If you are facing any issue during installation, please see our <a href="https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation" target="_blank">common errors during installation</a> page.
 
 ## Setup Instructions for EvalAI Documentation
 
@@ -106,13 +106,13 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 
 ## Team
 
-EvalAI is maintained by [Rishabh Jain](https://rishabhjain.xyz/){:target="_blank"}, [Gunjan Chhablani](https://gchhablani.github.io/){:target="_blank"} and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/){:target="_blank"}.
+EvalAI is maintained by <a href="https://rishabhjain.xyz/" target="_blank">Rishabh Jain</a>, <a href="https://gchhablani.github.io/" target="_blank">Gunjan Chhablani</a> and <a href="https://www.cc.gatech.edu/~dbatra/" target="_blank">Dhruv Batra</a>.
 
-A non-exhaustive list of past contributors includes: [Deshraj Yadav](http://deshraj.xyz/){:target="_blank"}, [Ram Ramrakhya](https://ram81.github.io/){:target="_blank"},[Akash Jain](http://www.jainakash.in/){:target="_blank"}, [Taranjeet Singh](https://taranjeet.cc/){:target="_blank"}, [Shiv Baran Singh](https://github.com/spyshiv){:target="_blank"}, [Harsh Agarwal](https://dexter1691.github.io/){:target="_blank"}, [Prithvijit Chattopadhyay](https://prithv1.github.io/){:target="_blank"}, and [Devi Parikh](https://www.cc.gatech.edu/~parikh/){:target="_blank"}.
+A non-exhaustive list of past contributors includes: <a href="http://deshraj.xyz/" target="_blank">Deshraj Yadav</a>, <a href="https://ram81.github.io/" target="_blank">Ram Ramrakhya</a>,<a href="http://www.jainakash.in/" target="_blank">Akash Jain</a>, <a href="https://taranjeet.cc/" target="_blank">Taranjeet Singh</a>, <a href="https://github.com/spyshiv" target="_blank">Shiv Baran Singh</a>, <a href="https://dexter1691.github.io/" target="_blank">Harsh Agarwal</a>, <a href="https://prithv1.github.io/" target="_blank">Prithvijit Chattopadhyay</a>, and <a href="https://www.cc.gatech.edu/~parikh/" target="_blank">Devi Parikh</a>.
 
 ## Contribution guidelines
 
-If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md){:target="_blank"}.
+If you are interested in contributing to EvalAI, follow our <a href="https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md" target="_blank">contribution guidelines</a>.
 
 
 ## Contributors
