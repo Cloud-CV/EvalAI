@@ -106,7 +106,9 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 
 ## Team
 
-EvalAI is currently maintained by [Rishabh Jain](https://rishabhjain.xyz/), [Gunjan Chhablani](https://gchhablani.github.io/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
+EvalAI is maintained by [Rishabh Jain](https://rishabhjain.xyz/), [Gunjan Chhablani](https://gchhablani.github.io/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
+
+A non-exhaustive list of past contributors includes: [Deshraj Yadav](http://deshraj.xyz/), [Ram Ramrakhya](https://ram81.github.io/),[Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](https://taranjeet.cc/), [Shiv Baran Singh](https://github.com/spyshiv), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), and [Devi Parikh](https://www.cc.gatech.edu/~parikh/).
 
 ## Contribution guidelines
 
