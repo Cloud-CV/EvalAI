@@ -1,7 +1,9 @@
-const puppeteer = require('puppeteer');
+const chromeLauncher = require('chrome-launcher');
+
 // Set CHROME_BIN based on availability
 const isArm = require('os').arch().includes('arm');
-process.env.CHROME_BIN = process.env.CHROME_BIN || puppeteer.executablePath() || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
+// Use chrome-launcher to find Chrome executable, fallback to system paths
+process.env.CHROME_BIN = process.env.CHROME_BIN || chromeLauncher.chromiumPath || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
 module.exports = function(config) {
     var configuration = {
   
