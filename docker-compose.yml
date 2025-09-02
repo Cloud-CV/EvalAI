@@ -73,6 +73,8 @@ services:
       dockerfile: docker/dev/nodejs/Dockerfile
     environment:
       NODE_ENV: development
+      CHROME_BIN: /usr/bin/google-chrome
+      DISPLAY: :99.0
     ports:
       - "8888:8888"
       - "35729:35729"
@@ -80,6 +82,20 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   statsd-exporter:
     hostname: statsd

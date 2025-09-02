@@ -16,7 +16,10 @@ RUN apt-get update && \
     python-is-python2 \
     make \
     g++ \
-    curl && \
+    curl \
+    wget \
+    gnupg \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -56,6 +59,11 @@ RUN apt-get update && apt-get install -yq chromium libxss1 && \
 
 # Final stage - automatically selects the right architecture
 FROM ${TARGETARCH:-amd64}
+
+# Set Chrome environment variables for Travis CI
+ENV CHROME_BIN=/usr/bin/google-chrome
+ENV CHROME_PATH=/usr/bin/google-chrome
+ENV DISPLAY=:99.0
 
 # Copy source code
 COPY . /code/
