@@ -42,11 +42,11 @@ jobs:
         - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
 
         # Frontend Tests
-        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
+        - docker-compose run nodejs bash -c "npm install && gulp dev && karma start --single-run --reporters=junit,coverage && gulp staging" || travis_terminate 1;
 
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml || travis_terminate 1;
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy || travis_terminate 1;
 
         # Check Code Quality
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
@@ -63,6 +63,15 @@ jobs:
           echo 'All code quality checks passed!'" || travis_terminate 1;
 
       after_success:
+        # Install Codecov CLI
+        - pip install codecov-cli
+        
+        # Upload backend test results to Codecov
+        - codecovcli do-upload --report-type test_results --file junit-backend.xml
+        
+        # Upload frontend test results to Codecov (if available)
+        - codecovcli do-upload --report-type test_results --file coverage/frontend/TEST-*.xml || true
+        
         # Upload backend coverage to Codecov
         - bash <(curl -s https://codecov.io/bash) -f coverage-backend.xml -F backend
         

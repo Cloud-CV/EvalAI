@@ -1,7 +1,8 @@
-const puppeteer = require('puppeteer');
 // Set CHROME_BIN based on availability
 const isArm = require('os').arch().includes('arm');
-process.env.CHROME_BIN = process.env.CHROME_BIN || puppeteer.executablePath() || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
+
+// Use system Chrome/Chromium paths (Docker container has Chrome installed)
+process.env.CHROME_BIN = process.env.CHROME_BIN || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
 module.exports = function(config) {
     var configuration = {
   
@@ -18,12 +19,20 @@ module.exports = function(config) {
           flags: [
             '--no-sandbox', 
             '--disable-gpu', 
-            '--disable-dev-shm-usage'
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
           ]
         },
         ChromeWithNoSandbox: {
           base: 'ChromeHeadless',
-          flags: ['--no-sandbox'],
+          flags: [
+            '--no-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+          ],
         },
       },
   
@@ -55,12 +64,20 @@ module.exports = function(config) {
         'karma-chrome-launcher',
         'karma-coverage',
         'karma-brief-reporter',
+        'karma-junit-reporter',
     ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['coverage', 'brief'],
+    reporters: ['coverage', 'brief', 'junit'],
+
+    // JUnit reporter configuration
+    junitReporter: {
+        outputDir: 'coverage/frontend/',
+        outputFile: 'TEST-frontend.xml',
+        suite: 'frontend'
+    },
 
 
     // web server port
@@ -77,16 +94,21 @@ module.exports = function(config) {
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
+    autoWatch: false,
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: true,
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 1,
+
+    // Browser disconnect timeout
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 3,
+    browserNoActivityTimeout: 60000,
 
     coverageReporter: {
         includeAllSources: true,
@@ -101,6 +123,9 @@ module.exports = function(config) {
   // Detect if this is TravisCI running the tests and tell it to use chromium
   if(process.env.TRAVIS){
       configuration.browsers = ['ChromeWithNoSandbox'];
+      configuration.browserDisconnectTimeout = 20000;
+      configuration.browserDisconnectTolerance = 5;
+      configuration.browserNoActivityTimeout = 120000;
   }
 
   config.set(configuration);
