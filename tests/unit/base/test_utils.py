@@ -28,6 +28,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+from django.test import TestCase as DjangoTestCase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
@@ -408,7 +409,7 @@ class TestDataEncoding(unittest.TestCase):
         self.assertEqual(decode_data(data), [])
 
 
-class TestDeserializeObject(TestCase):
+class TestDeserializeObject(DjangoTestCase):
     def test_deserialize_object_returns_model_instance(self):
         from django.contrib.auth.models import User
         from django.core import serializers as dj_serializers
