@@ -1,18 +1,298 @@
 codecov:
+  # Global Codecov settings
+  branch: master                   # set default branch (overrides Git default)
+  max_report_age: off              # Turn off max report age
+  strict_yaml_branch: master       # always use YAML from master branch
+  
+  # Bot configuration for GitHub operations
+  bot: "codecov[bot]"              # GitHub App bot username
+  
+  # Notification settings
   notify:
-    require_ci_to_pass: yes
+    require_ci_to_pass: yes        # require CI to pass before processing coverage
+    after_n_builds: 2              # wait for both backend and frontend uploads
+    wait_for_ci: yes               # wait for CI completion
 
 coverage:
-  precision: 2
-  round: down
-  range: "70...100"
+  precision: 2                     # decimal places in coverage percentage
+  round: down                      # round coverage down
+  range: "70...100"                # acceptable coverage range
+  
+  # Comprehensive ignore paths for coverage calculation
+  ignore:
+    # Python environment and system files
+    - "*/python?.?/*"              # Python installations
+    - "*/site-packages/*"          # Python packages
+    - "*/venv/*"                   # virtual environments
+    - "*/env/*"                    # virtual environments
+    - "*/.venv/*"                  # virtual environments
+    
+    # Django generated/boilerplate files
+    - "*/migrations/*"             # Django migrations
+    - "*/templates/*"              # Django templates
+    - "*/static/*"                 # static files
+    - "*/media/*"                  # media files
+    - "manage.py"                  # Django management script
+    - "evalai/wsgi.py"             # WSGI configuration
+    - "evalai/asgi.py"             # ASGI configuration
+    
+    # Test files
+    - "*/tests/*"                  # test directories
+    - "*/test_*.py"                # test files
+    - "*_test.py"                  # test files
+    - "test_*.py"                  # test files
+    - "conftest.py"                # pytest configuration
+    
+    # Django settings (environment-specific)
+    - "settings/custom_storages.py" # storage settings
+    - "settings/staging.py"        # staging settings
+    - "settings/dev.py"            # development settings
+    - "settings/prod.py"           # production settings
+    - "settings/test.py"           # test settings
+    
+    # Scripts and utilities
+    - "scripts/seed.py"            # seed script
+    - "scripts/migration/*"        # migration scripts
+    - "scripts/deployment/*"       # deployment scripts
+    
+    # Third-party dependencies
+    - "*/node_modules/*"           # Node.js dependencies
+    - "*/bower_components/*"       # Bower dependencies
+    
+    # Frontend (not Python)
+    - "frontend_v2/"               # frontend v2 directory
+    
+    # Other non-essential files
+    - "*/middleware/*"             # middleware files
+    - "*/admin.py"                 # Django admin
+    - "*/apps.py"                  # Django app configuration
+    - "*.min.js"                   # minified JavaScript
+    - "*.min.css"                  # minified CSS
 
   status:
-    project: yes
-    patch: yes
-    changes: no
+    # Default rules applied to all status checks
+    default_rules:
+      flag_coverage_not_uploaded_behavior: exclude
+    
+    # Project status checks
+    project:
+      default: false        # disable default project status
+      
+      backend:
+        target: 70%         # minimum coverage required
+        threshold: 1%       # allow coverage to drop by 1%
+        flags: 
+          - backend
+        paths:
+          - evalai/
+          - apps/
+        if_ci_failed: error # fail status if CI fails
+        informational: false
+        only_pulls: false
+        
+      frontend:
+        target: 70%
+        threshold: 1%
+        flags:
+          - frontend
+        paths:
+          - frontend/
+        if_ci_failed: error
+        informational: false
+        only_pulls: false
+        
+      # Combined overall project status
+      overall:
+        target: 70%
+        threshold: 2%
+    patch:
+      default:
+        target: 80%        # require 80% coverage on new/changed lines
+        threshold: 0%      # no threshold for patch coverage
+        if_ci_failed: error
+        only_pulls: true   # only apply to pull requests
+        
+      backend_patch:
+        target: 80%
+        flags:
+          - backend
+        paths:
+          - evalai/
+          - apps/
+        only_pulls: true
+        
+      frontend_patch:
+        target: 70%       # slightly lower for frontend
+        flags:
+          - frontend
+        paths:
+          - frontend/
+        only_pulls: true
 
+flags:
+  backend:
+    paths:
+      - evalai/
+      - apps/
+  frontend:
+    paths:
+      - frontend/
+
+# Components configuration - isolate and categorize coverage data
+component_management:
+  default_rules:  # default rules inherited by all components
+    statuses:
+      - type: project
+        target: 70%
+        threshold: 1%
+        
+  individual_components:
+    # Backend Core Components
+    - component_id: accounts_module
+      name: "Accounts & Authentication"
+      paths:
+        - apps/accounts/**
+      statuses:
+        - type: project
+          target: 75%  # higher target for authentication
+        - type: patch
+          target: 85%
+          
+    - component_id: challenges_module  
+      name: "Challenges Management"
+      paths:
+        - apps/challenges/**
+      statuses:
+        - type: project
+          target: 80%  # core functionality needs high coverage
+        - type: patch
+          target: 85%
+          
+    - component_id: jobs_module
+      name: "Job Processing"
+      paths:
+        - apps/jobs/**
+      statuses:
+        - type: project
+          target: 75%
+        - type: patch
+          target: 80%
+          
+    - component_id: participants_module
+      name: "Participants & Teams"
+      paths:
+        - apps/participants/**
+      statuses:
+        - type: project
+          target: 70%
+        - type: patch
+          target: 75%
+          
+    - component_id: hosts_module
+      name: "Challenge Hosts"
+      paths:
+        - apps/hosts/**
+        
+    - component_id: analytics_module
+      name: "Analytics"
+      paths:
+        - apps/analytics/**
+        
+    - component_id: web_module
+      name: "Web Interface"
+      paths:
+        - apps/web/**
+        
+    # Frontend Components  
+    - component_id: frontend
+      name: "Frontend (Gulp)"
+      paths:
+        - frontend/**
+      flag_regexes:
+        - "frontend"
+      statuses:
+        - type: project
+          target: 65%  # frontend might have lower coverage
+        
+    # Cross-cutting Components
+    - component_id: models_all
+      name: "All Models"
+      paths:
+        - "**/models.py"
+      statuses:
+        - type: project
+          target: 85%  # models should be well tested
+          
+    - component_id: views_all
+      name: "All Views"
+      paths:
+        - "**/views.py"
+      statuses:
+        - type: project
+          target: 75%
+          
+    - component_id: serializers_all
+      name: "All Serializers"
+      paths:
+        - "**/serializers.py"
+      statuses:
+        - type: project
+          target: 80%
+          
+    - component_id: utils_all
+      name: "Utility Functions"
+      paths:
+        - "**/utils.py"
+        - "**/aws_utils.py"
+        - "apps/base/**"
+      statuses:
+        - type: project
+          target: 70%
+          
+    # Configuration & Scripts
+    - component_id: core_config
+      name: "Core Configuration"
+      paths:
+        - evalai/**
+        - settings/**
+        - "*.py"  # root level Python files
+      statuses:
+        - type: project
+          target: 60%  # config files might have lower coverage
+
+# Parsers configuration for different coverage formats
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+  javascript:
+    enable_partials: no
+
+# Pull request comment configuration  
 comment:
-  layout: "header, diff, flags, files, changes, sunburst, uncovered, tree, footer"
-  behavior: default
-  require_changes: no
+  layout: "header, diff, flags, components, files, changes, sunburst, uncovered, tree, footer"
+  behavior: default              # default, once, new, spammy
+  require_changes: no            # post comment even if no coverage changes
+  require_base: no               # post comment even if no base coverage
+  require_head: yes              # only post if head coverage exists
+  hide_project_coverage: no      # show project coverage in comment
+  
+# GitHub Checks integration
+github_checks:
+  annotations: true              # show coverage annotations on GitHub
+
+# Profiling configuration
+profiling:
+  critical_files_paths:          # files that are critical for the project
+    - "apps/accounts/**"         # authentication
+    - "apps/challenges/**"       # core functionality
+    - "apps/jobs/**"             # job processing
+    
+# Slack notifications (optional - requires setup)
+# slack:
+#   url: "your-slack-webhook-url"
+#   threshold: 1%
+#   message: "Coverage changed by {{ range diff }}% in {{ owner }}/{{ repo }}"

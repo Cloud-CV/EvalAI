@@ -1,5 +1,5 @@
--r common.txt
 
+-r common.txt
 boto==2.49.0
 django-storages==1.7.1
 python-memcached==1.59

@@ -86,6 +86,7 @@ class BaseAPITestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge/github_repo",
         )
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
@@ -203,11 +204,15 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
+                "github_branch": self.challenge.github_branch,
             }
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            response.data["results"], json.loads(json.dumps(expected))
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
@@ -574,6 +579,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -676,6 +683,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -804,6 +813,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -881,6 +892,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "github_repository": self.challenge.github_repository,
+            "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1344,6 +1357,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge2/github_repo",
         )
 
         # Past Challenge challenge
@@ -1365,6 +1379,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
+            github_repository="challenge3/github_repo",
         )
 
         # Future challenge
@@ -1385,6 +1400,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge4/github_repo",
         )
 
         # Disabled challenge
@@ -1474,6 +1490,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1552,11 +1570,13 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
-                "ec2_storage": self.challenge.ec2_storage,
-                "ephemeral_storage": self.challenge.ephemeral_storage,
-                "worker_image_url": self.challenge.worker_image_url,
-                "worker_instance_type": self.challenge.worker_instance_type,
-                "sqs_retention_period": self.challenge.sqs_retention_period,
+                "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1640,6 +1660,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
+                "github_branch": self.challenge4.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1713,16 +1735,18 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
-                "job_cpu_cores": self.challenge3.job_cpu_cores,
-                "job_memory": self.challenge3.job_memory,
-                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
-                "ec2_storage": self.challenge3.ec2_storage,
-                "ephemeral_storage": self.challenge3.ephemeral_storage,
-                "worker_image_url": self.challenge3.worker_image_url,
-                "worker_instance_type": self.challenge3.worker_instance_type,
-                "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+                "job_cpu_cores": self.challenge4.job_cpu_cores,
+                "job_memory": self.challenge4.job_memory,
+                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "ec2_storage": self.challenge4.ec2_storage,
+                "ephemeral_storage": self.challenge4.ephemeral_storage,
+                "worker_image_url": self.challenge4.worker_image_url,
+                "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "github_repository": self.challenge4.github_repository,
+                "github_branch": self.challenge4.github_branch,
             },
             {
                 "id": self.challenge3.pk,
@@ -1790,6 +1814,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -1857,6 +1883,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1925,6 +1953,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
             featured=True,
+            github_repository="challenge3/github_repo",
         )
 
     def test_get_featured_challenges(self):
@@ -1995,6 +2024,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "github_repository": self.challenge3.github_repository,
+                "github_branch": self.challenge3.github_branch,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2036,6 +2067,7 @@ class GetChallengeByPk(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
+            github_repository="challenge3/github_repo",
         )
 
         self.challenge4 = Challenge.objects.create(
@@ -2057,6 +2089,7 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=False,
             approved_by_admin=True,
+            github_repository="challenge4/github_repo",
         )
 
         self.challenge5 = Challenge.objects.create(
@@ -2157,6 +2190,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
+            "github_repository": self.challenge3.github_repository,
+            "github_branch": self.challenge3.github_branch,
         }
 
         response = self.client.get(self.url, {})
@@ -2248,6 +2283,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
+            "github_repository": self.challenge4.github_repository,
+            "github_branch": self.challenge4.github_branch,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2297,6 +2334,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge/github_repo",
         )
 
         self.challenge2 = Challenge.objects.create(
@@ -2315,6 +2353,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
+            github_repository="challenge2/github_repo",
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -2399,6 +2438,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2478,6 +2519,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2557,6 +2600,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             }
         ]
 
@@ -2634,6 +2679,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "github_repository": self.challenge.github_repository,
+                "github_branch": self.challenge.github_branch,
             },
             {
                 "id": self.challenge2.pk,
@@ -2701,6 +2748,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "github_repository": self.challenge2.github_repository,
+                "github_branch": self.challenge2.github_branch,
             },
         ]
 
@@ -5773,7 +5822,18 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"message": "Approval request sent!"})
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Approval request sent! You should also receive an email with subscription plan details."
+            },
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Approval request sent! You should also receive an email with subscription plan details."
+            },
+        )
 
     def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
         self,
@@ -5831,6 +5891,305 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             },
         )
 
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    @mock.patch("challenges.views.logger")
+    def test_request_challenge_approval_with_successful_subscription_email(
+        self, mock_logger, mock_send_email
+    ):
+        """Test that subscription plans email is sent successfully during approval request"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called with correct challenge
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Verify success logging
+        mock_logger.info.assert_any_call(
+            "Subscription plans email sent successfully for challenge {}".format(
+                self.challenge.pk
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Approval request sent! You should also receive an email with subscription plan details."
+            },
+        )
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    @mock.patch("challenges.views.logger")
+    def test_request_challenge_approval_with_email_failure_continues_approval(
+        self, mock_logger, mock_send_email
+    ):
+        """Test that approval process continues even if email sending fails"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        # Make email sending fail
+        mock_send_email.side_effect = Exception("Email service unavailable")
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Verify error logging
+        mock_logger.error.assert_any_call(
+            "Failed to send subscription plans email for challenge {}: {}".format(
+                self.challenge.pk, "Email service unavailable"
+            )
+        )
+
+        # Verify approval process continues despite email failure
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Approval request sent! You should also receive an email with subscription plan details."
+            },
+        )
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_challenge_not_found(
+        self, mock_send_email
+    ):
+        """Test that email is not sent when challenge doesn't exist"""
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": 99999},  # Non-existent challenge
+        )
+        response = self.client.get(url)
+
+        # Verify email function was not called for non-existent challenge
+        mock_send_email.assert_not_called()
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_user_not_host(self, mock_send_email):
+        """Test that email is not sent when user is not challenge host"""
+        # Create a different user who is not a challenge host
+        other_user = User.objects.create(
+            username="otheruser",
+            password="other_password",
+            email="other@test.com",
+        )
+        EmailAddress.objects.create(
+            user=other_user,
+            email="other@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        # Authenticate as the other user
+        self.client.force_authenticate(user=other_user)
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was not called for unauthorized user
+        mock_send_email.assert_not_called()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_webhook_failure_after_email_success(
+        self, mock_send_email
+    ):
+        """Test that email is sent even if webhook fails later"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"error",  # Simulate webhook failure
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called despite webhook failure
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Webhook failure should result in error response
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("error", response.data)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_with_smtp_error(self, mock_send_email):
+        """Test handling of SMTP-specific errors during email sending"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        # Simulate SMTP error
+        from smtplib import SMTPException
+
+        mock_send_email.side_effect = SMTPException(
+            "SMTP server not available"
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Approval should continue despite SMTP error
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_integration_with_challenge_phases(
+        self, mock_send_email
+    ):
+        """Test email integration with challenge that has multiple phases"""
+        # Create additional challenge phase
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            additional_phase = ChallengePhase.objects.create(
+                name="Additional Phase",
+                description="Description for Additional Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file2.txt",
+                    b"Dummy file content 2",
+                    content_type="text/plain",
+                ),
+            )
+
+        # Create a finished submission for the additional phase to satisfy the submission check
+        from jobs.models import Submission
+        from participants.models import Participant
+
+        # Ensure participant team is associated with the challenge and user is a participant
+        self.challenge.participant_teams.add(self.participant_team)
+        Participant.objects.get_or_create(
+            user=self.user,
+            team=self.participant_team,
+            defaults={"status": Participant.ACCEPTED},
+        )
+
+        submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=additional_phase,
+            created_by=self.user,
+            status="submitted",  # Start with submitted status
+            input_file=SimpleUploadedFile(
+                "test_input.txt", b"test input", content_type="text/plain"
+            ),
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        # Manually update the status to finished after creation to bypass any automatic processing
+        submission.status = "finished"
+        submission.save()
+
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Verify email function was called with the challenge
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_not_sent_when_submissions_incomplete(
+        self, mock_send_email
+    ):
+        """Test that email is not sent when submission check fails"""
+        # Create a challenge phase without finished submissions
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            ChallengePhase.objects.create(
+                name="Unfinished Phase",
+                description="Description for Unfinished Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_unfinished_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        # Email should NOT be sent when submission check fails
+        mock_send_email.assert_not_called()
+
+        # The request should fail due to unfinished submissions
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "do not have finished submissions", response.data["error"]
+        )
+
 
 class CreateOrUpdateGithubChallengeTest(APITestCase):
     def setUp(self):
@@ -5867,36 +6226,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         )
 
         self.client.force_authenticate(user=self.user)
-
-    def test_create_challenge_using_github_success(self):
-        self.url = reverse_lazy(
-            "challenges:create_or_update_github_challenge",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-
-        with mock.patch("challenges.views.requests.get") as m:
-            resp = mock.Mock()
-            resp.content = self.test_zip_file.read()
-            resp.status_code = 200
-            m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "zip_configuration": self.input_zip_file,
-                },
-                format="multipart",
-            )
-            expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
-            }
-
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
-        self.assertEqual(Challenge.objects.count(), 1)
-        self.assertEqual(DatasetSplit.objects.count(), 1)
-        self.assertEqual(Leaderboard.objects.count(), 1)
-        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
 
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
@@ -5935,6 +6264,43 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_challenge_using_github_success(self):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+            }
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json(), expected)
+        self.assertEqual(Challenge.objects.count(), 1)
+        self.assertEqual(DatasetSplit.objects.count(), 1)
+        self.assertEqual(Leaderboard.objects.count(), 1)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+        # Verify github_repository is properly stored
+        challenge = Challenge.objects.first()
+        self.assertEqual(
+            challenge.github_repository,
+            "https://github.com/yourusername/repository",
+        )
 
 
 class ValidateChallengeTest(APITestCase):
@@ -6002,6 +6368,7 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",

@@ -27,31 +27,44 @@ services:
     volumes:
       - .:/code
 
-  worker:
+  worker_py3_7:
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/worker/Dockerfile
+      dockerfile: docker/dev/worker_py3_7/Dockerfile
     depends_on:
       - django
     volumes:
       - .:/code
     profiles:
-      - worker # Only built when this profile is specified
+      - worker_py3_7 # Only built when this profile is specified
 
   worker_py3_8:
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/worker_py3.8/Dockerfile
+      dockerfile: docker/dev/worker_py3_8/Dockerfile
     depends_on:
       - django
     volumes:
       - .:/code
     profiles:
-      - worker # Only built when this profile is specified
+      - worker_py3_8 # Only built when this profile is specified
+
+  worker_py3_9:
+    env_file:
+      - docker/dev/docker.env
+    build:
+      context: ./
+      dockerfile: docker/dev/worker_py3_9/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - .:/code
+    profiles:
+      - worker_py3_9 # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
@@ -60,6 +73,8 @@ services:
       dockerfile: docker/dev/nodejs/Dockerfile
     environment:
       NODE_ENV: development
+      CHROME_BIN: /usr/bin/google-chrome
+      DISPLAY: :99.0
     ports:
       - "8888:8888"
       - "35729:35729"
@@ -67,6 +82,14 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
 
   statsd-exporter:
     hostname: statsd
