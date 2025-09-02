@@ -42,8 +42,7 @@ RUN npm install -g bower gulp gulp-cli karma-cli qs --no-audit --no-fund --progr
     npm cache clean -f
 
 # Install project dependencies with optimizations and progress
-RUN npm install --only=production --no-audit --no-fund --prefer-offline --progress --verbose && \
-    bower install --allow-root
+RUN npm install --only=production --no-audit --no-fund --prefer-offline --progress --verbose
 
 # AMD64-specific stage
 FROM base AS amd64
@@ -68,6 +67,9 @@ ENV DISPLAY=:99.0
 
 # Copy source code
 COPY . /code/
+
+# Install bower components after source code is copied
+RUN bower install --allow-root
 
 # Set common command and expose port
 CMD ["gulp", "dev:runserver"]

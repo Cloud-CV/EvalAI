@@ -11,7 +11,7 @@
   "dependencies": {
     "autoprefixer": "^10.4.16",
     "connect-modrewrite": "^0.10.2",
-    "del": "^6.1.1",
+    "del": "^4.1.1",
     "eslint": "^8.56.0",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^4.0.0",
@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "angular-mocks": "1.7.0",
-    "chrome-launcher": "^1.1.0",
     "istanbul": "^0.4.5",
     "jasmine-core": "^4.6.0",
     "karma": "^6.4.2",
@@ -57,6 +56,7 @@
     "npm": ">=8.0.0"
   },
   "overrides": {
-    "glob": "^10.3.10"
+    "glob": "^8.1.0",
+    "glob-stream": "^6.1.0"
   }
 }
