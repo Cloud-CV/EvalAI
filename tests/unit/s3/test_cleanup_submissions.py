@@ -4,16 +4,15 @@ import tempfile
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
+from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
-
-from apps.challenges.models import Challenge, ChallengePhase
-from apps.hosts.models import ChallengeHostTeam
-from apps.jobs.models import Submission
-from apps.participants.models import ParticipantTeam
+from hosts.models import ChallengeHostTeam
+from jobs.models import Submission
+from participants.models import ParticipantTeam
 
 
 class BaseTestCase(TestCase):

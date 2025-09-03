@@ -65,26 +65,26 @@ manage.py is located). The DJANGO_SETTINGS_MODULE environment variable must be
 set to your Django settings module.
 
 Usage:
-    python scripts/data/cleanup_submissions.py --dry-run --days 365
-    python scripts/data/cleanup_submissions.py --execute --days 365
-    python scripts/data/cleanup_submissions.py --help
+    python scripts/s3/cleanup_submissions.py --dry-run --days 365
+    python scripts/s3/cleanup_submissions.py --execute --days 365
+    python scripts/s3/cleanup_submissions.py --help
 
 Examples:
     # Preview deletion of submission folders from challenges expired 1 year ago
     export DJANGO_SETTINGS_MODULE=settings.dev
-    python scripts/data/cleanup_submissions.py --dry-run --days 365
+    python scripts/s3/cleanup_submissions.py --dry-run --days 365
 
     # Preview deletion of submission folders from challenges expired 6 months ago
     export DJANGO_SETTINGS_MODULE=settings.prod
-    python scripts/data/cleanup_submissions.py --dry-run --days 180
+    python scripts/s3/cleanup_submissions.py --dry-run --days 180
 
     # Actually delete submission folders from challenges expired 1 year ago
     export DJANGO_SETTINGS_MODULE=settings.prod
-    python scripts/data/cleanup_submissions.py --execute --days 365
+    python scripts/s3/cleanup_submissions.py --execute --days 365
 
     # Delete submission folders from challenges expired 2 years ago
     export DJANGO_SETTINGS_MODULE=settings.prod
-    python scripts/data/cleanup_submissions.py --execute --days 730
+    python scripts/s3/cleanup_submissions.py --execute --days 730
 """
 
 import argparse
