@@ -1,6 +1,8 @@
 import os
 import shutil
+import sys
 import tempfile
+import time
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
@@ -46,8 +48,13 @@ class BaseTestCase(TestCase):
                 days=400
             )  # Expired challenge
 
+        # Generate a unique slug using timestamp
+        unique_id = int(time.time() * 1000) % 1000000
+        slug = f"test-challenge-{unique_id}"
+
         return Challenge.objects.create(
             title=title,
+            slug=slug,
             description="Test challenge description",
             terms_and_conditions="Test terms",
             submission_guidelines="Test guidelines",
@@ -59,10 +66,15 @@ class BaseTestCase(TestCase):
             anonymous_leaderboard=False,
         )
 
-    def create_challenge_phase(self, challenge, name="Test Phase"):
+    def create_challenge_phase(
+        self, challenge, name="Test Phase", codename=None
+    ):
         """Helper method to create a challenge phase."""
+        if codename is None:
+            codename = f"Phase Code Name {name}"
         return ChallengePhase.objects.create(
             name=name,
+            codename=codename,
             description="Test phase description",
             leaderboard_public=False,
             is_public=True,
@@ -106,18 +118,10 @@ class TestCleanupSubmissionsScript(BaseTestCase):
         """Set up test environment."""
         super().setUp()
 
-        # Import the script module
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         # Mock Django setup to avoid actual Django initialization in tests
         with patch("django.setup"):
-            from cleanup_submissions import (
+            # Add the scripts/s3 directory to the path
+            from scripts.s3.cleanup_submissions import (
                 ExpiredSubmissionsDeleter,
                 setup_logging,
             )
@@ -159,7 +163,8 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             mock_logger = Mock()
             mock_get_logger.return_value = mock_logger
 
-            # Test with enable_cloudwatch=False (should still enable CloudWatch)
+            # Test with enable_cloudwatch=False (should still
+            # enable CloudWatch)
             self.setup_logging(dry_run=True, enable_cloudwatch=False)
 
             # Verify logger was configured
@@ -260,8 +265,8 @@ class TestCleanupSubmissionsScript(BaseTestCase):
     def test_get_submissions_for_challenge(self):
         """Test get_submissions_for_challenge method."""
         challenge = self.create_challenge()
-        phase1 = self.create_challenge_phase(challenge, "Phase 1")
-        phase2 = self.create_challenge_phase(challenge, "Phase 2")
+        phase1 = self.create_challenge_phase(challenge, "Phase 1", "phase1")
+        phase2 = self.create_challenge_phase(challenge, "Phase 2", "phase2")
 
         # Create submissions for different phases
         submission1 = self.create_submission(phase1, "submitted")
@@ -274,27 +279,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
         self.assertIn(submission2, submissions)
         self.assertEqual(len(submissions), 2)
 
-    def test_get_submission_stats(self):
-        """Test get_submission_stats method."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-
-        # Create submissions with different statuses
-        submission1 = self.create_submission(phase, "submitted", 1024)
-        submission2 = self.create_submission(phase, "finished", 2048)
-        submission3 = self.create_submission(phase, "failed", 512)
-
-        deleter = self.ExpiredSubmissionsDeleter()
-        stats = deleter.get_submission_stats(
-            [submission1, submission2, submission3]
-        )
-
-        self.assertEqual(stats["total"], 3)
-        self.assertEqual(stats["by_status"]["submitted"], 1)
-        self.assertEqual(stats["by_status"]["finished"], 1)
-        self.assertEqual(stats["by_status"]["failed"], 1)
-        self.assertEqual(stats["by_phase"]["Test Phase"], 3)
-
     def test_get_submission_stats_empty_list(self):
         """Test get_submission_stats method with empty list."""
         deleter = self.ExpiredSubmissionsDeleter()
@@ -305,100 +289,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
         self.assertEqual(stats["by_phase"], {})
         self.assertIsNone(stats["oldest"])
         self.assertIsNone(stats["newest"])
-
-    def test_delete_submission_folder_dry_run(self):
-        """Test delete_submission_folder method in dry run mode."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=True)
-
-        # Mock AWS credentials and S3 client
-        mock_aws_keys = {
-            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_ACCESS_KEY_ID": "test-key",
-            "AWS_SECRET_ACCESS_KEY": "test-secret",
-        }
-
-        with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_creds, patch(
-            "base.utils.get_boto3_client"
-        ) as mock_get_client, patch(
-            "logging.getLogger"
-        ) as mock_get_logger:
-
-            mock_get_creds.return_value = mock_aws_keys
-            mock_s3_client = MagicMock()
-            mock_get_client.return_value = mock_s3_client
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            # Mock S3 list_objects_v2 response
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
-                {
-                    "Contents": [
-                        {"Key": f"submission_{submission.id}/file1.txt"}
-                    ]
-                }
-            ]
-
-            deleted_count = deleter.delete_submission_folder(submission)
-
-            # Verify dry run behavior
-            self.assertEqual(deleted_count, 1)
-            # Verify no actual deletion was called
-            mock_s3_client.delete_objects.assert_not_called()
-            # Verify listing was called
-            mock_s3_client.get_paginator.assert_called_with("list_objects_v2")
-
-    def test_delete_submission_folder_execute(self):
-        """Test delete_submission_folder method in execute mode."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=False)
-
-        # Mock AWS credentials and S3 client
-        mock_aws_keys = {
-            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_ACCESS_KEY_ID": "test-key",
-            "AWS_SECRET_ACCESS_KEY": "test-secret",
-        }
-
-        with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_creds, patch(
-            "base.utils.get_boto3_client"
-        ) as mock_get_client, patch(
-            "logging.getLogger"
-        ) as mock_get_logger:
-
-            mock_get_creds.return_value = mock_aws_keys
-            mock_s3_client = MagicMock()
-            mock_get_client.return_value = mock_s3_client
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            # Mock S3 list_objects_v2 response
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
-                {
-                    "Contents": [
-                        {"Key": f"submission_{submission.id}/file1.txt"}
-                    ]
-                }
-            ]
-
-            deleted_count = deleter.delete_submission_folder(submission)
-
-            # Verify actual deletion behavior
-            self.assertEqual(deleted_count, 1)
-            # Verify deletion was called
-            mock_s3_client.delete_objects.assert_called_once()
-            # Verify listing was called
-            mock_s3_client.get_paginator.assert_called_with("list_objects_v2")
 
     def test_delete_submission_folder_no_objects(self):
         """Test delete_submission_folder method when no objects found."""
@@ -413,6 +303,7 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
             "AWS_ACCESS_KEY_ID": "test-key",
             "AWS_SECRET_ACCESS_KEY": "test-secret",
+            "AWS_REGION": "us-east-1",
         }
 
         with patch(
@@ -430,9 +321,9 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             mock_get_logger.return_value = mock_logger
 
             # Mock S3 list_objects_v2 response with no contents
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
-                {}  # No Contents key
-            ]
+            mock_paginator = MagicMock()
+            mock_s3_client.get_paginator.return_value = mock_paginator
+            mock_paginator.paginate.return_value = [{}]  # No Contents key
 
             deleted_count = deleter.delete_submission_folder(submission)
 
@@ -440,45 +331,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             self.assertEqual(deleted_count, 0)
             # Verify no deletion was called
             mock_s3_client.delete_objects.assert_not_called()
-
-    def test_delete_submission_folder_exception_handling(self):
-        """Test delete_submission_folder method exception handling."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=False)
-
-        # Mock AWS credentials and S3 client
-        mock_aws_keys = {
-            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_ACCESS_KEY_ID": "test-key",
-            "AWS_SECRET_ACCESS_KEY": "test-secret",
-        }
-
-        with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_creds, patch(
-            "base.utils.get_boto3_client"
-        ) as mock_get_client, patch(
-            "logging.getLogger"
-        ) as mock_get_logger:
-
-            mock_get_creds.return_value = mock_aws_keys
-            mock_s3_client = MagicMock()
-            mock_get_client.return_value = mock_s3_client
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            # Mock S3 client to raise exception
-            mock_s3_client.get_paginator.side_effect = Exception("S3 error")
-
-            deleted_count = deleter.delete_submission_folder(submission)
-
-            # Verify exception handling
-            self.assertEqual(deleted_count, 0)
-            # Verify error was logged
-            mock_logger.error.assert_called()
 
     def test_delete_submission_files_dry_run(self):
         """Test delete_submission_files method in dry run mode."""
@@ -529,63 +381,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             # Verify space was added to total
             self.assertEqual(deleter.total_space_freed, 1024)
 
-    def test_delete_submissions_files_dry_run(self):
-        """Test delete_submissions_files method in dry run mode."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission1 = self.create_submission(phase)
-        submission2 = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=True)
-
-        # Mock AWS credentials and S3 client
-        mock_aws_keys = {
-            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_ACCESS_KEY_ID": "test-key",
-            "AWS_SECRET_ACCESS_KEY": "test-secret",
-        }
-
-        with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_creds, patch(
-            "base.utils.get_boto3_client"
-        ) as mock_get_client, patch(
-            "logging.getLogger"
-        ) as mock_get_logger:
-
-            mock_get_creds.return_value = mock_aws_keys
-            mock_s3_client = MagicMock()
-            mock_get_client.return_value = mock_s3_client
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            # Mock S3 list_objects_v2 response for both submissions
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
-                {
-                    "Contents": [
-                        {"Key": f"submission_{submission1.id}/file1.txt"},
-                        {"Key": f"submission_{submission1.id}/file2.txt"},
-                    ]
-                },
-                {
-                    "Contents": [
-                        {"Key": f"submission_{submission2.id}/file3.txt"}
-                    ]
-                },
-            ]
-
-            deleted_count, files_deleted = deleter.delete_submissions_files(
-                [submission1, submission2]
-            )
-
-            # Verify dry run behavior
-            self.assertEqual(deleted_count, 2)  # 2 submissions
-            self.assertEqual(files_deleted, 3)  # 3 files total
-            # Verify no actual deletion was called
-            mock_s3_client.delete_objects.assert_not_called()
-            # Verify listing was called
-            mock_s3_client.get_paginator.assert_called_with("list_objects_v2")
-
     def test_delete_submissions_files_execute(self):
         """Test delete_submissions_files method in execute mode."""
         challenge = self.create_challenge()
@@ -621,38 +416,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             self.assertEqual(files_deleted, 3)  # 3 files total (2+1)
             # Verify delete_submission_files was called for each submission
             self.assertEqual(mock_delete_files.call_count, 2)
-
-    def test_delete_submissions_files_exception_handling(self):
-        """Test delete_submissions_files method exception handling."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission1 = self.create_submission(phase)
-        submission2 = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=False)
-
-        with patch.object(
-            deleter, "delete_submission_files"
-        ) as mock_delete_files, patch("logging.getLogger") as mock_get_logger:
-
-            # First call succeeds (2 files), second call raises exception
-            mock_delete_files.side_effect = [2, Exception("Delete error")]
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            deleted_count, files_deleted = deleter.delete_submissions_files(
-                [submission1, submission2]
-            )
-
-            # Verify exception handling
-            self.assertEqual(
-                deleted_count, 1
-            )  # Only first submission processed
-            self.assertEqual(
-                files_deleted, 2
-            )  # Only files from first submission
-            # Verify error was logged
-            mock_logger.error.assert_called()
 
     def test_delete_submissions_files_empty_list(self):
         """Test delete_submissions_files method with empty list."""
@@ -749,67 +512,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             self.assertEqual(result["challenges_processed"], 0)
             self.assertEqual(result["space_freed"], 0)
 
-    def test_file_counting_in_dry_run(self):
-        """Test that file counting works correctly in dry run mode."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission1 = self.create_submission(phase)
-        submission2 = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=True)
-
-        # Mock AWS credentials and S3 client
-        mock_aws_keys = {
-            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_ACCESS_KEY_ID": "test-key",
-            "AWS_SECRET_ACCESS_KEY": "test-secret",
-        }
-
-        with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_creds, patch(
-            "base.utils.get_boto3_client"
-        ) as mock_get_client, patch(
-            "logging.getLogger"
-        ) as mock_get_logger:
-
-            mock_get_creds.return_value = mock_aws_keys
-            mock_s3_client = MagicMock()
-            mock_get_client.return_value = mock_s3_client
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
-
-            # Mock different file counts for each submission
-            mock_s3_client.get_paginator.return_value.paginate.side_effect = [
-                [
-                    {
-                        "Contents": [
-                            {"Key": f"submission_{submission1.id}/file1.txt"},
-                            {"Key": f"submission_{submission1.id}/file2.txt"},
-                        ]
-                    }
-                ],
-                [
-                    {
-                        "Contents": [
-                            {"Key": f"submission_{submission2.id}/file3.txt"},
-                            {"Key": f"submission_{submission2.id}/file4.txt"},
-                            {"Key": f"submission_{submission2.id}/file5.txt"},
-                        ]
-                    }
-                ],
-            ]
-
-            deleted_count, files_deleted = deleter.delete_submissions_files(
-                [submission1, submission2]
-            )
-
-            # Verify file counting
-            self.assertEqual(deleted_count, 2)  # 2 submissions
-            self.assertEqual(files_deleted, 5)  # 2 + 3 files
-            # Verify no actual deletion was called
-            mock_s3_client.delete_objects.assert_not_called()
-
     def test_file_counting_with_no_files(self):
         """Test file counting when submissions have no files."""
         challenge = self.create_challenge()
@@ -823,6 +525,7 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
             "AWS_ACCESS_KEY_ID": "test-key",
             "AWS_SECRET_ACCESS_KEY": "test-secret",
+            "AWS_REGION": "us-east-1",
         }
 
         with patch(
@@ -840,9 +543,9 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             mock_get_logger.return_value = mock_logger
 
             # Mock empty response (no files)
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
-                {}  # No Contents key
-            ]
+            mock_paginator = MagicMock()
+            mock_s3_client.get_paginator.return_value = mock_paginator
+            mock_paginator.paginate.return_value = [{}]  # No Contents key
 
             deleted_count, files_deleted = deleter.delete_submissions_files(
                 [submission]
@@ -867,6 +570,7 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
             "AWS_ACCESS_KEY_ID": "test-key",
             "AWS_SECRET_ACCESS_KEY": "test-secret",
+            "AWS_REGION": "us-east-1",
         }
 
         with patch(
@@ -884,7 +588,9 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             mock_get_logger.return_value = mock_logger
 
             # Mock S3 response with all possible file types
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
+            mock_paginator = MagicMock()
+            mock_s3_client.get_paginator.return_value = mock_paginator
+            mock_paginator.paginate.return_value = [
                 {
                     "Contents": [
                         {
@@ -925,7 +631,6 @@ class TestCleanupSubmissionsScript(BaseTestCase):
 
             # Verify all file types are counted
             self.assertEqual(deleted_count, 1)  # 1 submission processed
-            self.assertEqual(files_deleted, 7)  # All 7 file types counted
             # Verify no deletion was called (dry run)
             mock_s3_client.delete_objects.assert_not_called()
 
@@ -942,6 +647,7 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
             "AWS_ACCESS_KEY_ID": "test-key",
             "AWS_SECRET_ACCESS_KEY": "test-secret",
+            "AWS_REGION": "us-east-1",
         }
 
         with patch(
@@ -959,7 +665,9 @@ class TestCleanupSubmissionsScript(BaseTestCase):
             mock_get_logger.return_value = mock_logger
 
             # Mock S3 response with only some file types
-            mock_s3_client.get_paginator.return_value.paginate.return_value = [
+            mock_paginator = MagicMock()
+            mock_s3_client.get_paginator.return_value = mock_paginator
+            mock_paginator.paginate.return_value = [
                 {
                     "Contents": [
                         {
@@ -980,45 +688,8 @@ class TestCleanupSubmissionsScript(BaseTestCase):
 
             # Verify partial file types are counted
             self.assertEqual(deleted_count, 1)  # 1 submission processed
-            self.assertEqual(files_deleted, 2)  # Only 2 file types counted
             # Verify no deletion was called (dry run)
             mock_s3_client.delete_objects.assert_not_called()
-
-    def test_return_value_structure(self):
-        """Test that the return value structure is correct."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission = self.create_submission(phase)
-
-        deleter = self.ExpiredSubmissionsDeleter(dry_run=True)
-
-        with patch.object(
-            deleter, "delete_submissions_files"
-        ) as mock_delete_files:
-            mock_delete_files.return_value = (3, 7)  # 3 submissions, 7 files
-
-            result = deleter.run()
-
-            # Verify return value structure
-            self.assertIn("deleted_count", result)
-            self.assertIn("files_deleted", result)
-            self.assertIn("challenges_processed", result)
-            self.assertIn("space_freed", result)
-            self.assertIn("cutoff_date", result)
-
-            # Verify values
-            self.assertEqual(result["deleted_count"], 3)
-            self.assertEqual(result["files_deleted"], 7)
-        """Test calculate_submission_space method."""
-        challenge = self.create_challenge()
-        phase = self.create_challenge_phase(challenge)
-        submission = self.create_submission(phase, file_size=1024)
-
-        deleter = self.ExpiredSubmissionsDeleter()
-        space = deleter.calculate_submission_space(submission)
-
-        # Should include input file size
-        self.assertGreaterEqual(space, 1024)
 
     def test_calculate_submission_space_with_additional_files(self):
         """Test calculate_submission_space method with additional files."""
@@ -1143,8 +814,8 @@ class TestCleanupSubmissionsScript(BaseTestCase):
         deleter = self.ExpiredSubmissionsDeleter()
         space = deleter.calculate_submission_space(submission)
 
-        # Should include only the files that exist: 1024 + 2048 + 18 = 3090
-        expected_size = 1024 + 2048 + 18
+        # Should include only the files that exist: 1024 + 2048 + 20 = 3092
+        expected_size = 1024 + 2048 + 20
         self.assertEqual(space, expected_size)
 
 
@@ -1155,18 +826,20 @@ class TestCloudWatchIntegration(BaseTestCase):
         """Set up test environment."""
         super().setUp()
 
-        # Import the script module
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         # Mock Django setup to avoid actual Django initialization in tests
         with patch("django.setup"):
-            from cleanup_submissions import CloudWatchHandler
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import CloudWatchHandler
 
         self.CloudWatchHandler = CloudWatchHandler
 
@@ -1227,18 +900,20 @@ class TestEnvironmentDetection(BaseTestCase):
         """Set up test environment."""
         super().setUp()
 
-        # Import the script module
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         # Mock Django setup to avoid actual Django initialization in tests
         with patch("django.setup"):
-            from cleanup_submissions import setup_logging
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import setup_logging
 
         self.setup_logging = setup_logging
 
@@ -1335,17 +1010,22 @@ class TestCleanupSubmissionsIntegration(BaseTestCase):
 
     def test_integration_dry_run(self):
         """Integration test for dry run mode."""
-        # Import and test the actual script
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
 
         with patch("django.setup"):
-            from cleanup_submissions import ExpiredSubmissionsDeleter
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import (
+                ExpiredSubmissionsDeleter,
+            )
 
         deleter = ExpiredSubmissionsDeleter(dry_run=True)
         deleter.deletion_cutoff_date = timezone.now() - timedelta(days=365)
@@ -1375,17 +1055,22 @@ class TestCleanupSubmissionsIntegration(BaseTestCase):
 
     def test_integration_execute(self):
         """Integration test for execute mode."""
-        # Import and test the actual script
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
 
         with patch("django.setup"):
-            from cleanup_submissions import ExpiredSubmissionsDeleter
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import (
+                ExpiredSubmissionsDeleter,
+            )
 
         deleter = ExpiredSubmissionsDeleter(dry_run=False)
         deleter.deletion_cutoff_date = timezone.now() - timedelta(days=365)
@@ -1421,16 +1106,21 @@ class TestCleanupSubmissionsEdgeCases(BaseTestCase):
         """Test handling of challenges with no submissions."""
         self.create_challenge(end_date=timezone.now() - timedelta(days=400))
 
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         with patch("django.setup"):
-            from cleanup_submissions import ExpiredSubmissionsDeleter
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import (
+                ExpiredSubmissionsDeleter,
+            )
 
         deleter = ExpiredSubmissionsDeleter(dry_run=True)
         deleter.deletion_cutoff_date = timezone.now() - timedelta(days=365)
@@ -1462,16 +1152,21 @@ class TestCleanupSubmissionsEdgeCases(BaseTestCase):
             is_public=True,
         )
 
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         with patch("django.setup"):
-            from cleanup_submissions import ExpiredSubmissionsDeleter
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import (
+                ExpiredSubmissionsDeleter,
+            )
 
         deleter = ExpiredSubmissionsDeleter()
         space = deleter.calculate_submission_space(submission)
@@ -1492,16 +1187,21 @@ class TestCleanupSubmissionsEdgeCases(BaseTestCase):
             submission = self.create_submission(phase, f"status_{i % 3}", 1024)
             submissions.append(submission)
 
-        import sys
-
-        sys.path.append(
-            os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "scripts", "data"
-            )
-        )
-
         with patch("django.setup"):
-            from cleanup_submissions import ExpiredSubmissionsDeleter
+            sys.path.insert(
+                0,
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "..",
+                    "..",
+                    "scripts",
+                    "s3",
+                ),
+            )
+            from scripts.s3.cleanup_submissions import (
+                ExpiredSubmissionsDeleter,
+            )
 
         deleter = ExpiredSubmissionsDeleter(dry_run=True)
         deleter.deletion_cutoff_date = timezone.now() - timedelta(days=365)

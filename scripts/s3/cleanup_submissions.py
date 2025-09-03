@@ -88,11 +88,19 @@ Examples:
 """
 
 import argparse
+import importlib
 import logging
 import os
 import sys
-from datetime import timedelta
+import traceback
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
+
+# Try to import boto3 for CloudWatch logging
+try:
+    import boto3
+except ImportError:
+    boto3 = None
 
 # Add the project root to the Python path
 sys.path.insert(
@@ -138,12 +146,7 @@ except Exception as e:
     print("and that Django settings are properly configured.")
     sys.exit(1)
 
-# Import models using a safer approach to avoid conflicts
-import importlib  # noqa: E402
-
 # Django imports after setup
-from datetime import datetime  # noqa: E402
-
 from django.conf import settings  # noqa: E402
 from django.utils import timezone  # noqa: E402
 
@@ -213,7 +216,10 @@ class CloudWatchHandler(logging.Handler):
     def _initialize_client(self):
         """Initialize AWS CloudWatch Logs client."""
         try:
-            import boto3
+            if boto3 is None:
+                print("⚠️ boto3 not installed. CloudWatch logging disabled.")
+                self.logs_client = None
+                return
 
             self.logs_client = boto3.client(
                 "logs",
@@ -222,9 +228,6 @@ class CloudWatchHandler(logging.Handler):
             )
             self._create_log_group()
             self._create_log_stream()
-        except ImportError:
-            print("⚠️ boto3 not installed. CloudWatch logging disabled.")
-            self.logs_client = None
         except Exception as e:
             print(f"⚠️ Failed to initialize CloudWatch client: {str(e)}")
             self.logs_client = None
@@ -373,7 +376,9 @@ def setup_logging(dry_run: bool = True, enable_cloudwatch: bool = True):
     cloudwatch_handler.setFormatter(formatter)
     logger.addHandler(cloudwatch_handler)
     logger.info(
-        f"☁️ CloudWatch logging enabled: {cloudwatch_log_group}/{cloudwatch_log_stream}"
+        "☁️ CloudWatch logging enabled: %s/%s",
+        cloudwatch_log_group,
+        cloudwatch_log_stream,
     )
 
     # Prevent propagation to root logger
@@ -384,17 +389,17 @@ def setup_logging(dry_run: bool = True, enable_cloudwatch: bool = True):
 
 
 # Initialize a basic logger for early messages
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(
+early_logger = logging.getLogger(__name__)
+early_logger.setLevel(logging.INFO)
+early_console_handler = logging.StreamHandler(sys.stdout)
+early_console_handler.setFormatter(
     logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 )
-logger.addHandler(console_handler)
-logger.propagate = False
+early_logger.addHandler(early_console_handler)
+early_logger.propagate = False
 
-logger.info("Logger setup completed!")
-logger.info("✅ Logger is working correctly!")
+early_logger.info("Logger setup completed!")
+early_logger.info("✅ Logger is working correctly!")
 
 
 class ExpiredSubmissionsDeleter:
@@ -406,6 +411,7 @@ class ExpiredSubmissionsDeleter:
             None  # Will be set by main() based on --days argument
         )
         self.total_space_freed = 0  # Track space that would be freed (in dry run) or actually freed (in execute)
+        self.logger = logging.getLogger(__name__)
 
     def get_file_size(self, file_field) -> int:
         """Get the size of a file field in bytes."""
@@ -496,8 +502,10 @@ class ExpiredSubmissionsDeleter:
             end_date__lt=self.deletion_cutoff_date,
         ).order_by("end_date")
 
-        logger.info(
-            f"🔍 Found {expired_challenges.count()} challenges that expired before {self.deletion_cutoff_date}"
+        self.logger.info(
+            "🔍 Found %s challenges that expired before %s",
+            expired_challenges.count(),
+            self.deletion_cutoff_date,
         )
         return list(expired_challenges)
 
@@ -592,19 +600,25 @@ class ExpiredSubmissionsDeleter:
 
             if not objects_to_delete:
                 if not self.dry_run:
-                    logger.info(
-                        f"🤔 No S3 objects found for submission {submission.id} with prefix {prefix}"
+                    self.logger.info(
+                        "🤔 No S3 objects found for submission %s with prefix %s",
+                        submission.id,
+                        prefix,
                     )
                 return 0
 
             if self.dry_run:
-                logger.info(
-                    f"🔍 DRY RUN: Would delete {len(objects_to_delete)} files from submission {submission.id} folder"
+                self.logger.info(
+                    "🔍 DRY RUN: Would delete %s files from submission %s folder",
+                    len(objects_to_delete),
+                    submission.id,
                 )
                 return len(objects_to_delete)
 
-            logger.info(
-                f"🗑️ Deleting {len(objects_to_delete)} files from submission {submission.id} folder"
+            self.logger.info(
+                "🗑️ Deleting %s files from submission %s folder",
+                len(objects_to_delete),
+                submission.id,
             )
 
             # Delete the objects
@@ -612,14 +626,17 @@ class ExpiredSubmissionsDeleter:
                 Bucket=bucket_name, Delete={"Objects": objects_to_delete}
             )
 
-            logger.info(
-                f"✅ Successfully deleted folder for submission {submission.id}"
+            self.logger.info(
+                "✅ Successfully deleted folder for submission %s",
+                submission.id,
             )
             return len(objects_to_delete)
 
         except Exception as e:
-            logger.error(
-                f"❌ Error processing folder for submission {submission.id}: {str(e)}"
+            self.logger.error(
+                "❌ Error processing folder for submission %s: %s",
+                submission.id,
+                str(e),
             )
             return 0
 
@@ -627,10 +644,12 @@ class ExpiredSubmissionsDeleter:
         """Delete all files associated with a submission from S3 by deleting the folder."""
         submission_space = self.calculate_submission_space(submission)
         if self.dry_run:
-            logger.info(f"🔍 DRY RUN: Processing submission {submission.id}")
+            self.logger.info(
+                "🔍 DRY RUN: Processing submission %s", submission.id
+            )
             if submission_space > 0:
-                logger.info(
-                    f"  🔍 Would free {self.format_bytes(submission_space)}"
+                self.logger.info(
+                    "  🔍 Would free %s", self.format_bytes(submission_space)
                 )
 
         # Delete submission folder within the main bucket
@@ -677,12 +696,16 @@ class ExpiredSubmissionsDeleter:
 
                     # Debug: Log what we found
                     if not objects_to_count:
-                        logger.debug(
-                            f"🔍 No files found for submission {submission.id} with prefix: {prefix}"
+                        self.logger.debug(
+                            "🔍 No files found for submission %s with prefix: %s",
+                            submission.id,
+                            prefix,
                         )
                     else:
-                        logger.debug(
-                            f"🔍 Found {len(objects_to_count)} files for submission {submission.id}"
+                        self.logger.debug(
+                            "🔍 Found %s files for submission %s",
+                            len(objects_to_count),
+                            submission.id,
                         )
                         submission_folders_to_delete.append(
                             f"media/submission_files/submission_{submission.id}/"
@@ -690,25 +713,29 @@ class ExpiredSubmissionsDeleter:
 
                     total_files_to_delete += len(objects_to_count)
                 except Exception as e:
-                    logger.warning(
-                        f"⚠️ Could not count files for submission {submission.id}: {str(e)}"
+                    self.logger.warning(
+                        "⚠️ Could not count files for submission %s: %s",
+                        submission.id,
+                        str(e),
                     )
                     continue
 
             # Log the folders that will be deleted
             if submission_folders_to_delete:
-                logger.info(
+                self.logger.info(
                     "📁 DRY RUN: Submission folders that would be deleted:"
                 )
                 for folder in submission_folders_to_delete:
-                    logger.info(f"   📁 {folder}")
+                    self.logger.info("   📁 %s", folder)
             else:
-                logger.info(
+                self.logger.info(
                     "📁 DRY RUN: No submission folders found to delete"
                 )
 
-            logger.info(
-                f"🔍 DRY RUN: Would delete {total_files_to_delete} files from {len(submissions)} submissions"
+            self.logger.info(
+                "🔍 DRY RUN: Would delete %s files from %s submissions",
+                total_files_to_delete,
+                len(submissions),
             )
             return (len(submissions), total_files_to_delete)
 
@@ -723,13 +750,16 @@ class ExpiredSubmissionsDeleter:
 
                 # Log before deletion
                 if not self.dry_run:
-                    logger.info(
-                        f"🗑️ Deleting files from submission {submission.id} "
-                        f"(Challenge: {submission.challenge_phase.challenge.title}, "
-                        f"Phase: {submission.challenge_phase.name}, "
-                        f"Status: {submission.status}, "
-                        f"Submitted: {submission.submitted_at}, "
-                        f"Space: {self.format_bytes(submission_space)})"
+                    self.logger.info(
+                        "🗑️ Deleting files from submission %s "
+                        "(Challenge: %s, Phase: %s, Status: %s, "
+                        "Submitted: %s, Space: %s)",
+                        submission.id,
+                        submission.challenge_phase.challenge.title,
+                        submission.challenge_phase.name,
+                        submission.status,
+                        submission.submitted_at,
+                        self.format_bytes(submission_space),
                     )
 
                 # Delete files from S3
@@ -743,46 +773,60 @@ class ExpiredSubmissionsDeleter:
                     )
 
                 if not self.dry_run and deleted_objects > 0:
-                    logger.info(
-                        f"✅ Processed submission {submission.id}, deleted {deleted_objects} objects."
+                    self.logger.info(
+                        "✅ Processed submission %s, deleted %s objects.",
+                        submission.id,
+                        deleted_objects,
                     )
 
             except Exception as e:
-                logger.error(
-                    f"❌ Error processing submission {submission.id}: {str(e)}"
+                self.logger.error(
+                    "❌ Error processing submission %s: %s",
+                    submission.id,
+                    str(e),
                 )
                 continue
 
         # Log the folders that were actually deleted
         if not self.dry_run and deleted_folders:
-            logger.info("📁 EXECUTE: Submission folders that were deleted:")
+            self.logger.info(
+                "📁 EXECUTE: Submission folders that were deleted:"
+            )
             for folder in deleted_folders:
-                logger.info(f"   📁 {folder}")
+                self.logger.info("   📁 %s", folder)
         elif not self.dry_run:
-            logger.info("📁 EXECUTE: No submission folders were deleted")
+            self.logger.info("📁 EXECUTE: No submission folders were deleted")
 
         if self.dry_run:
-            logger.info(
-                f"🔍 DRY RUN: Would delete {total_objects_deleted} objects from {deleted_count} submissions."
+            self.logger.info(
+                "🔍 DRY RUN: Would delete %s objects from %s submissions.",
+                total_objects_deleted,
+                deleted_count,
             )
 
         return (deleted_count, total_objects_deleted)
 
     def run(self) -> Dict[str, Any]:
         """Main method to run the deletion process."""
-        logger.info("🚀 Starting expired submission files deletion process")
-        logger.info(f"📅 Deletion cutoff date: {self.deletion_cutoff_date}")
-        logger.info(f"🔍 Dry run: {self.dry_run}")
+        self.logger.info(
+            "🚀 Starting expired submission files deletion process"
+        )
+        self.logger.info(
+            "📅 Deletion cutoff date: %s", self.deletion_cutoff_date
+        )
+        self.logger.info("🔍 Dry run: %s", self.dry_run)
 
         # Get expired challenges
         expired_challenges = self.get_expired_challenges()
 
         if not expired_challenges:
-            logger.info("❌ No expired challenges found")
+            self.logger.info("❌ No expired challenges found")
             return {
                 "deleted_count": 0,  # No submissions to delete
                 "challenges_processed": 0,
                 "space_freed": 0,  # No space to free
+                "files_deleted": 0,  # No files to delete
+                "cutoff_date": self.deletion_cutoff_date,
             }
 
         total_deleted = 0  # Count of submissions that would be deleted (dry run) or were deleted (execute)
@@ -793,44 +837,52 @@ class ExpiredSubmissionsDeleter:
         total_files_deleted = 0  # Count of individual files that would be deleted (dry run) or were deleted (execute)
 
         for challenge in expired_challenges:
-            logger.info(
-                f"\n📊 Processing challenge: {challenge.title} (ID: {challenge.id})"
+            self.logger.info(
+                "📊 Processing challenge: %s (ID: %s)",
+                challenge.title,
+                challenge.id,
             )
-            logger.info(f"📅 Challenge ended: {challenge.end_date}")
-            logger.info(
-                f"⏰ Days since expiration: {(timezone.now() - challenge.end_date).days}"
+            self.logger.info("📅 Challenge ended: %s", challenge.end_date)
+            self.logger.info(
+                "⏰ Days since expiration: %s",
+                (timezone.now() - challenge.end_date).days,
             )
 
             # Get submissions for this challenge
             submissions = self.get_submissions_for_challenge(challenge)
 
             if not submissions:
-                logger.info("❌ No submissions found for this challenge")
+                self.logger.info("❌ No submissions found for this challenge")
                 continue
 
             # Get and log statistics
             stats = self.get_submission_stats(submissions)
-            logger.info("📈 Submission statistics:")
-            logger.info(f"  Total submissions: {stats['total']}")
-            logger.info(f"  Oldest submission: {stats['oldest']}")
-            logger.info(f"  Newest submission: {stats['newest']}")
-            logger.info(
-                f"  Total space used: {self.format_bytes(stats['total_space'])}"
+            self.logger.info("📈 Submission statistics:")
+            self.logger.info("  Total submissions: %s", stats["total"])
+            self.logger.info("  Oldest submission: %s", stats["oldest"])
+            self.logger.info("  Newest submission: %s", stats["newest"])
+            self.logger.info(
+                "  Total space used: %s",
+                self.format_bytes(stats["total_space"]),
             )
-            logger.info(f"  By status: {stats['by_status']}")
-            logger.info(f"  By phase: {stats['by_phase']}")
+            self.logger.info("  By status: %s", stats["by_status"])
+            self.logger.info("  By phase: %s", stats["by_phase"])
 
             # Log space breakdown by status
             if stats["space_by_status"]:
-                logger.info("  💾 Space by status:")
+                self.logger.info("  💾 Space by status:")
                 for status, space in stats["space_by_status"].items():
-                    logger.info(f"    {status}: {self.format_bytes(space)}")
+                    self.logger.info(
+                        "    %s: %s", status, self.format_bytes(space)
+                    )
 
             # Log space breakdown by phase
             if stats["space_by_phase"]:
-                logger.info("  📁 Space by phase:")
+                self.logger.info("  📁 Space by phase:")
                 for phase, space in stats["space_by_phase"].items():
-                    logger.info(f"    {phase}: {self.format_bytes(space)}")
+                    self.logger.info(
+                        "    %s: %s", phase, self.format_bytes(space)
+                    )
 
             # Delete submission files
             deleted_count, files_deleted = self.delete_submissions_files(
@@ -843,41 +895,52 @@ class ExpiredSubmissionsDeleter:
             challenges_processed += 1
 
             if self.dry_run:
-                logger.info(
-                    f"🔍 DRY RUN: Would delete files from {deleted_count} submissions from challenge {challenge.title}"
+                self.logger.info(
+                    "🔍 DRY RUN: Would delete files from %s "
+                    "submissions from challenge %s",
+                    deleted_count,
+                    challenge.title,
                 )
             else:
-                logger.info(
-                    f"🗑️ Deleted files from {deleted_count} submissions from challenge {challenge.title}"
+                self.logger.info(
+                    "🗑️ Deleted files from %s submissions from challenge %s",
+                    deleted_count,
+                    challenge.title,
                 )
             if self.dry_run:
-                logger.info(
-                    f"💾 DRY RUN: Space that would be freed: {self.format_bytes(stats['total_space'])}"
+                self.logger.info(
+                    "💾 DRY RUN: Space that would be freed: %s",
+                    self.format_bytes(stats["total_space"]),
                 )
             else:
-                logger.info(
-                    f"💾 Space freed: {self.format_bytes(stats['total_space'])}"
+                self.logger.info(
+                    "💾 Space freed: %s",
+                    self.format_bytes(stats["total_space"]),
                 )
 
-        logger.info("\n🎉 Deletion process completed!")
-        logger.info(f"📊 Challenges processed: {challenges_processed}")
+        self.logger.info("🎉 Deletion process completed!")
+        self.logger.info("📊 Challenges processed: %s", challenges_processed)
         if self.dry_run:
-            logger.info(
-                f"🔍 DRY RUN: Total submissions that would have files deleted: {total_deleted}"
+            self.logger.info(
+                "🔍 DRY RUN: Total submissions that would have files deleted: %s",
+                total_deleted,
             )
-            logger.info(
-                f"🔍 DRY RUN: Total files that would be deleted: {total_files_deleted}"
+            self.logger.info(
+                "🔍 DRY RUN: Total files that would be deleted: %s",
+                total_files_deleted,
             )
-            logger.info(
-                f"💾 DRY RUN: Total space that would be freed: {self.format_bytes(total_space_freed)}"
+            self.logger.info(
+                "💾 DRY RUN: Total space that would be freed: %s",
+                self.format_bytes(total_space_freed),
             )
         else:
-            logger.info(
-                f"🗑️ Total submissions with files deleted: {total_deleted}"
+            self.logger.info(
+                "🗑️ Total submissions with files deleted: %s", total_deleted
             )
-            logger.info(f"🗑️ Total files deleted: {total_files_deleted}")
-            logger.info(
-                f"💾 Total space freed: {self.format_bytes(total_space_freed)}"
+            self.logger.info("🗑️ Total files deleted: %s", total_files_deleted)
+            self.logger.info(
+                "💾 Total space freed: %s",
+                self.format_bytes(total_space_freed),
             )
 
         return {
@@ -894,16 +957,16 @@ class ExpiredSubmissionsDeleter:
 
 def main():
     """Main function to parse arguments and run the deletion process."""
-    global logger
-
     # Test Django configuration
     try:
-        logger.info(
-            f"Django Setting Module: {os.getenv('DJANGO_SETTINGS_MODULE')}"
+        early_logger.info(
+            "Django Setting Module: %s", os.getenv("DJANGO_SETTINGS_MODULE")
         )
-        logger.info(f"Database: {settings.DATABASES['default']['ENGINE']}")
+        early_logger.info(
+            "Database: %s", settings.DATABASES["default"]["ENGINE"]
+        )
     except Exception as e:
-        logger.error(f"Django configuration error: {str(e)}")
+        early_logger.error("Django configuration error: %s", str(e))
         sys.exit(1)
 
     parser = argparse.ArgumentParser(
@@ -940,31 +1003,32 @@ def main():
 
     # Validate arguments
     if not args.dry_run and not args.execute:
-        logger.error("You must specify either --dry-run or --execute")
+        early_logger.error("You must specify either --dry-run or --execute")
         sys.exit(1)
 
     if args.dry_run and args.execute:
-        logger.error("You cannot specify both --dry-run and --execute")
+        early_logger.error("You cannot specify both --dry-run and --execute")
         sys.exit(1)
 
     # Set up proper logging with CloudWatch enabled
-    logger = setup_logging(dry_run=args.dry_run)
+    setup_logging(dry_run=args.dry_run)
 
     # Create deleter instance
     deleter = ExpiredSubmissionsDeleter(dry_run=args.dry_run)
 
     # Set the cutoff date based on the required days argument
     if args.days <= 0:
-        logger.error(
+        early_logger.error(
             "Days argument must be positive (e.g., 365 for 1 year, "
             "180 for 6 months)"
         )
         sys.exit(1)
 
     deleter.deletion_cutoff_date = timezone.now() - timedelta(days=args.days)
-    logger.info(
-        f"🔧 Using cutoff: {args.days} days ago "
-        f"({deleter.deletion_cutoff_date})"
+    early_logger.info(
+        "🔧 Using cutoff: %s days ago (%s)",
+        args.days,
+        deleter.deletion_cutoff_date,
     )
 
     # Run the deletion process
@@ -972,45 +1036,46 @@ def main():
         result = deleter.run()
 
         if args.dry_run:
-            logger.info(
+            early_logger.info(
                 "🔍 DRY RUN COMPLETED - No actual deletions were performed"
             )
         else:
-            logger.info(
+            early_logger.info(
                 "✅ DELETION COMPLETED - Submission files have been deleted"
             )
 
-        # logger.info summary
-        logger.info("\n" + "=" * 50)
-        logger.info("SUMMARY")
-        logger.info("=" * 50)
-        logger.info(f"Challenges processed: {result['challenges_processed']}")
+        early_logger.info("\n" + "=" * 50)
+        early_logger.info("SUMMARY")
+        early_logger.info("=" * 50)
+        early_logger.info(
+            "Challenges processed: %s", result["challenges_processed"]
+        )
         if args.dry_run:
-            logger.info(
-                f"Submissions that would have files deleted: {result['deleted_count']}"
+            early_logger.info(
+                "Submissions that would have files deleted: %s",
+                result["deleted_count"],
             )
-            logger.info(
-                f"Files that would be deleted: {result['files_deleted']}"
+            early_logger.info(
+                "Files that would be deleted: %s", result["files_deleted"]
             )
-            logger.info(
-                f"Space that would be freed: {deleter.format_bytes(result['space_freed'])}"
+            early_logger.info(
+                "Space that would be freed: %s",
+                deleter.format_bytes(result["space_freed"]),
             )
         else:
-            logger.info(
-                f"Submissions with files deleted: {result['deleted_count']}"
+            early_logger.info(
+                "Submissions with files deleted: %s", result["deleted_count"]
             )
-            logger.info(f"Files deleted: {result['files_deleted']}")
-            logger.info(
-                f"Space freed: {deleter.format_bytes(result['space_freed'])}"
+            early_logger.info("Files deleted: %s", result["files_deleted"])
+            early_logger.info(
+                "Space freed: %s", deleter.format_bytes(result["space_freed"])
             )
-        logger.info(f"Cutoff date: {result['cutoff_date']}")
-        logger.info("=" * 50)
+        early_logger.info("Cutoff date: %s", result["cutoff_date"])
+        early_logger.info("=" * 50)
 
     except Exception as e:
-        logger.error(f"❌ Error during deletion process: {str(e)}")
-        import traceback
-
-        logger.error(f"📋 Traceback: {traceback.format_exc()}")
+        early_logger.error("❌ Error during deletion process: %s", str(e))
+        early_logger.error("📋 Traceback: %s", traceback.format_exc())
         sys.exit(1)
 
 
