@@ -205,11 +205,13 @@ def challenge_list(request, challenge_host_team_pk):
             context={
                 "challenge_host_team": challenge_host_team,
                 "request": request,
+                "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
             },
         )
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
+
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -256,6 +258,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                     },
                     partial=True,
                 )
@@ -271,6 +274,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                     },
                     partial=True,
                 )
@@ -286,6 +290,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                     },
                     partial=True,
                 )
@@ -301,6 +306,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                     },
                     partial=True,
                 )
@@ -311,6 +317,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                     },
                     partial=True,
                 )
@@ -321,11 +328,13 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                 context={
                     "challenge_host_team": challenge_host_team,
                     "request": request,
+                    "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                 },
             )
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
+
             serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
@@ -1087,6 +1096,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if serializer.is_valid():
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
@@ -1667,6 +1677,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "challenge_host_team": challenge_host_team,
                     "image": challenge_image_file,
                     "evaluation_script": challenge_evaluation_script_file,
+                    "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                 },
             )
             if serializer.is_valid():
@@ -3980,6 +3991,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
+                            "github_token": request.data.get(
+                                "GITHUB_AUTH_TOKEN"
+                            ),
                             "worker_image_url": worker_image_url,
                         },
                     )
@@ -4283,6 +4297,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "evaluation_script": files[
                             "challenge_evaluation_script_file"
                         ],
+                        "github_token": request.data.get("GITHUB_AUTH_TOKEN"),
                         "worker_image_url": worker_image_url,
                     },
                 )

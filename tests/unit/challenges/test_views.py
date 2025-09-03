@@ -206,6 +206,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
+                "github_token": self.challenge.github_token,
             }
         ]
 
@@ -581,6 +582,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "github_token": self.challenge.github_token,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -685,6 +687,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "github_token": self.challenge.github_token,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -815,6 +818,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "github_token": self.challenge.github_token,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -894,6 +898,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "github_token": self.challenge.github_token,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1492,6 +1497,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "github_token": self.challenge3.github_token,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1577,6 +1583,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1662,6 +1669,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
+                "github_token": self.challenge4.github_token,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1747,6 +1755,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
+                "github_token": self.challenge4.github_token,
             },
             {
                 "id": self.challenge3.pk,
@@ -1816,6 +1825,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "github_token": self.challenge3.github_token,
             },
             {
                 "id": self.challenge2.pk,
@@ -1885,6 +1895,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2026,6 +2037,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "github_token": self.challenge3.github_token,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2192,6 +2204,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "sqs_retention_period": self.challenge3.sqs_retention_period,
             "github_repository": self.challenge3.github_repository,
             "github_branch": self.challenge3.github_branch,
+            "github_token": self.challenge3.github_token,
         }
 
         response = self.client.get(self.url, {})
@@ -2285,6 +2298,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "sqs_retention_period": self.challenge4.sqs_retention_period,
             "github_repository": self.challenge4.github_repository,
             "github_branch": self.challenge4.github_branch,
+            "github_token": self.challenge4.github_token,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2440,6 +2454,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             }
         ]
 
@@ -2521,6 +2536,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             }
         ]
 
@@ -2602,6 +2618,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             }
         ]
 
@@ -2681,6 +2698,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
+                "github_token": self.challenge.github_token,
             },
             {
                 "id": self.challenge2.pk,
@@ -2750,6 +2768,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "github_token": self.challenge2.github_token,
             },
         ]
 
