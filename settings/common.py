@@ -73,8 +73,8 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "rest_framework",
     "rest_framework_expiring_authtoken",
-    "drf_yasg",
     "django_filters",
+    "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
 ]
 
@@ -180,6 +180,7 @@ REST_FRAMEWORK = {
         "resend_email": "3/hour",
     },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # ALLAUTH SETTINGS
@@ -296,7 +297,7 @@ REST_AUTH_SERIALIZERS = {
 
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
-CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+CLOUDCV_TEAM_EMAIL = "team@eval.ai"
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
@@ -320,6 +321,14 @@ SWAGGER_SETTINGS = {
             "in": "header",
         }
     },
+}
+
+DRF_SPECTACULAR_SETTINGS = {
+    "TITLE": "EvalAI API",
+    "DESCRIPTION": "EvalAI Documentation",
+    "VERSION": "v1",
+    "CONTACT": {"email": "team@eval.ai"},
+    "LICENSE": {"name": "BSD License"},
 }
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}

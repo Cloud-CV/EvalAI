@@ -94,6 +94,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "worker_image_url",
             "worker_instance_type",
             "sqs_retention_period",
+            "github_repository",
+            "github_branch",
         )
 
 
@@ -255,6 +257,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
+            github_branch = context.get("github_branch")
+            if github_branch:
+                kwargs["data"]["github_branch"] = github_branch
 
     class Meta:
         model = Challenge
@@ -293,6 +298,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "github_branch",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",
@@ -540,7 +546,8 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         default_order_by = leaderboard_schema["default_order_by"]
         labels = leaderboard_schema["labels"]
         default_order_by_index = labels.index(default_order_by)
-        # PWC requires the default sorted by metric at the index "0" of the array
+        # PWC requires the default sorted by metric at the index "0" of the
+        # array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
 

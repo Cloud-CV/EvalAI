@@ -62,6 +62,9 @@ a.active-challenge {
 .ev-challenge-card {
     height: 425px;
 }
+.ev-hosted-challenge-card {
+    height: 480px;
+}
 
 .ev-dashboard-card {
     min-height: 190px;
@@ -381,12 +384,12 @@ md-select .md-select-value span:first-child:after {
     li {
         margin-bottom: -0.5%;
     }
-    
+
     .nav-item {
       flex: 1;
       text-align: center;
       color: #4d4d4d;
-  
+
       .nav-link {
         display: block;
         padding: 10px 0;
@@ -397,7 +400,7 @@ md-select .md-select-value span:first-child:after {
         font-weight: 500;
         transition: border-bottom 0.3s ease;
         cursor: pointer;
-  
+
         &.active {
           border-bottom: 2px solid #000;
           color: #4d4d4d;
@@ -413,7 +416,7 @@ md-select .md-select-value span:first-child:after {
       a {
         color: #4d4d4d;
         font-weight: 400;
-  
+
         &.active {
           color: #3f51b5;
           font-weight: 600;
@@ -425,10 +428,28 @@ md-select .md-select-value span:first-child:after {
 .challenges-container {
     margin-top: 20px;
     min-height: 200px;
-  
+
   .card-content {
     padding: 20px;
     text-align: center;
   }
 }
+.challenges-container {
+    margin-top: 20px;
+    min-height: 200px;
 
+  .hosted-challenge-card-content {
+    padding: 20px;
+    text-align: left;
+  }
+}
+
+
+
+.github-icon-link {
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    color: #000; // Ensure the icon is visible
+    font-size: 15px; // Adjust size if needed
+}

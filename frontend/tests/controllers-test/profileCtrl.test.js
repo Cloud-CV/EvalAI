@@ -14,7 +14,7 @@ describe('Unit tests for profile controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('profileCtrl', {$scope: $scope});
+            return $controller('profileCtrl', { $scope: $scope });
         };
         vm = $controller('profileCtrl', { $scope: $scope });
     }));
@@ -26,7 +26,7 @@ describe('Unit tests for profile controller', function () {
             spyOn(utilities, 'getData');
         });
 
-        it('has default values', function () {	
+        it('has default values', function () {
             vm = createController();
             expect(vm.user).toEqual({});
             expect(vm.countLeft).toEqual(0);
@@ -36,7 +36,7 @@ describe('Unit tests for profile controller', function () {
             expect(vm.token).toEqual('');
 
             expect(utilities.hideLoader).toHaveBeenCalled()
-            expect(vm.imgUrlObj).toEqual({profilePic: "dist/images/spaceman.png"});
+            expect(vm.imgUrlObj).toEqual({ profilePic: "dist/images/spaceman.png" });
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
         });
     });
@@ -165,7 +165,7 @@ describe('Unit tests for profile controller', function () {
 
     describe('Unit tests for `updateProfile` function', function () {
         var success, tryClauseResponse;
-        var usernameInvalid  = {
+        var usernameInvalid = {
             username: ["username error"],
         };
         var firstnameInvalid = {
@@ -192,7 +192,7 @@ describe('Unit tests for profile controller', function () {
                         data: 'success',
                         status: 200
                     });
-                } else if (success == null){
+                } else if (success == null) {
                     parameters.callback.onError({
                         data: null,
                         status: 400
@@ -271,6 +271,15 @@ describe('Unit tests for profile controller', function () {
             $mdDialog.hide();
             $state.reload();
         });
+
+        it('should set isFormError and notify if URL is invalid', function () {
+            var resetconfirmFormValid = true;
+            spyOn(vm, 'isURLValid').and.returnValue(false);
+            vm.user.github_url = "a".repeat(201); // invalid URL
+            vm.updateProfile(resetconfirmFormValid, 'github_url');
+            expect(vm.isFormError).toBe(true);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "URL length should not be greater than 200 or is in invalid format!");
+        });
     });
 
     describe('Unit tests for `deactivate user` function', function () {
@@ -311,6 +320,219 @@ describe('Unit tests for profile controller', function () {
             deactivateAccountForm = true;
             vm.confirmDeactivateAccount(deactivateAccountForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
+        });
+    });
+
+    describe('Unit tests for downloadToken function', function () {
+        it('should create an anchor and trigger download', function () {
+            vm.jsonResponse = { token: 'abc123' };
+            // Mock angular.element to return a fake anchor
+            var dispatchEventSpy = jasmine.createSpy('dispatchEvent');
+            var anchorMock = [{
+                dispatchEvent: dispatchEventSpy
+            }];
+            anchorMock.attr = jasmine.createSpy('attr');
+            spyOn(window.angular, 'element').and.returnValue(anchorMock);
+
+            // Mock document.createEvent and its initMouseEvent
+            var evMock = {};
+            evMock.initMouseEvent = jasmine.createSpy('initMouseEvent');
+            spyOn(document, 'createEvent').and.returnValue(evMock);
+
+            vm.downloadToken();
+
+            expect(window.angular.element).toHaveBeenCalledWith('<a/>');
+            expect(anchorMock.attr).toHaveBeenCalledWith({
+                href: jasmine.stringMatching(/^data:text\/json/),
+                download: 'token.json'
+            });
+            expect(document.createEvent).toHaveBeenCalledWith('MouseEvents');
+            expect(evMock.initMouseEvent).toHaveBeenCalledWith(
+                "click", true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null
+            );
+            expect(dispatchEventSpy).toHaveBeenCalledWith(evMock);
+        });
+    });
+
+    describe('Unit tests for refreshToken function', function () {
+        beforeEach(function () {
+            spyOn(utilities, 'storeData');
+            spyOn($rootScope, 'notify');
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                // Save params for manual invocation
+                utilities._refreshParams = params;
+            });
+        });
+
+        it('should refresh token and handle success', function () {
+            vm.jsonResponse = {};
+            vm.token = '';
+            vm.refreshToken();
+            // Simulate backend success
+            var response = { data: { token: 'newtoken' } };
+            utilities._refreshParams.callback.onSuccess(response);
+
+            expect(vm.jsonResponse).toEqual(response.data);
+            expect(vm.token).toEqual('newtoken');
+            expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'newtoken');
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Token generated successfully.");
+        });
+
+        it('should handle error on refresh token', function () {
+            vm.refreshToken();
+            var response = { data: { detail: 'fail' } };
+            utilities._refreshParams.callback.onError(response);
+
+            expect($rootScope.notify).toHaveBeenCalledWith("error", 'fail');
+        });
+    });
+
+    describe('Unit tests for editprofileDialog function', function () {
+        beforeEach(function () {
+            spyOn($mdDialog, 'show');
+        });
+
+        const cases = [
+            { id: 'first_name', title: 'First Name', editid: 'first_name' },
+            { id: 'last_name', title: 'Last Name', editid: 'last_name' },
+            { id: 'affiliation', title: 'Affiliation', editid: 'affiliation' },
+            { id: 'github_url', title: 'Github URL', editid: 'github_url' },
+            { id: 'google_scholar_url', title: 'Google Scholar URL', editid: 'google_scholar_url' },
+            { id: 'linkedin_url', title: 'Linkedin URL', editid: 'linkedin_url' },
+        ];
+
+        cases.forEach(function (testCase) {
+            it('should set titleInput and editid for ' + testCase.id, function () {
+                var ev = { currentTarget: { id: testCase.id } };
+                vm.editprofileDialog(ev);
+                expect(vm.titleInput).toEqual(testCase.title);
+                expect(vm.editid).toEqual(testCase.editid);
+                expect($mdDialog.show).toHaveBeenCalledWith(jasmine.objectContaining({
+                    scope: $scope,
+                    preserveScope: true,
+                    targetEvent: ev,
+                    templateUrl: 'dist/views/web/profile/edit-profile/edit-profile.html',
+                    escapeToClose: false
+                }));
+            });
+        });
+    });
+
+    describe('Unit tests for changePassword function', function () {
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'go');
+            vm.user = {
+                old_password: 'old',
+                new_password1: 'new1',
+                new_password2: 'new2'
+            };
+            $state.params = { user_id: 1 };
+        });
+
+        it('should call notify and go to AuthToken on success', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onSuccess();
+            });
+            vm.changePassword(true);
+            expect(vm.user.error).toBe(false);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your password has been changed successfully!");
+            expect($state.go).toHaveBeenCalledWith('web.profile.AuthToken');
+        });
+
+        it('should handle old_password error', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({
+                    data: { old_password: ["Old password error"] }
+                });
+            });
+            vm.changePassword(true);
+            expect(vm.user.error).toBe("Failed");
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("Old password error");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Old password error");
+        });
+
+        it('should handle new_password1 error', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({
+                    data: { new_password1: ["New password1 error"] }
+                });
+            });
+            vm.changePassword(true);
+            expect(vm.FormError).toBe("New password1 error");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "New password1 error");
+        });
+
+        it('should handle new_password2 error', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({
+                    data: { new_password2: ["New password2 error"] }
+                });
+            });
+            vm.changePassword(true);
+            expect(vm.FormError).toBe("New password2 error");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "New password2 error");
+        });
+
+        it('should handle error in catch clause', function () {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                params.callback.onError({
+                    data: null
+                });
+            });
+            // Force error in try-catch
+            spyOn(Object, 'values').and.throwError('Test error');
+            vm.changePassword(true);
+            expect(vm.FormError).toBe("Something went wrong! Please refresh the page and try again.");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Something went wrong! Please refresh the page and try again.");
+        });
+
+        it('should notify if form is invalid', function () {
+            vm.changePassword(false);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Something went wrong! Please refresh the page and try again.");
+        });
+    });
+
+    describe('Unit tests for toggleOldPasswordVisibility function', function () {
+        it('should toggle $rootScope.canShowOldPassword from false to true', function () {
+            $rootScope.canShowOldPassword = false;
+            vm.toggleOldPasswordVisibility();
+            expect($rootScope.canShowOldPassword).toBe(true);
+        });
+
+        it('should toggle $rootScope.canShowOldPassword from true to false', function () {
+            $rootScope.canShowOldPassword = true;
+            vm.toggleOldPasswordVisibility();
+            expect($rootScope.canShowOldPassword).toBe(false);
+        });
+    });
+
+    describe('Unit tests for toggleNewPasswordVisibility function', function () {
+        it('should toggle $rootScope.canShowNewPassword from false to true', function () {
+            $rootScope.canShowNewPassword = false;
+            vm.toggleNewPasswordVisibility();
+            expect($rootScope.canShowNewPassword).toBe(true);
+        });
+
+        it('should toggle $rootScope.canShowNewPassword from true to false', function () {
+            $rootScope.canShowNewPassword = true;
+            vm.toggleNewPasswordVisibility();
+            expect($rootScope.canShowNewPassword).toBe(false);
+        });
+    });
+
+    describe('Unit tests for toggleNewConfirmVisibility function', function () {
+        it('should toggle $rootScope.canShowNewConfirmPassword from false to true', function () {
+            $rootScope.canShowNewConfirmPassword = false;
+            vm.toggleNewConfirmVisibility();
+            expect($rootScope.canShowNewConfirmPassword).toBe(true);
+        });
+
+        it('should toggle $rootScope.canShowNewConfirmPassword from true to false', function () {
+            $rootScope.canShowNewConfirmPassword = true;
+            vm.toggleNewConfirmVisibility();
+            expect($rootScope.canShowNewConfirmPassword).toBe(false);
         });
     });
 });

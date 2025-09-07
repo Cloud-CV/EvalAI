@@ -10,8 +10,9 @@ from kubernetes import client
 
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
-from statsd_utils import increment_and_push_metrics_to_statsd
-from worker_utils import EvalAI_Interface
+
+from .statsd_utils import increment_and_push_metrics_to_statsd
+from .worker_utils import EvalAI_Interface
 
 
 class GracefulKiller:
@@ -606,7 +607,8 @@ def update_failed_jobs_and_send_logs(
                 code_upload_environment_error = None
                 submission_error = None
             else:
-                # Prevents monitoring when Job created with pending pods state (not assigned to node)
+                # Prevents monitoring when Job created with pending pods state
+                # (not assigned to node)
                 if pods_list.items[0].status.container_statuses:
                     container_state_map = {}
                     for container in pods_list.items[
@@ -685,7 +687,8 @@ def install_gpu_drivers(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating deamonset
     """
     logging.info("Installing Nvidia-GPU Drivers ...")
-    # Original manifest source: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+    # Original manifest source:
+    # https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
     manifest_path = "/code/scripts/workers/code_upload_worker_utils/nvidia-device-plugin.yml"
     logging.info("Using daemonset file: %s", manifest_path)
     nvidia_manifest = open(manifest_path).read()
@@ -774,7 +777,8 @@ def main():
                     or submission.get("status") == "cancelled"
                 ):
                     try:
-                        # Fetch the last job name from the list as it is the latest running job
+                        # Fetch the last job name from the list as it is the
+                        # latest running job
                         job_name = submission.get("job_name")
                         message_receipt_handle = message.get("receipt_handle")
                         if job_name:
@@ -797,7 +801,8 @@ def main():
                         logger.exception(
                             "Failed to delete submission job: {}".format(e)
                         )
-                        # Delete message from sqs queue to avoid re-triggering job delete
+                        # Delete message from sqs queue to avoid re-triggering
+                        # job delete
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )

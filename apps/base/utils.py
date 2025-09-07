@@ -216,9 +216,8 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
 def get_slug(param):
     slug = param.replace(" ", "-").lower()
     slug = re.sub(r"\W+", "-", slug)
-    slug = slug[
-        :180
-    ]  # The max-length for slug is 200, but 180 is used here so as to append pk
+    # The max-length for slug is 200, but 180 is used here so as to append pk
+    slug = slug[:180]
     return slug
 
 

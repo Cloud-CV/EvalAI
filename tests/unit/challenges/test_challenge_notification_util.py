@@ -1,7 +1,13 @@
 from datetime import timedelta
+from unittest.mock import MagicMock
+from unittest.mock import patch as mockpatch
 
 import mock
 from allauth.account.models import EmailAddress
+from challenges.challenge_notification_util import (
+    construct_and_send_eks_cluster_creation_mail,
+    construct_and_send_worker_start_mail,
+)
 from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -120,3 +126,136 @@ class TestChallengeStartNotifier(BaseTestClass):
 
         mock_start_workers.assert_called_with([self.challenge])
         self.assertEqual(mock_send_email.call_args_list, calls)
+
+
+class TestUnittestChallengeNotification(BaseTestClass):
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_eks_cluster_creation_mail(
+        self, mock_settings, mock_send_email
+    ):
+        # Mock challenge object
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = None
+
+        # Set settings.DEBUG to False
+        mock_settings.DEBUG = False
+
+        # Call the function
+        mock_settings.configure_mock(
+            ADMIN_EMAIL="admin@cloudcv.org",
+            CLOUDCV_TEAM_EMAIL="team@cloudcv.org",
+            SENDGRID_SETTINGS={
+                "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
+            },
+        )
+        construct_and_send_eks_cluster_creation_mail(mock_challenge)
+
+        # Assert send_email was called with correct arguments
+        mock_send_email.assert_called_once_with(
+            sender="team@cloudcv.org",
+            recipient="admin@cloudcv.org",
+            template_id="template-id",
+            template_data={"CHALLENGE_NAME": "Test Challenge"},
+        )
+
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_eks_cluster_creation_mail_debug_true(
+        self, mock_settings, mock_send_email
+    ):
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = None
+
+        mock_settings.DEBUG = True
+
+        construct_and_send_eks_cluster_creation_mail(mock_challenge)
+
+        mock_send_email.assert_not_called()
+
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_worker_start_mail_with_image(
+        self, mock_settings, mock_send_email
+    ):
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.pk = 1
+        mock_challenge.image = MagicMock()
+        mock_challenge.image.url = "http://testserver/media/test_image.png"
+        mock_challenge.inform_hosts = True
+        mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host@test.com"
+        ]
+
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "http://testserver"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"CHALLENGE_APPROVAL_EMAIL": "template-id"}
+        }
+
+        construct_and_send_worker_start_mail(mock_challenge)
+
+        mock_send_email.assert_called_once_with(
+            sender="team@cloudcv.org",
+            recipient="host@test.com",
+            template_id="template-id",
+            template_data={
+                "CHALLENGE_NAME": "Test Challenge",
+                "CHALLENGE_URL": "http://testserver/web/challenges/challenge-page/1",
+                "CHALLENGE_IMAGE_URL": "http://testserver/media/test_image.png",
+            },
+        )
+
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_eks_cluster_creation_mail_with_image(
+        self, mock_settings, mock_send_email
+    ):
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = MagicMock()
+        mock_challenge.image.url = "http://testserver/media/test_image.png"
+
+        mock_settings.DEBUG = False
+        mock_settings.ADMIN_EMAIL = "admin@cloudcv.org"
+        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
+        }
+
+        construct_and_send_eks_cluster_creation_mail(mock_challenge)
+
+        mock_send_email.assert_called_once_with(
+            sender="team@cloudcv.org",
+            recipient="admin@cloudcv.org",
+            template_id="template-id",
+            template_data={
+                "CHALLENGE_NAME": "Test Challenge",
+                "CHALLENGE_IMAGE_URL": "http://testserver/media/test_image.png",
+            },
+        )
+
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_worker_start_mail_debug_true(
+        self, mock_settings, mock_send_email
+    ):
+        # Mock challenge object
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.pk = 1
+        mock_challenge.image = None
+        mock_challenge.inform_hosts = True
+        mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host@test.com"
+        ]
+
+        mock_settings.DEBUG = True
+
+        construct_and_send_worker_start_mail(mock_challenge)
+
+        mock_send_email.assert_not_called()
