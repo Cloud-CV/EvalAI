@@ -20,14 +20,14 @@ class ProfileAdmin(ImportExportTimeStampedAdmin):
         "contact_number",
         "affiliation",
         "receive_participated_challenge_updates",
-        "receive_newsletter",
+        "recieve_newsletter",
         "github_url",
         "google_scholar_url",
         "linkedin_url",
     )
     list_filter = (
         "receive_participated_challenge_updates",
-        "receive_newsletter",
+        "recieve_newsletter",
     )
     search_fields = (
         "user__username",
