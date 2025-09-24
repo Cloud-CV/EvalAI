@@ -20,22 +20,19 @@ class ProfileAdmin(ImportExportTimeStampedAdmin):
         "contact_number",
         "affiliation",
         "receive_participated_challenge_updates",
-        "recieve_newsletter",
+        "receive_newsletter",
         "github_url",
         "google_scholar_url",
         "linkedin_url",
     )
     list_filter = (
         "receive_participated_challenge_updates",
-        "recieve_newsletter",
+        "receive_newsletter",
     )
     search_fields = (
-        "user__first_name",
-        "user__last_name",
-        "contact_number",
-        "github_url",
-        "google_scholar_url",
-        "linkedin_url",
+        "user__username",
+        "user__email",
+        "affiliation",
     )
 
 
@@ -44,9 +41,14 @@ class UserResource(resources.ModelResource):
         model = User
         fields = (
             "id",
-            "date_joined",
+            "username",
             "email",
             "first_name",
+            "last_name",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "date_joined",
             "last_login",
             "last_name",
             "staff_status",
@@ -54,12 +56,12 @@ class UserResource(resources.ModelResource):
         )
 
 
-class UserAdmin(ExportMixin, UserAdmin):
+class CustomUserAdmin(ExportMixin, UserAdmin):
     resource_class = UserResource
 
 
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)
 
 
 class TokenResource(resources.ModelResource):
@@ -67,14 +69,14 @@ class TokenResource(resources.ModelResource):
         model = Token
 
 
-class TokenAdmin(TokenAdmin):
+class CustomTokenAdmin(TokenAdmin):
     resource_class = TokenResource
     list_filter = ("created",)
     search_fields = ("user__username",)
 
 
 admin.site.unregister(Token)
-admin.site.register(Token, TokenAdmin)
+admin.site.register(Token, CustomTokenAdmin)
 
 
 @admin.register(JwtToken)
@@ -96,9 +98,9 @@ class EmailAddressResource(resources.ModelResource):
         model = EmailAddress
 
 
-class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
+class CustomEmailAddressAdmin(ExportMixin, EmailAddressAdmin):
     resource_class = EmailAddressResource
 
 
 admin.site.unregister(EmailAddress)
-admin.site.register(EmailAddress, EmailAddressAdmin)
+admin.site.register(EmailAddress, CustomEmailAddressAdmin)
