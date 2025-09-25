@@ -120,6 +120,27 @@ Examples:
     export DJANGO_SETTINGS_MODULE=settings.prod
     python scripts/s3/cleanup_submissions.py --execute --not-approved-by-admin
 
+    # Preview deletion of test annotation files from challenges not approved by admin and older than 30 days
+    export DJANGO_SETTINGS_MODULE=settings.dev
+    python scripts/s3/cleanup_submissions.py --dry-run --test-annotations
+
+    # Actually delete test annotation files from challenges not approved by admin and older than 30 days
+    export DJANGO_SETTINGS_MODULE=settings.prod
+    python scripts/s3/cleanup_submissions.py --execute --test-annotations
+
+    # Preview deletion using custom challenge query (challenges not approved by admin)
+    export DJANGO_SETTINGS_MODULE=settings.dev
+    python scripts/s3/cleanup_submissions.py --dry-run --challenge-query "approved_by_admin=False"
+
+    # Preview deletion using custom challenge query (challenges older than 30 days)
+    export DJANGO_SETTINGS_MODULE=settings.dev
+    python scripts/s3/cleanup_submissions.py --dry-run --challenge-query \
+        "created_at__lt=timezone.now()-timedelta(days=30)"
+
+    # Preview deletion using custom challenge query (specific challenge creator)
+    export DJANGO_SETTINGS_MODULE=settings.dev
+    python scripts/s3/cleanup_submissions.py --dry-run --challenge-query "creator__team_name__icontains=example"
+
     # List all challenges by category (ongoing, past, upcoming, not approved)
     export DJANGO_SETTINGS_MODULE=settings.dev
     python scripts/s3/cleanup_submissions.py --list-challenges
@@ -449,11 +470,15 @@ class ExpiredSubmissionsDeleter:
         past_challenges_only: bool = False,
         past_challenges_min_days: int = None,
         not_approved_by_admin: bool = False,
+        test_annotations: bool = False,
+        challenge_query: str = None,
     ):
         self.dry_run = dry_run
         self.past_challenges_only = past_challenges_only
         self.past_challenges_min_days = past_challenges_min_days
         self.not_approved_by_admin = not_approved_by_admin
+        self.test_annotations = test_annotations
+        self.challenge_query = challenge_query
         self.deletion_cutoff_date = (
             None  # Will be set by main() based on --days argument
         )
@@ -476,14 +501,26 @@ class ExpiredSubmissionsDeleter:
                 file_field.storage, "size"
             ):
                 try:
-                    return file_field.storage.size(file_field.name)
-                except Exception:
-                    pass
+                    size = file_field.storage.size(file_field.name)
+                    return size if size is not None else 0
+                except Exception as e:
+                    # Log the error for debugging
+                    self.logger.debug(
+                        "Could not get size for file %s: %s",
+                        file_field.name,
+                        str(e),
+                    )
+                    return 0
 
             # If all else fails, return 0
             return 0
 
-        except Exception:
+        except Exception as e:
+            self.logger.debug(
+                "Error getting file size for %s: %s",
+                getattr(file_field, "name", "unknown"),
+                str(e),
+            )
             return 0
 
     def calculate_submission_space(self, submission: Submission) -> int:
@@ -529,6 +566,32 @@ class ExpiredSubmissionsDeleter:
             )
 
         return total_size
+
+    def calculate_test_annotation_space(self, challenge: Challenge) -> int:
+        """Calculate the total S3 space used by test annotation files for a challenge."""
+        try:
+            # Get all phases for this challenge
+            phases = ChallengePhase.objects.filter(challenge=challenge)
+
+            total_space = 0
+            for phase in phases:
+                if phase.test_annotation and phase.test_annotation.name:
+                    file_size = self.get_file_size(phase.test_annotation)
+                    self.logger.debug(
+                        "Test annotation file %s size: %s bytes",
+                        phase.test_annotation.name,
+                        file_size,
+                    )
+                    total_space += file_size
+
+            return total_space
+        except Exception as e:
+            self.logger.warning(
+                "⚠️ Could not calculate test annotation space for challenge %s: %s",
+                challenge.id,
+                str(e),
+            )
+            return 0
 
     def format_bytes(self, size_bytes: int) -> str:
         """Convert bytes to human readable format."""
@@ -584,7 +647,7 @@ class ExpiredSubmissionsDeleter:
         }
 
     def calculate_challenge_space(self, challenge: Challenge) -> int:
-        """Calculate the total S3 space used by all submissions in a challenge."""
+        """Calculate the total S3 space used by all submissions and test annotations in a challenge."""
         try:
             # Get all phases for this challenge
             phases = ChallengePhase.objects.filter(challenge=challenge)
@@ -595,6 +658,10 @@ class ExpiredSubmissionsDeleter:
             total_space = 0
             for submission in submissions:
                 total_space += self.calculate_submission_space(submission)
+
+            # Add test annotation space if test_annotations flag is set
+            if self.test_annotations:
+                total_space += self.calculate_test_annotation_space(challenge)
 
             return total_space
         except Exception as e:
@@ -710,9 +777,75 @@ class ExpiredSubmissionsDeleter:
         )
         self.logger.info(f"{'='*80}")
 
+    def parse_custom_challenge_query(
+        self, query_string: str
+    ) -> List[Challenge]:
+        """Parse and execute a custom Django ORM query for challenges."""
+        try:
+            # Import necessary modules for query evaluation
+            from datetime import timedelta
+
+            from django.utils import timezone
+
+            # Create a safe evaluation context
+            context = {
+                "Challenge": Challenge,
+                "timezone": timezone,
+                "timedelta": timedelta,
+            }
+
+            # Parse the query string into filter arguments
+            # Expected format: "field1=value1,field2__lt=value2"
+            filter_kwargs = {}
+            for condition in query_string.split(","):
+                condition = condition.strip()
+                if "=" in condition:
+                    field, value = condition.split("=", 1)
+                    field = field.strip()
+                    value = value.strip()
+
+                    # Handle special values like timezone.now() - timedelta(days=30)
+                    if "timezone.now()" in value or "timedelta(" in value:
+                        try:
+                            # Evaluate the value in our safe context
+                            value = eval(value, context)
+                        except Exception as e:
+                            self.logger.error(
+                                "❌ Error evaluating query value '%s': %s",
+                                value,
+                                str(e),
+                            )
+                            return []
+
+                    filter_kwargs[field] = value
+
+            # Execute the query
+            challenges = Challenge.objects.filter(**filter_kwargs).order_by(
+                "id"
+            )
+
+            self.logger.info(
+                "🔍 Found %s challenges matching custom query: %s",
+                challenges.count(),
+                query_string,
+            )
+
+            return list(challenges)
+
+        except Exception as e:
+            self.logger.error(
+                "❌ Error parsing custom challenge query '%s': %s",
+                query_string,
+                str(e),
+            )
+            return []
+
     def get_expired_challenges(self) -> List[Challenge]:
         """Get challenges that ended before the cutoff date or all past challenges."""
-        if self.not_approved_by_admin:
+        if self.challenge_query:
+            # Use custom query
+            return self.parse_custom_challenge_query(self.challenge_query)
+        elif self.not_approved_by_admin:
             # Get challenges that are not approved by admin and are more than 30 days old
             thirty_days_ago = timezone.now() - timedelta(days=30)
             expired_challenges = Challenge.objects.filter(
@@ -723,6 +856,20 @@ class ExpiredSubmissionsDeleter:
             self.logger.info(
                 "🔍 Found %s challenges not approved by admin and older than 30 days "
                 "(approved_by_admin=False, created_at < %s)",
+                expired_challenges.count(),
+                thirty_days_ago,
+            )
+        elif self.test_annotations:
+            # Get challenges that are not approved by admin and are more than 30 days old
+            thirty_days_ago = timezone.now() - timedelta(days=30)
+            expired_challenges = Challenge.objects.filter(
+                approved_by_admin=False,
+                created_at__lt=thirty_days_ago,
+            ).order_by("id")
+
+            self.logger.info(
+                "🔍 Found %s challenges not approved by admin and older than 30 days "
+                "for test annotation cleanup (approved_by_admin=False, created_at < %s)",
                 expired_challenges.count(),
                 thirty_days_ago,
             )
@@ -835,6 +982,55 @@ class ExpiredSubmissionsDeleter:
             )
 
         return stats
+
+    def delete_test_annotation_files(self, challenge: Challenge) -> int:
+        """Delete test annotation files from S3 for a challenge."""
+        try:
+            challenge_pk = challenge.pk
+            aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+            s3_client = get_boto3_client("s3", aws_keys)
+            bucket_name = aws_keys["AWS_STORAGE_BUCKET_NAME"]
+
+            # Get all phases for this challenge
+            phases = ChallengePhase.objects.filter(challenge=challenge)
+
+            deleted_count = 0
+            for phase in phases:
+                if phase.test_annotation and phase.test_annotation.name:
+                    # Get the S3 key for the test annotation file
+                    test_annotation_key = phase.test_annotation.name
+
+                    if self.dry_run:
+                        self.logger.info(
+                            "🔍 DRY RUN: Would delete test annotation file: %s",
+                            test_annotation_key,
+                        )
+                        deleted_count += 1
+                    else:
+                        try:
+                            s3_client.delete_object(
+                                Bucket=bucket_name, Key=test_annotation_key
+                            )
+                            self.logger.info(
+                                "🗑️ Deleted test annotation file: %s",
+                                test_annotation_key,
+                            )
+                            deleted_count += 1
+                        except Exception as e:
+                            self.logger.error(
+                                "❌ Error deleting test annotation file %s: %s",
+                                test_annotation_key,
+                                str(e),
+                            )
+
+            return deleted_count
+        except Exception as e:
+            self.logger.error(
+                "❌ Error processing test annotation files for challenge %s: %s",
+                challenge.id,
+                str(e),
+            )
+            return 0
 
     def delete_submission_folder(self, submission: Submission) -> int:
         """
@@ -1107,12 +1303,28 @@ class ExpiredSubmissionsDeleter:
     def run(self) -> Dict[str, Any]:
         """Main method to run the deletion process."""
         self.logger.info(
-            "🚀 Starting expired submission files deletion process"
+            "🚀 Starting %s process",
+            (
+                "test annotation files cleanup"
+                if self.test_annotations
+                else "expired submission files deletion"
+            ),
         )
-        if self.not_approved_by_admin:
+        if self.challenge_query:
+            self.logger.info(
+                "📅 Mode: Custom challenge query "
+                "(processing challenges matching: %s)",
+                self.challenge_query,
+            )
+        elif self.not_approved_by_admin:
             self.logger.info(
                 "📅 Mode: Challenges not approved by admin and older than 30 days "
                 "(approved_by_admin=False, created_at < 30 days ago)"
+            )
+        elif self.test_annotations:
+            self.logger.info(
+                "📅 Mode: Test annotation files cleanup "
+                "(processing test annotation files from challenges not approved by admin and older than 30 days)"
             )
         elif self.past_challenges_min_days is not None:
             self.logger.info(
@@ -1181,84 +1393,180 @@ class ExpiredSubmissionsDeleter:
                 challenge.title,
                 challenge.id,
             )
-            self.logger.info("📅 Challenge ended: %s", challenge.end_date)
-            self.logger.info(
-                "⏰ Days since expiration: %s",
-                (timezone.now() - challenge.end_date).days,
-            )
 
-            # Get submissions for this challenge
-            submissions = self.get_submissions_for_challenge(challenge)
-
-            if not submissions:
-                self.logger.info("❌ No submissions found for this challenge")
-                challenges_skipped += 1
-                continue
-
-            # Get and log statistics
-            stats = self.get_submission_stats(submissions)
-            self.logger.info("📈 Submission statistics:")
-            self.logger.info("  Total submissions: %s", stats["total"])
-            self.logger.info("  Oldest submission: %s", stats["oldest"])
-            self.logger.info("  Newest submission: %s", stats["newest"])
-            self.logger.info(
-                "  Total space used: %s",
-                self.format_bytes(stats["total_space"]),
-            )
-            self.logger.info("  By status: %s", stats["by_status"])
-            self.logger.info("  By phase: %s", stats["by_phase"])
-
-            # Log space breakdown by status
-            if stats["space_by_status"]:
-                self.logger.info("  💾 Space by status:")
-                for status, space in stats["space_by_status"].items():
-                    self.logger.info(
-                        "    %s: %s", status, self.format_bytes(space)
-                    )
-
-            # Log space breakdown by phase
-            if stats["space_by_phase"]:
-                self.logger.info("  📁 Space by phase:")
-                for phase, space in stats["space_by_phase"].items():
-                    self.logger.info(
-                        "    %s: %s", phase, self.format_bytes(space)
-                    )
-
-            # Delete submission files
-            deleted_count, files_deleted, aws_errors, no_files = (
-                self.delete_submissions_files(submissions)
-            )
-
-            total_deleted += deleted_count
-            total_files_deleted += files_deleted
-            submissions_with_aws_errors += aws_errors
-            submissions_with_no_files += no_files
-            total_space_freed += stats["total_space"]
-            challenges_processed += 1
-
-            if self.dry_run:
+            if self.test_annotations:
+                # Test annotation mode - show relevant info
                 self.logger.info(
-                    "🔍 DRY RUN: Would delete files from %s "
-                    "submissions from challenge %s",
-                    deleted_count,
-                    challenge.title,
+                    "📅 Challenge created: %s", challenge.created_at
+                )
+                self.logger.info(
+                    "⏰ Days since creation: %s",
+                    (timezone.now() - challenge.created_at).days,
                 )
             else:
+                # Submission mode - show submission relevant info
+                self.logger.info("📅 Challenge ended: %s", challenge.end_date)
                 self.logger.info(
-                    "🗑️ Deleted files from %s submissions from challenge %s",
-                    deleted_count,
-                    challenge.title,
+                    "⏰ Days since expiration: %s",
+                    (timezone.now() - challenge.end_date).days,
                 )
-            if self.dry_run:
+
+            # Process based on mode
+            if self.test_annotations:
+                # Test annotations mode - only process test annotation files
+                test_annotation_space = self.calculate_test_annotation_space(
+                    challenge
+                )
+                phases = ChallengePhase.objects.filter(challenge=challenge)
+                test_annotation_count = sum(
+                    1
+                    for phase in phases
+                    if phase.test_annotation and phase.test_annotation.name
+                )
+
+                if test_annotation_count == 0:
+                    self.logger.info(
+                        "❌ No test annotation files found for this challenge"
+                    )
+                    challenges_skipped += 1
+                    continue
+
+                self.logger.info("📋 Test annotation statistics:")
                 self.logger.info(
-                    "💾 DRY RUN: Space that would be freed: %s",
-                    self.format_bytes(stats["total_space"]),
+                    "  Total test annotation files: %s", test_annotation_count
                 )
+                self.logger.info(
+                    "  Total test annotation space: %s",
+                    self.format_bytes(test_annotation_space),
+                )
+
+                if test_annotation_count > 0:
+                    self.logger.info("  Test annotation files by phase:")
+                    for phase in phases:
+                        if (
+                            phase.test_annotation
+                            and phase.test_annotation.name
+                        ):
+                            phase_space = self.get_file_size(
+                                phase.test_annotation
+                            )
+                            self.logger.debug(
+                                "Phase %s test annotation %s size: %s bytes",
+                                phase.name,
+                                phase.test_annotation.name,
+                                phase_space,
+                            )
+                            self.logger.info(
+                                "    %s: %s (%s)",
+                                phase.name,
+                                phase.test_annotation.name,
+                                self.format_bytes(phase_space),
+                            )
+
+                # Delete test annotation files
+                test_annotation_files_deleted = (
+                    self.delete_test_annotation_files(challenge)
+                )
+                if test_annotation_files_deleted > 0:
+                    self.logger.info(
+                        "🗑️ %s test annotation files %s",
+                        test_annotation_files_deleted,
+                        "would be deleted" if self.dry_run else "deleted",
+                    )
+
+                # Update counters for test annotations mode
+                total_files_deleted += test_annotation_files_deleted
+                total_space_freed += test_annotation_space
+                challenges_processed += 1
+
+                if self.dry_run:
+                    self.logger.info(
+                        "💾 DRY RUN: Space that would be freed: %s",
+                        self.format_bytes(test_annotation_space),
+                    )
+                else:
+                    self.logger.info(
+                        "💾 Space freed: %s",
+                        self.format_bytes(test_annotation_space),
+                    )
+
             else:
+                # Regular submission processing mode
+                # Get submissions for this challenge
+                submissions = self.get_submissions_for_challenge(challenge)
+
+                if not submissions:
+                    self.logger.info(
+                        "❌ No submissions found for this challenge"
+                    )
+                    challenges_skipped += 1
+                    continue
+
+                # Get and log statistics
+                stats = self.get_submission_stats(submissions)
+                self.logger.info("📈 Submission statistics:")
+                self.logger.info("  Total submissions: %s", stats["total"])
+                self.logger.info("  Oldest submission: %s", stats["oldest"])
+                self.logger.info("  Newest submission: %s", stats["newest"])
                 self.logger.info(
-                    "💾 Space freed: %s",
+                    "  Total space used: %s",
                     self.format_bytes(stats["total_space"]),
                 )
+                self.logger.info("  By status: %s", stats["by_status"])
+                self.logger.info("  By phase: %s", stats["by_phase"])
+
+                # Log space breakdown by status
+                if stats["space_by_status"]:
+                    self.logger.info("  💾 Space by status:")
+                    for status, space in stats["space_by_status"].items():
+                        self.logger.info(
+                            "    %s: %s", status, self.format_bytes(space)
+                        )
+
+                # Log space breakdown by phase
+                if stats["space_by_phase"]:
+                    self.logger.info("  📁 Space by phase:")
+                    for phase, space in stats["space_by_phase"].items():
+                        self.logger.info(
+                            "    %s: %s", phase, self.format_bytes(space)
+                        )
+
+                # Delete submission files
+                deleted_count, files_deleted, aws_errors, no_files = (
+                    self.delete_submissions_files(submissions)
+                )
+
+                # Update counters for submission mode
+                total_deleted += deleted_count
+                total_files_deleted += files_deleted
+                submissions_with_aws_errors += aws_errors
+                submissions_with_no_files += no_files
+                total_space_freed += stats["total_space"]
+                challenges_processed += 1
+
+                if self.dry_run:
+                    self.logger.info(
+                        "🔍 DRY RUN: Would delete files from %s "
+                        "submissions from challenge %s",
+                        deleted_count,
+                        challenge.title,
+                    )
+                else:
+                    self.logger.info(
+                        "🗑️ Deleted files from %s submissions from challenge %s",
+                        deleted_count,
+                        challenge.title,
+                    )
+                if self.dry_run:
+                    self.logger.info(
+                        "💾 DRY RUN: Space that would be freed: %s",
+                        self.format_bytes(stats["total_space"]),
+                    )
+                else:
+                    self.logger.info(
+                        "💾 Space freed: %s",
+                        self.format_bytes(stats["total_space"]),
+                    )
 
         self.logger.info("🎉 Deletion process completed!")
         self.logger.info("📊 SUMMARY:")
@@ -1266,9 +1574,15 @@ class ExpiredSubmissionsDeleter:
             "  Total challenges found: %s", total_challenges_found
         )
         self.logger.info("  Challenges processed: %s", challenges_processed)
-        self.logger.info(
-            "  Challenges skipped (no submissions): %s", challenges_skipped
-        )
+        if self.test_annotations:
+            self.logger.info(
+                "  Challenges skipped (no test annotation files): %s",
+                challenges_skipped,
+            )
+        else:
+            self.logger.info(
+                "  Challenges skipped (no submissions): %s", challenges_skipped
+            )
         self.logger.info(
             "  Verification: %s + %s = %s ✓",
             challenges_processed,
@@ -1276,38 +1590,46 @@ class ExpiredSubmissionsDeleter:
             challenges_processed + challenges_skipped,
         )
 
-        if submissions_with_aws_errors > 0:
-            self.logger.warning(
-                "  ⚠️ Submissions with AWS errors: %s",
-                submissions_with_aws_errors,
-            )
-        if submissions_with_no_files > 0:
-            self.logger.info(
-                "  ℹ️ Submissions with no files: %s", submissions_with_no_files
-            )
-
-        if self.dry_run:
-            self.logger.info(
-                "🔍 DRY RUN: Total submissions that would have files deleted: %s",
-                total_deleted,
-            )
-            self.logger.info(
-                "🔍 DRY RUN: Total files that would be deleted: %s",
-                total_files_deleted,
-            )
-            self.logger.info(
-                "💾 DRY RUN: Total space that would be freed: %s",
-                self.format_bytes(total_space_freed),
-            )
+        if self.test_annotations:
+            # Test annotation specific summary
+            if self.dry_run:
+                self.logger.info(
+                    "🔍 DRY RUN: Total test annotation files that would be deleted: %s",
+                    total_files_deleted,
+                )
+                self.logger.info(
+                    "🔍 DRY RUN: Total files that would be deleted: %s",
+                    total_files_deleted,
+                )
+                self.logger.info(
+                    "💾 DRY RUN: Total space that would be freed: %s",
+                    self.format_bytes(total_space_freed),
+                )
+            else:
+                self.logger.info(
+                    "🗑️ Total test annotation files deleted: %s",
+                    total_files_deleted,
+                )
+                self.logger.info(
+                    "🗑️ Total files deleted: %s",
+                    total_files_deleted,
+                )
+                self.logger.info(
+                    "💾 Total space freed: %s",
+                    self.format_bytes(total_space_freed),
+                )
         else:
-            self.logger.info(
-                "🗑️ Total submissions with files deleted: %s", total_deleted
-            )
-            self.logger.info("🗑️ Total files deleted: %s", total_files_deleted)
-            self.logger.info(
-                "💾 Total space freed: %s",
-                self.format_bytes(total_space_freed),
-            )
+            # Regular submission summary
+            if submissions_with_aws_errors > 0:
+                self.logger.warning(
+                    "  ⚠️ Submissions with AWS errors: %s",
+                    submissions_with_aws_errors,
+                )
+            if submissions_with_no_files > 0:
+                self.logger.info(
+                    "  ℹ️ Submissions with no files: %s",
+                    submissions_with_no_files,
+                )
 
         return {
             # Count of submissions that would be deleted (dry run) or were deleted (execute)
@@ -1317,23 +1639,34 @@ class ExpiredSubmissionsDeleter:
             "submissions_with_aws_errors": submissions_with_aws_errors,
             "submissions_with_no_files": submissions_with_no_files,
             "total_challenges_found": total_challenges_found,
+            "files_deleted": total_files_deleted,
+            "space_freed": total_space_freed,
             "cutoff_date": (
                 self.deletion_cutoff_date
                 if (
                     not self.past_challenges_only
                     and not self.past_challenges_min_days
                     and not self.not_approved_by_admin
+                    and not self.test_annotations
+                    and not self.challenge_query
                 )
                 else (
                     "ALL_PAST_CHALLENGES"
                     if not self.not_approved_by_admin
-                    else "NOT_APPROVED_BY_ADMIN"
+                    and not self.test_annotations
+                    and not self.challenge_query
+                    else (
+                        "NOT_APPROVED_BY_ADMIN"
+                        if not self.test_annotations
+                        and not self.challenge_query
+                        else (
+                            "TEST_ANNOTATIONS"
+                            if not self.challenge_query
+                            else "CUSTOM_QUERY"
+                        )
+                    )
                 )
             ),
-            # Space that would be freed (dry run) or was freed (execute)
-            "space_freed": total_space_freed,
-            # Count of individual files that would be deleted (dry run) or were deleted (execute)
-            "files_deleted": total_files_deleted,
         }
 
 
@@ -1352,8 +1685,8 @@ def main():
         sys.exit(1)
 
     parser = argparse.ArgumentParser(
-        description="Clean up expired submission files from EvalAI challenges or list challenges by category. "
-        "Requires DJANGO_SETTINGS_MODULE environment variable and "
+        description="Clean up expired submission files and test annotation files from EvalAI challenges "
+        "or list challenges by category. Requires DJANGO_SETTINGS_MODULE environment variable and "
         "AWS CloudWatch logging."
     )
 
@@ -1400,6 +1733,23 @@ def main():
     )
 
     parser.add_argument(
+        "--test-annotations",
+        action="store_true",
+        help="Delete test annotation files from challenges where approved_by_admin=False "
+        "and created more than 30 days ago. This processes test annotation files stored "
+        "in S3 under 'media/test_annotations/' for challenges that have not been approved "
+        "by admin and are older than 30 days.",
+    )
+
+    parser.add_argument(
+        "--challenge-query",
+        type=str,
+        help="Custom Django ORM query filter for challenges. Use Django filter syntax. "
+        "Example: 'approved_by_admin=False,created_at__lt=timezone.now()-timedelta(days=30)' "
+        "This allows for flexible challenge selection beyond the predefined modes.",
+    )
+
+    parser.add_argument(
         "--challenge-id", type=int, help="Only process a specific challenge ID"
     )
 
@@ -1443,10 +1793,12 @@ def main():
         and not args.days
         and not args.past_challenges_min_days
         and not args.not_approved_by_admin
+        and not args.test_annotations
+        and not args.challenge_query
     ):
         early_logger.error(
             "You must specify either --days, --past-challenges-only, "
-            "--past-challenges-min-days, or --not-approved-by-admin"
+            "--past-challenges-min-days, --not-approved-by-admin, --test-annotations, or --challenge-query"
         )
         sys.exit(1)
 
@@ -1481,6 +1833,51 @@ def main():
             "--past-challenges-min-days parameter"
         )
 
+    if args.test_annotations and args.days:
+        early_logger.warning(
+            "--test-annotations specified, ignoring --days parameter"
+        )
+
+    if args.test_annotations and args.past_challenges_only:
+        early_logger.warning(
+            "--test-annotations specified, ignoring --past-challenges-only parameter"
+        )
+
+    if args.test_annotations and args.past_challenges_min_days:
+        early_logger.warning(
+            "--test-annotations specified, ignoring --past-challenges-min-days parameter"
+        )
+
+    if args.test_annotations and args.not_approved_by_admin:
+        early_logger.warning(
+            "--test-annotations specified, ignoring --not-approved-by-admin parameter"
+        )
+
+    if args.challenge_query and args.days:
+        early_logger.warning(
+            "--challenge-query specified, ignoring --days parameter"
+        )
+
+    if args.challenge_query and args.past_challenges_only:
+        early_logger.warning(
+            "--challenge-query specified, ignoring --past-challenges-only parameter"
+        )
+
+    if args.challenge_query and args.past_challenges_min_days:
+        early_logger.warning(
+            "--challenge-query specified, ignoring --past-challenges-min-days parameter"
+        )
+
+    if args.challenge_query and args.not_approved_by_admin:
+        early_logger.warning(
+            "--challenge-query specified, ignoring --not-approved-by-admin parameter"
+        )
+
+    if args.challenge_query and args.test_annotations:
+        early_logger.warning(
+            "--challenge-query specified, ignoring --test-annotations parameter"
+        )
+
     # Set up proper logging with CloudWatch enabled
     setup_logging(dry_run=args.dry_run)
 
@@ -1490,14 +1887,19 @@ def main():
         past_challenges_only=args.past_challenges_only,
         past_challenges_min_days=args.past_challenges_min_days,
         not_approved_by_admin=args.not_approved_by_admin,
+        test_annotations=args.test_annotations,
+        challenge_query=args.challenge_query,
     )
 
     # Set the cutoff date based on the required days argument
-    # (only if not using past_challenges_only, past_challenges_min_days, or not_approved_by_admin)
+    # (only if not using past_challenges_only, past_challenges_min_days, not_approved_by_admin,
+    # test_annotations, or challenge_query)
     if (
         not args.past_challenges_only
         and not args.past_challenges_min_days
         and not args.not_approved_by_admin
+        and not args.test_annotations
+        and not args.challenge_query
     ):
         if args.days <= 0:
             early_logger.error(
@@ -1526,6 +1928,13 @@ def main():
         deleter.deletion_cutoff_date = None
         early_logger.info(
             "🔧 Processing challenges not approved by admin and older than 30 days "
+            "(approved_by_admin=False, created_at < 30 days ago)"
+        )
+    elif args.test_annotations:
+        # For test_annotations, we don't need a cutoff date
+        deleter.deletion_cutoff_date = None
+        early_logger.info(
+            "🔧 Processing test annotation files from challenges not approved by admin and older than 30 days "
             "(approved_by_admin=False, created_at < 30 days ago)"
         )
     else:
@@ -1558,10 +1967,16 @@ def main():
         early_logger.info(
             "Challenges processed: %s", result["challenges_processed"]
         )
-        early_logger.info(
-            "Challenges skipped (no submissions): %s",
-            result["challenges_skipped"],
-        )
+        if args.test_annotations:
+            early_logger.info(
+                "Challenges skipped (no test annotation files): %s",
+                result["challenges_skipped"],
+            )
+        else:
+            early_logger.info(
+                "Challenges skipped (no submissions): %s",
+                result["challenges_skipped"],
+            )
         early_logger.info(
             "Verification: %s + %s = %s ✓",
             result["challenges_processed"],
@@ -1569,44 +1984,84 @@ def main():
             result["challenges_processed"] + result["challenges_skipped"],
         )
 
-        if result["submissions_with_aws_errors"] > 0:
-            early_logger.warning(
-                "Submissions with AWS errors: %s",
-                result["submissions_with_aws_errors"],
-            )
-        if result["submissions_with_no_files"] > 0:
-            early_logger.info(
-                "Submissions with no files: %s",
-                result["submissions_with_no_files"],
-            )
-
-        if args.dry_run:
-            early_logger.info(
-                "Submissions that would have files deleted: %s",
-                result["deleted_count"],
-            )
-            early_logger.info(
-                "Files that would be deleted: %s", result["files_deleted"]
-            )
-            early_logger.info(
-                "Space that would be freed: %s",
-                deleter.format_bytes(result["space_freed"]),
-            )
+        if args.test_annotations:
+            # Test annotation specific summary
+            if args.dry_run:
+                early_logger.info(
+                    "Test annotation files that would be deleted: %s",
+                    result["files_deleted"],
+                )
+                early_logger.info(
+                    "Files that would be deleted: %s", result["files_deleted"]
+                )
+                early_logger.info(
+                    "Space that would be freed: %s",
+                    deleter.format_bytes(result["space_freed"]),
+                )
+            else:
+                early_logger.info(
+                    "Test annotation files deleted: %s",
+                    result["files_deleted"],
+                )
+                early_logger.info("Files deleted: %s", result["files_deleted"])
+                early_logger.info(
+                    "Space freed: %s",
+                    deleter.format_bytes(result["space_freed"]),
+                )
         else:
-            early_logger.info(
-                "Submissions with files deleted: %s", result["deleted_count"]
-            )
-            early_logger.info("Files deleted: %s", result["files_deleted"])
-            early_logger.info(
-                "Space freed: %s", deleter.format_bytes(result["space_freed"])
-            )
+            # Regular submission summary
+            if result["submissions_with_aws_errors"] > 0:
+                early_logger.warning(
+                    "Submissions with AWS errors: %s",
+                    result["submissions_with_aws_errors"],
+                )
+            if result["submissions_with_no_files"] > 0:
+                early_logger.info(
+                    "Submissions with no files: %s",
+                    result["submissions_with_no_files"],
+                )
+
+            if args.dry_run:
+                early_logger.info(
+                    "Submissions that would have files deleted: %s",
+                    result["deleted_count"],
+                )
+                early_logger.info(
+                    "Files that would be deleted: %s", result["files_deleted"]
+                )
+                early_logger.info(
+                    "Space that would be freed: %s",
+                    deleter.format_bytes(result["space_freed"]),
+                )
+            else:
+                early_logger.info(
+                    "Submissions with files deleted: %s",
+                    result["deleted_count"],
+                )
+                early_logger.info("Files deleted: %s", result["files_deleted"])
+                early_logger.info(
+                    "Space freed: %s",
+                    deleter.format_bytes(result["space_freed"]),
+                )
 
         if (
             not args.past_challenges_only
             and not args.past_challenges_min_days
             and not args.not_approved_by_admin
+            and not args.test_annotations
+            and not args.challenge_query
         ):
             early_logger.info("Cutoff date: %s", result["cutoff_date"])
+        elif args.challenge_query:
+            early_logger.info(
+                "Mode: Custom challenge query (processing challenges matching: %s)",
+                args.challenge_query,
+            )
+        elif args.test_annotations:
+            early_logger.info(
+                "Mode: Test annotation files cleanup "
+                "(processing test annotation files from challenges not approved by admin and older than 30 days)"
+            )
         elif args.past_challenges_min_days:
             early_logger.info(
                 "Mode: Past challenges with minimum %s days",
