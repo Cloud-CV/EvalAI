@@ -885,6 +885,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
                         "sqs_visibility_timeout": self.challenge1.sqs_visibility_timeout,
                         "github_repository": self.challenge1.github_repository,
+                        "github_branch": self.challenge1.github_branch,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -983,6 +984,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
                 "sqs_visibility_timeout": self.challenge1.sqs_visibility_timeout,
                 "github_repository": self.challenge1.github_repository,
+                "github_branch": self.challenge1.github_branch,
             }
         ]
 

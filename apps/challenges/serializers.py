@@ -96,6 +96,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_retention_period",
             "sqs_visibility_timeout",
             "github_repository",
+            "github_branch",
         )
 
 
@@ -257,6 +258,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
+            github_branch = context.get("github_branch")
+            if github_branch:
+                kwargs["data"]["github_branch"] = github_branch
 
     class Meta:
         model = Challenge
@@ -295,6 +299,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "github_branch",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",

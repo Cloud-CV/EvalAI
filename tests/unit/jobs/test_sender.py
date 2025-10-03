@@ -265,3 +265,26 @@ def test_get_or_create_sqs_queue_empty_queue_name(
         QueueName="evalai_submission_queue"
     )
     assert queue  # Ensure queue was returned
+
+
+@patch("jobs.sender.boto3.resource")
+@patch("jobs.sender.settings")
+@patch("jobs.sender.logger")
+def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
+    mock_logger, mock_settings, mock_boto3_resource
+):
+    mock_settings.DEBUG = False
+    mock_settings.TEST = False
+
+    mock_sqs = MagicMock()
+    mock_boto3_resource.return_value = mock_sqs
+
+    mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
+        {"Error": {"Code": "SomeOtherError"}}, "GetQueueUrl"
+    )
+
+    queue_name = "test-queue"
+    with pytest.raises(UnboundLocalError):
+        get_or_create_sqs_queue(queue_name)
+
+    mock_logger.exception.assert_called_once_with("Cannot get or create Queue")
