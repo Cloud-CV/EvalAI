@@ -7,7 +7,13 @@ from .models import ChallengeHost, ChallengeHostTeam
 @admin.register(ChallengeHostTeam)
 class ChallengeHostTeamModelAdmin(ImportExportTimeStampedAdmin):
     raw_id_fields = ["created_by"]
-    list_display = ("id", "team_name", "created_by", "team_url")
+    list_display = (
+        "id",
+        "team_name",
+        "created_by",
+        "team_url",
+        "get_all_challenge_hosts_email",
+    )
     search_fields = ("id", "team_name", "created_by__username")
 
 
