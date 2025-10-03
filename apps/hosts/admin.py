@@ -12,7 +12,7 @@ class ChallengeHostTeamModelAdmin(ImportExportTimeStampedAdmin):
         "team_name",
         "created_by",
         "team_url",
-        "get_all_challenge_hosts_email",
+        "get_all_challenge_host_email",
     )
     search_fields = ("id", "team_name", "created_by__username")
 
