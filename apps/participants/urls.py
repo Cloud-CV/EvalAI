@@ -9,17 +9,21 @@ urlpatterns = [
         name="invite_participant_to_team",
     ),
     url(
-        r"^participant_team/(?P<participant_team_pk>[0-9]+)/challenge$",
+        r"^participant_team/(?P<participant_team_pk>"
+        r"[0-9]+)/challenge$",
         views.get_participant_team_challenge_list,
         name="get_participant_team_challenge_list",
     ),
     url(
-        r"^remove_self_from_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        r"^remove_self_from_participant_team/"
+        r"(?P<participant_team_pk>[0-9]+)$",
         views.remove_self_from_participant_team,
         name="remove_self_from_participant_team",
     ),
     url(
-        r"^participant_team/(?P<participant_team_pk>[0-9]+)/participant/(?P<participant_pk>[0-9]+)$",
+        r"^participant_team/"
+        r"(?P<participant_team_pk>[0-9]+)"
+        r"/participant/(?P<participant_pk>[0-9]+)$",
         views.delete_participant_from_team,
         name="delete_participant_from_team",
     ),
@@ -39,12 +43,14 @@ urlpatterns = [
         name="get_participant_team_details",
     ),
     url(
-        r"^challenges/(?P<challenge_pk>[0-9]+)/team_details/$",
+        r"^challenges/"
+        r"(?P<challenge_pk>[0-9]+)/team_details/$",
         views.get_participant_team_details_for_challenge,
         name="get_participant_team_details_for_challenge",
     ),
     url(
-        r"^challenges/(?P<challenge_pk>[0-9]+)/team/(?P<participant_team_pk>[0-9]+)/remove_participant_team/$",
+        r"^challenges/(?P<challenge_pk>[0-9]+)/team/"
+        r"(?P<participant_team_pk>[0-9]+)/remove_participant_team/$",
         views.remove_participant_team_from_challenge,
         name="remove_participant_team_from_challenge",
     ),
