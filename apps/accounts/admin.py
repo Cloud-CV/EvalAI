@@ -1,12 +1,12 @@
-from allauth.account.admin import EmailAddressAdmin
+from allauth.account.admin import EmailAddressAdmin as AllAuthEmailAdmin
 from allauth.account.models import EmailAddress
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User
 from import_export import resources
 from import_export.admin import ExportMixin
-from rest_framework.authtoken.admin import TokenAdmin
+from rest_framework.authtoken.admin import TokenAdmin as RestTokenAdmin
 from rest_framework.authtoken.models import Token
 
 from .models import JwtToken, Profile
@@ -39,6 +39,7 @@ class ProfileAdmin(ImportExportTimeStampedAdmin):
     )
 
 
+# --------------------- User Admin ---------------------
 class UserResource(resources.ModelResource):
     class Meta:
         model = User
@@ -54,29 +55,31 @@ class UserResource(resources.ModelResource):
         )
 
 
-class UserAdmin(ExportMixin, UserAdmin):
+class CustomUserAdmin(ExportMixin, DjangoUserAdmin):
     resource_class = UserResource
 
 
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)
 
 
+# --------------------- Token Admin ---------------------
 class TokenResource(resources.ModelResource):
     class Meta:
         model = Token
 
 
-class TokenAdmin(TokenAdmin):
+class CustomTokenAdmin(RestTokenAdmin):
     resource_class = TokenResource
     list_filter = ("created",)
     search_fields = ("user__username",)
 
 
 admin.site.unregister(Token)
-admin.site.register(Token, TokenAdmin)
+admin.site.register(Token, CustomTokenAdmin)
 
 
+# --------------------- JwtToken Admin ---------------------
 @admin.register(JwtToken)
 class JwtTokenAdmin(ImportExportTimeStampedAdmin):
     list_display = (
@@ -87,18 +90,15 @@ class JwtTokenAdmin(ImportExportTimeStampedAdmin):
     search_fields = ("user__username",)
 
 
-admin.site.unregister(JwtToken)
-admin.site.register(JwtToken, JwtTokenAdmin)
-
-
+# --------------------- EmailAddress Admin ---------------------
 class EmailAddressResource(resources.ModelResource):
     class Meta:
         model = EmailAddress
 
 
-class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
+class CustomEmailAddressAdmin(ExportMixin, AllAuthEmailAdmin):
     resource_class = EmailAddressResource
 
 
 admin.site.unregister(EmailAddress)
-admin.site.register(EmailAddress, EmailAddressAdmin)
+admin.site.register(EmailAddress, CustomEmailAddressAdmin)
