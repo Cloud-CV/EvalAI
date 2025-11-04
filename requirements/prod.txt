@@ -3,5 +3,5 @@
 boto==2.49.0
 django-storages==1.7.1
 python-memcached==1.59
-sentry-sdk==1.40.0
+sentry-sdk==1.45.1
 uWSGI==2.0.28
