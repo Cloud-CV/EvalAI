@@ -87,7 +87,7 @@ sentry_sdk.init(
     # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
     profiles_sample_rate=1.0,
     send_default_pii=True,
-    environment=os.environ.get("ENVIRONMENT")
+    environment=os.environ.get("ENVIRONMENT"),
 )
 
 # https://docs.djangoproject.com/en/1.10/ref/settings/#secure-proxy-ssl-header
