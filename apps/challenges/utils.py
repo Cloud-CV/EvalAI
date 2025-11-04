@@ -737,3 +737,49 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
     else:
         challenge.has_sponsors = False
         challenge.save()
+
+
+def get_submissions_csv_filename(challenge, challenge_phase):
+    """
+    Generate CSV filename for submissions export with challenge and phase information
+
+    Args:
+        challenge: Challenge instance
+        challenge_phase: ChallengePhase instance
+
+    Returns:
+        str: Formatted filename in format: all_submissions_{challenge_name}_{challenge_id}_{phase_name}_{phase_id}.csv
+    """
+    challenge_name = challenge.title.replace(" ", "_").replace("/", "_")
+    phase_name = challenge_phase.name.replace(" ", "_").replace("/", "_")
+    return f"all_submissions_{challenge_name}_{challenge.pk}_{phase_name}_{challenge_phase.pk}.csv"
+
+
+def extract_team_member_info(submission):
+    """
+    Extract team member information from a submission efficiently using prefetched data
+
+    Args:
+        submission: Submission instance with prefetched participant team data
+
+    Returns:
+        tuple: (team_members, team_emails, team_affiliations) as lists
+            - team_members: List of team member usernames
+            - team_emails: List of team member email addresses
+            - team_affiliations: List of team member affiliations
+    """
+    participants = submission.participant_team.participants.all()
+    team_members = []
+    team_emails = []
+    team_affiliations = []
+
+    for participant in participants:
+        team_members.append(participant.user.username)
+        team_emails.append(participant.user.email)
+        team_affiliations.append(
+            participant.user.profile.affiliation
+            if hasattr(participant.user, "profile")
+            else ""
+        )
+
+    return team_members, team_emails, team_affiliations

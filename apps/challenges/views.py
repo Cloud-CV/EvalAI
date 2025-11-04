@@ -131,6 +131,7 @@ from .models import (
     UserInvitation,
 )
 from .permissions import IsChallengeCreator
+from .queryset import get_submissions_queryset
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
@@ -151,10 +152,12 @@ from .serializers import (
     ZipChallengeSerializer,
 )
 from .utils import (
+    extract_team_member_info,
     get_aws_credentials_for_submission,
     get_challenge_template_data,
     get_file_content,
     get_missing_keys_from_dict,
+    get_submissions_csv_filename,
     send_emails,
     send_subscription_plans_email,
 )
@@ -1885,7 +1888,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     serializer.save()
                 else:
                     response_data = serializer.errors
-                    print(response_data)
                     raise RuntimeError()
 
         zip_config = ChallengeConfiguration.objects.get(
@@ -2118,9 +2120,8 @@ def get_all_submissions_of_challenge(
 
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
-        submissions = Submission.objects.filter(
-            challenge_phase=challenge_phase, ignore_submission=False
-        ).order_by("-submitted_at")
+        # Use helper function to get optimized submissions queryset
+        submissions = get_submissions_queryset(challenge_phase)
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submissions
         )
@@ -2145,10 +2146,11 @@ def get_all_submissions_of_challenge(
         )
 
         # Filter submissions on the basis of challenge phase for a participant.
-        submissions = Submission.objects.filter(
-            participant_team=participant_team_pk,
-            challenge_phase=challenge_phase,
-        ).order_by("-submitted_at")
+        # Use helper function to get optimized submissions queryset
+        participant_team = get_participant_model(participant_team_pk)
+        submissions = get_submissions_queryset(
+            challenge_phase, participant_team=participant_team
+        )
         paginator, result_page = paginated_queryset(submissions, request)
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
@@ -2281,15 +2283,24 @@ def download_all_submissions(
             if is_user_a_host_of_challenge(
                 user=request.user, challenge_pk=challenge_pk
             ):
-                submissions = Submission.objects.filter(
-                    challenge_phase__challenge=challenge
-                ).order_by("-submitted_at")
-                submissions = ChallengeSubmissionManagementSerializer(
-                    submissions, many=True, context={"request": request}
+                logger.info(
+                    f"Starting download_all_submissions for challenge {challenge_pk}"
                 )
+
+                # Use helper function to get optimized submissions queryset
+                submissions = get_submissions_queryset(challenge_phase)
+
+                submission_count = submissions.count()
+                logger.info(f"Found {submission_count} submissions to export")
+
+                # Use helper function to generate filename
+                filename = get_submissions_csv_filename(
+                    challenge, challenge_phase
+                )
+
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
+                    f"attachment; filename={filename}"
                 )
                 writer = csv.writer(response)
                 writer.writerow(
@@ -2320,51 +2331,99 @@ def download_all_submissions(
                 )
                 # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
                 # TODO: Find a better way to solve the above issue.
-                for submission in submissions.data:
-                    submission_meta_attributes = (
-                        parse_submission_meta_attributes(submission)
+
+                # Process submissions efficiently using prefetched data
+                logger.info(
+                    f"Starting to process {submission_count} submissions"
+                )
+                processed_count = 0
+
+                for submission in submissions:
+                    # Use helper function to extract team member info
+                    team_members, team_emails, team_affiliations = (
+                        extract_team_member_info(submission)
                     )
+
+                    # Parse submission meta attributes
+                    submission_dict = {
+                        "submission_metadata": submission.submission_metadata,
+                        "method_name": submission.method_name,
+                        "method_description": submission.method_description,
+                        "publication_url": submission.publication_url,
+                        "project_url": submission.project_url,
+                    }
+                    submission_meta_attributes = (
+                        parse_submission_meta_attributes(submission_dict)
+                    )
+
                     writer.writerow(
                         [
-                            submission["id"],
-                            submission["participant_team"],
-                            ",".join(
-                                username["username"]
-                                for username in submission[
-                                    "participant_team_members"
-                                ]
+                            submission.id,
+                            submission.participant_team.team_name,
+                            ",".join(team_members),
+                            ",".join(team_emails),
+                            ",".join(team_affiliations),
+                            submission.challenge_phase.name,
+                            submission.status,
+                            submission.created_by.username,
+                            submission.execution_time,
+                            submission.submission_number,
+                            (
+                                submission.input_file.url
+                                if submission.input_file
+                                else ""
                             ),
-                            ",".join(
-                                email["email"]
-                                for email in submission[
-                                    "participant_team_members"
-                                ]
+                            (
+                                submission.stdout_file.url
+                                if submission.stdout_file
+                                else ""
                             ),
-                            ",".join(
-                                affiliation
-                                for affiliation in submission[
-                                    "participant_team_members_affiliations"
-                                ]
+                            (
+                                submission.stderr_file.url
+                                if submission.stderr_file
+                                else ""
                             ),
-                            submission["challenge_phase"],
-                            submission["status"],
-                            submission["created_by"],
-                            submission["execution_time"],
-                            submission["submission_number"],
-                            submission["input_file"],
-                            submission["stdout_file"],
-                            submission["stderr_file"],
-                            submission["environment_log_file"],
-                            submission["created_at"],
-                            submission["submission_result_file"],
-                            submission["submission_metadata_file"],
-                            submission["method_name"].replace("#", "-"),
-                            submission["method_description"].replace("#", "-"),
-                            submission["publication_url"],
-                            submission["project_url"],
+                            (
+                                submission.environment_log_file.url
+                                if submission.environment_log_file
+                                else ""
+                            ),
+                            submission.created_at,
+                            (
+                                submission.submission_result_file.url
+                                if submission.submission_result_file
+                                else ""
+                            ),
+                            (
+                                submission.submission_metadata_file.url
+                                if submission.submission_metadata_file
+                                else ""
+                            ),
+                            (
+                                submission.method_name.replace("#", "-")
+                                if submission.method_name
+                                else ""
+                            ),
+                            (
+                                submission.method_description.replace("#", "-")
+                                if submission.method_description
+                                else ""
+                            ),
+                            submission.publication_url or "",
+                            submission.project_url or "",
                             submission_meta_attributes,
                         ]
                     )
+
+                    processed_count += 1
+                    if processed_count % 500 == 0:
+                        logger.info(
+                            f"Processed {processed_count}/{submission_count} submissions"
+                        )
+
+                logger.info(
+                    f"Completed processing all {processed_count} submissions"
+                )
                 return response
 
             elif has_user_participated_in_challenge(
@@ -2437,6 +2496,10 @@ def download_all_submissions(
             if is_user_a_host_of_challenge(
                 user=request.user, challenge_pk=challenge_pk
             ):
+                logger.info(
+                    f"Starting POST download_all_submissions for challenge {challenge_pk}"
+                )
+
                 fields_to_export = {
                     "participant_team": "Team Name",
                     "participant_team_members": "Team Members",
@@ -2460,64 +2523,137 @@ def download_all_submissions(
                     "project_url": "Project URL",
                     "submission_meta_attributes": "Submission Meta Attributes",
                 }
-                submissions = Submission.objects.filter(
-                    challenge_phase__challenge=challenge
-                ).order_by("-submitted_at")
-                submissions = ChallengeSubmissionManagementSerializer(
-                    submissions, many=True, context={"request": request}
+
+                # Use helper function to get optimized submissions queryset
+                submissions = get_submissions_queryset(challenge_phase)
+
+                submission_count = submissions.count()
+                logger.info(
+                    f"Found {submission_count} submissions to export with custom fields"
                 )
+
+                # Use helper function to generate filename
+                filename = get_submissions_csv_filename(
+                    challenge, challenge_phase
+                )
+
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
+                    f"attachment; filename={filename}"
                 )
                 writer = csv.writer(response)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
                 writer.writerow(fields)
-                for submission in submissions.data:
-                    row = [submission["id"]]
+
+                # Process submissions efficiently using prefetched data
+                logger.info(
+                    f"Starting to process {submission_count} submissions with custom fields"
+                )
+                processed_count = 0
+
+                for submission in submissions:
+                    row = [submission.id]
+
+                    # Use helper function to extract team member info
+                    team_members, team_emails, team_affiliations = (
+                        extract_team_member_info(submission)
+                    )
+
                     for field in request.data:
-                        if field == "participant_team_members":
-                            row.append(
-                                ",".join(
-                                    username["username"]
-                                    for username in submission[
-                                        "participant_team_members"
-                                    ]
-                                )
-                            )
+                        if field == "participant_team":
+                            row.append(submission.participant_team.team_name)
+                        elif field == "participant_team_members":
+                            row.append(",".join(team_members))
                         elif field == "participant_team_members_email":
-                            row.append(
-                                ",".join(
-                                    email["email"]
-                                    for email in submission[
-                                        "participant_team_members"
-                                    ]
-                                )
-                            )
+                            row.append(",".join(team_emails))
                         elif field == "participant_team_members_affiliation":
+                            row.append(",".join(team_affiliations))
+                        elif field == "challenge_phase":
+                            row.append(submission.challenge_phase.name)
+                        elif field == "status":
+                            row.append(submission.status)
+                        elif field == "created_by":
+                            row.append(submission.created_by.username)
+                        elif field == "execution_time":
+                            row.append(submission.execution_time)
+                        elif field == "submission_number":
+                            row.append(submission.submission_number)
+                        elif field == "input_file":
                             row.append(
-                                ",".join(
-                                    affiliation
-                                    for affiliation in submission[
-                                        "participant_team_members_affiliations"
-                                    ]
-                                )
+                                submission.input_file.url
+                                if submission.input_file
+                                else ""
+                            )
+                        elif field == "stdout_file":
+                            row.append(
+                                submission.stdout_file.url
+                                if submission.stdout_file
+                                else ""
+                            )
+                        elif field == "stderr_file":
+                            row.append(
+                                submission.stderr_file.url
+                                if submission.stderr_file
+                                else ""
+                            )
+                        elif field == "environment_log_file":
+                            row.append(
+                                submission.environment_log_file.url
+                                if submission.environment_log_file
+                                else ""
                             )
                         elif field == "created_at":
                             row.append(
-                                submission["created_at"].strftime(
+                                submission.created_at.strftime(
                                     "%m/%d/%Y %H:%M:%S"
                                 )
                             )
+                        elif field == "submission_result_file":
+                            row.append(
+                                submission.submission_result_file.url
+                                if submission.submission_result_file
+                                else ""
+                            )
+                        elif field == "submission_metadata_file":
+                            row.append(
+                                submission.submission_metadata_file.url
+                                if submission.submission_metadata_file
+                                else ""
+                            )
+                        elif field == "method_name":
+                            row.append(submission.method_name or "")
+                        elif field == "method_description":
+                            row.append(submission.method_description or "")
+                        elif field == "publication_url":
+                            row.append(submission.publication_url or "")
+                        elif field == "project_url":
+                            row.append(submission.project_url or "")
                         elif field == "submission_meta_attributes":
+                            submission_dict = {
+                                "submission_metadata": submission.submission_metadata,
+                                "method_name": submission.method_name,
+                                "method_description": submission.method_description,
+                                "publication_url": submission.publication_url,
+                                "project_url": submission.project_url,
+                            }
                             submission_meta_attributes = (
-                                parse_submission_meta_attributes(submission)
+                                parse_submission_meta_attributes(
+                                    submission_dict
+                                )
                             )
                             row.append(submission_meta_attributes)
-                        else:
-                            row.append(submission[field])
                     writer.writerow(row)
+
+                    processed_count += 1
+                    if processed_count % 500 == 0:
+                        logger.info(
+                            f"Processed {processed_count}/{submission_count} submissions"
+                        )
+
+                logger.info(
+                    f"Completed processing all {processed_count} submissions with custom fields"
+                )
                 return response
 
             else:

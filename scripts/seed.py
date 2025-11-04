@@ -34,6 +34,7 @@ fake = Factory.create()
 NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
+NUMBER_OF_SUBMISSIONS = 10000  # Number of submissions to create for testing
 DATASET_SPLIT_ITERATOR = 0
 CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
@@ -536,12 +537,44 @@ def run(*args):
             host_team=challenge_host_team,
             participant_host_team=participant_host_team,
         )
-        participant_user = create_user(is_admin=False, username="participant")
-        participant_team = create_participant_team(user=participant_user)
+        # Create multiple participant teams with multiple users for realistic testing
+        print(
+            f"Creating participant teams and users for {NUMBER_OF_SUBMISSIONS} submissions..."
+        )
+        participant_teams = []
+        num_teams = min(
+            50, max(10, NUMBER_OF_SUBMISSIONS // 100)
+        )  # Create 10-50 teams
+
+        for team_idx in range(num_teams):
+            # Create team owner
+            team_owner = create_user(
+                is_admin=False, username=f"participant_{team_idx}"
+            )
+            team = create_participant_team(user=team_owner)
+
+            # Add 2-4 additional members to each team to test team member queries
+            num_members = random.randint(2, 4)
+            for member_idx in range(num_members):
+                member_user = create_user(
+                    is_admin=False,
+                    username=f"participant_{team_idx}_member_{member_idx}",
+                )
+                Participant.objects.create(
+                    user=member_user, team=team, status=Participant.ACCEPTED
+                )
+
+            participant_teams.append((team, team_owner))
+
+        print(f"Created {num_teams} participant teams with multiple members")
 
         # Fetch all the created challenges
         challenges = Challenge.objects.all()
         for challenge in challenges:
+            # Add participant teams to challenge
+            for team, _ in participant_teams:
+                challenge.participant_teams.add(team)
+
             # Create a leaderboard object for each challenge
             leaderboard = create_leaderboard()
             # Create Phases for a challenge
@@ -552,30 +585,132 @@ def run(*args):
             dataset_splits = create_dataset_splits(
                 number_of_splits=NUMBER_OF_DATASET_SPLITS
             )
+
             # Create Challenge Phase Split for each Phase and Dataset Split
             for challenge_phase in challenge_phases:
-                for i in range(10):
-                    if i < 5:  # ADDED: two failed submissions
-                        submission = create_submission(
-                            participant_user,
-                            participant_team,
-                            challenge_phase,
-                            dataset_splits,
-                            Submission.FAILED,
-                        )
-                    else:
-                        submission = create_submission(
-                            participant_user,
-                            participant_team,
-                            challenge_phase,
-                            dataset_splits,
-                            Submission.FINISHED,
-                        )
                 for dataset_split in dataset_splits:
                     challenge_phase_split = create_challenge_phase_splits(
                         challenge_phase, leaderboard, dataset_split
                     )
-                    create_leaderboard_data(challenge_phase_split, submission)
+
+            # Create submissions distributed across teams and phases using bulk operations
+            print(
+                f"Creating {NUMBER_OF_SUBMISSIONS} submissions for challenge '{challenge.title}' using bulk operations..."
+            )
+            submissions_per_phase = NUMBER_OF_SUBMISSIONS // len(
+                challenge_phases
+            )
+
+            # Prepare dummy files for bulk creation
+            result = ["foo", "bar"]
+            submission_result = json.dumps(result)
+
+            for phase_idx, challenge_phase in enumerate(challenge_phases):
+                # Determine how many submissions for this phase
+                if phase_idx == len(challenge_phases) - 1:
+                    # Last phase gets any remaining submissions
+                    num_submissions = NUMBER_OF_SUBMISSIONS - (
+                        phase_idx * submissions_per_phase
+                    )
+                else:
+                    num_submissions = submissions_per_phase
+
+                print(
+                    f"  Preparing {num_submissions} submissions for phase '{challenge_phase.name}'..."
+                )
+
+                # Build list of submissions to bulk create
+                submissions_to_create = []
+                output = []
+                for dataset_split in dataset_splits:
+                    split_result = {dataset_split.codename: {"score": 0}}
+                    output.append(split_result)
+
+                current_time = timezone.now()
+
+                for i in range(num_submissions):
+                    # Distribute submissions across teams
+                    team, team_owner = participant_teams[
+                        i % len(participant_teams)
+                    ]
+
+                    # 80% finished, 20% failed for realistic distribution
+                    submission_status = (
+                        Submission.FAILED
+                        if i % 5 == 0
+                        else Submission.FINISHED
+                    )
+
+                    # Create submission object (not saved yet)
+                    submission = Submission(
+                        participant_team=team,
+                        challenge_phase=challenge_phase,
+                        created_by=team_owner,
+                        output=output,
+                        submitted_at=current_time,
+                        started_at=current_time,
+                        completed_at=current_time,
+                        input_file=SimpleUploadedFile(
+                            f"dummy_input_{i}.txt",
+                            b"file_content",
+                            content_type="text/plain",
+                        ),
+                        method_name=fake.first_name(),
+                        method_description=fake.paragraph(),
+                        project_url=fake.uri(),
+                        publication_url=fake.uri(),
+                        submission_result_file=ContentFile(
+                            submission_result, f"result_{i}.json"
+                        ),
+                        is_baseline=True,
+                        is_public=challenge_phase.is_submission_public,
+                        status=submission_status,
+                    )
+                    submissions_to_create.append(submission)
+
+                # Bulk create all submissions at once (much faster!)
+                print(
+                    f"  Bulk creating {len(submissions_to_create)} submissions..."
+                )
+                created_submissions = Submission.objects.bulk_create(
+                    submissions_to_create, batch_size=1000
+                )
+                print(f"  ✓ Created {len(created_submissions)} submissions")
+
+                # Bulk create leaderboard data for finished submissions
+                print("  Creating leaderboard data...")
+                leaderboard_data_to_create = []
+
+                for submission in created_submissions:
+                    if submission.status == Submission.FINISHED:
+                        for dataset_split in dataset_splits:
+                            challenge_phase_split = (
+                                ChallengePhaseSplit.objects.get(
+                                    challenge_phase=challenge_phase,
+                                    dataset_split=dataset_split,
+                                    leaderboard=leaderboard,
+                                )
+                            )
+                            result = {"score": random.randint(1, 100)}
+                            leaderboard_data = LeaderboardData(
+                                challenge_phase_split=challenge_phase_split,
+                                submission=submission,
+                                leaderboard=challenge_phase_split.leaderboard,
+                                result=result,
+                                error=None,
+                                is_disabled=False,
+                            )
+                            leaderboard_data_to_create.append(leaderboard_data)
+
+                if leaderboard_data_to_create:
+                    LeaderboardData.objects.bulk_create(
+                        leaderboard_data_to_create, batch_size=1000
+                    )
+                    print(
+                        f"  ✓ Created {len(leaderboard_data_to_create)} leaderboard entries"
+                    )
+
+                print(f"  ✓ Completed phase '{challenge_phase.name}'")
 
         for path in CHALLENGE_CONFIG_PATHS:
             create_challenge_template(path)
