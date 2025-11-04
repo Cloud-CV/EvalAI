@@ -2300,7 +2300,7 @@ def download_all_submissions(
 
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    f"attachment; filename={filename}"
+                    f'attachment; filename="{filename}"'
                 )
                 writer = csv.writer(response)
                 writer.writerow(
@@ -2447,9 +2447,15 @@ def download_all_submissions(
                 submissions = ChallengeSubmissionManagementSerializer(
                     submissions, many=True, context={"request": request}
                 )
+
+                # Use helper function to generate filename
+                filename = get_submissions_csv_filename(
+                    challenge, challenge_phase
+                )
+
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
+                    f'attachment; filename="{filename}"'
                 )
                 writer = csv.writer(response)
                 writer.writerow(
@@ -2539,7 +2545,7 @@ def download_all_submissions(
 
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    f"attachment; filename={filename}"
+                    f'attachment; filename="{filename}"'
                 )
                 writer = csv.writer(response)
                 fields = [fields_to_export[field] for field in request.data]

@@ -2173,6 +2173,17 @@
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
+                // Generate dynamic filename based on challenge and phase info
+                var challengeName = vm.page.title.replace(/\s+/g, '_').replace(/\//g, '_');
+                var phaseName = '';
+                for (var i = 0; i < vm.phases.results.length; i++) {
+                    if (vm.phases.results[i].id == vm.phaseId) {
+                        phaseName = vm.phases.results[i].name.replace(/\s+/g, '_').replace(/\//g, '_');
+                        break;
+                    }
+                }
+                var filename = 'all_submissions_' + challengeName + '_' + vm.challengeId + '_' + phaseName + '_' + vm.phaseId + '.csv';
+                
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
@@ -2182,7 +2193,7 @@
                             var anchor = angular.element('<a/>');
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: 'all_submissions.csv'
+                                download: filename
                             })[0].click();
                         },
                         onError: function(response) {
@@ -2207,7 +2218,7 @@
                             var anchor = angular.element('<a/>');
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: 'all_submissions.csv'
+                                download: filename
                             })[0].click();
                         },
                         onError: function(response) {
