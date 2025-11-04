@@ -31,7 +31,10 @@ module.exports = function(config) {
             '--disable-gpu',
             '--disable-dev-shm-usage',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
+            '--disable-features=VizDisplayCompositor',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--remote-debugging-port=9222'
           ],
         },
       },
@@ -109,6 +112,10 @@ module.exports = function(config) {
     browserDisconnectTimeout: 10000,
     browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 60000,
+    
+    // Force process exit after tests complete
+    processKillTimeout: 2000,
+    captureTimeout: 60000,
 
     coverageReporter: {
         includeAllSources: true,
