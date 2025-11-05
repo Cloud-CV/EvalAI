@@ -2302,7 +2302,7 @@ def download_all_submissions(
                 response["Content-Disposition"] = (
                     f"attachment; filename={filename}"
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     [
                         "id",
@@ -2329,9 +2329,6 @@ def download_all_submissions(
                         "Submission Meta Attributes",
                     ]
                 )
-                # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
-                # TODO: Find a better way to solve the above issue.
-
                 # Process submissions efficiently using prefetched data
                 logger.info(
                     f"Starting to process {submission_count} submissions"
@@ -2399,16 +2396,8 @@ def download_all_submissions(
                                 if submission.submission_metadata_file
                                 else ""
                             ),
-                            (
-                                submission.method_name.replace("#", "-")
-                                if submission.method_name
-                                else ""
-                            ),
-                            (
-                                submission.method_description.replace("#", "-")
-                                if submission.method_description
-                                else ""
-                            ),
+                            submission.method_name or "",
+                            submission.method_description or "",
                             submission.publication_url or "",
                             submission.project_url or "",
                             submission_meta_attributes,
@@ -2451,7 +2440,7 @@ def download_all_submissions(
                 response["Content-Disposition"] = (
                     "attachment; filename=all_submissions.csv"
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     [
                         "Team Name",
@@ -2541,7 +2530,7 @@ def download_all_submissions(
                 response["Content-Disposition"] = (
                     f"attachment; filename={filename}"
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
                 writer.writerow(fields)
