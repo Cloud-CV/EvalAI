@@ -529,8 +529,10 @@ export class ChallengesubmitComponent implements OnInit {
         SELF.submissionError = '';
         if (SELF.components) {
           SELF.components['_results'].forEach((element) => {
-            element.value = '';
-            element.message = '';
+            if (element.label !== 'submissionOptions') {
+              element.value = '';
+              element.message = '';
+            }
           });
         }
       }
@@ -629,6 +631,7 @@ export class ChallengesubmitComponent implements OnInit {
       self.globalService.setFormValueForLabel(self.components, 'method_description', '');
       self.globalService.setFormValueForLabel(self.components, 'project_url', '');
       self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
+      self.isSubmissionUsingUrl = false; // Clear the submission type marker
     });
     self.isSubmitted = true;
   }
