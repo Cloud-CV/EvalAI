@@ -235,9 +235,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -270,9 +268,7 @@ class GetParticipantCountTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -436,7 +432,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -448,15 +444,13 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -468,15 +462,14 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} \
+            does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(  # noqa C0301
         self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
@@ -499,7 +492,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(  # noqa C0301
         self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
@@ -625,7 +618,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(
+    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -645,7 +638,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(
+    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -735,9 +728,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -756,9 +747,8 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} \
+            does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -775,9 +765,9 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "last_submission_datetime": "{0}{1}".format(
-                self.submission.created_at.isoformat(), "Z"
-            ).replace("+00:00", "")
+            "last_submission_datetime": f"{self.submission.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            )
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -844,9 +834,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -864,9 +852,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -904,17 +890,17 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         datetime = self.submission.created_at.isoformat()
         expected = {
             "last_submission_timestamp_in_challenge_phase": "You dont have any submissions in this challenge phase!",
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         response = self.client.get(self.url, {})
         response_data = {
             "last_submission_timestamp_in_challenge_phase": "You dont have any submissions in this challenge phase!",
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         self.assertEqual(response_data, expected)
@@ -931,12 +917,12 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
 
         datetime = self.submission.created_at.isoformat()
         expected = {
-            "last_submission_timestamp_in_challenge_phase": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge_phase": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         response = self.client.get(self.url, {})
@@ -944,12 +930,12 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             "last_submission_timestamp_in_challenge_phase"
         ].isoformat()
         response_data = {
-            "last_submission_timestamp_in_challenge_phase": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge_phase": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         self.assertEqual(response_data, expected)
@@ -982,7 +968,9 @@ class GetParticipantTeamsTest(BaseAPITestClass):
 
     def test_host_downloads_participant_team(self):
         expected = io.StringIO()
-        expected_participant_teams = csv.writer(expected)
+        expected_participant_teams = csv.writer(
+            expected, quoting=csv.QUOTE_ALL
+        )
         expected_participant_teams.writerow(
             ["Team Name", "Team Members", "Email Id"]
         )
