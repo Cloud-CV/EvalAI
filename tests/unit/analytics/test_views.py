@@ -462,8 +462,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} \
-            does not exist"
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -747,8 +746,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} \
-            does not exist"
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})

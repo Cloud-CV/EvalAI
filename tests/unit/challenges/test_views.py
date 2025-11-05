@@ -1062,11 +1062,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # to check when the api is hit again
         expected = {
-            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"  # noqa: C0301
+            "error": "Team already exists",
+            "challenge_id": self.challenge.pk,
+            "participant_team_id": self.participant_team.pk,
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(  # noqa: C0301
         self,
@@ -5443,7 +5445,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         )
 
         expected = {
-            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"  # noqa: C0301
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)

@@ -611,7 +611,7 @@ def add_participant_team_to_challenge(
             "challenge_id": int(challenge_pk),
             "participant_team_id": int(participant_team_pk),
         }
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
