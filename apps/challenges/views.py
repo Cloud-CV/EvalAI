@@ -611,7 +611,7 @@ def add_participant_team_to_challenge(
             "challenge_id": int(challenge_pk),
             "participant_team_id": int(participant_team_pk),
         }
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
@@ -2300,9 +2300,9 @@ def download_all_submissions(
 
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    f"attachment; filename={filename}"
+                    f'attachment; filename="{filename}"'
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     [
                         "id",
@@ -2329,9 +2329,6 @@ def download_all_submissions(
                         "Submission Meta Attributes",
                     ]
                 )
-                # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
-                # TODO: Find a better way to solve the above issue.
-
                 # Process submissions efficiently using prefetched data
                 logger.info(
                     f"Starting to process {submission_count} submissions"
@@ -2399,16 +2396,8 @@ def download_all_submissions(
                                 if submission.submission_metadata_file
                                 else ""
                             ),
-                            (
-                                submission.method_name.replace("#", "-")
-                                if submission.method_name
-                                else ""
-                            ),
-                            (
-                                submission.method_description.replace("#", "-")
-                                if submission.method_description
-                                else ""
-                            ),
+                            submission.method_name or "",
+                            submission.method_description or "",
                             submission.publication_url or "",
                             submission.project_url or "",
                             submission_meta_attributes,
@@ -2447,11 +2436,17 @@ def download_all_submissions(
                 submissions = ChallengeSubmissionManagementSerializer(
                     submissions, many=True, context={"request": request}
                 )
+
+                # Use helper function to generate filename
+                filename = get_submissions_csv_filename(
+                    challenge, challenge_phase
+                )
+
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    "attachment; filename=all_submissions.csv"
+                    f'attachment; filename="{filename}"'
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     [
                         "Team Name",
@@ -2539,9 +2534,9 @@ def download_all_submissions(
 
                 response = HttpResponse(content_type="text/csv")
                 response["Content-Disposition"] = (
-                    f"attachment; filename={filename}"
+                    f'attachment; filename="{filename}"'
                 )
-                writer = csv.writer(response)
+                writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
                 writer.writerow(fields)
