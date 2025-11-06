@@ -3516,6 +3516,12 @@ describe('Unit tests for challenge controller', function () {
                 { id: 'participant_team' },
                 { id: 'status' }
             ];
+            vm.page = { title: 'Test Challenge' };
+            vm.phases = {
+                results: [
+                    { id: 2, name: 'Test Phase' }
+                ]
+            };
         });
 
         it('should send GET request and trigger download when fieldsToGet is undefined', function () {
