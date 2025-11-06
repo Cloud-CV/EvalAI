@@ -118,7 +118,7 @@ class GetChallengeTest(BaseAPITestClass):
             short_description="Short description for disabled challenge",
             description="Description for disabled challenge",
             terms_and_conditions="Terms and conditions for disabled challenge",
-            submission_guidelines="Submission guidelines for disabled challenge",
+            submission_guidelines="Submission guidelines for disabled challenge",  # noqa: C0301
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
@@ -168,9 +168,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
                 "enable_forum": self.challenge.enable_forum,
-                "leaderboard_description": self.challenge.leaderboard_description,
+                "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge.manual_participant_approval,
+                "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -178,15 +178,15 @@ class GetChallengeTest(BaseAPITestClass):
                 "approved_by_admin": False,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
-                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -198,7 +198,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
-                "evaluation_module_error": self.challenge.evaluation_module_error,
+                "evaluation_module_error": self.challenge.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge.ec2_storage,
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
@@ -274,7 +274,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
             team=self.participant_team,
         )
 
-    def test_add_participant_team_to_approved_list_when_not_in_participant_team(
+    def test_add_participant_team_to_approved_list_when_not_in_participant_team(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -469,8 +469,8 @@ class CreateChallengeTest(BaseAPITestClass):
             "title": "New Test Challenge",
             "short_description": "Short description for new test challenge",
             "description": "Description for new test challenge",
-            "terms_and_conditions": "Terms and conditions for new test challenge",
-            "submission_guidelines": "Submission guidelines for new test challenge",
+            "terms_and_conditions": "Terms and conditions for new test challenge",  # noqa: C0301
+            "submission_guidelines": "Submission guidelines for new test challenge",  # noqa: C0301
             "creator": {
                 "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
@@ -479,7 +479,7 @@ class CreateChallengeTest(BaseAPITestClass):
             "published": False,
             "is_registration_open": True,
             "enable_forum": True,
-            "leaderboard_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            "leaderboard_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",  # noqa: C0301
             "anonymous_leaderboard": False,
             "start_date": timezone.now() - timedelta(days=2),
             "end_date": timezone.now() + timedelta(days=1),
@@ -545,7 +545,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge.manual_participant_approval,
+            "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -553,15 +553,15 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
             "slug": self.challenge.slug,
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -647,7 +647,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge.manual_participant_approval,
+            "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -655,17 +655,17 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
             "slug": "{}-{}".format(
                 new_title.replace(" ", "-").lower(), self.challenge.pk
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -770,7 +770,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge.manual_participant_approval,
+            "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "start_date": "{0}{1}".format(
                 self.challenge.start_date.isoformat(), "Z"
@@ -784,7 +784,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
             "slug": "{}-{}".format(
                 self.partial_update_challenge_title.replace(" ", "-").lower(),
                 self.challenge.pk,
@@ -792,10 +792,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -849,7 +849,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge.manual_participant_approval,
+            "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "start_date": "{0}{1}".format(
                 self.challenge.start_date.isoformat(), "Z"
@@ -863,7 +863,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
             "slug": "{}-{}".format(
                 self.update_challenge_title.replace(" ", "-").lower(),
                 self.challenge.pk,
@@ -871,10 +871,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -988,13 +988,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             title="Some Test Challenge",
             short_description="Short description for some test challenge",
             description="Description for some test challenge",
-            terms_and_conditions="Terms and conditions for some test challenge",
-            submission_guidelines="Submission guidelines for some test challenge",
+            terms_and_conditions="Terms and conditions for some test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for some test challenge",  # noqa: C0301
             creator=self.challenge_host_team2,
             published=False,
             is_registration_open=True,
             enable_forum=True,
-            leaderboard_description="Pellentesque at dictum odio, sit amet fringilla sem",
+            leaderboard_description="Pellentesque at dictum odio, sit amet fringilla sem",  # noqa: C0301
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -1068,9 +1068,9 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(
+    def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -1096,7 +1096,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Sorry, cannot accept participant team since challenge is not active."
+            "error": "Sorry, cannot accept participant team since challenge is not active."  # noqa: C0301
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1113,13 +1113,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Sorry, cannot accept participant team since challenge is not active."
+            "error": "Sorry, cannot accept participant team since challenge is not active."  # noqa: C0301
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(
+    def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -1134,7 +1134,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_add_participant_team_to_challenge_when_some_members_have_already_participated(
+    def test_add_participant_team_to_challenge_when_some_members_have_already_participated(  # noqa: C0301
         self,
     ):
         self.client.force_authenticate(user=self.participant_team3.created_by)
@@ -1149,7 +1149,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.client.post(self.url, {})
 
         expected = {
-            "error": "Sorry, other team member(s) have already participated in the Challenge."
+            "error": "Sorry, other team member(s) have already participated in the Challenge."  # noqa: C0301
             " Please participate with a different team!",
             "challenge_id": self.challenge.pk,
             "participant_team_id": self.participant_team3.pk,
@@ -1180,7 +1180,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, {})
-        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."  # noqa: C0301
         expected = {"error": message.format("test.com/test1.com")}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -1258,8 +1258,8 @@ class DisableChallengeTest(BaseAPITestClass):
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
-            terms_and_conditions="Terms and conditions for other test challenge",
-            submission_guidelines="Submission guidelines for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for other test challenge",  # noqa: C0301
             creator=self.challenge_host_team1,
             published=False,
             is_registration_open=True,
@@ -1286,7 +1286,7 @@ class DisableChallengeTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_when_user_does_not_have_permission_to_disable_particular_challenge(
+    def test_when_user_does_not_have_permission_to_disable_particular_challenge(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -1374,7 +1374,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             is_registration_open=True,
             enable_forum=True,
             approved_by_admin=True,
-            leaderboard_description="Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis",
+            leaderboard_description="Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis",  # noqa: C0301
             anonymous_leaderboard=False,
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
@@ -1454,9 +1454,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
                 "enable_forum": self.challenge3.enable_forum,
-                "leaderboard_description": self.challenge3.leaderboard_description,
+                "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge3.manual_participant_approval,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1464,15 +1464,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1484,7 +1484,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
@@ -1539,9 +1539,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1549,15 +1549,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1569,7 +1569,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -1624,9 +1624,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
                 "enable_forum": self.challenge4.enable_forum,
-                "leaderboard_description": self.challenge4.leaderboard_description,
+                "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge4.manual_participant_approval,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1634,15 +1634,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
-                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1654,7 +1654,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
-                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge4.ec2_storage,
                 "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
@@ -1709,9 +1709,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
                 "enable_forum": self.challenge4.enable_forum,
-                "leaderboard_description": self.challenge4.leaderboard_description,
+                "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge4.manual_participant_approval,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1719,15 +1719,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
-                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1739,7 +1739,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
-                "evaluation_module_error": self.challenge4.evaluation_module_error,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge4.ec2_storage,
                 "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
@@ -1778,9 +1778,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
                 "enable_forum": self.challenge3.enable_forum,
-                "leaderboard_description": self.challenge3.leaderboard_description,
+                "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge3.manual_participant_approval,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1788,15 +1788,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1808,7 +1808,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
@@ -1847,9 +1847,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1857,15 +1857,15 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1877,7 +1877,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -1988,9 +1988,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
                 "enable_forum": self.challenge3.enable_forum,
-                "leaderboard_description": self.challenge3.leaderboard_description,
+                "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge3.manual_participant_approval,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -1998,15 +1998,15 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -2018,7 +2018,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
-                "evaluation_module_error": self.challenge3.evaluation_module_error,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
@@ -2156,7 +2156,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "enable_forum": self.challenge3.enable_forum,
             "leaderboard_description": self.challenge3.leaderboard_description,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge3.manual_participant_approval,
+            "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2164,15 +2164,15 @@ class GetChallengeByPk(BaseAPITestClass):
             "approved_by_admin": self.challenge3.approved_by_admin,
             "forum_url": self.challenge3.forum_url,
             "is_docker_based": self.challenge3.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
             "slug": self.challenge3.slug,
             "max_docker_image_size": self.challenge3.max_docker_image_size,
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
-            "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge3.workers,
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
@@ -2249,7 +2249,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "enable_forum": self.challenge4.enable_forum,
             "leaderboard_description": self.challenge4.leaderboard_description,
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-            "manual_participant_approval": self.challenge4.manual_participant_approval,
+            "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2257,15 +2257,15 @@ class GetChallengeByPk(BaseAPITestClass):
             "approved_by_admin": self.challenge4.approved_by_admin,
             "forum_url": self.challenge4.forum_url,
             "is_docker_based": self.challenge4.is_docker_based,
-            "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,
+            "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
             "slug": self.challenge4.slug,
             "max_docker_image_size": self.challenge4.max_docker_image_size,
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
-            "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
-            "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
-            "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
-            "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
+            "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,  # noqa: C0301
+            "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,  # noqa: C0301
+            "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
+            "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge4.workers,
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
@@ -2341,8 +2341,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             title="Some Test Challenge",
             short_description="Short description for some test challenge",
             description="Description for some test challenge",
-            terms_and_conditions="Terms and conditions for some test challenge",
-            submission_guidelines="Submission guidelines for some test challenge",
+            terms_and_conditions="Terms and conditions for some test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for some test challenge",  # noqa: C0301
             creator=self.challenge_host_team2,
             domain="CV",
             list_tags=["Paper", "Dataset", "Environment", "Workshop"],
@@ -2402,9 +2402,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2412,15 +2412,15 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2432,7 +2432,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -2483,9 +2483,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2493,15 +2493,15 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2513,7 +2513,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -2564,9 +2564,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2574,15 +2574,15 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2594,7 +2594,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -2643,9 +2643,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
                 "enable_forum": self.challenge.enable_forum,
-                "leaderboard_description": self.challenge.leaderboard_description,
+                "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge.manual_participant_approval,
+                "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2653,15 +2653,15 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
-                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -2673,7 +2673,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
-                "evaluation_module_error": self.challenge.evaluation_module_error,
+                "evaluation_module_error": self.challenge.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge.ec2_storage,
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
@@ -2712,9 +2712,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
                 "enable_forum": self.challenge2.enable_forum,
-                "leaderboard_description": self.challenge2.leaderboard_description,
+                "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "manual_participant_approval": self.challenge2.manual_participant_approval,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2722,15 +2722,15 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,
+                "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
-                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
-                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,  # noqa: C0301
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,  # noqa: C0301
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2742,7 +2742,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
-                "evaluation_module_error": self.challenge2.evaluation_module_error,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,  # noqa: C0301
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
@@ -2989,25 +2989,25 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
                 "max_submissions": self.challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-                "is_submission_public": self.challenge_phase.is_submission_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
-                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
                 "start_date": "{0}{1}".format(
                     self.private_challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -3018,18 +3018,18 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
                 "codename": self.private_challenge_phase.codename,
-                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
-                "max_submissions": self.private_challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,  # noqa: C0301
+                "max_submissions": self.private_challenge_phase.max_submissions,  # noqa: C0301
+                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-                "is_submission_public": self.challenge_phase.is_submission_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
             },
         ]
@@ -3055,18 +3055,18 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
                 "max_submissions": self.challenge_phase.max_submissions,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-                "is_submission_public": self.challenge_phase.is_submission_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
             }
         ]
@@ -3102,25 +3102,25 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
                 "max_submissions": self.challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-                "is_submission_public": self.challenge_phase.is_submission_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
-                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
                 "start_date": "{0}{1}".format(
                     self.private_challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -3131,18 +3131,18 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
                 "codename": self.private_challenge_phase.codename,
-                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-                "max_submissions": self.private_challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+                "max_submissions": self.private_challenge_phase.max_submissions,  # noqa: C0301
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "allowed_submission_file_types": self.private_challenge_phase.allowed_submission_file_types,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
-                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
-                "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
-                "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "allowed_submission_file_types": self.private_challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,  # noqa: C0301
+                "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,  # noqa: C0301
+                "is_submission_public": self.private_challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.private_challenge_phase.disable_logs,
             },
         ]
@@ -3362,8 +3362,8 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
-            terms_and_conditions="Terms and conditions for other test challenge",
-            submission_guidelines="Submission guidelines for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for other test challenge",  # noqa: C0301
             creator=self.challenge_host_team1,
             published=False,
             enable_forum=True,
@@ -3412,8 +3412,8 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
-            terms_and_conditions="Terms and conditions for other test challenge",
-            submission_guidelines="Submission guidelines for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for other test challenge",  # noqa: C0301
             creator=self.challenge_host_team2,
             published=False,
             enable_forum=True,
@@ -3482,16 +3482,16 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
             "slug": self.challenge_phase.slug,
-            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
             "submission_meta_attributes": None,
-            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
@@ -3516,23 +3516,23 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_submission_public": self.challenge_phase.is_submission_public,
-            "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
+            "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,  # noqa: C0301
             "is_active": True,
             "codename": "Phase Code Name",
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
             "test_annotation": "http://testserver%s"
             % (self.challenge_phase.test_annotation.url),
             "slug": self.challenge_phase.slug,
             "environment_image": self.challenge_phase.environment_image,
-            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
             "submission_meta_attributes": None,
-            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
             "config_id": None,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "disable_logs": self.challenge_phase.disable_logs,
         }
@@ -3585,16 +3585,16 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
             "slug": self.challenge_phase.slug,
-            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
             "submission_meta_attributes": None,
-            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
@@ -3614,7 +3614,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             },
         )
         expected = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(
+            "error": "Challenge phase {} does not exist for challenge {}".format(  # noqa: C0301
                 (self.challenge_phase.pk + 2), self.challenge.pk
             )
         }
@@ -3687,16 +3687,16 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
             "slug": self.challenge_phase.slug,
-            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
             "submission_meta_attributes": None,
-            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
@@ -3869,10 +3869,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
-                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
+                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
+                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -3908,10 +3908,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
-                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
+                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
+                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -3920,10 +3920,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
-                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
+                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
+                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -3944,10 +3944,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
-                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
+                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
+                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -3956,10 +3956,10 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
-                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
-                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
+                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
+                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
         ]
         self.client.force_authenticate(user=self.user2)
@@ -3990,7 +3990,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
         self.challenge = Challenge.objects.create(
             title="Challenge Title",
-            short_description="Short description of the challenge (preferably 140 characters)",
+            short_description="Short description of the challenge (preferably 140 characters)",  # noqa: C0301
             description=open(join(self.path, "description.html"), "rb")
             .read()
             .decode("utf-8"),
@@ -4108,7 +4108,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @responses.activate
-    def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
+    def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(  # noqa: C0301
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
@@ -4119,7 +4119,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
         expected = {
             "zip_configuration": [
-                "The submitted data was not a file. Check the encoding type on the form."
+                "The submitted data was not a file. Check the encoding type on the form."  # noqa: C0301
             ]
         }
         response = self.client.post(
@@ -4136,7 +4136,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
         )
         expected = {
-            "error": "A server error occured while processing zip file. Please try again!"
+            "error": "A server error occured while processing zip file. Please try again!"  # noqa: C0301
         }
         response = self.client.post(
             self.url,
@@ -4147,7 +4147,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     @responses.activate
-    def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
+    def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(  # noqa: C0301
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
@@ -4158,9 +4158,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             },
         )
         expected = {
-            "detail": "ChallengeHostTeam {} does not exist".format(
-                self.challenge_host_team.pk + 10
-            )
+            "detail": f"ChallengeHostTeam {self.challenge_host_team.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.post(
             self.url,
@@ -4188,7 +4186,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @responses.activate
-    def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(
+    def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(  # noqa: C0301
         self,
     ):
         challenge_phases = ChallengePhase.objects.all()
@@ -4313,8 +4311,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
-            terms_and_conditions="Terms and conditions for other test challenge",
-            submission_guidelines="Submission guidelines for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",  # noqa: C0301
+            submission_guidelines="Submission guidelines for other test challenge",  # noqa: C0301
             creator=self.challenge_host_team5,
             published=False,
             enable_forum=True,
@@ -4446,9 +4444,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge5.pk + 10
-            )
+            "detail": f"Challenge {self.challenge5.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4463,9 +4459,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
-                self.challenge5_phase3.pk + 10
-            )
+            "error": f"Challenge Phase {self.challenge5_phase3.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4547,7 +4541,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             {
                 "id": self.submission1.id,
                 "participant_team": self.submission1.participant_team.pk,
-                "participant_team_name": self.submission1.participant_team.team_name,
+                "participant_team_name": self.submission1.participant_team.team_name,  # noqa: C0301
                 "execution_time": self.submission1.execution_time,
                 "challenge_phase": self.submission1.challenge_phase.pk,
                 "created_by": self.submission1.created_by.pk,
@@ -4584,7 +4578,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(
+    def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(  # noqa: C0301
         self,
     ):
         self.client.force_authenticate(user=self.user7)
@@ -4749,9 +4743,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4769,9 +4761,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "error": f"Challenge Phase {self.challenge_phase.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4819,7 +4809,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             submissions, many=True
         )
         expected = io.StringIO()
-        expected_submissions = csv.writer(expected)
+        expected_submissions = csv.writer(expected, quoting=csv.QUOTE_ALL)
         expected_submissions.writerow(
             ["id", "Team Members", "Team Members Email Id", "Challenge Phase"]
         )
@@ -4873,7 +4863,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(
+    def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -5124,9 +5114,10 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             },
         )
         expected = {
-            "detail": "ChallengePhaseSplit {} does not exist".format(
-                self.challenge_phase_split.pk + 10
-            )
+            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.pk + 10} does not exist"  # noqa: C0301
+        }
+        expected = {
+            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -5143,9 +5134,9 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard": self.leaderboard.pk,
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
-            "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
-            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
-            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+            "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,  # noqa: C0301
+            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,  # noqa: C0301
+            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
             "show_execution_time": False,
         }
         response = self.client.get(self.url)
@@ -5217,9 +5208,7 @@ class StarChallengesTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
@@ -5315,19 +5304,19 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
                 self.challenge_phase.end_date.isoformat(), "Z"
             ).replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": self.challenge_phase.codename,
             "slug": self.challenge_phase.slug,
-            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
             "submission_meta_attributes": None,
-            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+            "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
@@ -5342,9 +5331,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             kwargs={"pk": self.challenge_phase.pk + 2},
         )
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 2
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 2} does not exist"  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -5378,7 +5365,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "id": self.private_challenge_phase.id,
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
-                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
                 "start_date": "{0}{1}".format(
                     self.private_challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -5386,25 +5373,25 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                     self.private_challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.private_challenge_phase.challenge.pk,
-                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
-                "max_submissions": self.private_challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,  # noqa: C0301
+                "max_submissions": self.private_challenge_phase.max_submissions,  # noqa: C0301
+                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
-                "is_submission_public": self.private_challenge_phase.is_submission_public,
-                "annotations_uploaded_using_cli": self.private_challenge_phase.annotations_uploaded_using_cli,
+                "is_submission_public": self.private_challenge_phase.is_submission_public,  # noqa: C0301
+                "annotations_uploaded_using_cli": self.private_challenge_phase.annotations_uploaded_using_cli,  # noqa: C0301
                 "codename": self.private_challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
-                "environment_image": self.private_challenge_phase.environment_image,
-                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "environment_image": self.private_challenge_phase.environment_image,  # noqa: C0301
+                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
                 "config_id": None,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.private_challenge_phase.disable_logs,
             },
@@ -5420,25 +5407,25 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                     self.challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
                 "max_submissions": self.challenge_phase.max_submissions,
-                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
-                "is_submission_public": self.challenge_phase.is_submission_public,
-                "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
+                "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
+                "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,  # noqa: C0301
                 "codename": self.challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
                 "environment_image": self.challenge_phase.environment_image,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
                 "submission_meta_attributes": None,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,  # noqa: C0301
                 "config_id": None,
-                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
-                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,  # noqa: C0301
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.challenge_phase.disable_logs,
             },
@@ -5449,7 +5436,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         self.assertEqual(actual_sorted, expected_sorted)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(
+    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -5458,15 +5445,13 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(
+    def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(  # noqa: C0301
         self,
     ):
         """
@@ -5474,7 +5459,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         """
         self.client.force_authenticate(user=self.user1)
         expected = {
-            "error": "Sorry, you are not authorized to access these challenge phases."
+            "error": "Sorry, you are not authorized to access these challenge phases."  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -5586,7 +5571,7 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
             "presigned_urls": [
                 {
                     "partNumber": 1,
-                    "url": "https://test-bucket.s3.amazonaws.com/media/annotation_files/",
+                    "url": "https://test-bucket.s3.amazonaws.com/media/annotation_files/",  # noqa: C0301
                 }
             ]
         }
@@ -5779,7 +5764,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             },
         )
         expected = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(
+            "error": "Challenge phase {} does not exist for challenge {}".format(  # noqa: C0301
                 self.challenge_phase.pk + 1000, self.challenge.pk
             )
         }
@@ -5804,7 +5789,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         super(ChallengeSendApprovalRequestTest, self).setUp()
 
     @responses.activate
-    def test_request_challenge_approval_when_challenge_has_finished_submissions(
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(  # noqa: C0301
         self,
     ):
         responses.add(
@@ -5825,17 +5810,17 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self.assertEqual(
             response.data,
             {
-                "message": "Approval request sent! You should also receive an email with subscription plan details."
+                "message": "Approval request sent! You should also receive an email with subscription plan details."  # noqa: C0301
             },
         )
         self.assertEqual(
             response.data,
             {
-                "message": "Approval request sent! You should also receive an email with subscription plan details."
+                "message": "Approval request sent! You should also receive an email with subscription plan details."  # noqa: C0301
             },
         )
 
-    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
+    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(  # noqa: C0301
         self,
     ):
         self.user1 = User.objects.create(
@@ -5887,7 +5872,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self.assertEqual(
             response.data,
             {
-                "error": "The following challenge phases do not have finished submissions: Challenge Phase"
+                "error": "The following challenge phases do not have finished submissions: Challenge Phase"  # noqa: C0301
             },
         )
 
@@ -5897,7 +5882,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def test_request_challenge_approval_with_successful_subscription_email(
         self, mock_logger, mock_send_email
     ):
-        """Test that subscription plans email is sent successfully during approval request"""
+        """Test that subscription plans email is sent successfully during approval request"""  # noqa: C0301
         responses.add(
             responses.POST,
             settings.APPROVAL_WEBHOOK_URL,
@@ -5917,16 +5902,14 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
         # Verify success logging
         mock_logger.info.assert_any_call(
-            "Subscription plans email sent successfully for challenge {}".format(
-                self.challenge.pk
-            )
+            f"Subscription plans email sent successfully for challenge {self.challenge.pk}"  # noqa: C0301
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
             {
-                "message": "Approval request sent! You should also receive an email with subscription plan details."
+                "message": "Approval request sent! You should also receive an email with subscription plan details."  # noqa: C0301
             },
         )
 
@@ -5959,9 +5942,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
         # Verify error logging
         mock_logger.error.assert_any_call(
-            "Failed to send subscription plans email for challenge {}: {}".format(
-                self.challenge.pk, "Email service unavailable"
-            )
+            f"Failed to send subscription plans email for challenge {self.challenge.pk}: Email service unavailable"  # noqa: C0301
         )
 
         # Verify approval process continues despite email failure
@@ -5969,7 +5950,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         self.assertEqual(
             response.data,
             {
-                "message": "Approval request sent! You should also receive an email with subscription plan details."
+                "message": "Approval request sent! You should also receive an email with subscription plan details."  # noqa: C0301
             },
         )
 
@@ -6081,7 +6062,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
     @responses.activate
     @mock.patch("challenges.views.send_subscription_plans_email")
-    def test_request_challenge_approval_email_integration_with_challenge_phases(
+    def test_request_challenge_approval_email_integration_with_challenge_phases(  # noqa: C0301
         self, mock_send_email
     ):
         """Test email integration with challenge that has multiple phases"""
@@ -6102,11 +6083,11 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 ),
             )
 
-        # Create a finished submission for the additional phase to satisfy the submission check
+        # Create a finished submission for the additional phase to satisfy the submission check  # noqa: C0301
         from jobs.models import Submission
         from participants.models import Participant
 
-        # Ensure participant team is associated with the challenge and user is a participant
+        # Ensure participant team is associated with the challenge and user is a participant  # noqa: C0301
         self.challenge.participant_teams.add(self.participant_team)
         Participant.objects.get_or_create(
             user=self.user,
@@ -6129,7 +6110,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             is_public=True,
         )
 
-        # Manually update the status to finished after creation to bypass any automatic processing
+        # Manually update the status to finished after creation to bypass any automatic processing  # noqa: C0301
         submission.status = "finished"
         submission.save()
 
@@ -6154,7 +6135,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
     @responses.activate
     @mock.patch("challenges.views.send_subscription_plans_email")
-    def test_request_challenge_approval_email_not_sent_when_submissions_incomplete(
+    def test_request_challenge_approval_email_not_sent_when_submissions_incomplete(  # noqa: C0301
         self, mock_send_email
     ):
         """Test that email is not sent when submission check fails"""
@@ -6227,7 +6208,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
-    def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
+    def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(  # noqa: C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -6237,14 +6218,12 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             },
         )
         expected = {
-            "detail": "ChallengeHostTeam {} does not exist".format(
-                self.challenge_host_team.pk + 10
-            )
+            "detail": f"ChallengeHostTeam {self.challenge_host_team.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.post(
             self.url,
             {
-                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",  # noqa: C0301
                 "zip_configuration": self.input_zip_file,
             },
             format="multipart",
@@ -6279,13 +6258,13 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             response = self.client.post(
                 self.url,
                 {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",  # noqa: C0301
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
             )
             expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."  # noqa: C0301
             }
 
             self.assertEqual(response.status_code, 201)
@@ -6367,14 +6346,14 @@ class ValidateChallengeTest(APITestCase):
             response = self.client.post(
                 self.url,
                 {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",  # noqa: C0301
                     "GITHUB_BRANCH_NAME": "refs/heads/challenge",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
             )
             expected = {
-                "Success": "The challenge config has been validated successfully"
+                "Success": "The challenge config has been validated successfully"  # noqa: C0301
             }
 
             self.assertEqual(response.status_code, 200)
@@ -6396,7 +6375,7 @@ class ValidateChallengeTest(APITestCase):
             response = self.client.post(
                 self.url,
                 {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",  # noqa: C0301
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -6407,19 +6386,19 @@ class ValidateChallengeTest(APITestCase):
                 "Please add the evaluation details\n"
                 "Please add the terms and conditions.\n"
                 "Please add the submission guidelines.\n"
-                "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
+                "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"  # noqa: C0301
                 "ERROR: Please add the start_date and end_date.\n"
-                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
-                "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
+                "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"  # noqa: C0301
+                "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"  # noqa: C0301
                 " ERROR: There is no key for description in phase Dev Phase.\n"
-                "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
-                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                "ERROR: Please add the start_date and end_date in challenge phase 1.\n"  # noqa: C0301
+                "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"  # noqa: C0301
                 "ERROR: Challenge phase 1 has the following schema errors:\n"
-                " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
-                "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
-                "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
-                "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"
-                "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."
+                " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"  # noqa: C0301
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"  # noqa: C0301
+                "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"  # noqa: C0301
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"  # noqa: C0301
+                "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."  # noqa: C0301
             }
 
             self.assertEqual(response.status_code, 400)
@@ -6595,7 +6574,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         self.user.save()
 
         expected = {
-            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
+            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"  # noqa: C0301
         }
 
         response = self.client.post(
