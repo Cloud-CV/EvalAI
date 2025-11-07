@@ -18,7 +18,7 @@ from .utils import get_file_from_url
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable=too-many-locals
 @app.task
 def download_file_and_publish_submission_message(
     request_data, user_pk, request_method, challenge_phase_id
@@ -79,11 +79,9 @@ def download_file_and_publish_submission_message(
             )
             logger.info("Message published to submission worker successfully!")
         shutil.rmtree(file_download_temp_dir_path)
-    except Exception as e:
+    except (IOError, ValueError):
         if len(file_download_temp_dir_path) > 0:
             shutil.rmtree(file_download_temp_dir_path)
         logger.exception(
-            "Exception while downloading and sending submission for evaluation {}".format(
-                e
-            )
-        )
+            "Exception while downloading and " 
+            "sending submission for evaluation %s")        
