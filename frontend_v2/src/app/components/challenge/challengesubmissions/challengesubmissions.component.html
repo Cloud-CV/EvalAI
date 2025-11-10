@@ -66,6 +66,15 @@
       </div>
     </div>
     <div class="ev-card-body collapsible-table">
+      <div class="row row-lr-margin" *ngIf="isChallengeHost">
+        <div class="col-sm-12 right-align">
+          <button class="btn btn-danger"
+            (click)="openPurgeModal()">
+      Purge Queue
+          </button>
+        </div>
+      </div>
+      <!-- Table to show the submissions -->
       <table
         mat-table
         *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
@@ -193,3 +202,24 @@
     </div>
   </div>
 </div>
+
+<!-- Modal for purge queue -->
+ <!-- Purge Queue Confirmation Modal -->
+<div *ngIf="showPurgeModal" class="modal-backdrop"></div>
+<div *ngIf="showPurgeModal" class="modal">
+  <div class="modal-content">
+    <h5>Purge Submissions Queue</h5>
+    <p>This action will delete all pending submissions in the queue. <strong>This cannot be undone.</strong></p>
+    <label>
+      <input type="checkbox" [(ngModel)]="purgeConfirmed" />
+      I understand this action cannot be undone
+    </label>
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" (click)="closePurgeModal()">Cancel</button>
+      <button class="btn btn-danger" [disabled]="!purgeConfirmed" (click)="confirmPurge()">
+        {{ purgeInProgress ? 'Purging...' : 'Confirm Purge' }}
+      </button>
+    </div>
+  </div>
+</div>
+<!-- End of Modal for purge queue -->

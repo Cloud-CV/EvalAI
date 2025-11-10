@@ -393,4 +393,17 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengeCreateURL(hostTeam);
     return this.apiService.postFileUrl(API_PATH, formData);
   }
+
+      /**
+   * Purge submissions queue for a challenge.
+   * @param challengeId - The challenge ID
+   * @param body - {scope: string, dry_run: boolean}
+   * @returns Observable<any>
+   */
+  purgeQueue(challengeId: number, body: { scope: string; dry_run: boolean }) {
+    const apiPath = `/challenges/${challengeId}/queue/purge/`;
+    // Replace this.apiService.postUrl with your actual API POST call method
+    return this.apiService.postUrl(apiPath, JSON.stringify(body));
+  }
+
 }

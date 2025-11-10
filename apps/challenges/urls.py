@@ -1,4 +1,6 @@
 from django.conf.urls import url
+from django.urls import path
+from .views import purge_challenge_queue
 
 from . import views
 
@@ -314,6 +316,10 @@ urlpatterns = [
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/queue/purge/$",
+        views.purge_challenge_queue,
+        name="purge_challenge_queue"),
 ]
 
 app_name = "challenges"

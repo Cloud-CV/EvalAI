@@ -11,6 +11,14 @@ import zipfile
 from datetime import datetime
 from os.path import basename, isfile, join
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from challenges.models import Challenge
+from hosts.utils import is_user_a_host_of_challenge
+from .services import QueuePurgeService
+from rest_framework import status
+
 import pytz
 import requests
 import yaml
@@ -5173,6 +5181,22 @@ def update_challenge_attributes(request):
         "message": f"Challenge attributes updated successfully for challenge with primary key {challenge_pk}!"
     }
     return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purge_challenge_queue(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        return Response({'error': 'Not authorized.'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response({'error': 'Challenge not found.'}, status=status.HTTP_404_NOT_FOUND)
+    scope = request.data.get('scope', 'all')
+    dry_run = request.data.get('dry_run', False)
+    purge_service = QueuePurgeService(challenge)
+    result = purge_service.purge_queue(scope=scope, dry_run=dry_run)
+    return Response(result)
+
 
 
 @api_view(["PUT"])
