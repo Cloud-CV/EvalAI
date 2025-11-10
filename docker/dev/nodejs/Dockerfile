@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:18.19.0-bullseye AS base
+FROM node:22-bullseye AS base
 
 # Set environment variables for better npm performance
 ENV NODE_ENV=production
