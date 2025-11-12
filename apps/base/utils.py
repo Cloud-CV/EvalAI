@@ -16,7 +16,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
-from settings.common import SQS_RETENTION_PERIOD
+from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -206,9 +206,17 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             if challenge is None
             else str(challenge.sqs_retention_period)
         )
+        sqs_visibility_timeout = (
+            SQS_VISIBILITY_TIMEOUT
+            if challenge is None
+            else str(challenge.sqs_visibility_timeout)
+        )
         queue = sqs.create_queue(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": sqs_retention_period},
+            Attributes={
+                "MessageRetentionPeriod": sqs_retention_period,
+                "VisibilityTimeout": sqs_visibility_timeout,
+            },
         )
     return queue
 
