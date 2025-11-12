@@ -34,6 +34,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
         if context and context.get("request").method != "GET":
             challenge_host_team = context.get("challenge_host_team")
             kwargs["data"]["creator"] = challenge_host_team.pk
+            github_token = context.get("github_token")
+            if github_token:
+                kwargs["data"]["github_token"] = github_token
         else:
             self.fields["creator"] = ChallengeHostTeamSerializer()
 
@@ -96,6 +99,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_retention_period",
             "github_repository",
             "github_branch",
+            "github_token",
         )
 
 
@@ -260,6 +264,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_branch = context.get("github_branch")
             if github_branch:
                 kwargs["data"]["github_branch"] = github_branch
+            github_token = context.get("github_token")
+            if github_token:
+                kwargs["data"]["github_token"] = github_token
 
     class Meta:
         model = Challenge
@@ -299,6 +306,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "cli_version",
             "github_repository",
             "github_branch",
+            "github_token",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",

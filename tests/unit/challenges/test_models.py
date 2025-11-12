@@ -8,8 +8,11 @@ from challenges.models import (
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
+    GitHubSyncMiddleware,
     Leaderboard,
     LeaderboardData,
+    _infer_changed_field_from_request,
+    reset_github_sync_context,
 )
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -261,3 +264,41 @@ class LeaderboardDataTestCase(BaseTestCase):
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
         )
+
+
+class GitHubSyncMiddlewareTests(BaseTestCase):
+    def test_middleware_captures_post_keys_and_infer_from_request(self):
+        reset_github_sync_context()
+
+        class _Req:
+            method = "POST"
+            body = b""
+            POST = {"title": "T", "created_at": "ignore"}
+
+        mw = GitHubSyncMiddleware()
+        mw.process_request(_Req())
+
+        # An object that has attribute 'title' should be inferred as changed
+        class Obj:  # minimal stub with attribute present
+            title = "T"
+
+        inferred = _infer_changed_field_from_request(Obj())
+        self.assertEqual(inferred, "title")
+
+    def test_reset_github_sync_context_clears_payload_keys(self):
+        # seed payload keys via middleware
+        class _Req:
+            method = "PATCH"
+            body = b'{\n  "name": "X"\n}'
+
+        mw = GitHubSyncMiddleware()
+        mw.process_request(_Req())
+
+        # now reset and confirm inference returns None
+        reset_github_sync_context()
+
+        class Obj:
+            name = "X"
+
+        inferred = _infer_changed_field_from_request(Obj())
+        self.assertIsNone(inferred)
