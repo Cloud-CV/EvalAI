@@ -19,7 +19,7 @@ class Contact(TimeStampedModel):
     )
 
     def __str__(self):
-        return "{0}: {1}: {2}".format(self.name, self.email, self.message)
+        return f"{self.name}: {self.email}: {self.message}"
 
     class Meta:
         app_label = "web"
@@ -32,7 +32,7 @@ class Subscribers(TimeStampedModel):
     email = models.EmailField(max_length=70)
 
     def __str__(self):
-        return "{}".format(self.email)
+        return f"{self.email}"
 
     class Meta:
         app_label = "web"
@@ -64,7 +64,7 @@ class Team(models.Model):
     position = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         app_label = "web"

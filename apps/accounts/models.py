@@ -27,7 +27,7 @@ class UserStatus(TimeStampedModel):
     status = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         app_label = "accounts"
