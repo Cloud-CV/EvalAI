@@ -24,7 +24,7 @@ moto==1.3.14
 networkx==2.4
 pickleshare==0.7.5
 pika==1.1.0
-Pillow==7.1.0
+Pillow==10.3.0
 proc==1.0
 psycopg2==2.8.4
 pycurl==7.43.0.6
