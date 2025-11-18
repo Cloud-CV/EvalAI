@@ -115,7 +115,7 @@ You might be seeing this error because you are using wrong Compose file version.
 
 Since the version of compose file is 3, you might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
 
-### Q. While trying to build EvalAI from the master branch and run the command `docker-compose up`:e up`:
+### Q. While trying to build EvalAI from the master branch and run the command `docker-compose up`:
 
 ```
 ERROR: Service 'celery' failed to build: pull access denied for evalai_django, 
