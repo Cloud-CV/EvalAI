@@ -1,79 +1,128 @@
-## Frequently Asked Questions
+# Frequently Asked Questions
 
-#### Q. How to start contributing?
+This guide provides answers to common questions developers have while working with EvalAI.
 
-EvalAI’s issue tracker is good place to start. If you find something that interests you, comment on the thread and we’ll help get you started.
-Alternatively, if you come across a new bug on the site, please file a new issue and comment if you would like to be assigned. Existing issues are tagged with one or more labels, based on the part of the website it touches, its importance etc., which can help you select one.
+## Table of Contents
 
-#### Q. What are the technologies that EvalAI uses?
+- [General Development](#general-development)
+- [Docker & Setup Issues](#docker--setup-issues)
 
-Please refer to [Technologies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
+---
 
-#### Q. Where could I learn GitHub Commands?
+## General Development
+
+### Q. How to start contributing?
+
+EvalAI’s issue tracker is good place to start. If you find something that interests you, comment on the thread and we’ll help get you started. Alternatively, if you come across a new bug on the site, please file a new issue and comment if you would like to be assigned. Existing issues are tagged with one or more labels, based on the part of the website it touches, its importance etc., which can help you select one.
+
+### Q. What are the technologies that EvalAI uses?
+
+Please refer to [Technologies Used](../02-architecture/technologies.md)
+
+### Q. Where could I learn GitHub Commands?nds?
 
 Refer to [GitHub Guide](https://help.github.com/articles/git-and-github-learning-resources/).
 
-#### Q. Where could I learn Markdown?
+### Q. Where could I learn Markdown?
 
 Refer to [Markdown Guide](https://guides.github.com/features/mastering-markdown/).
 
-#### Q. What to do when coverage decreases in your pull request?
+### Q. What to do when coverage decreases in your pull request?
 
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts.
 
-#### Q. How to setup EvalAI using virtualenv?
+### Q. How to setup EvalAI using virtualenv?
 
 We have removed the documentation for setting up using virtual environment since the project has grown and different developers face different dependency issues. We recommend to setup EvalAI using docker based environment.
 
-### Docker & Setup Issues
+---
 
-#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/):
+## Docker & Setup Issues
 
+### Q. While using docker, I am getting the following error on URL http://localhost:8888/:
+
+```
 Cannot Get \
+```
 
+**Solution:**
 
-Try removing the docker containers and then building them again.
+Try removing the docker containers and then building them again:
 
-#### Q. While running the unit tests, I am getting the error similar to as shown below:
+```bash
+docker compose down
+docker compose up --build
+```
 
-________________ ERROR collecting tests/unit/web/test_views.py _________________ import file mismatch: imported module 'tests.unit.web.test_views' has this file attribute: /path/to/evalai/tests/unit/web/test_views.py which is not the same as the test file we want to collect: /code/tests/unit/web/test_views.py HINT: remove pycache / .pyc files and/or use a unique basename for your test file modules
+### Q. While running the unit tests, I am getting the error similar to as shown below:
 
+```
+________________ ERROR collecting tests/unit/web/test_views.py _________________
+import file mismatch:
+imported module 'tests.unit.web.test_views' has this file attribute:
+  /path/to/evalai/tests/unit/web/test_views.py
+which is not the same as the test file we want to collect:
+  /code/tests/unit/web/test_views.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+```
 
-It appears that you are trying to run `pytest` in a docker container. To fix this, delete the `__pycache__` and all `*.pyc` files using the following command:
+**Solution:**
 
-`find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf`
+It appears that you are trying to run pytest in a docker container. To fix this, delete the `__pycache__` and all `*.pyc` files using the following command:
 
-#### Q. Getting the following error:
+```bash
+find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+```
 
-ERROR: for db Cannot start service db: driver failed programming external connectivity on endpoint evalai_db_1 (2163096de9aac6561b4f699bb1049acd0ce881fbaa0da28e47cfa9ca0ee1199f): Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
+### Q. Getting the following error:ror:
 
+```
+ERROR: for db Cannot start service db: driver failed programming external connectivity 
+on endpoint evalai_db_1 (2163096de9aac6561b4f699bb1049acd0ce881fbaa0da28e47cfa9ca0ee1199f): 
+Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
+```
 
-The following solution only works on Linux.
+**Solution:**
 
-Execute :
-`sudo netstat -lpn |grep :5432`
+> **Note:** The following solution only works on Linux.
 
-The output of the above would be in the following form:
+1. Execute:
 
-tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
+   ```bash
+   sudo netstat -lpn | grep :5432
+   ```
 
+2. The output of the above would be in the following form:
 
-Execute the following command:
+   ```
+   tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
+   ```
 
-sudo kill 25273 ## This would vary and you can change with the output in the first step
+3. Execute the following command:
 
+   ```bash
+   sudo kill 25273  # Replace 25273 with the PID from step 1
+   ```
 
-#### Q. Getting the following error when using Docker:
+### Q. Getting the following error when using Docker:ker:
 
-ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error because you are using wrong Compose file version.
+```
+ERROR: Version in "./docker-compose.yml" is unsupported. 
+You might be seeing this error because you are using wrong Compose file version.
+```
 
+**Solution:**
 
-Since, the version of compose file is 3. You might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
+Since the version of compose file is 3, you might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
 
-#### Q. While trying to build EvalAI from the master branch and run the command docker-compose up:
+### Q. While trying to build EvalAI from the master branch and run the command `docker-compose up`:e up`:
 
-ERROR: Service 'celery' failed to build: pull access denied for evalai_django, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+```
+ERROR: Service 'celery' failed to build: pull access denied for evalai_django, 
+repository does not exist or may require 'docker login': denied: requested access 
+to the resource is denied
+```
 
+**Solution:**
 
-Please make sure to clone EvalAI in its default directory with name evalai. This happens because the parent directory changes the name of docker images.
-For instance, the image evalai_django gets renamed to evalai_dev_django if your directory is renamed to EvalAI_dev.
+Please make sure to clone EvalAI in its default directory with name `evalai` (all lowercase). This happens because the parent directory changes the name of docker images. For instance, the image `evalai_django` gets renamed to `evalai_dev_django` if your directory is renamed to `EvalAI_dev`.
