@@ -48,12 +48,16 @@ RUN npm install --only=production --no-audit --no-fund --prefer-offline --progre
 FROM base AS amd64
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
-    apt-get update && apt-get install -yq google-chrome-stable libxss1 && \
+    apt-get update && \
+    (apt-get install -yq google-chrome-stable libxss1 || \
+     (apt-get update && apt-get install -yq --fix-missing google-chrome-stable libxss1)) && \
     rm -rf /var/lib/apt/lists/*
 
 # ARM64-specific stage
 FROM base AS arm64
-RUN apt-get update && apt-get install -yq chromium libxss1 && \
+RUN apt-get update && \
+    (apt-get install -yq chromium libxss1 || \
+     (apt-get update && apt-get install -yq --fix-missing chromium libxss1)) && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/*
 
