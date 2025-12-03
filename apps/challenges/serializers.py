@@ -96,6 +96,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_retention_period",
             "github_repository",
             "github_branch",
+            "github_token",
         )
 
 
@@ -299,6 +300,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "cli_version",
             "github_repository",
             "github_branch",
+            "github_token",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",
