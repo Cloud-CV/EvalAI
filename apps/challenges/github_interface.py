@@ -95,7 +95,9 @@ class GithubInterface:
 
         # Create specific commit message
         if changed_field:
-            commit_message = f"evalai_bot: Update {path} - changed field: {changed_field}"
+            commit_message = (
+                f"evalai_bot: Update {path} - changed field: {changed_field}"
+            )
         else:
             commit_message = self.COMMIT_PREFIX.format(path)
 
@@ -164,14 +166,20 @@ class GithubInterface:
             return None
 
         try:
-            if field in ["start_date", "end_date"] and hasattr(value, "strftime"):
+            if field in ["start_date", "end_date"] and hasattr(
+                value, "strftime"
+            ):
                 return value.strftime("%Y-%m-%d %H:%M:%S")
-            elif field in [
-                "description",
-                "evaluation_details",
-                "terms_and_conditions",
-                "submission_guidelines",
-            ] and value:
+            elif (
+                field
+                in [
+                    "description",
+                    "evaluation_details",
+                    "terms_and_conditions",
+                    "submission_guidelines",
+                ]
+                and value
+            ):
                 # Extract the actual content from HTML fields
                 if hasattr(value, "read"):
                     try:
@@ -246,7 +254,9 @@ class GithubInterface:
                 if new_text is None or new_text == current_text:
                     return True
                 return bool(
-                    self.update_data_from_path(file_path, new_text, changed_field)
+                    self.update_data_from_path(
+                        file_path, new_text, changed_field
+                    )
                 )
 
             # Non-file field: update YAML key with processed value
@@ -256,7 +266,9 @@ class GithubInterface:
                     changed_field, current_value
                 )
                 if processed_value is None:
-                    logger.warning(f"Could not process changed field: {changed_field}")
+                    logger.warning(
+                        f"Could not process changed field: {changed_field}"
+                    )
                     return False
 
                 # Skip if value unchanged to avoid empty commit
@@ -265,7 +277,9 @@ class GithubInterface:
 
                 config_data[changed_field] = processed_value
             else:
-                logger.error(f"Field {changed_field} not found on challenge model")
+                logger.error(
+                    f"Field {changed_field} not found on challenge model"
+                )
                 return False
 
             # Convert back to YAML
@@ -341,7 +355,9 @@ class GithubInterface:
 
             # File field for phase: update referenced file content
             if changed_field in {"test_annotation"}:
-                file_path = config_data["challenge_phases"][target_index].get(yaml_key)
+                file_path = config_data["challenge_phases"][target_index].get(
+                    yaml_key
+                )
                 if not file_path:
                     logger.warning(
                         f"No path for '{yaml_key}' in challenge_config.yaml; "
@@ -356,14 +372,18 @@ class GithubInterface:
                     return True
                 return (
                     True
-                    if self.update_data_from_path(file_path, new_text, changed_field)
+                    if self.update_data_from_path(
+                        file_path, new_text, changed_field
+                    )
                     else False
                 )
 
             # Non-file field: update YAML entry for that phase
             if hasattr(challenge_phase, changed_field):
                 value = getattr(challenge_phase, changed_field)
-                processed_value = self._process_field_value(changed_field, value)
+                processed_value = self._process_field_value(
+                    changed_field, value
+                )
                 if processed_value is None:
                     logger.warning(
                         f"Could not process changed phase field: {changed_field}"

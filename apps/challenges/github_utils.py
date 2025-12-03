@@ -10,7 +10,10 @@ from celery import shared_task
 from django.core import serializers
 
 from .github_interface import GithubInterface
-from .github_sync_config import CHALLENGE_SYNC_FIELDS, CHALLENGE_PHASE_SYNC_FIELDS
+from .github_sync_config import (
+    CHALLENGE_PHASE_SYNC_FIELDS,
+    CHALLENGE_SYNC_FIELDS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +210,9 @@ def github_challenge_phase_sync(
             return False
 
         # Sync the changed field
-        success = github.update_challenge_phase_config(challenge_phase, changed_field)
+        success = github.update_challenge_phase_config(
+            challenge_phase, changed_field
+        )
         if success:
             logger.info(
                 f"Successfully synced {changed_field} for challenge phase "
@@ -239,7 +244,9 @@ def trigger_challenge_sync(challenge, update_fields=None):
 
     # Skip if already synced in this request (prevent loops)
     if is_synced("Challenge", challenge.pk):
-        logger.debug(f"Challenge {challenge.pk} already synced in this request")
+        logger.debug(
+            f"Challenge {challenge.pk} already synced in this request"
+        )
         return
 
     # Skip if request came from GitHub (prevent loops)
@@ -354,7 +361,9 @@ def trigger_challenge_phase_sync(challenge_phase, update_fields=None):
     mark_synced("ChallengePhase", challenge_phase.pk)
 
     # Serialize and queue the sync task
-    serialized_challenge_phase = serializers.serialize("json", [challenge_phase])
+    serialized_challenge_phase = serializers.serialize(
+        "json", [challenge_phase]
+    )
     serialized_challenge = serializers.serialize("json", [challenge])
     github_challenge_phase_sync.delay(
         serialized_challenge_phase, serialized_challenge, changed_field
