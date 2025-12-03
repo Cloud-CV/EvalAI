@@ -35,6 +35,7 @@ class GithubInterface:
 
         url = self.get_github_url(url)
         headers = self.get_request_headers()
+        response = None
         try:
             response = requests.request(
                 method=method,
@@ -44,10 +45,10 @@ class GithubInterface:
                 json=data,
             )
             response.raise_for_status()
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
             logger.info(
-                "EvalAI is not able to establish connection with github {}".format(
-                    response.json() if response else "No response"
+                "EvalAI is not able to establish connection with github: {}".format(
+                    str(e)
                 )
             )
             return None
@@ -244,10 +245,8 @@ class GithubInterface:
                 )
                 if new_text is None or new_text == current_text:
                     return True
-                return (
-                    True
-                    if self.update_data_from_path(file_path, new_text, changed_field)
-                    else False
+                return bool(
+                    self.update_data_from_path(file_path, new_text, changed_field)
                 )
 
             # Non-file field: update YAML key with processed value
@@ -289,7 +288,7 @@ class GithubInterface:
             success = self.update_data_from_path(
                 "challenge_config.yaml", yaml_content, changed_field
             )
-            return True if success else False
+            return bool(success)
 
         except Exception as e:
             logger.error(f"Error updating challenge config: {str(e)}")
@@ -397,7 +396,7 @@ class GithubInterface:
             success = self.update_data_from_path(
                 "challenge_config.yaml", yaml_content, changed_field
             )
-            return True if success else False
+            return bool(success)
 
         except Exception as e:
             logger.error(f"Error updating challenge phase config: {str(e)}")

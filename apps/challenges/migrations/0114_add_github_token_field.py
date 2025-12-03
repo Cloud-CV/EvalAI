@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
                 null=True,
                 blank=True,
                 default="",
-                help_text="GitHub Personal Access Token for bi-directional sync",
             ),
         ),
     ]

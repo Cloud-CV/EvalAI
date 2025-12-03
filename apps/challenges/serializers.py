@@ -24,6 +24,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
     domain_name = serializers.SerializerMethodField()
+    github_token = serializers.CharField(
+        max_length=500, write_only=True, required=False, allow_blank=True
+    )
 
     def get_domain_name(self, obj):
         return obj.get_domain_display()
@@ -243,6 +246,10 @@ class ZipChallengeSerializer(ChallengeSerializer):
     """
     Serializer used for creating challenge through zip file.
     """
+
+    github_token = serializers.CharField(
+        max_length=500, write_only=True, required=False, allow_blank=True
+    )
 
     def __init__(self, *args, **kwargs):
         super(ZipChallengeSerializer, self).__init__(*args, **kwargs)

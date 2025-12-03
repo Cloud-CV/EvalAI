@@ -258,6 +258,21 @@ def trigger_challenge_sync(challenge, update_fields=None):
             get_payload_keys(), CHALLENGE_SYNC_FIELDS
         )
 
+    # Fallback: compare original field values if available
+    if not changed_field:
+        for field in CHALLENGE_SYNC_FIELDS:
+            original_attr = f"_original_{field}"
+            if hasattr(challenge, original_attr):
+                original_value = getattr(challenge, original_attr)
+                current_value = getattr(challenge, field)
+                if original_value != current_value:
+                    changed_field = field
+                    logger.debug(
+                        f"Detected changed field via original value comparison: "
+                        f"{field} for challenge {challenge.pk}"
+                    )
+                    break
+
     if not changed_field:
         logger.debug(
             f"Could not determine changed field for challenge {challenge.pk}"
@@ -312,6 +327,21 @@ def trigger_challenge_phase_sync(challenge_phase, update_fields=None):
         changed_field = get_changed_field_from_payload(
             get_payload_keys(), CHALLENGE_PHASE_SYNC_FIELDS
         )
+
+    # Fallback: compare original field values if available
+    if not changed_field:
+        for field in CHALLENGE_PHASE_SYNC_FIELDS:
+            original_attr = f"_original_{field}"
+            if hasattr(challenge_phase, original_attr):
+                original_value = getattr(challenge_phase, original_attr)
+                current_value = getattr(challenge_phase, field)
+                if original_value != current_value:
+                    changed_field = field
+                    logger.debug(
+                        f"Detected changed field via original value comparison: "
+                        f"{field} for challenge phase {challenge_phase.pk}"
+                    )
+                    break
 
     if not changed_field:
         logger.debug(
