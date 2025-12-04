@@ -35,7 +35,7 @@ fake = Factory.create()
 NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
-NUMBER_OF_SUBMISSIONS = 10  # Number of submissions to create for testing
+NUMBER_OF_SUBMISSIONS = 10000  # Number of submissions to create for testing
 DATASET_SPLIT_ITERATOR = 0
 CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
@@ -57,7 +57,7 @@ def check_database():
         print(
             "Are you sure you want to wipe the existing development database and reseed it? (Y/N)"
         )
-        if True:  # Bypassed interactive prompt for non-interactive environments
+        if settings.TEST or input().lower() == "y":
             destroy_database()
             return True
         else:
@@ -146,7 +146,7 @@ def create_challenge_host_participant_team(challenge_host_team):
     Creates challenge host participant team and returns it.
     """
     emails = challenge_host_team.get_all_challenge_host_email()
-    team_name = f"Host_{random.randint(1, 10)}_Team"
+    team_name = f"Host_{random.randint(1, 100000)}_Team"
     participant_host_team = ParticipantTeam(
         team_name=team_name, created_by=challenge_host_team.created_by
     )
