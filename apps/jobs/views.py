@@ -338,29 +338,25 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data.get("is_public")
                 and challenge_phase.is_restricted_to_select_one_submission
             ):
-                # Handle corner case for restrict one public lb submission
-                submissions_already_public = Submission.objects.filter(
-                    is_public=True,
-                    participant_team=participant_team,
-                    challenge_phase=challenge_phase,
-                )
-                # Make the existing public submission private before making the
-                # new submission public
-                if submissions_already_public.count() == 1:
-                    # Case when the phase is restricted to make only one
-                    # submission as public
-                    submission_serializer = SubmissionSerializer(
-                        submissions_already_public[0],
-                        data={"is_public": False},
-                        context={
-                            "participant_team": participant_team,
-                            "challenge_phase": challenge_phase,
-                            "request": request,
-                        },
-                        partial=True,
+                with transaction.atomic():
+                    submissions_already_public = Submission.objects.select_for_update().filter(
+                        is_public=True,
+                        participant_team=participant_team,
+                        challenge_phase=challenge_phase,
                     )
-                    if submission_serializer.is_valid():
-                        submission_serializer.save()
+                    if submissions_already_public.count() == 1:
+                        submission_serializer = SubmissionSerializer(
+                            submissions_already_public[0],
+                            data={"is_public": False},
+                            context={
+                                "participant_team": participant_team,
+                                "challenge_phase": challenge_phase,
+                                "request": request,
+                            },
+                            partial=True,
+                        )
+                        if submission_serializer.is_valid():
+                            submission_serializer.save()
 
         # Override submission visibility if leaderboard_public = False for a
         # challenge phase
@@ -472,32 +468,29 @@ def change_submission_data_and_visibility(
             when_made_public = datetime.datetime.now()
             request.data["when_made_public"] = when_made_public
 
-            submissions_already_public = Submission.objects.filter(
-                is_public=True,
-                participant_team=participant_team,
-                challenge_phase=challenge_phase,
-            )
-            # Make the existing public submission private before making the new
-            # submission public
-            if (
-                challenge_phase.is_restricted_to_select_one_submission
-                and is_public
-                and submissions_already_public.count() == 1
-            ):
-                # Case when the phase is restricted to make only one submission
-                # as public
-                submission_serializer = SubmissionSerializer(
-                    submissions_already_public[0],
-                    data={"is_public": False},
-                    context={
-                        "participant_team": participant_team,
-                        "challenge_phase": challenge_phase,
-                        "request": request,
-                    },
-                    partial=True,
+            with transaction.atomic():
+                submissions_already_public = Submission.objects.select_for_update().filter(
+                    is_public=True,
+                    participant_team=participant_team,
+                    challenge_phase=challenge_phase,
                 )
-                if submission_serializer.is_valid():
-                    submission_serializer.save()
+                if (
+                    challenge_phase.is_restricted_to_select_one_submission
+                    and is_public
+                    and submissions_already_public.count() == 1
+                ):
+                    submission_serializer = SubmissionSerializer(
+                        submissions_already_public[0],
+                        data={"is_public": False},
+                        context={
+                            "participant_team": participant_team,
+                            "challenge_phase": challenge_phase,
+                            "request": request,
+                        },
+                        partial=True,
+                    )
+                    if submission_serializer.is_valid():
+                        submission_serializer.save()
     except KeyError:
         pass
 
