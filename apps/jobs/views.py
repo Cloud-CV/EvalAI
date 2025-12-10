@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import uuid
+from django.db import transaction
+
 
 import botocore
 from accounts.permissions import HasVerifiedEmail
