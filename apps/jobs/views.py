@@ -298,7 +298,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        if not request.FILES:
+                if not request.FILES:
             if request.data.get("file_url") is None:
                 response_data = {"error": "The file URL is missing!"}
                 return Response(
@@ -338,29 +338,27 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data.get("is_public")
                 and challenge_phase.is_restricted_to_select_one_submission
             ):
-                # Handle corner case for restrict one public lb submission
-                submissions_already_public = Submission.objects.filter(
-                    is_public=True,
-                    participant_team=participant_team,
-                    challenge_phase=challenge_phase,
-                )
-                # Make the existing public submission private before making the
-                # new submission public
-                if submissions_already_public.count() == 1:
-                    # Case when the phase is restricted to make only one
-                    # submission as public
-                    submission_serializer = SubmissionSerializer(
-                        submissions_already_public[0],
-                        data={"is_public": False},
-                        context={
-                            "participant_team": participant_team,
-                            "challenge_phase": challenge_phase,
-                            "request": request,
-                        },
-                        partial=True,
+                # Atomic update to prevent race conditions for one public submission
+                with transaction.atomic():
+                    # Lock existing public submissions rows
+                    submissions_already_public = (
+                        Submission.objects
+                        .select_for_update()
+                        .filter(
+                            is_public=True,
+                            participant_team=participant_team,
+                            challenge_phase=challenge_phase,
+                        )
                     )
-                    if submission_serializer.is_valid():
-                        submission_serializer.save()
+
+                    # If a public submission exists -> make it private first
+                    if submissions_already_public.exists():
+                        old_public_submission = submissions_already_public.first()
+                        old_public_submission.is_public = False
+                        old_public_submission.save(update_fields=["is_public"])
+
+                    # Set current request submission to public
+                    request.data["is_public"] = True
 
         # Override submission visibility if leaderboard_public = False for a
         # challenge phase
@@ -397,6 +395,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+
 
         if serializer.is_valid():
             serializer.save()
