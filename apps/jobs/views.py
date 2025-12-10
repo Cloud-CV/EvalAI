@@ -35,6 +35,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.utils import dateparse, timezone
+from django.shortcuts import get_object_or_404
+
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -3178,3 +3180,58 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def purge_submissions(request, challenge_id):
+    """
+    API Endpoint to purge all submissions for a challenge that are stuck
+    in queued, running, or submitting states.
+    Only accessible by Challenge Hosts.
+    """
+    challenge = get_object_or_404(Challenge, pk=challenge_id)
+
+    if not is_user_a_host_of_challenge(request.user, challenge_id):
+        response_data = {
+            "error": "Sorry, you are not authorized to purge submissions for this challenge!"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+
+    statuses_to_purge = [
+        Submission.QUEUED,
+        Submission.RUNNING,
+        Submission.SUBMITTING,
+        Submission.SUBMITTED,
+    ]
+
+   
+    submissions_to_purge = Submission.objects.filter(
+        challenge_phase__challenge=challenge,
+        status__in=statuses_to_purge
+    )
+
+    count = submissions_to_purge.count()
+    if count == 0:
+         return Response(
+            {"message": "No stuck submissions found to purge."},
+            status=status.HTTP_200_OK
+        )
+
+    submissions_to_purge.delete()
+
+    logger.info(
+        "User {} purged {} submissions for Challenge {}".format(
+            request.user.pk, count, challenge_id
+        )
+    )
+
+    return Response(
+        {"message": "Successfully purged {} submissions.".format(count)},
+        status=status.HTTP_200_OK
+    )
