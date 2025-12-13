@@ -314,6 +314,11 @@ urlpatterns = [
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
     ),
+    url(
+        r"^challenges/(?P<challenge_id>[0-9]+)/purge/$",
+        views.purge_stuck_submissions,
+        name="purge_stuck_submissions",
+    ),
 ]
 
 app_name = "challenges"

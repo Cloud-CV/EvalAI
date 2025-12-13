@@ -341,6 +341,7 @@
                 >
                   <i class="fa fa-refresh"></i> Restart worker
                 </button>
+
               </div>
             </div>
             <div class="row margin-bottom-cancel">
@@ -355,5 +356,20 @@
         </ng-template>
       </mat-tab>
     </mat-tab-group>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-content">
+        <h4 class="card-title">Danger Zone</h4>
+        <p>If submissions are stuck in "Running" or "Queued" state forever, use this button to clear them.</p>
+        <button class="btn btn-danger waves-effect waves-light" (click)="purgeSubmissions()">
+          <i class="fa fa-trash"></i> Purge Stuck Submissions
+        </button>
+      </div>
+    </div>
   </div>
 </div>
