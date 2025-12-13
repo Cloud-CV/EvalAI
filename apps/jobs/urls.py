@@ -121,6 +121,11 @@ urlpatterns = [
         views.update_submission_meta,
         name="update_submission_meta",
     ),
+    url(
+        r"^challenge/(?P<challenge_id>[0-9]+)/purge_submissions/$",
+        views.purge_submissions,
+        name="purge_submissions",
+    ),
 ]
 
 app_name = "jobs"
