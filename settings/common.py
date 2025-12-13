@@ -296,7 +296,7 @@ REST_AUTH_SERIALIZERS = {
 }
 
 # For inviting users to participant and host teams.
-ADMIN_EMAIL = "admin@cloudcv.org"
+ADMIN_EMAIL = "admin@eval.ai"
 CLOUDCV_TEAM_EMAIL = "team@eval.ai"
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
