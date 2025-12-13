@@ -31,6 +31,7 @@ from challenges.challenge_config_utils import (
     extract_zip_file,
     validate_challenge_config_util,
 )
+from challenges.models import Challenge
 from challenges.utils import (
     add_domain_to_challenge,
     add_prizes_to_challenge,
@@ -56,6 +57,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -93,6 +95,7 @@ from rest_framework.decorators import (
     permission_classes,
     throttle_classes,
 )
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
@@ -161,14 +164,6 @@ from .utils import (
     send_emails,
     send_subscription_plans_email,
 )
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from django.shortcuts import get_object_or_404
-from challenges.models import Challenge
-from jobs.models import Submission
 
 logger = logging.getLogger(__name__)
 
@@ -5241,31 +5236,37 @@ def modify_leaderboard_data(request):
         response_data = {"message": "Leaderboard data updated successfully!"}
         return Response(response_data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
+
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def purge_stuck_submissions(request, challenge_id):
     """
-    Manually triggers the deletion of 'stuck' submissions (status='submitted') 
+    Manually triggers the deletion of 'stuck' submissions (status='submitted')
     for a specific challenge.
-    
+
     Arguments:
         request: The HTTP request containing the user authentication.
         challenge_id (int): The ID of the challenge to clean up.
-        
+
     Returns:
         Response: A JSON message with the number of deleted submissions.
     """
-    
-    challenge = get_object_or_404(Challenge, id=challenge_id)
-    
-   
-    if challenge.creator.created_by != request.user:
-        return Response({'error': 'You are not the host of this challenge.'}, status=status.HTTP_403_FORBIDDEN)
 
-  
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+
+    if challenge.creator.created_by != request.user:
+        return Response(
+            {"error": "You are not the host of this challenge."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     deleted_count, _ = Submission.objects.filter(
-        challenge_phase__challenge=challenge,
-        status='submitted'
+        challenge_phase__challenge=challenge, status="submitted"
     ).delete()
 
-    return Response({'message': f'Successfully deleted {deleted_count} stuck submissions.'}, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "message": f"Successfully deleted {deleted_count} stuck submissions."
+        },
+        status=status.HTTP_200_OK,
+    )
