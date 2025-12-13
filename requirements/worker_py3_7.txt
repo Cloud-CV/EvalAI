@@ -6,3 +6,4 @@ pycocotools==2.0.2
 scikit-learn==0.24.0
 scipy==1.5.4
 tqdm==4.54.0
+PyYAML<6.0
