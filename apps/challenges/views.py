@@ -120,7 +120,6 @@ from .aws_utils import (
     terminate_ec2_instance,
 )
 from .models import (
-    Challenge,
     ChallengeConfiguration,
     ChallengeEvaluationCluster,
     ChallengePhase,
