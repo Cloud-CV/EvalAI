@@ -34,194 +34,100 @@ First, fork the EvalAI repository on GitHub:
 https://github.com/Cloud-CV/EvalAI
 ```
 
-
-Then clone your fork locally:
-```shell
-git clone https://github.com/<your-username>/EvalAI.git
-cd EvalAI
-```
-
-
-**Environment Setup (Optional but Recommended)**
-EvalAI ships with sensible defaults, so no .env file is required for basic local usage. However, if you want to customize configuration later (ports, secrets, email, etc.), you can add:
-```shell
-cp .env.example .env
-```
-
-
-**Step 2: Build and Run EvalAI Using Docker**
-
-Start core services. This starts:
-- Django backend
-- PostgreSQL database
-- SQS mock service
-```shell
-docker compose up --build
-```
-
-
-⏳ First build may take several minutes. Be patient and don't panic. 
-
-**Access EvalAI in Browser**
-
-Once containers are running, open:
-```shell
-http://127.0.0.1:8888
-
-```
-**Start Worker Services (Optional)**
-- Required if you want to test challenge evaluations locally.
-```shell
-docker compose --profile worker up --build
-```
-- Start StatsD Exporter (Optional)
-```shell
-docker compose --profile statsd up --build
-```
-- Start All Services Together
-```shell
-docker compose --profile worker --profile statsd up --build
-```
-
-## Default Login Credentials
-
-EvalAI automatically creates the following users:
-
-| User type   | Username    | Password   | Permissions                                                                            |
-| ----------- | ----------- | ---------- | -------------------------------------------------------------------------------------- |
-| Superuser   | admin       | `password` | Perform CRUD operations on all tables in the database<br /> through django admin panel |
-| Host        | host        | `password` | Create and manage challenges                                                           |
-| Participant | participant | `password` | Participate in different challenges and make submissions                               |
-
-If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
-
-[evalai-cli]: https://cli.eval.ai/
-[evalai]: http://eval.ai
-[docker-compose]: https://docs.docker.com/compose/install/
-[docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
----
-### Role Description
-
-- **Admin**: Has full access to the platform, including user management and system-level configuration.
-- **Host**: Can create and manage challenges, phases, datasets, and evaluation settings.
-- **Participant**: Can view challenges and submit solutions.
-
-> ⚠️ **Security Note**:  
-> These credentials are intended **only for local development**.  
-> Do not use them in production environments.
-
----
-## Verify Containers Are Running
-
-After starting EvalAI, verify that all required containers are running:
-
-```bash
-docker ps
-```
-**Expected Containers**
-- You should see containers similar to the following:
-
-- **evalai-django** = The main backend service running the Django application.
-- **evalai-db** = PostgreSQL database used by EvalAI to store users, challenges, submissions, and results.
-- **evalai-sqs** = Local SQS-compatible service used to manage submission and evaluation queues.
-- **evalai-worker** = Worker service responsible for executing evaluation logic.
-This container appears only if the worker profile is enabled.
-
-
 ## Common Issues & Troubleshooting
 
 ### Port Already in Use
 
-If **port 8888** is occupied, stop the conflicting service or update port mappings in **docker-compose.yml**.
+Q. "I get an error that port 8888 is already in use — what should I do?"
 
-## Issue: Port 8888 Already in Use
+A. Either stop the conflicting service or change the port mapping in `docker-compose.yml`.
 
-By default, EvalAI exposes the web interface on port 8888. If another service is already using this port, the containers will fail to start.
+- Check the process using the port:
+  - Linux/macOS: `lsof -i :8888`
+  - Windows (PowerShell): `netstat -ano | findstr :8888`
+- Stop the conflicting service or update the mapping in `docker-compose.yml` (example: `ports: - "9000:8888"`) and then restart: `docker compose down && docker compose up --build`.
 
-### How to Check Which Process Is Using the Port
 
-**On Linux or macOS:**
-```bash
-lsof -i :8888
-```
+### Website Not Accessible After Containers Start
 
-**On Windows (PowerShell):**
-```powershell
-netstat -ano | findstr :8888
-```
+Q. "Containers are running but I can't access the site in my browser."
 
-### Fix Option 1: Stop the Conflicting Service
+A. Services may still be initializing. Wait 1–2 minutes and check logs:
 
-Stop or disable the service currently using port 8888, then restart EvalAI:
-```bash
-docker compose down
-docker compose up --build
-```
+- `docker compose logs django` — look for successful startup lines and database migrations.
+- If containers crash or hang, follow the logs with `docker compose logs -f` for live output.
 
-### Fix Option 2: Change the Port Mapping
 
-Edit the `docker-compose.yml` file and update the exposed port. Example:
-```yaml
-ports:
-  - "9000:8888"
-```
+### Database Errors / Stale Volumes
 
-After updating the port, restart the containers:
-```bash
-docker compose down
-docker compose up --build
-```
+Q. "I see DB errors or migrations aren't applied on first run."
 
-Access EvalAI at: http://127.0.0.1:9000
+A. Volumes can retain stale state. To reset local state (this deletes local data):
 
-## Issue: Containers Start but Website Is Not Accessible
+- `docker compose down -v`
+- `docker compose up --build`
 
-This usually happens when services are still initializing. Recommended steps:
 
-1. Wait 1–2 minutes after starting containers
-2. Check logs to ensure Django has started successfully:
-```bash
-docker compose logs django
-```
+### CI, Tests & Coverage Checks (reproducing Travis / Codecov locally)
 
-## Issue: Database Errors on First Run
+Q. "CI or coverage checks are failing in CI — how can I run the same checks locally?"
 
-Occasionally, Docker volumes may contain stale data.
+A. The project CI (see `.travis.yml`) runs several stages you can reproduce locally. Key checks:
 
-### Fix: Reset Volumes
-```bash
-docker compose down -v
-docker compose up --build
-```
+- Build step: `docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build`
+- Backend tests (in CI run inside the `django` service):
+  - `docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy`
+- Frontend tests and build (if modifying frontend):
+  - `docker-compose run nodejs bash -c "npm install && gulp dev && karma start --single-run --reporters=junit,coverage && gulp staging"`
 
-⚠️ **Warning:** This removes all local data and recreates the database.
+Code quality checks used in CI (install locally before running):
 
-**Database Errors on First Run**
-- Reset containers and volumes:
-```shell
-docker compose down -v
-docker compose up --build
-```
+- `pip install black==24.8.0 isort==5.12.0 flake8==3.8.2 pylint==3.3.6`
+- `black --check --diff ./`
+- `isort --check-only --diff --profile=black ./`
+- `flake8 --config=.flake8 ./`
+- `pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./`
 
-- Containers Fail to Start
-Check logs for details:
-```shell
-docker compose logs -f
-```
+If any of these checks fail locally, fix the issues and re-run the relevant command until they pass.
 
-**Stopping EvalAI**
-```shell
-docker compose down
-```
-- To remove volumes as well:
-```shell
-docker compose down -v
-```
-# Important Notes
-- Non-Docker installation is not officially supported
-- Docker setup works consistently across Windows, Linux, and macOS
-- This is the recommended setup for contributors and challenge hosts
 
-# Contribution
+### Coverage uploads (Codecov)
 
-If you are interested in contributing to EvalAI, please follow the [Contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md)
+Q. "CI uploads coverage to Codecov — how is that done and what are the project targets?"
+
+A. CI uploads backend test results and coverage to Codecov during `after_success`. Locally you can reproduce the uploads (if you have credentials) with:
+
+- `pip install codecov-cli`
+- `codecovcli do-upload --report-type test_results --file junit-backend.xml`
+- `bash <(curl -s https://codecov.io/bash) -f coverage-backend.xml -F backend`
+
+Project coverage rules are defined in `codecov.yml`. Highlights:
+
+- Backend project target: 70% (project), 80% for patch-level checks
+- Frontend project target: 70% (project), 70% for patch-level checks
+- Coverage components and stricter targets exist for core modules (models, serializers, etc.) — see `codecov.yml` for details.
+
+If coverage decreases, add tests for uncovered lines and re-run the tests/coverage commands above.
+
+
+### Repro tip: run backend tests quickly (local, without Docker)
+
+If you prefer running tests without Docker and you have a local Python dev environment configured for the project:
+
+- Create a virtualenv and install dev dependencies (match CI pinned versions where practical)
+- Run: `pytest --cov . --cov-config .coveragerc`
+
+
+### Stopping EvalAI (clean shutdown)
+
+Q. "How do I stop EvalAI and (optionally) remove volumes?"
+
+A.
+- Stop containers: `docker compose down`
+- Stop and remove volumes: `docker compose down -v`
+
+
+### Contribution
+
+If you are interested in contributing to EvalAI, please follow the [Contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
+### Port Already in Use
