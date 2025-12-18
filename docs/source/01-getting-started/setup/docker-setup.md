@@ -338,11 +338,12 @@ To stop and remove volumes (this deletes all data):
 docker compose down -v
 ```
 
-# Important Notes
+## Important Notes
 - Non-Docker installation is not officially supported
 - Docker setup works consistently across Windows, Linux, and macOS
 - This is the recommended setup for contributors and challenge hosts
+- When running tests locally outside Docker, ensure your global `pytest` configuration files (such as any `setup.cfg` in parent directories) are compatible with the `pytest` version you are using.
 
-# Contribution
+## Contribution
 
 If you are interested in contributing to EvalAI, please follow the [Contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md)

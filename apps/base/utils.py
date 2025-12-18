@@ -317,9 +317,7 @@ def is_model_field_changed(model_obj, field_name):
     """
     prev = getattr(model_obj, "_original_{}".format(field_name))
     curr = getattr(model_obj, "{}".format(field_name))
-    if prev != curr:
-        return True
-    return False
+    return prev != curr
 
 
 def is_user_a_staff(user):
