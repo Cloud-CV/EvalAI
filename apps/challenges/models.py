@@ -749,5 +749,7 @@ class ChallengePrize(TimeStampedModel):
         db_table = "challenge_prize"
 
     def __str__(self):
-        return (f"Prize for {self.challenge}: Rank {self.rank}, "
-            f"Amount {self.amount}")
+        return (
+            f"Prize for {self.challenge}: Rank {self.rank}, "
+            f"Amount {self.amount}"
+        )
