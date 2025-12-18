@@ -509,8 +509,8 @@ class ChallengeTemplate(TimeStampedModel):
     Model to store challenge templates
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     title = models.CharField(max_length=500)
@@ -639,8 +639,8 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     """Model to store the config for Kubernetes cluster for a challenge
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.OneToOneField(Challenge, on_delete=models.CASCADE)
@@ -686,12 +686,12 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
 class PWCChallengeLeaderboard(TimeStampedModel):
     """
-    Model to store the challenge mapping with area, task and dataset of papers with code (PWC)
-    (https://paperswithcode.com/)
+    Model to store the challenge mapping with area, task and dataset of
+    papers with code (PWC) (https://paperswithcode.com/)
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     phase_split = models.OneToOneField(
@@ -715,8 +715,8 @@ class ChallengeSponsor(TimeStampedModel):
     """
     Model to store challenge sponsors
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
@@ -735,8 +735,8 @@ class ChallengePrize(TimeStampedModel):
     """
     Model to store challenge prizes
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
@@ -749,4 +749,5 @@ class ChallengePrize(TimeStampedModel):
         db_table = "challenge_prize"
 
     def __str__(self):
-        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
+        return (f"Prize for {self.challenge}: Rank {self.rank}, "
+            f"Amount {self.amount}")
