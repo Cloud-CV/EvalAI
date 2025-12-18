@@ -146,12 +146,8 @@ class Challenge(TimeStampedModel):
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True
     )  # Default is 40 GB
-    max_concurrent_submission_evaluation = models.PositiveIntegerField(
-        default=100000
-    )
-    aws_account_id = models.CharField(
-        max_length=200, default="", null=True, blank=True
-    )
+    max_concurrent_submission_evaluation = models.PositiveIntegerField(default=100000)
+    aws_account_id = models.CharField(max_length=200, default="", null=True, blank=True)
     aws_access_key_id = models.CharField(
         max_length=200, default="", null=True, blank=True
     )
@@ -177,9 +173,7 @@ class Challenge(TimeStampedModel):
     workers = models.IntegerField(null=True, blank=True, default=None)
     # The task definition ARN for the challenge, used for updating and
     # creating service.
-    task_def_arn = models.CharField(
-        null=True, blank=True, max_length=2048, default=""
-    )
+    task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
     # Identifier for the github repository of a challenge in format:
     # account_name/repository_name
@@ -187,9 +181,7 @@ class Challenge(TimeStampedModel):
         max_length=1000, null=True, blank=True, default=""
     )
     # The github branch name used to create/update the challenge
-    github_branch = models.CharField(
-        max_length=200, null=True, blank=True, default=""
-    )
+    github_branch = models.CharField(max_length=200, null=True, blank=True, default="")
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
@@ -199,15 +191,9 @@ class Challenge(TimeStampedModel):
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
     # VPC and subnet CIDRs for code upload challenge
-    vpc_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
-    )
-    subnet_1_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
-    )
-    subnet_2_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
-    )
+    vpc_cidr = models.CharField(null=True, blank=True, max_length=200, default="")
+    subnet_1_cidr = models.CharField(null=True, blank=True, max_length=200, default="")
+    subnet_2_cidr = models.CharField(null=True, blank=True, max_length=200, default="")
     # Evaluation instance config for code upload challenge
     worker_instance_type = models.CharField(
         max_length=256, null=True, blank=True, default="g4dn.xlarge"
@@ -216,22 +202,16 @@ class Challenge(TimeStampedModel):
         max_length=256, null=True, blank=True, default="AL2_x86_64_GPU"
     )
     worker_disk_size = models.IntegerField(null=True, blank=True, default=100)
-    max_worker_instance = models.IntegerField(
-        null=True, blank=True, default=10
-    )
+    max_worker_instance = models.IntegerField(null=True, blank=True, default=10)
     min_worker_instance = models.IntegerField(null=True, blank=True, default=1)
-    desired_worker_instance = models.IntegerField(
-        null=True, blank=True, default=1
-    )
+    desired_worker_instance = models.IntegerField(null=True, blank=True, default=1)
     cpu_only_jobs = models.BooleanField(default=False)
     # The number of vCPU for a code upload submission kubernetes job. Default
     # value is 2 vCPU.
     job_cpu_cores = models.CharField(
         max_length=256, null=True, blank=True, default="2000m"
     )
-    job_memory = models.CharField(
-        max_length=256, null=True, blank=True, default="8Gi"
-    )
+    job_memory = models.CharField(max_length=256, null=True, blank=True, default="8Gi")
     worker_image_url = models.CharField(
         max_length=200, blank=True, null=True, default=""
     )
@@ -275,9 +255,7 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_or_ec2_for_challenge(
-    sender, instance, created, **kwargs
-):
+def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -289,19 +267,14 @@ def create_eks_cluster_or_ec2_for_challenge(
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
-        elif (
-            instance.approved_by_admin is True
-            and instance.uses_ec2_worker is True
-        ):
+        elif instance.approved_by_admin is True and instance.uses_ec2_worker is True:
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_retention_period_for_challenge(
-    sender, instance, created, **kwargs
-):
+def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
     field_name = "sqs_retention_period"
     import challenges.aws_utils as aws
 
@@ -353,15 +326,11 @@ class ChallengePhase(TimeStampedModel):
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), null=True, blank=True
     )
-    max_submissions_per_day = models.PositiveIntegerField(
-        default=100000, db_index=True
-    )
+    max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
     max_submissions_per_month = models.PositiveIntegerField(
         default=100000, db_index=True
     )
-    max_submissions = models.PositiveIntegerField(
-        default=100000, db_index=True
-    )
+    max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(
@@ -386,17 +355,13 @@ class ChallengePhase(TimeStampedModel):
     # phase.
     submission_meta_attributes = JSONField(default=None, blank=True, null=True)
     # Flag to allow reporting partial metrics for submission evaluation
-    is_partial_submission_evaluation_enabled = models.BooleanField(
-        default=False
-    )
+    is_partial_submission_evaluation_enabled = models.BooleanField(default=False)
     # Id in the challenge config file. Needed to map the object to the value
     # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
     # Store the default metadata for a submission meta attributes of a
     # challenge phase.
-    default_submission_meta_attributes = JSONField(
-        default=None, blank=True, null=True
-    )
+    default_submission_meta_attributes = JSONField(default=None, blank=True, null=True)
     disable_logs = models.BooleanField(default=False)
 
     class Meta:
@@ -439,9 +404,7 @@ def post_save_connect(field_name, sender):
     import challenges.aws_utils as aws
 
     signals.post_save.connect(
-        model_field_name(field_name=field_name)(
-            aws.restart_workers_signal_callback
-        ),
+        model_field_name(field_name=field_name)(aws.restart_workers_signal_callback),
         sender=sender,
         weak=False,
     )
@@ -479,9 +442,7 @@ class ChallengePhaseSplit(TimeStampedModel):
         (PUBLIC, "public"),
     )
 
-    challenge_phase = models.ForeignKey(
-        "ChallengePhase", on_delete=models.CASCADE
-    )
+    challenge_phase = models.ForeignKey("ChallengePhase", on_delete=models.CASCADE)
     dataset_split = models.ForeignKey("DatasetSplit", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     visibility = models.PositiveSmallIntegerField(
@@ -495,9 +456,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_multi_metric_leaderboard = models.BooleanField(default=True)
 
     def __str__(self):
-        return "{0} : {1}".format(
-            self.challenge_phase.name, self.dataset_split.name
-        )
+        return "{0} : {1}".format(self.challenge_phase.name, self.dataset_split.name)
 
     class Meta:
         app_label = "challenges"
@@ -617,9 +576,7 @@ class UserInvitation(TimeStampedModel):
     STATUS_OPTIONS = ((ACCEPTED, ACCEPTED), (PENDING, PENDING))
     email = models.EmailField(max_length=200)
     invitation_key = models.CharField(max_length=200)
-    status = models.CharField(
-        max_length=30, choices=STATUS_OPTIONS, db_index=True
-    )
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
     challenge = models.ForeignKey(
         Challenge, related_name="challenge", on_delete=models.CASCADE
     )
@@ -654,27 +611,17 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         upload_to=RandomFileName("kube_config"), blank=True, null=True
     )
     eks_arn_role = models.CharField(max_length=512, null=True, blank=True)
-    node_group_arn_role = models.CharField(
-        max_length=512, null=True, blank=True
-    )
-    ecr_all_access_policy_arn = models.CharField(
-        max_length=512, null=True, blank=True
-    )
+    node_group_arn_role = models.CharField(max_length=512, null=True, blank=True)
+    ecr_all_access_policy_arn = models.CharField(max_length=512, null=True, blank=True)
     vpc_id = models.CharField(max_length=512, null=True, blank=True)
     subnet_1_id = models.CharField(max_length=512, null=True, blank=True)
     subnet_2_id = models.CharField(max_length=512, null=True, blank=True)
     security_group_id = models.CharField(max_length=512, null=True, blank=True)
-    internet_gateway_id = models.CharField(
-        max_length=512, null=True, blank=True
-    )
+    internet_gateway_id = models.CharField(max_length=512, null=True, blank=True)
     route_table_id = models.CharField(max_length=512, null=True, blank=True)
-    efs_security_group_id = models.CharField(
-        max_length=512, null=True, blank=True
-    )
+    efs_security_group_id = models.CharField(max_length=512, null=True, blank=True)
     efs_id = models.CharField(max_length=512, null=True, blank=True)
-    efs_creation_token = models.CharField(
-        max_length=256, null=True, blank=True
-    )
+    efs_creation_token = models.CharField(max_length=256, null=True, blank=True)
     efs_mount_target_ids = ArrayField(
         models.CharField(max_length=256, blank=True), default=list, blank=True
     )
@@ -694,9 +641,7 @@ class PWCChallengeLeaderboard(TimeStampedModel):
             that provides self-managed `created_at` and `modified_at` fields.
     """
 
-    phase_split = models.OneToOneField(
-        "ChallengePhaseSplit", on_delete=models.CASCADE
-    )
+    phase_split = models.OneToOneField("ChallengePhaseSplit", on_delete=models.CASCADE)
     area = models.CharField(max_length=200, default="", db_index=True)
     task = models.CharField(max_length=200, default="", db_index=True)
     dataset = models.CharField(max_length=200, default="", db_index=True)
@@ -749,7 +694,4 @@ class ChallengePrize(TimeStampedModel):
         db_table = "challenge_prize"
 
     def __str__(self):
-        return (
-            f"Prize for {self.challenge}: Rank {self.rank}, "
-            f"Amount {self.amount}"
-        )
+        return f"Prize for {self.challenge}: Rank {self.rank}, " f"Amount {self.amount}"
