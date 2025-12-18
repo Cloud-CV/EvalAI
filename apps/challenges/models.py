@@ -323,7 +323,7 @@ class DatasetSplit(TimeStampedModel):
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
-      return str(self.name)
+        return str(self.name)
 
     class Meta:
         app_label = "challenges"
@@ -428,11 +428,11 @@ class ChallengePhase(TimeStampedModel):
         # max_concurrent_submissions_allowed.
         self.max_concurrent_submissions_allowed = min(
             self.max_concurrent_submissions_allowed,
-            self.max_submissions_per_day
+            self.max_submissions_per_day,
         )
 
         super().save(*args, **kwargs)
-        return self               
+        return self
 
 
 def post_save_connect(field_name, sender):
