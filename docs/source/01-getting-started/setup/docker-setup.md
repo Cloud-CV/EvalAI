@@ -41,6 +41,7 @@ cd EvalAI
 
 
 **Environment Setup (Optional but Recommended)**
+
 EvalAI ships with sensible defaults, so no .env file is required for basic local usage. However, if you want to customize configuration later (ports, secrets, email, etc.), you can add:
 ```shell
 cp .env.example .env
