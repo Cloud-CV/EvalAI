@@ -196,44 +196,6 @@ docker compose up --build
 
 Access EvalAI at: http://127.0.0.1:9000
 
-By default, EvalAI exposes the web interface on port 8888. If another service is already using this port, the containers will fail to start.
-
-### How to Check Which Process Is Using the Port
-
-**On Linux or macOS:**
-```bash
-lsof -i :8888
-```
-
-**On Windows (PowerShell):**
-```powershell
-netstat -ano | findstr :8888
-```
-
-### Fix Option 1: Stop the Conflicting Service
-
-Stop or disable the service currently using port 8888, then restart EvalAI:
-```bash
-docker compose down
-docker compose up --build
-```
-
-### Fix Option 2: Change the Port Mapping
-
-Edit the `docker-compose.yml` file and update the exposed port. Example:
-```yaml
-ports:
-  - "9000:8888"
-```
-
-After updating the port, restart the containers:
-```bash
-docker compose down
-docker compose up --build
-```
-
-Access EvalAI at: http://127.0.0.1:9000
-
 ## Issue: Containers Start but Website Is Not Accessible
 
 This usually happens when services are still initializing. Recommended steps:
