@@ -1,15 +1,16 @@
 from __future__ import unicode_literals
 
+from django.db import models  # isort: skip
+from django.db.models import signals  # isort: skip
+from django.db.models.signals import pre_save  # isort: skip
+from django.dispatch import receiver  # isort: skip
+from django.contrib.auth.models import User  # isort: skip
+from django.contrib.postgres.fields import ArrayField, JSONField  # isort: skip
+from django.core import serializers  # isort: skip
+from django.utils import timezone  # isort: skip
+
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
-from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.core import serializers
-from django.db import models
-from django.db.models import signals
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from django.utils import timezone
 from hosts.models import ChallengeHost
 from participants.models import ParticipantTeam
 
@@ -749,7 +750,4 @@ class ChallengePrize(TimeStampedModel):
         db_table = "challenge_prize"
 
     def __str__(self):
-        return (
-            f"Prize for {self.challenge}: Rank {self.rank}, "
-            f"Amount {self.amount}"
-        )
+        return f"Prize: {self.challenge} Rank: {self.rank} Amt: {self.amount}"
