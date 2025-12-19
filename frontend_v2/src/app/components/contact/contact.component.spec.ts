@@ -13,6 +13,7 @@ import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from '../../components/nav/footer/footer.component';
 import { RouterTestingModule } from '@angular/router/testing';
+import { NGXLogger } from 'ngx-logger';
 import Global = NodeJS.Global;
 import { FormsModule } from '@angular/forms';
 import { OwlDateTimeModule } from 'ng-pick-datetime';
@@ -26,6 +27,7 @@ const routes: Routes = [
 
 describe('ContactComponent', () => {
   let router: Router;
+  let ngxlogger: NGXLogger;
   let component: ContactComponent;
   let fixture: ComponentFixture<ContactComponent>;
   const fakeActivatedRoute = {
@@ -40,7 +42,7 @@ describe('ContactComponent', () => {
     // Google Maps API errors out when Karma tries to load it.
     // As a result Components are not created and the tests fail.
     // Mocking the loadJS function in window service to prevent that.
-    const MOCK_SERVICE = new MockWindowService(null);
+    const MOCK_SERVICE = new MockWindowService(null, ngxlogger);
     TestBed.configureTestingModule({
       imports: [HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule, OwlDateTimeModule],
       declarations: [ContactComponent, HeaderStaticComponent, InputComponent, ToastComponent, FooterComponent],
