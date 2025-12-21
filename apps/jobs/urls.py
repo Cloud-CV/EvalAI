@@ -61,6 +61,11 @@ urlpatterns = [
         name="get_submissions_for_challenge",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/purge_submission_queue/$",
+        views.purge_submission_queue,
+        name="purge_submission_queue",
+    ),
+    url(
         r"^queues/(?P<queue_name>[\w-]+)/$",
         views.delete_submission_message_from_queue,
         name="delete_submission_message_from_queue",

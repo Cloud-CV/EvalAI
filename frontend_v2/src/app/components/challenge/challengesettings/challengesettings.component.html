@@ -352,6 +352,33 @@
               <div *ngFor="let log of workerLogs; index as i" class="ev-logs">{{ log }}</div>
             </div>
           </div>
+
+          <!-- Purge Submission Queue Section -->
+          <div class="row settings-section">
+            <div class="margin-bottom-cancel">
+              <div class="col s12 worker-title">
+                <h5 class="w-300">Submission Queue Management</h5>
+              </div>
+            </div>
+            <div class="row margin-bottom-cancel">
+              <div class="col s12">
+                <p class="fw-light fs-16">
+                  <strong>Pending Submissions in Queue:</strong> {{ pendingSubmissionsCount }}
+                </p>
+                <p class="fw-light fs-14 text-muted">
+                  Use this to clear all pending, running, submitted, and submitting submissions from the queue.
+                  This is useful for stuck jobs, debugging, or challenge resets.
+                </p>
+                <button
+                  class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-danger fs-12"
+                  (click)="purgeSubmissionQueue()"
+                  [disabled]="pendingSubmissionsCount === 0"
+                >
+                  <i class="fa fa-trash"></i> Purge Submission Queue
+                </button>
+              </div>
+            </div>
+          </div>
         </ng-template>
       </mat-tab>
     </mat-tab-group>

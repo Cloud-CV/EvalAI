@@ -147,6 +147,16 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   workerLogs = [];
 
   /**
+   * Queue submission counts by status
+   */
+  queueSubmissionCounts: any = {};
+
+  /**
+   * Total pending submissions count
+   */
+  pendingSubmissionsCount = 0;
+
+  /**
    * An interval for fetching the leaderboard data in every 5 seconds
    */
   pollingInterval: any;
@@ -271,6 +281,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         }
       }
       this.filteredPhaseSplits = this.phaseSplits;
+    });
+
+    // Fetch queue submission counts for the purge queue feature
+    this.challengeService.currentPhases.subscribe((phases) => {
+      if (phases && phases.length > 0) {
+        this.fetchQueueSubmissionCounts();
+      }
     });
   }
 
@@ -1523,5 +1540,70 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   ngOnDestroy() {
     clearInterval(this.pollingInterval);
+  }
+
+  /**
+   * Fetch submission count by status for all phases
+   */
+  fetchQueueSubmissionCounts() {
+    const SELF = this;
+    if (SELF.phases && SELF.phases.length > 0) {
+      let totalPending = 0;
+      SELF.phases.forEach((phase) => {
+        const API_PATH = SELF.endpointsService.challengePhaseSubmissionCountByStatusURL(phase.id);
+        SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+          (data) => {
+            SELF.queueSubmissionCounts[phase.id] = data.status || [];
+            // Calculate pending submissions (submitted, running, queued, submitting)
+            const pendingStatuses = ['submitted', 'running', 'queued', 'submitting'];
+            if (data.status) {
+              data.status.forEach((statusCount: any) => {
+                if (pendingStatuses.includes(statusCount.status)) {
+                  totalPending += statusCount.count;
+                }
+              });
+            }
+            SELF.pendingSubmissionsCount = totalPending;
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {}
+        );
+      });
+    }
+  }
+
+  /**
+   * Purge all pending submissions from the queue
+   */
+  purgeSubmissionQueue() {
+    const SELF = this;
+
+    SELF.apiCall = () => {
+      const API_PATH = SELF.endpointsService.purgeSubmissionQueueURL(SELF.challenge.id);
+      const BODY = JSON.stringify({});
+      SELF.apiService.postUrl(API_PATH, BODY).subscribe(
+        (data) => {
+          SELF.globalService.showToast('success', data['success'] || 'Queue purged successfully!', 5);
+          SELF.pendingSubmissionsCount = 0;
+          SELF.fetchQueueSubmissionCounts();
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err, true);
+          SELF.globalService.showToast('error', err.error?.error || 'Failed to purge queue');
+        },
+        () => this.logger.info('PURGE-QUEUE-FINISHED')
+      );
+    };
+
+    const PARAMS = {
+      title: 'Purge Submission Queue',
+      content: 'This action will delete all pending submissions in the queue (Queued, Running, Submitted, Submitting). This cannot be undone.',
+      confirm: 'Yes, Purge Queue',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showConfirm(PARAMS);
   }
 }
