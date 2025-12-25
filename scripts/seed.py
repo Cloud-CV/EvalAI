@@ -53,11 +53,19 @@ except NameError:
 
 
 def check_database():
-    if len(EmailAddress.objects.all()) > 0:
+    if EmailAddress.objects.exists():
         print(
             "Are you sure you want to wipe the existing development database and reseed it? (Y/N)"
         )
-        if settings.TEST or input().lower() == "y":
+        try:
+            user_input = input().lower()
+        except EOFError:
+            print(
+                "Non-interactive environment detected. Skipping database reseeding."
+            )
+            return False
+
+        if settings.TEST or user_input == "y":
             destroy_database()
             return True
         else:
