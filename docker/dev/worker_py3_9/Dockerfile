@@ -16,11 +16,12 @@ RUN apt-get update && \
 
 RUN mkdir /code
 WORKDIR /code
+ADD constraints.txt /code/
 
 ADD requirements/* /code/
 
-RUN pip install -r dev.txt
-RUN pip install -r worker_py3_9.txt
+RUN pip install -c constraints.txt -r dev.txt
+RUN pip install -c constraints.txt -r worker_py3_9.txt
 
 ADD . /code
 

@@ -1,0 +1,3 @@
+# Global dependency constraints for CI & Docker
+PyYAML<6
+cfn-lint<0.79

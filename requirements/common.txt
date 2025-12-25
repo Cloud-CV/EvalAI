@@ -29,7 +29,7 @@ proc==1.0
 psycopg2==2.8.4
 pycurl==7.43.0.6
 PyJWT==2.1.0
-PyYaml==5.1
+PyYAML>=3.10,<6
 rstr==2.2.6
 sendgrid==6.4.8
 vine==1.3.0
