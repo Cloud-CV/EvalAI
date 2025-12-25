@@ -1,5 +1,6 @@
 matplotlib==3.8.4
-cfn-lint==0.79.5
+cfn-lint==0.48.3
+PyYAML>=3.10,<6
 networkx==3.2.1
 numpy==1.26.4
 pandas==2.2.3
