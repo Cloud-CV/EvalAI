@@ -346,7 +346,7 @@ def download_all_participants(request, challenge_pk):
                 challenge_pk
             )
         )
-        writer = csv.writer(response)
+        writer = csv.writer(response, quoting=csv.QUOTE_ALL)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
             writer.writerow(
