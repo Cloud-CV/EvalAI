@@ -910,7 +910,6 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             ),
             "challenge_phase_schema_errors": "Challenge phase schema errors: {} - {}",
             "challenge_phase_addition": "Cannot add new challenge phase after challenge creation for phase '{}'.",
-            "challenge_phase_not_found": "Challenge phase '{}' not found.",
             "extra_tags": "Too many tags provided.",
             "wrong_domain": "Invalid domain provided.",
             "sponsor_not_found": "Sponsor name or website not found.",
@@ -1281,34 +1280,32 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             "{'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
         )
 
-    def test_challenge_phase_not_found(self):
+    @mockpatch(
+        "challenges.challenge_config_utils.get_value_from_field",
+        return_value="Description 1",
+    )
+    def test_challenge_phase_deletion_is_allowed(self, _mock_get_value):
+        """
+        Test that deleting an existing challenge phase from the configuration
+        after challenge creation is allowed.
+        """
         self.util.yaml_file_data = {
             "challenge_phases": [
                 {
                     "codename": "phase1",
                     "name": "Phase 1",
-                    "id": 3,
+                    "id": 1,
                     "description": "Description 1",
-                    "max_submissions_per_month": 10,
                     "start_date": "2023-10-10T00:00:00",
                     "end_date": "2023-10-11T00:00:00",
-                    "submission_meta_attributes": [
-                        {
-                            "name": "attr1",
-                            "description": "Description 1",
-                            "type": "text",
-                        }
-                    ],
                     "max_submissions_per_month": 10,
                 }
             ]
         }
-        self.util.validate_challenge_phases([2])
-        self.assertEqual(
-            self.util.error_messages[0],
-            "Challenge phase schema errors: 3 -"
-            " {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
-        )
+        # In this test, phase 2 existed previously but is now deleted from config
+        self.util.validate_challenge_phases([1, 2])
+        # Verify that no errors are appended for the deleted phase 2
+        self.assertEqual(len(self.util.error_messages), 0, msg=f"Errors found: {self.util.error_messages}")
 
     def test_check_tags(self):
         # Test case for more than 4 tags
