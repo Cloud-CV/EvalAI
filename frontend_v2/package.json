@@ -22,8 +22,8 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^7.2.15",
     "@angular-devkit/build-angular": "~0.13.0",
+    "@angular/animations": "^7.2.15",
     "@angular/cdk": "^7.3.7",
     "@angular/common": "^7.2.15",
     "@angular/compiler": "^7.2.15",
@@ -72,6 +72,7 @@
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "protractor": "~5.1.2",
+    "sass": "^1.97.1",
     "ts-node": "~4.1.0",
     "tslint": "^5.9.1"
   }

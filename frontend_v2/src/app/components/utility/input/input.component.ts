@@ -69,7 +69,7 @@ export class InputComponent implements OnInit {
   /**
    * Value of checkbox input field
    */
-   @Input() values: any = [];
+  @Input() values: any = [];
 
   /**
    * Is field read-only
@@ -96,12 +96,10 @@ export class InputComponent implements OnInit {
    */
   @Input() attributeName: string;
 
-
   /**
    * Attribute description for placeholder
    */
   @Input() attributeDescription: string;
-
 
   /**
    * Attribute required for placeholder
@@ -301,6 +299,6 @@ export class InputComponent implements OnInit {
       this.value = [];
     }
     const idx = this.value.indexOf(value);
-    return idx != -1;
+    return idx !== -1;
   }
 }
