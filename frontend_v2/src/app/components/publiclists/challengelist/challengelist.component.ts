@@ -16,6 +16,10 @@ import { DOCUMENT } from '@angular/common';
 })
 export class ChallengelistComponent implements OnInit {
   /**
+   * Math object for template usage
+   */
+  Math = Math;
+  /**
    * Filter toggle flag
    */
   isUpcomingChecked = true;
@@ -54,6 +58,11 @@ export class ChallengelistComponent implements OnInit {
    * API common path
    */
   apiPathCommon = 'challenges/challenge/';
+  currentPage = 1;
+  pageSize = 20;
+  totalChallenges = 0;
+  totalPages = 0;
+  isLoadingChallenges = false;
 
   /**
    * participated challenges API common path
@@ -268,16 +277,24 @@ export class ChallengelistComponent implements OnInit {
    */
   toggleFilter(filter) {
     this[filter] = !this[filter];
+    this.currentPage = 1; // Reset to page 1 when toggling filters
+
     if (this[filter]) {
       this.fetchChallenges(filter);
     } else {
       this.upcomingChallenges = filter === 'isUpcomingChecked' ? [] : this.upcomingChallenges;
       this.ongoingChallenges = filter === 'isOngoingChecked' ? [] : this.ongoingChallenges;
       this.pastChallenges = filter === 'isPastChecked' ? [] : this.pastChallenges;
+
       this.filteredChallenges = this.upcomingChallenges.concat(this.ongoingChallenges, this.pastChallenges);
       this.filteredOngoingChallenges = this.ongoingChallenges;
       this.filteredUpcomingChallenges = this.upcomingChallenges;
       this.filteredPastChallenges = this.pastChallenges;
+
+      // Recalculate pagination
+      this.totalChallenges = this.filteredChallenges.length;
+      this.totalPages = Math.ceil(this.totalChallenges / this.pageSize);
+
       this.updateChallengesView(true);
     }
   }
@@ -292,6 +309,7 @@ export class ChallengelistComponent implements OnInit {
 
   /**
    * Update challenges view (called after fetching challenges from API).
+   * Applies pagination to the filtered challenges list.
    * @param reset  reset flag for hiding/showing more results
    */
   updateChallengesView(reset) {
@@ -299,9 +317,12 @@ export class ChallengelistComponent implements OnInit {
       this.seeMore = 1;
     }
     this.filterChallengesByTeams();
-    this.filteredChallengesView = this.filteredChallenges.slice(0, this.seeMore * this.windowSize);
-  }
 
+    // Apply pagination: show only current page's challenges
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.filteredChallengesView = this.filteredChallenges.slice(startIndex, endIndex);
+  }
   /**
    * Filtering challenges by teams
    */
@@ -338,7 +359,7 @@ export class ChallengelistComponent implements OnInit {
           SELF.allTeams.forEach((team) => {
             SELF.fetchUnapprovedChallengesFromApi(team);
           });
-          SELF.fetchChallenges(null, null, "approved", "all");
+          SELF.fetchChallenges(null, null, 'approved', 'all');
         }
       },
       (err) => {
@@ -353,11 +374,11 @@ export class ChallengelistComponent implements OnInit {
 
   /**
    * Append visibility to challenge API
-   * @param approved_status 
-   * @param visibility 
+   * @param approved_status
+   * @param visibility
    */
-  getFetchChallengeApiPathWithVisibility(path, approved_status = "approved", visibility = "public") {
-    return path + "/" + approved_status + "/" + visibility;
+  getFetchChallengeApiPathWithVisibility(path, approved_status = 'approved', visibility = 'public') {
+    return path + '/' + approved_status + '/' + visibility;
   }
 
   /**
@@ -365,51 +386,69 @@ export class ChallengelistComponent implements OnInit {
    * @param filter  selected filter
    * @param callback  callback function
    */
-  fetchChallenges(filter = null, callback = null, approved_status = "approved", visibility = "public") {
+  fetchChallenges(filter = null, callback = null, approved_status = 'approved', visibility = 'public') {
     if (!filter) {
       const ALL_PATHS = Object.values(this.apiPathMapping);
       const ALL_KEYS = Object.keys(this.apiPathMapping);
       for (let i = 0; i < ALL_PATHS.length; i++) {
         if (this[ALL_KEYS[i]]) {
-          let apiPath = this.getFetchChallengeApiPathWithVisibility(ALL_PATHS[i], approved_status, visibility);
+          const apiPath = this.getFetchChallengeApiPathWithVisibility(ALL_PATHS[i], approved_status, visibility);
           this.fetchChallengesFromApi(apiPath, callback);
         }
       }
     } else {
-      let apiPath = this.getFetchChallengeApiPathWithVisibility(this.apiPathMapping[filter], approved_status, visibility);
+      const apiPath = this.getFetchChallengeApiPathWithVisibility(
+        this.apiPathMapping[filter],
+        approved_status,
+        visibility
+      );
       this.fetchChallengesFromApi(apiPath, callback);
     }
   }
 
   /**
-   * Fetch challenges from backend.
+   * Fetch challenges from backend (fetch ALL results, paginate locally).
    * @param path  Challenge fetch URL
    * @param callback  Callback Function.
    */
   fetchChallengesFromApi(path, callback = null) {
     const SELF = this;
-    SELF.apiService.getUrl(path, true, false).subscribe(
+
+    // Fetch ALL challenges without pagination (or with large page_size)
+    const fetchPath = `${path}?page_size=1000`; // Get all challenges
+
+    SELF.isLoadingChallenges = true;
+    SELF.apiService.getUrl(fetchPath, true, false).subscribe(
       (data) => {
+        // Assign challenges based on path
         if (path.includes('future')) {
-          SELF.upcomingChallenges = data['results'];
+          SELF.upcomingChallenges = data['results'] || [];
         } else if (path.includes('present')) {
-          SELF.ongoingChallenges = data['results'];
+          SELF.ongoingChallenges = data['results'] || [];
         } else if (path.includes('past')) {
-          SELF.pastChallenges = data['results'];
+          SELF.pastChallenges = data['results'] || [];
         }
+
+        // Combine all challenges
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
         SELF.filteredUpcomingChallenges = SELF.upcomingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
+
+        // Calculate pagination based on TOTAL combined challenges
+        SELF.totalChallenges = SELF.filteredChallenges.length;
+        SELF.totalPages = Math.ceil(SELF.totalChallenges / SELF.pageSize);
+
+        SELF.isLoadingChallenges = false;
         this.updateChallengesView(true);
       },
       (err) => {
+        SELF.isLoadingChallenges = false;
         SELF.globalService.handleApiError(err);
       },
       () => {}
     );
   }
-
   /**
    * Fetch participated challenges from backend.
    * @param path  Challenge fetch URL
@@ -456,5 +495,57 @@ export class ChallengelistComponent implements OnInit {
       },
       () => {}
     );
+  }
+
+  /**
+   * Go to next page
+   */
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.fetchChallenges();
+    }
+  }
+
+  /**
+   * Go to previous page
+   */
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.fetchChallenges();
+    }
+  }
+
+  /**
+   * Go to specific page
+   * @param page Page number
+   */
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.fetchChallenges();
+    }
+  }
+
+  /**
+   * Get array of page numbers for pagination UI
+   */
+  getPageNumbers(): number[] {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    let startPage = Math.max(1, this.currentPage - 2);
+    const endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 }
