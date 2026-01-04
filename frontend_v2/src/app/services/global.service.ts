@@ -6,6 +6,7 @@ export class GlobalService {
   scrolledStateDefault = false;
   toastErrorCodes = [400, 500];
   authStorageKey = 'authtoken';
+  private authToken: string | null = null;
   redirectStorageKey = 'redirect';
   isLoading = false;
   private isLoadingSource = new BehaviorSubject(false);
@@ -137,8 +138,20 @@ export class GlobalService {
    * Fetch Auth Token
    */
   getAuthToken() {
-    return this.getData(this.authStorageKey);
+    if (this.authToken) {
+      return this.authToken;
+    }
+    const token = this.getData(this.authStorageKey);
+    this.authToken = token;
+    return token;
   }
+
+  /*declarationa and Inititalizning the auth token as token */
+
+  setAuthToken(token: string) {
+    this.authToken = token;
+  }
+
 
   /**
    * Display Toast component
@@ -270,6 +283,7 @@ export class GlobalService {
    * This triggers the logout function in auth service (to avoid a cyclic dependency).
    */
   triggerLogout() {
+    this.authToken = null;
     this.logout.emit();
   }
 
