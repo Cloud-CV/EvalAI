@@ -55,6 +55,11 @@ except NameError:
 
 def check_database():
     if len(EmailAddress.objects.all()) > 0:
+        # In TEST mode, always allow reseeding without prompts
+        if settings.TEST:
+            destroy_database()
+            return True
+        
         # Check if running in non-interactive environment (Docker/CI)
         if not sys.stdin.isatty():
             print("⚠️  Database already contains data.")
@@ -62,10 +67,11 @@ def check_database():
             print("To reseed, run manually: python manage.py flush && python manage.py seed")
             return False
         
+        # Interactive mode - prompt user for confirmation
         print(
             "Are you sure you want to wipe the existing development database and reseed it? (Y/N)"
         )
-        if settings.TEST or input().lower() == "y":
+        if input().lower() == "y":
             destroy_database()
             return True
         else:
