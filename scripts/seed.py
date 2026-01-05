@@ -4,6 +4,7 @@ import json
 import os
 import random
 import string
+import sys
 import uuid
 from datetime import timedelta
 
@@ -54,6 +55,13 @@ except NameError:
 
 def check_database():
     if len(EmailAddress.objects.all()) > 0:
+        # Check if running in non-interactive environment (Docker/CI)
+        if not sys.stdin.isatty():
+            print("⚠️  Database already contains data.")
+            print("Skipping reseed in non-interactive environment (Docker/CI).")
+            print("To reseed, run manually: python manage.py flush && python manage.py seed")
+            return False
+        
         print(
             "Are you sure you want to wipe the existing development database and reseed it? (Y/N)"
         )
