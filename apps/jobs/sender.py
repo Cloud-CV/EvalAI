@@ -121,7 +121,8 @@ def publish_submission_message(message):
         submission = get_submission_model(message["submission_pk"])
         participant_team_name = submission.participant_team.team_name
         phase_name = submission.challenge_phase.name
-        message = {
+        submission_id = message["submission_pk"]
+        slack_message = {
             "text": "A *new submission* has been uploaded to {}".format(
                 challenge_name
             ),
@@ -138,10 +139,10 @@ def publish_submission_message(message):
                 },
                 {
                     "title": "Submission Id",
-                    "value": message["submission_pk"],
+                    "value": submission_id,
                     "short": True,
                 },
             ],
         }
-        send_slack_notification(slack_url, message)
+        send_slack_notification(slack_url, slack_message)
     return response
