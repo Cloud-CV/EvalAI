@@ -54,7 +54,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
                 aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
             )
 
-    if queue_name == "":
+    if not queue_name or queue_name == "":
         queue_name = "evalai_submission_queue"
 
     # Check if the queue exists. If not, then create one.
@@ -103,6 +103,11 @@ def publish_submission_message(message):
         )
         return
     queue_name = challenge.queue
+    if not queue_name:
+        logger.error(
+            "Challenge {} has no queue name configured".format(challenge.pk)
+        )
+        return
     slack_url = challenge.slack_webhook_url
     is_remote = challenge.remote_evaluation
     queue = get_or_create_sqs_queue(queue_name, challenge)
