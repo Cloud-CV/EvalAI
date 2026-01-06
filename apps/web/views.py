@@ -17,7 +17,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
 from .models import Subscribers, Team
+from .permissions import IsSuperUser
 from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
+from .throttles import BulkEmailThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -41,49 +43,80 @@ def internal_server_error(request):
     return response
 
 
+@api_view(["GET", "POST"])
+@throttle_classes([BulkEmailThrottle])
+@permission_classes([IsSuperUser])
 def notify_users_about_challenge(request):
     """
     Email New Challenge Details to EvalAI Users
+    
+    This endpoint allows superusers to send bulk email notifications to all EvalAI users.
+    It includes throttling and audit logging to prevent abuse.
+    
+    Permissions: Superuser only (enforced via IsSuperUser permission class)
+    Throttling: Limited to 5 requests per hour per user
     """
-    if request.user.is_authenticated and request.user.is_superuser:
-        if request.method == "GET":
-            template_name = "notification_email_data.html"
-            return render(request, template_name)
+    if request.method == "GET":
+        logger.info(
+            "Bulk email form accessed by superuser: %s (ID: %s)",
+            request.user.username,
+            request.user.id,
+        )
+        template_name = "notification_email_data.html"
+        return render(request, template_name)
 
-        elif request.method == "POST":
-            users = User.objects.exclude(email__exact="").values_list(
-                "email", flat=True
+    elif request.method == "POST":
+        users = User.objects.exclude(email__exact="").values_list(
+            "email", flat=True
+        )
+        subject = request.POST.get("subject")
+        body_html = request.POST.get("body")
+
+        # Audit log: Record bulk email trigger
+        logger.warning(
+            "AUDIT: Bulk email notification triggered by superuser %s (ID: %s). "
+            "Subject: '%s', Recipients: %d users",
+            request.user.username,
+            request.user.id,
+            subject,
+            len(users),
+        )
+
+        sender = settings.CLOUDCV_TEAM_EMAIL
+
+        email = EmailMessage(
+            subject,
+            body_html,
+            sender,
+            [settings.CLOUDCV_TEAM_EMAIL],
+            bcc=users,
+        )
+        email.content_subtype = "html"
+
+        try:
+            email.send()
+            logger.info(
+                "AUDIT: Bulk email successfully sent by superuser %s (ID: %s). "
+                "Recipients: %d users",
+                request.user.username,
+                request.user.id,
+                len(users),
             )
-            subject = request.POST.get("subject")
-            body_html = request.POST.get("body")
-
-            sender = settings.CLOUDCV_TEAM_EMAIL
-
-            email = EmailMessage(
-                subject,
-                body_html,
-                sender,
-                [settings.CLOUDCV_TEAM_EMAIL],
-                bcc=users,
+            return render(
+                request,
+                "notification_email_conformation.html",
+                {"message": "All the emails are sent successfully!"},
             )
-            email.content_subtype = "html"
-
-            try:
-                email.send()
-                return render(
-                    request,
-                    "notification_email_conformation.html",
-                    {"message": "All the emails are sent successfully!"},
-                )
-            except SMTPException:
-                logger.exception(traceback.format_exc())
-                return render(
-                    request, "notification_email_data.html", {"errors": 1}
-                )
-        else:
-            return render(request, "error404.html")
-    else:
-        return render(request, "error404.html")
+        except SMTPException as e:
+            logger.exception(
+                "AUDIT: Bulk email failed for superuser %s (ID: %s). Error: %s",
+                request.user.username,
+                request.user.id,
+                str(e),
+            )
+            return render(
+                request, "notification_email_data.html", {"errors": 1}
+            )
 
 
 @api_view(["GET", "POST"])
