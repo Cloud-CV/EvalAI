@@ -15,6 +15,8 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import api_view, permission_classes
 
 from .models import Subscribers, Team
 from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
@@ -40,7 +42,8 @@ def internal_server_error(request):
     response.status_code = 500
     return response
 
-
+@api_view(["GET", "POST"])
+@permission_classes([IsAdminUser])
 def notify_users_about_challenge(request):
     """
     Email New Challenge Details to EvalAI Users
