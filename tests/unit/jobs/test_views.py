@@ -28,7 +28,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 
-class BaseAPITestClass(APITestCase):
+class BaseAPITestSetupMixin:
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -199,6 +199,9 @@ class BaseAPITestClass(APITestCase):
 
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
+
+
+class BaseAPITestClass(BaseAPITestSetupMixin, APITestCase):
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy(
@@ -2691,7 +2694,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-class PurgeSubmissionQueueTest(BaseAPITestClass):
+class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
     """Test cases for the purge submission queue feature."""
 
     def setUp(self):
