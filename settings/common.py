@@ -178,6 +178,7 @@ REST_FRAMEWORK = {
         "anon": "100/minute",
         "user": "60/minute",
         "resend_email": "3/hour",
+        "bulk_email": "5/hour",
     },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
