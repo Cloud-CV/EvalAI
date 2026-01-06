@@ -2701,9 +2701,6 @@ class PurgeSubmissionQueueTest(BaseAPITestClass):
             kwargs={"challenge_pk": self.challenge.pk},
         )
 
-        # Add the participant team to the challenge
-        self.challenge.participant_teams.add(self.participant_team)
-
         # Create submissions with different statuses
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             # Queued submission
@@ -2780,6 +2777,7 @@ class PurgeSubmissionQueueTest(BaseAPITestClass):
 
     def test_purge_queue_as_challenge_host(self):
         """Test that challenge host can purge the submission queue."""
+        self.challenge.participant_teams.add(self.participant_team)
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url)
         
@@ -2809,6 +2807,7 @@ class PurgeSubmissionQueueTest(BaseAPITestClass):
 
     def test_purge_queue_as_non_host(self):
         """Test that non-host user cannot purge the submission queue."""
+        self.challenge.participant_teams.add(self.participant_team)
         self.client.force_authenticate(user=self.user1)
         response = self.client.post(self.url)
         
@@ -2847,6 +2846,7 @@ class PurgeSubmissionQueueTest(BaseAPITestClass):
 
     def test_purge_queue_empty_queue(self):
         """Test purging an already empty queue."""
+        self.challenge.participant_teams.add(self.participant_team)
         # Delete all pending submissions first
         Submission.objects.filter(
             status__in=[Submission.QUEUED, Submission.RUNNING, Submission.SUBMITTED, Submission.SUBMITTING]
