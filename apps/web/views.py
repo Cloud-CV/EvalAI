@@ -66,11 +66,40 @@ def notify_users_about_challenge(request):
         return render(request, template_name)
 
     elif request.method == "POST":
-        users = User.objects.exclude(email__exact="").values_list(
-            "email", flat=True
-        )
         subject = request.POST.get("subject")
         body_html = request.POST.get("body")
+
+        # Validate required fields
+        if not subject or not subject.strip():
+            logger.warning(
+                "AUDIT: Bulk email rejected - missing subject. User: %s (ID: %s)",
+                request.user.username,
+                request.user.id,
+            )
+            return render(
+                request,
+                "notification_email_data.html",
+                {"errors": 1, "message": "Subject is required."},
+            )
+
+        if not body_html or not body_html.strip():
+            logger.warning(
+                "AUDIT: Bulk email rejected - missing body. User: %s (ID: %s)",
+                request.user.username,
+                request.user.id,
+            )
+            return render(
+                request,
+                "notification_email_data.html",
+                {"errors": 1, "message": "Email body is required."},
+            )
+
+        # Convert QuerySet to list to avoid multiple database evaluations
+        users = list(
+            User.objects.exclude(email__exact="").values_list(
+                "email", flat=True
+            )
+        )
 
         # Audit log: Record bulk email trigger
         logger.warning(
@@ -104,7 +133,7 @@ def notify_users_about_challenge(request):
             )
             return render(
                 request,
-                "notification_email_conformation.html",
+                "notification_email_confirmation.html",
                 {"message": "All the emails are sent successfully!"},
             )
         except SMTPException as e:

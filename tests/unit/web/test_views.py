@@ -184,7 +184,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
             "superuser", "superuser@test.com", "secret_password"
         )
 
-        self.user = User.objects.create(
+        self.user = User.objects.create_user(
             username="someuser",
             email="user@test.com",
             password="secret_password",
