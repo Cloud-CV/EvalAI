@@ -199,21 +199,14 @@ class TestNotifyUsersAboutChallenge(TestCase):
 
     def test_if_user_isnt_authenticated(self):
         response = self.client.get(self.url)
-        html = response.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
-        self.assertEqual(response.status_code, 200)
+        # Unauthenticated users should receive 403 Forbidden with DRF permission class
+        self.assertEqual(response.status_code, 403)
 
     def test_if_user_is_authenticated_but_not_superuser(self):
-        self.data = {
-            "username": self.user.username,
-            "password": self.user.password,
-        }
-        response = self.client.post(self.url, self.data)
-        html = response.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
-        self.assertEqual(response.status_code, 200)
+        self.client.login(username="someuser", password="secret_password")
+        response = self.client.get(self.url)
+        # Regular authenticated users should receive 403 Forbidden
+        self.assertEqual(response.status_code, 403)
 
     def test_if_user_is_authenticated_and_superuser(self):
         request = self.client.get("/api/admin/", follow=True)
@@ -270,11 +263,9 @@ class TestNotifyUsersAboutChallenge(TestCase):
             username="superuser", password="secret_password", follow=True
         )
         request = self.client.put(self.url, self.email_data)
-        html = request.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
+        # PUT requests should return 405 Method Not Allowed with @api_view(["GET", "POST"])
         self.assertTrue(response)
-        self.assertEqual(request.status_code, 200)
+        self.assertEqual(request.status_code, 405)
 
     @patch(
         "web.views.EmailMessage.send", side_effect=SMTPException("Email error")
