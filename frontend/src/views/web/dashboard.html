@@ -7,7 +7,8 @@
                         <img src="dist/images/email.png" height="80" width="80">
                     </div>
                     <div class="card-content">
-                        <p><strong> You have limited privileges. <br> Please verify your email Id for getting all privileges!</strong>
+                        <p><strong> You have limited privileges. <br> Please verify your email Id for getting all
+                                privileges!</strong>
                     </div>
                 </div>
             </div>
@@ -16,7 +17,8 @@
     <div class="row">
         <div class="col s12">
             <!-- <h3 class="fs-20">Your Analysis for Host challenges are ready.</h3> -->
-            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.host-analytics">Go to Analytics Dashboard</a>
+            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                ui-sref="web.host-analytics">Go to Analytics Dashboard</a>
         </div>
     </div>
 </section>
@@ -24,31 +26,42 @@
     <div class="row">
         <div class="col s12 m4">
             <h3 class="fs-20 main-title">Ongoing Challenges</h3>
-            <h4 class="text-dark-black">{{dash.challengeCount || 0}}</h4>
-            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14" ui-sref="web.challenge-main">View All</a>
+            <h4 class="text-dark-black">
+                <span ng-if="!dash.isLoading">{{dash.challengeCount}}</span>
+                <span ng-if="dash.isLoading">—</span>
+            </h4>
+            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14"
+                ui-sref="web.challenge-main">View All</a>
         </div>
         <div class="col s12 m4">
             <h3 class="fs-20 main-title">My Host Teams</h3>
-            <h4 class="text-dark-black">{{dash.hostTeamCount || 0}}</h4>
-            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14" ui-sref="web.challenge-host-teams">View or Create</a>
+            <h4 class="text-dark-black">
+                <span ng-if="!dash.isLoading">{{dash.hostTeamCount}}</span>
+                <span ng-if="dash.isLoading">—</span>
+            </h4>
+            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14"
+                ui-sref="web.challenge-host-teams">View or Create</a>
         </div>
         <div class="col s12 m4">
             <h3 class="fs-20 main-title">My Participant Teams</h3>
-            <h4 class="text-dark-black">{{dash.participatedTeamCount || 0}}</h4>
-            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14" ui-sref="web.teams">View or Create</a>
+            <h4 class="text-dark-black">
+                <span ng-if="!dash.isLoading">{{dash.participatedTeamCount}}</span>
+                <span ng-if="dash.isLoading">—</span>
+            </h4>
+            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-14"
+                ui-sref="web.teams">View or Create</a>
         </div>
     </div>
 </section>
 
 <!-- simple loader -->
-    <div class="loader-container" id="sim-loader">
-        <div class="text-white center w-300 loader-title">Loading</div>
-        <div class="loader">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
+<div class="loader-container" id="sim-loader">
+    <div class="text-white center w-300 loader-title">Loading</div>
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
     </div>
-
+</div>

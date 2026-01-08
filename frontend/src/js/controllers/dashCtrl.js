@@ -19,6 +19,7 @@
         vm.hostTeamCount = 0;
         vm.hostTeamExist = false;
         vm.participatedTeamCount = 0;
+        vm.isLoading = true;
         // get token
         var userKey = utilities.getData('userKey');
 
@@ -146,6 +147,7 @@
                 if (status == 200) {
                     vm.participatedTeamCount = details.results.length;
                 }
+                vm.isLoading = false;
                 utilities.hideLoader();
             },
             onError: function(response) {
