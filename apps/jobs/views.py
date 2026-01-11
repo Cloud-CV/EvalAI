@@ -3179,6 +3179,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -3194,7 +3195,7 @@ def purge_submission_queue(request, challenge_pk):
     except Challenge.DoesNotExist:
         return Response(
             {"error": f"Challenge {challenge_pk} does not exist"},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
 
     # 2. Check permissions: Is the user a host of this challenge?
@@ -3202,7 +3203,7 @@ def purge_submission_queue(request, challenge_pk):
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         return Response(
             {"error": "Sorry, you are not authorized to make this request!"},
-            status=status.HTTP_403_FORBIDDEN
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     # 3. Define statuses to purge (Queued, Running, Submitted)
@@ -3215,8 +3216,7 @@ def purge_submission_queue(request, challenge_pk):
 
     # 4. Filter and Delete
     submissions_to_delete = Submission.objects.filter(
-        challenge_phase__challenge=challenge,
-        status__in=statuses_to_purge
+        challenge_phase__challenge=challenge, status__in=statuses_to_purge
     )
 
     count = submissions_to_delete.count()
@@ -3224,5 +3224,5 @@ def purge_submission_queue(request, challenge_pk):
 
     return Response(
         {"success": f"Successfully purged {count} submissions."},
-        status=status.HTTP_200_OK
+        status=status.HTTP_200_OK,
     )

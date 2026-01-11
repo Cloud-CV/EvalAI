@@ -2772,18 +2772,28 @@ class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
             )
 
         # Force update the statuses to bypass any signals
-        Submission.objects.filter(pk=self.queued_submission.pk).update(status="queued")
-        Submission.objects.filter(pk=self.running_submission.pk).update(status="running")
-        Submission.objects.filter(pk=self.submitted_submission.pk).update(status="submitted")
-        Submission.objects.filter(pk=self.finished_submission.pk).update(status="finished")
-        Submission.objects.filter(pk=self.failed_submission.pk).update(status="failed")
+        Submission.objects.filter(pk=self.queued_submission.pk).update(
+            status="queued"
+        )
+        Submission.objects.filter(pk=self.running_submission.pk).update(
+            status="running"
+        )
+        Submission.objects.filter(pk=self.submitted_submission.pk).update(
+            status="submitted"
+        )
+        Submission.objects.filter(pk=self.finished_submission.pk).update(
+            status="finished"
+        )
+        Submission.objects.filter(pk=self.failed_submission.pk).update(
+            status="failed"
+        )
 
     def test_purge_queue_as_challenge_host(self):
         """Test that challenge host can purge the submission queue."""
         self.challenge.participant_teams.add(self.participant_team)
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("success", response.data)
         # Should delete 3 submissions (queued, running, submitted)
@@ -2813,7 +2823,7 @@ class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
         self.challenge.participant_teams.add(self.participant_team)
         self.client.force_authenticate(user=self.user1)
         response = self.client.post(self.url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("error", response.data)
 
@@ -2832,7 +2842,7 @@ class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
         """Test that unauthenticated user cannot purge the submission queue."""
         self.client.force_authenticate(user=None)
         response = self.client.post(self.url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_purge_queue_nonexistent_challenge(self):
@@ -2843,7 +2853,7 @@ class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
         )
         self.client.force_authenticate(user=self.user)
         response = self.client.post(url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("error", response.data)
 
@@ -2852,11 +2862,16 @@ class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
         self.challenge.participant_teams.add(self.participant_team)
         # Delete all pending submissions first
         Submission.objects.filter(
-            status__in=[Submission.QUEUED, Submission.RUNNING, Submission.SUBMITTED, Submission.SUBMITTING]
+            status__in=[
+                Submission.QUEUED,
+                Submission.RUNNING,
+                Submission.SUBMITTED,
+                Submission.SUBMITTING,
+            ]
         ).delete()
 
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("0", response.data["success"])
