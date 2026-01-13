@@ -1,59 +1,97 @@
 <!DOCTYPE html>
 <html ng-app="evalai" ng-strict-di>
-
-<head>
+  <head>
     <title ng-bind="pageTitle + ' - EvalAI'"></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks.">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks."
+    />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <!--Open Graph Related Stuff-->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="EvalAI: Evaluating state of the art in AI" />
+    <meta
+      property="og:title"
+      content="EvalAI: Evaluating state of the art in AI"
+    />
     <meta property="og:url" content="https://eval.ai" />
-    <meta property="og:image" content="https://eval.ai/dist/images/evalai-cover.png" />
+    <meta
+      property="og:image"
+      content="https://eval.ai/dist/images/evalai-cover.png"
+    />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content="EvalAI" />
-    <meta property="og:description" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks." />
+    <meta
+      property="og:description"
+      content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks."
+    />
     <!--Twitter Card Stuff-->
     <meta name="twitter:card" content="summary_large_image" />
     <!-- Favicon -->
-    <link rel="shortcut icon" href="dist/images/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="dist/images/favicon.ico" type="image/x-icon">
+    <link
+      rel="shortcut icon"
+      href="dist/images/favicon.ico"
+      type="image/x-icon"
+    />
+    <link rel="icon" href="dist/images/favicon.ico" type="image/x-icon" />
+    <!-- Font Awesome 7 (main CSS) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+    <!-- Font Awesome 7 v4 shims (keeps old icons working) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/v4-shims.min.css"
+    />
     <!-- inject:css -->
     <!-- endinject -->
     <script type="text/javascript">
-    (function(i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function() {
-            (i[r].q = i[r].q || []).push(arguments)
-        }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-            m = s.getElementsByTagName(o)[0];
+      (function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        (i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
         a.async = 1;
         a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        "script",
+        "https://www.google-analytics.com/analytics.js",
+        "ga"
+      );
     </script>
     <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [['$','$'], ['\\(','\\)']],
-                processEscapes: true
-                }
-        });
+      MathJax.Hub.Config({
+          tex2jax: {
+              inlineMath: [['$','$'], ['\\(','\\)']],
+              processEscapes: true
+              }
+      });
     </script>
-    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <base href="/"></base>
-</head>
+    <script
+      type="text/javascript"
+      src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+    ></script>
+    <base href="/" />
+  </head>
 
-<body ng-cloak>
+  <body ng-cloak>
     <toaster-container></toaster-container>
     <!-- render all view here -->
     <div ui-view></div>
     <!-- html5shiv for IE8 -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"
+    ></script>
     <!-- inject:js -->
     <!-- endinject -->
-</body>
-
+  </body>
 </html>
