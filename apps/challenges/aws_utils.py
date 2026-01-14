@@ -285,7 +285,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 **updated_settings,
                 **challenge_aws_keys,
             )
-        definition = eval(definition)
+        definition = json.loads(definition)
         if not challenge.task_def_arn:
             try:
                 response = client.register_task_definition(**definition)
@@ -353,7 +353,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             client_token=client_token,
             **VPC_DICT,
         )
-        definition = eval(definition)
+        definition = json.loads(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -401,7 +401,7 @@ def update_service_by_challenge_pk(
         force_new_deployment=force_new_deployment,
         num_of_tasks=num_of_tasks,
     )
-    kwargs = eval(kwargs)
+    kwargs = json.loads(kwargs)
 
     try:
         response = client.update_service(**kwargs)
@@ -436,7 +436,7 @@ def delete_service_by_challenge_pk(challenge):
         service_name=service_name,
         force=True,
     )
-    kwargs = eval(kwargs)
+    kwargs = json.loads(kwargs)
     try:
         if challenge.workers != 0:
             response = update_service_by_challenge_pk(
@@ -1066,7 +1066,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         **updated_settings,
         **challenge_aws_keys,
     )
-    task_def = eval(task_def)
+    task_def = json.loads(task_def)
 
     try:
         response = client.register_task_definition(**task_def)
@@ -1087,7 +1087,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
                 num_of_tasks=num_of_tasks,
                 force_new_deployment=force_new_deployment,
             )
-            kwargs = eval(kwargs)
+            kwargs = json.loads(kwargs)
             response = client.update_service(**kwargs)
         return response
     except ClientError as e:
