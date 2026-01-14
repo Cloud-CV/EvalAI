@@ -98,11 +98,36 @@ export class LoginComponent implements OnInit {
 
     this.apiService.postUrl(this.endpointsService.loginURL(), LOGIN_BODY).subscribe(
       (data) => {
+        /**
+         * FIX:
+         * Explicitly clear old token and propagate new token
+         * to avoid stale auth state after long inactivity.
+         */
+
+        // Remove any existing stale token
+        this.globalService.deleteData(this.globalService.authStorageKey);
+
+        // Store new token
         this.globalService.storeData(this.globalService.authStorageKey, data['token']);
+
+        // Update in-memory auth token (important for UI sync)
+        if (typeof this.globalService.setAuthToken === 'function') {
+          this.globalService.setAuthToken(data['token']);
+        }
+
         this.authService.loggedIn(true);
         this.authService.setRefreshJWT();
+
         this.globalService.stopLoader();
+
+        // Redirect user
         this.redirectCheck(this);
+
+        /**
+         * Reload application state to ensure
+         * all components pick up the new token.
+         */
+        window.location.reload();
       },
 
       (err) => {

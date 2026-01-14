@@ -1,12 +1,15 @@
-from allauth.account.admin import EmailAddressAdmin
+# pylint: disable=import-error
+
+
+from allauth.account.admin import EmailAddressAdmin as AllauthEmailAddressAdmin
 from allauth.account.models import EmailAddress
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User
 from import_export import resources
 from import_export.admin import ExportMixin
-from rest_framework.authtoken.admin import TokenAdmin
+from rest_framework.authtoken.admin import TokenAdmin as DRFTokenAdmin
 from rest_framework.authtoken.models import Token
 
 from .models import JwtToken, Profile
@@ -54,12 +57,12 @@ class UserResource(resources.ModelResource):
         )
 
 
-class UserAdmin(ExportMixin, UserAdmin):
+class CustomUserAdmin(ExportMixin, DjangoUserAdmin):
     resource_class = UserResource
 
 
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)
 
 
 class TokenResource(resources.ModelResource):
@@ -67,14 +70,14 @@ class TokenResource(resources.ModelResource):
         model = Token
 
 
-class TokenAdmin(TokenAdmin):
+class CustomTokenAdmin(DRFTokenAdmin):
     resource_class = TokenResource
     list_filter = ("created",)
     search_fields = ("user__username",)
 
 
 admin.site.unregister(Token)
-admin.site.register(Token, TokenAdmin)
+admin.site.register(Token, CustomTokenAdmin)
 
 
 @admin.register(JwtToken)
@@ -96,9 +99,9 @@ class EmailAddressResource(resources.ModelResource):
         model = EmailAddress
 
 
-class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
+class CustomEmailAddressAdmin(ExportMixin, AllauthEmailAddressAdmin):
     resource_class = EmailAddressResource
 
 
 admin.site.unregister(EmailAddress)
-admin.site.register(EmailAddress, EmailAddressAdmin)
+admin.site.register(EmailAddress, CustomEmailAddressAdmin)
