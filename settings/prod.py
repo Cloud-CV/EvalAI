@@ -93,6 +93,37 @@ sentry_sdk.init(
 # https://docs.djangoproject.com/en/1.10/ref/settings/#secure-proxy-ssl-header
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Security Headers - HTTPS/SSL Settings
+# https://docs.djangoproject.com/en/4.2/topics/security/
+
+# Force HTTPS redirects
+SECURE_SSL_REDIRECT = True
+
+# Prevent browsers from guessing content types
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Enable browser XSS protection
+SECURE_BROWSER_XSS_FILTER = True
+
+# Ensure cookies are only sent over HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# HTTP Strict Transport Security (HSTS)
+# Tell browsers to only connect via HTTPS for the next year
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Prevent clickjacking attacks
+X_FRAME_OPTIONS = "DENY"
+
+# Session security
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+
 LOGGING["root"] = {  # noqa
     "level": "INFO",
     "handlers": ["console", "logfile"],
