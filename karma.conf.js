@@ -141,5 +141,15 @@ module.exports = function(config) {
       configuration.browserNoActivityTimeout = 120000;
   }
 
+  // Force exit after tests complete to prevent hanging
   config.set(configuration);
+  
+  // Ensure Karma exits cleanly after single run
+  if (configuration.singleRun) {
+    config.on('run_complete', function() {
+      setTimeout(function() {
+        process.exit(0);
+      }, 2000);
+    });
+  }
 }
