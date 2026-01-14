@@ -12,7 +12,7 @@ django-import-export==3.3.1
 django-rest-auth[with_social]==0.9.5
 django-ses==3.5.2
 django==4.2.9
-djangorestframework-expiring-authtoken==0.1.5
+djangorestframework-expiring-authtoken==0.1.4
 djangorestframework-simplejwt==5.3.1
 djangorestframework==3.14.0
 docker-compose==1.29.2
