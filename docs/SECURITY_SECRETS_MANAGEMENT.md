@@ -86,11 +86,11 @@ RDS_PASSWORD=your-db-password
 
 ## Changes Made in This PR
 
-### 1. Removed SECRET_KEY from Worker Environment
+### 1. Added Security Warnings in Code
 
-- **Before**: Django SECRET_KEY passed to all worker containers
-- **After**: Removed from COMMON_SETTINGS_DICT
-- **Impact**: Workers should use their own authentication mechanism or retrieve from Secrets Manager
+- **Before**: SECRET_KEY and other secrets passed to containers without warnings
+- **After**: Added clear inline warnings in `aws_utils.py` documenting security risks
+- **Impact**: Developers are now aware of the security implications
 
 ### 2. Added Security Warnings
 

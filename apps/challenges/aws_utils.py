@@ -84,9 +84,10 @@ COMMON_SETTINGS_DICT = {
     "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
     "RDS_USERNAME": settings.DATABASES["default"]["USER"],
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
-    # WARNING: Passing SECRET_KEY to worker containers
-    # This should be retrieved from AWS Secrets Manager in production
-    # "SECRET_KEY": settings.SECRET_KEY,  # REMOVED - use Secrets Manager
+    # WARNING: Passing SECRET_KEY to worker containers is a security risk
+    # TODO: Migrate to AWS Secrets Manager for production deployments
+    # See docs/SECURITY_SECRETS_MANAGEMENT.md for implementation guide
+    "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
     "STATSD_ENDPOINT": os.environ.get("STATSD_ENDPOINT"),
     "STATSD_PORT": os.environ.get("STATSD_PORT"),
