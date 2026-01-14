@@ -1,4 +1,4 @@
-FROM node:18.19.0-bullseye
+FROM node:20.18.0-bullseye
 
 ARG NODE_ENV
 

@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:18.19.0-bullseye AS base
+FROM node:20.18.0-bullseye AS base
 
 # Set environment variables for better npm performance
 ENV NODE_ENV=production
@@ -53,7 +53,12 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 
 # ARM64-specific stage
 FROM base AS arm64
-RUN apt-get update && apt-get install -yq chromium libxss1 && \
+# Install Chromium with retry logic for network issues
+RUN for i in 1 2 3; do \
+        apt-get update && \
+        apt-get install -yq --no-install-recommends chromium libxss1 && \
+        break || sleep 10; \
+    done && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/*
 
@@ -65,6 +70,10 @@ ENV CHROME_BIN=/usr/bin/google-chrome
 ENV CHROME_PATH=/usr/bin/google-chrome
 ENV DISPLAY=:99.0
 
+# Copy and set up entrypoint script first
+COPY docker/dev/nodejs/nodejs-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/nodejs-entrypoint.sh
+
 # Copy source code
 COPY . /code/
 
@@ -72,5 +81,5 @@ COPY . /code/
 RUN bower install --allow-root
 
 # Set common command and expose port
-CMD ["gulp", "dev:runserver"]
+ENTRYPOINT ["/usr/local/bin/nodejs-entrypoint.sh"]
 EXPOSE 8888
