@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
+from django.db.models import JSONField
 from django.core import serializers
 from django.db import models
 from django.db.models import signals
