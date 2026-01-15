@@ -1,36 +1,36 @@
 # Installation
 
-## Dependencies
+Getting EvalAI up and running on your local machine is straightforward. We offer several ways to set up the environment depending on your operating system and preferences.
 
-[EvalAI] can run on Linux, Cloud, Windows, and macOS platforms. Please install [docker] and [docker-compose] before getting started with the installation of EvalAI.
+## Quick Start (Docker)
 
-## Installation instructions
+The fastest way to get started is using Docker. Ensure you have [Docker](https://docs.docker.com/install/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
 
-Once you have installed [docker] and [docker-compose], please follow these steps to setup [EvalAI] on your local machine.
+```shell
+git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+docker-compose up --build
+```
 
-1. Get the source code on to your machine via git
+## Platform-Specific Guides
 
-   ```shell
-   git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd "$_"
-   ```
+For detailed prerequisites and step-by-step instructions for your specific environment, please refer to the following guides:
 
-2. Build and run the Docker containers. This might take a while.
+- [Docker Setup](setup/docker-setup.md): Comprehensive guide for Docker-based installation.
+- [Linux Setup](setup/linux-setup.md): Best practices for Ubuntu and other Linux distributions.
+- [Windows Setup](setup/windows-setup.md): Instructions for WSL2 and Docker Desktop on Windows.
+- [macOS Setup](setup/macos-setup.md): Setup for Intel and Apple Silicon Macs.
+- [Manual Setup](setup/manual-setup.md): For developers who want to run components natively.
 
-   ```
-   docker-compose up --build
-   ```
+## Default User Credentials
 
-3. That's it. Open web browser and hit the URL [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below:
+Once the system is running at [http://127.0.0.1:8888](http://127.0.0.1:8888), you can use these accounts:
 
-| User type   | Username    | Password   | Permissions                                                                            |
-| ----------- | ----------- | ---------- | -------------------------------------------------------------------------------------- |
-| Superuser   | admin       | `password` | Perform CRUD operations on all tables in the database<br /> through django admin panel |
-| Host        | host        | `password` | Create and manage challenges                                                           |
-| Participant | participant | `password` | Participate in different challenges and make submissions                               |
+| User Type | Username | Password |
+| :--- | :--- | :--- |
+| **Superuser** | `admin` | `password` |
+| **Host User** | `host` | `password` |
+| **Participant** | `participant` | `password` |
 
-If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
+## Troubleshooting
 
-[evalai-cli]: https://cli.eval.ai/
-[evalai]: http://eval.ai
-[docker-compose]: https://docs.docker.com/compose/install/
-[docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+If you encounter any issues during installation, please see our [Common Errors](../07-troubleshooting/index.md) page or visit the [FAQ](../08-reference/faq(developers).md).

@@ -1,6 +1,6 @@
 <div class="card ev-challenge-card hoverable z-depth-2 margin-bottom-cancel">
   <div class="card-image ev-card-image">
-    <img class="bg-img" [src]="challenge['image']" appLazyLoadImage/>
+    <img class="bg-img" [src]="challenge['image']" appLazyLoadImage />
   </div>
   <div class="card-content">
     <p class="fs-20 fw-regular truncate">{{ challenge['title'] }}</p>
@@ -15,6 +15,10 @@
     <p>
       <strong class="text-light-black fs-12">Ends on</strong> <br />
       <span class="fw-light fs-16">{{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}</span>
+    </p>
+    <p *ngIf="challenge['domain_name']">
+      <strong class="text-light-black fs-12">Domain</strong> <br />
+      <span class="fw-light fs-16">{{ challenge['domain_name'] }}</span>
     </p>
     <div class="margin-top-btm" *ngIf="this.routerPublic.url === myChallengesRoute">
       <span *ngIf="challenge['approved_by_admin']">

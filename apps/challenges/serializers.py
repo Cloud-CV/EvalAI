@@ -299,6 +299,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "cli_version",
             "github_repository",
             "github_branch",
+            "domain",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",
