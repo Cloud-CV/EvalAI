@@ -9,6 +9,7 @@ Usage:
 """
 import os
 import sys
+
 import django
 
 # Setup Django environment
@@ -17,6 +18,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.dev")
 django.setup()
 
 from django.db.models import Count
+
 from apps.web.models import Subscribers
 
 
@@ -30,7 +32,9 @@ def check_duplicates():
     )
 
     if duplicates.exists():
-        print("⚠️  WARNING: Found duplicate email addresses in Subscribers table!")
+        print(
+            "⚠️  WARNING: Found duplicate email addresses in Subscribers table!"
+        )
         print("\nDuplicates found:")
         print("-" * 50)
         for item in duplicates:
@@ -55,4 +59,3 @@ def check_duplicates():
 if __name__ == "__main__":
     success = check_duplicates()
     sys.exit(0 if success else 1)
-

@@ -61,4 +61,3 @@ class SubscribersTestCase(TestCase):
         """Test that duplicate email addresses raise IntegrityError"""
         with self.assertRaises(IntegrityError):
             Subscribers.objects.create(email="subscriber@domain.com")
-
