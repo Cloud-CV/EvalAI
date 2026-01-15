@@ -302,7 +302,7 @@ error_message_dict = {
     "missing_dates_challenge_phase": "ERROR: Please add the start_date and end_date in challenge phase {}.",
     "start_date_greater_than_end_date_challenge_phase": "ERROR: Start date cannot be greater than end date in challenge phase {}.",
     "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
-    "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
+    "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name (e.g. CV, NLP, RL, MM, AUD, TAB) then try again!",
     "duplicate_combinations_in_challenge_phase_splits": "ERROR: Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and dataset_split_id {} found in challenge phase splits.",
     "sponsor_not_found": "ERROR: Sponsor name or url not found in YAML data.",
     "prize_not_found": "ERROR: Prize rank or amount not found in YAML data.",
