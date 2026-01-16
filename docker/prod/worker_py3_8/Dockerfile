@@ -78,8 +78,9 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install only runtime dependencies (no build tools)
+# Add retry logic and --fix-missing to handle transient network issues
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --fix-missing \
     libpq5 \
     libcurl4 \
     libjpeg62-turbo \
@@ -91,7 +92,19 @@ RUN apt-get update && \
     libwebp6 \
     libopencv4.5 \
     libgmp10 \
-    && rm -rf /var/lib/apt/lists/* && \
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+        libpq5 \
+        libcurl4 \
+        libjpeg62-turbo \
+        zlib1g \
+        libpng16-16 \
+        libtiff5 \
+        libfreetype6 \
+        liblcms2-2 \
+        libwebp6 \
+        libopencv4.5 \
+        libgmp10) && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code
