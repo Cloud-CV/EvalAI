@@ -11,15 +11,23 @@ ENV NODE_ENV=development \
 
 # Install build dependencies only (for native module compilation and bower)
 # Note: ca-certificates is needed for git to verify SSL certificates when accessing GitHub
+# Add retry logic and --fix-missing to handle transient network issues
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --fix-missing \
     python2 \
     python-is-python2 \
     make \
     g++ \
     git \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+        python2 \
+        python-is-python2 \
+        make \
+        g++ \
+        git \
+        ca-certificates) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -62,11 +70,15 @@ ENV NODE_ENV=development \
     DISPLAY=:99.0
 
 # Install only essential runtime dependencies (no build tools, no git)
+# Add retry logic and --fix-missing to handle transient network issues
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --fix-missing \
     ca-certificates \
     xvfb \
-    && rm -rf /var/lib/apt/lists/* && \
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+        ca-certificates \
+        xvfb) && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code
@@ -82,7 +94,8 @@ FROM base AS amd64
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends google-chrome-stable libxss1 && \
+    apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1 \
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/* && \
     # Clean Chrome unnecessary files
@@ -92,7 +105,8 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 # ARM64-specific stage for Chromium
 FROM base AS arm64
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends chromium libxss1 && \
+    apt-get install -y --no-install-recommends --fix-missing chromium libxss1 \
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing chromium libxss1) && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
