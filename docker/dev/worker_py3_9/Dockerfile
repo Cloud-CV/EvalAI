@@ -1,27 +1,77 @@
-FROM python:3.9.21-bullseye
+# Stage 1: Build stage with all build dependencies
+FROM python:3.9.21-slim-bullseye AS builder
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100
 
+# Install all build dependencies
 RUN apt-get update && \
-    apt-get install -q -y \
-    default-jre \
-    default-jdk \
-    libpq-dev \
-    libcurl4-openssl-dev \
+    apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
-    curl && \
-    rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libtiff-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    default-jre-headless \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-
-RUN mkdir /code
 WORKDIR /code
 
-ADD requirements/* /code/
+# Copy requirements first for better layer caching
+COPY requirements/ /code/requirements/
 
-RUN pip install -r dev.txt
-RUN pip install -r worker_py3_9.txt
+# Install Python dependencies with BuildKit cache mount
+# Install prerequisite packages first (needed for compiling native extensions)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29 setuptools==57.5.0 && \
+    pip install --no-cache-dir --no-compile -r requirements/dev.txt && \
+    pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt && \
+    # Clean up pip cache and Python bytecode (directories first, then files)
+    rm -rf /root/.cache/pip && \
+    find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    find /usr/local/lib/python3.9/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
-ADD . /code
+# Stage 2: Runtime stage - minimal dependencies only
+FROM python:3.9.21-slim-bullseye
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install only runtime dependencies (no build tools, no python3-dev)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    default-jre-headless \
+    libpq5 \
+    libcurl4 \
+    libjpeg62-turbo \
+    zlib1g \
+    libpng16-16 \
+    libtiff5 \
+    libfreetype6 \
+    liblcms2-2 \
+    libwebp6 \
+    && rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/*
+
+WORKDIR /code
+
+# Copy installed packages from builder stage
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code
+COPY . /code/
 
 CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.submission_worker"]
