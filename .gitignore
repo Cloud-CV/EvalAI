@@ -73,3 +73,16 @@ monitoring/prometheus/prometheus_db/*
 monitoring/grafana/grafana_db/grafana.db
 monitoring/alertmanager/data/*
 !monitoring/alertmanager/data/.gitkeep
+
+# LLM Coding Agents
+.claude/
+.cursor/
+.cursorrules
+.github/copilot/
+.copilot/
+.ai/
+.agent/
+.aider/
+.continue/
+.codeium/
+.tabnine/
