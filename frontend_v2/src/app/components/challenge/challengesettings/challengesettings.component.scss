@@ -114,3 +114,18 @@ input {
 .challenge-title {
   color: rgba(0, 0, 0, 0.87);
 }
+
+.grad-btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  &:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%) !important;
+  }
+  &:disabled {
+    background: #6c757d !important;
+    cursor: not-allowed;
+  }
+}
+
+.text-muted {
+  color: #6c757d;
+}

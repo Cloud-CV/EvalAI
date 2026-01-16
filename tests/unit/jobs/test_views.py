@@ -28,7 +28,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 
-class BaseAPITestClass(APITestCase):
+class BaseAPITestSetupMixin:
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -199,6 +199,9 @@ class BaseAPITestClass(APITestCase):
 
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
+
+
+class BaseAPITestClass(BaseAPITestSetupMixin, APITestCase):
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy(
@@ -2689,3 +2692,186 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class PurgeSubmissionQueueTest(BaseAPITestSetupMixin, APITestCase):
+    """Test cases for the purge submission queue feature."""
+
+    def setUp(self):
+        super(PurgeSubmissionQueueTest, self).setUp()
+        self.url = reverse_lazy(
+            "jobs:purge_submission_queue",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # Create submissions with different statuses
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            # Queued submission
+            self.queued_submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user1,
+                status="queued",
+                input_file=SimpleUploadedFile(
+                    "test_file.txt",
+                    b"Test content",
+                    content_type="text/plain",
+                ),
+            )
+
+            # Running submission
+            self.running_submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user1,
+                status="running",
+                input_file=SimpleUploadedFile(
+                    "test_file2.txt",
+                    b"Test content",
+                    content_type="text/plain",
+                ),
+            )
+
+            # Submitted submission
+            self.submitted_submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user1,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_file3.txt",
+                    b"Test content",
+                    content_type="text/plain",
+                ),
+            )
+
+            # Finished submission (should not be deleted)
+            self.finished_submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user1,
+                status="finished",
+                input_file=SimpleUploadedFile(
+                    "test_file4.txt",
+                    b"Test content",
+                    content_type="text/plain",
+                ),
+            )
+
+            # Failed submission (should not be deleted)
+            self.failed_submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user1,
+                status="failed",
+                input_file=SimpleUploadedFile(
+                    "test_file5.txt",
+                    b"Test content",
+                    content_type="text/plain",
+                ),
+            )
+
+        # Force update the statuses to bypass any signals
+        Submission.objects.filter(pk=self.queued_submission.pk).update(
+            status="queued"
+        )
+        Submission.objects.filter(pk=self.running_submission.pk).update(
+            status="running"
+        )
+        Submission.objects.filter(pk=self.submitted_submission.pk).update(
+            status="submitted"
+        )
+        Submission.objects.filter(pk=self.finished_submission.pk).update(
+            status="finished"
+        )
+        Submission.objects.filter(pk=self.failed_submission.pk).update(
+            status="failed"
+        )
+
+    def test_purge_queue_as_challenge_host(self):
+        """Test that challenge host can purge the submission queue."""
+        self.challenge.participant_teams.add(self.participant_team)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("success", response.data)
+        # Should delete 3 submissions (queued, running, submitted)
+        self.assertIn("3", response.data["success"])
+
+        # Verify queued, running, and submitted submissions are deleted
+        self.assertFalse(
+            Submission.objects.filter(pk=self.queued_submission.pk).exists()
+        )
+        self.assertFalse(
+            Submission.objects.filter(pk=self.running_submission.pk).exists()
+        )
+        self.assertFalse(
+            Submission.objects.filter(pk=self.submitted_submission.pk).exists()
+        )
+
+        # Verify finished and failed submissions still exist
+        self.assertTrue(
+            Submission.objects.filter(pk=self.finished_submission.pk).exists()
+        )
+        self.assertTrue(
+            Submission.objects.filter(pk=self.failed_submission.pk).exists()
+        )
+
+    def test_purge_queue_as_non_host(self):
+        """Test that non-host user cannot purge the submission queue."""
+        self.challenge.participant_teams.add(self.participant_team)
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("error", response.data)
+
+        # Verify no submissions were deleted
+        self.assertTrue(
+            Submission.objects.filter(pk=self.queued_submission.pk).exists()
+        )
+        self.assertTrue(
+            Submission.objects.filter(pk=self.running_submission.pk).exists()
+        )
+        self.assertTrue(
+            Submission.objects.filter(pk=self.submitted_submission.pk).exists()
+        )
+
+    def test_purge_queue_unauthenticated(self):
+        """Test that unauthenticated user cannot purge the submission queue."""
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_purge_queue_nonexistent_challenge(self):
+        """Test purging queue for a non-existent challenge."""
+        url = reverse_lazy(
+            "jobs:purge_submission_queue",
+            kwargs={"challenge_pk": 99999},
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("error", response.data)
+
+    def test_purge_queue_empty_queue(self):
+        """Test purging an already empty queue."""
+        self.challenge.participant_teams.add(self.participant_team)
+        # Delete all pending submissions first
+        Submission.objects.filter(
+            status__in=[
+                Submission.QUEUED,
+                Submission.RUNNING,
+                Submission.SUBMITTED,
+                Submission.SUBMITTING,
+            ]
+        ).delete()
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("0", response.data["success"])

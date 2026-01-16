@@ -446,4 +446,20 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    updateSubmissionMetaURL(challengeId, submissionId) {
     return `${this.jobs}challenges/${challengeId}/submissions/${submissionId}/update_submission_meta/`;
   }
+
+  /**
+   * Purge submission queue
+   * @param challengeId challenge id
+   */
+  purgeSubmissionQueueURL(challengeId) {
+    return `${this.jobs}${this.challenge}${challengeId}/purge_submission_queue/`;
+  }
+
+  /**
+   * Get submission count by status for a challenge phase
+   * @param phaseId phase id
+   */
+  challengePhaseSubmissionCountByStatusURL(phaseId) {
+    return `${this.jobs}phases/${phaseId}/submission_count_by_status/`;
+  }
 }
