@@ -11,3 +11,7 @@ CORS_ORIGIN_WHITELIST = (
     "https://monitoring-staging.eval.ai",
     "https://monitoring.eval.ai",
 )
+
+# Security headers inherited from prod.py
+# SECURE_SSL_REDIRECT, SESSION_COOKIE_SECURE, CSRF_COOKIE_SECURE, etc.
+# are all set in prod.py and apply here as well
