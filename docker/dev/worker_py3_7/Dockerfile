@@ -7,22 +7,37 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install all build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    python3-dev \
-    libpq-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libpng-dev \
-    libtiff-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libwebp-dev \
-    default-jre-headless \
-    && rm -rf /var/lib/apt/lists/*
+# Add retry logic and --fix-missing to handle transient network issues
+RUN (apt-get update && \
+     apt-get install -y --no-install-recommends --fix-missing \
+     build-essential \
+     python3-dev \
+     libpq-dev \
+     libcurl4-openssl-dev \
+     libssl-dev \
+     libjpeg-dev \
+     zlib1g-dev \
+     libpng-dev \
+     libtiff-dev \
+     libfreetype6-dev \
+     liblcms2-dev \
+     libwebp-dev \
+     default-jre-headless \
+     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+         build-essential \
+         python3-dev \
+         libpq-dev \
+         libcurl4-openssl-dev \
+         libssl-dev \
+         libjpeg-dev \
+         zlib1g-dev \
+         libpng-dev \
+         libtiff-dev \
+         libfreetype6-dev \
+         liblcms2-dev \
+         libwebp-dev \
+         default-jre-headless)) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -48,19 +63,31 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install only runtime dependencies (no build tools)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    default-jre-headless \
-    libpq5 \
-    libcurl4 \
-    libjpeg62-turbo \
-    zlib1g \
-    libpng16-16 \
-    libtiff5 \
-    libfreetype6 \
-    liblcms2-2 \
-    libwebp6 \
-    && rm -rf /var/lib/apt/lists/* && \
+# Add retry logic and --fix-missing to handle transient network issues
+RUN (apt-get update && \
+     apt-get install -y --no-install-recommends --fix-missing \
+     default-jre-headless \
+     libpq5 \
+     libcurl4 \
+     libjpeg62-turbo \
+     zlib1g \
+     libpng16-16 \
+     libtiff5 \
+     libfreetype6 \
+     liblcms2-2 \
+     libwebp6 \
+     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+         default-jre-headless \
+         libpq5 \
+         libcurl4 \
+         libjpeg62-turbo \
+         zlib1g \
+         libpng16-16 \
+         libtiff5 \
+         libfreetype6 \
+         liblcms2-2 \
+         libwebp6)) && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code
