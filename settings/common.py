@@ -212,6 +212,26 @@ AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
+# Celery Configuration - Base settings (can be overridden per environment)
+# Task execution settings
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit
+CELERY_TASK_REJECT_ON_WORKER_LOST = True  # Re-queue tasks if worker dies
+
+# Worker settings (defaults - override in prod/staging)
+CELERYD_PREFETCH_MULTIPLIER = 1  # Each worker reserves only 1 task at a time
+CELERY_ACKS_LATE = True  # Acknowledge tasks after completion (safer with SQS)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    200  # Recycle workers to prevent memory leaks
+)
+
+# SQS-specific settings
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "region": AWS_REGION,
+    "visibility_timeout": 3600,  # 60 minutes
+    "polling_interval": 1,  # Check for new messages every second
+}
+
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 

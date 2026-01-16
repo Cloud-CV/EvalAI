@@ -97,3 +97,8 @@ LOGGING["root"] = {  # noqa
     "level": "INFO",
     "handlers": ["console", "logfile"],
 }
+
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_SOFT_TIME_LIMIT = 50 * 60  # 50 minutes
+CELERY_TASK_TIME_LIMIT = 60 * 60  # 60 minutes
