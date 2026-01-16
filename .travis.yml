@@ -16,6 +16,7 @@ env:
   global:
     - COMPOSE_BAKE=true
     - COMPOSE_BAKE_ARGS="--build-arg PIP_NO_CACHE_DIR=1"
+    - DOCKER_BUILDKIT=1
 
 before_install:
   - sudo rm -f /etc/boto.cfg
