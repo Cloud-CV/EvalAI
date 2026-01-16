@@ -81,33 +81,33 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install only runtime dependencies (no build tools)
 # Add retry logic and --fix-missing to handle transient network issues
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    default-jre-headless \
-    libpq5 \
-    libcurl4 \
-    libopencv4.5 \
-    libgmp10 \
-    libjpeg62-turbo \
-    zlib1g \
-    libpng16-16 \
-    libtiff5 \
-    libfreetype6 \
-    liblcms2-2 \
-    libwebp6 \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
-        default-jre-headless \
-        libpq5 \
-        libcurl4 \
-        libopencv4.5 \
-        libgmp10 \
-        libjpeg62-turbo \
-        zlib1g \
-        libpng16-16 \
-        libtiff5 \
-        libfreetype6 \
-        liblcms2-2 \
-        libwebp6) && \
+RUN (apt-get update && \
+     apt-get install -y --no-install-recommends --fix-missing \
+     default-jre-headless \
+     libpq5 \
+     libcurl4 \
+     libopencv4.5 \
+     libgmp10 \
+     libjpeg62-turbo \
+     zlib1g \
+     libpng16-16 \
+     libtiff5 \
+     libfreetype6 \
+     liblcms2-2 \
+     libwebp6 \
+     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+         default-jre-headless \
+         libpq5 \
+         libcurl4 \
+         libopencv4.5 \
+         libgmp10 \
+         libjpeg62-turbo \
+         zlib1g \
+         libpng16-16 \
+         libtiff5 \
+         libfreetype6 \
+         liblcms2-2 \
+         libwebp6)) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
