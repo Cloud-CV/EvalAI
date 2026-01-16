@@ -25,10 +25,17 @@ sys.path.append(APPS_DIR)
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "random_secret_key")
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+if not SECRET_KEY:
+    import sys
+    # Only raise error if not in test mode or dev settings
+    if "test" not in sys.argv and os.environ.get("DJANGO_SETTINGS_MODULE", "").endswith("prod"):
+        raise ValueError("SECRET_KEY environment variable must be set for production")
+    # Use a warning secret key for non-production environments
+    SECRET_KEY = "insecure-dev-key-change-for-production"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEST = False
 
@@ -212,8 +219,11 @@ AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
-# CORS Settings
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS Settings - Should be configured per environment
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = [
+    # Add your allowed origins here in environment-specific settings
+]
 
 # REST Framework Expiring Tokens Configuration
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=365)

@@ -5,9 +5,18 @@ from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,un
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
+# Override for development - DEBUG should be False by default in common.py
 DEBUG = True
 
+# Development override - allow all hosts for local development
 ALLOWED_HOSTS = ["*"]
+
+# Development override - allow all CORS origins for local development
+CORS_ORIGIN_ALLOW_ALL = True
+
+# Allow SECRET_KEY to have a default in development only
+if not SECRET_KEY:  # noqa: ignore=F405
+    SECRET_KEY = "dev-secret-key-change-in-production"  # noqa: ignore=F405
 
 DATABASES = {
     "default": {
