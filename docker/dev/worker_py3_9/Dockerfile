@@ -69,31 +69,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install only runtime dependencies (no build tools, no python3-dev)
-# Add retry logic and --fix-missing to handle transient network issues
-RUN (apt-get update && \
-     apt-get install -y --no-install-recommends --fix-missing \
-     default-jre-headless \
-     libpq5 \
-     libcurl4 \
-     libjpeg62-turbo \
-     zlib1g \
-     libpng16-16 \
-     libtiff5 \
-     libfreetype6 \
-     liblcms2-2 \
-     libwebp6 \
-     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
-         default-jre-headless \
-         libpq5 \
-         libcurl4 \
-         libjpeg62-turbo \
-         zlib1g \
-         libpng16-16 \
-         libtiff5 \
-         libfreetype6 \
-         liblcms2-2 \
-         libwebp6)) && \
+# Install only JRE (too complex to copy due to many files/directories)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends default-jre-headless && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
@@ -102,6 +80,38 @@ WORKDIR /code
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy runtime libraries from builder stage (faster than apt-get, no network needed)
+# PostgreSQL client library
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
+# Image processing libraries (for Pillow)
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libjpeg.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libtiff.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebp.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebpdemux.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebpmux.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libsharpyuv.so* /usr/lib/x86_64-linux-gnu/
+# TIFF dependencies
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libjbig.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libzstd.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libLerc.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libdeflate.so* /usr/lib/x86_64-linux-gnu/
+# Curl and dependencies
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libcurl.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libnghttp2.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libbrotlidec.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libbrotlicommon.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libssh2.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libpsl.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libldap-2.4.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblber-2.4.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/librtmp.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so* /usr/lib/x86_64-linux-gnu/
+# Update library cache
+RUN ldconfig
 
 # Copy application code
 COPY . /code/
