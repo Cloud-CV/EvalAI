@@ -37,7 +37,6 @@ services:
           cpus: '1.0'
         reservations:
           memory: 800M
-          cpus: '0.5'
     logging:
       driver: awslogs
       options:
