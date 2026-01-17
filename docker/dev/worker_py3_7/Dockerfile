@@ -8,8 +8,10 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install all build dependencies
 # Add retry logic and --fix-missing to handle transient network issues
-RUN (apt-get update && \
-     apt-get install -y --no-install-recommends --fix-missing \
+# Fix any broken dependencies first (from partial installs)
+RUN apt-get update && \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
      build-essential \
      python3-dev \
      libpq-dev \
@@ -23,7 +25,9 @@ RUN (apt-get update && \
      liblcms2-dev \
      libwebp-dev \
      default-jre-headless \
-     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+     || (apt-get update && \
+         apt --fix-broken install -y || true && \
+         apt-get install -y --no-install-recommends --fix-missing \
          build-essential \
          python3-dev \
          libpq-dev \
