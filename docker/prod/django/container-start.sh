@@ -11,4 +11,12 @@ fi
 
 python manage.py migrate --noinput  && \
 python manage.py collectstatic --noinput  && \
-uwsgi --ini /code/docker/prod/django/uwsgi.ini --processes ${UWSGI_PROCESSES}
+if [ "$UWSGI_PROCESSES" -eq 1 ]; then
+    # Don't use cheaper autoscaling when only 1 process (cheaper must be < processes)
+    uwsgi --ini /code/docker/prod/django/uwsgi.ini --processes ${UWSGI_PROCESSES}
+else
+    # Enable cheaper autoscaling when multiple processes available
+    uwsgi --ini /code/docker/prod/django/uwsgi.ini --processes ${UWSGI_PROCESSES} \
+        --cheaper 1 --cheaper-initial 1 --cheaper-step 1 \
+        --cheaper-overload 10 --cheaper-algo spare
+fi
