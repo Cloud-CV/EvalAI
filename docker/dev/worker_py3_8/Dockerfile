@@ -91,7 +91,7 @@ RUN (apt-get update && \
      default-jre-headless \
      libpq5 \
      libcurl4 \
-     libopencv4.5 \
+     python3-opencv \
      libgmp10 \
      libjpeg62-turbo \
      zlib1g \
@@ -104,7 +104,7 @@ RUN (apt-get update && \
          default-jre-headless \
          libpq5 \
          libcurl4 \
-         libopencv4.5 \
+         python3-opencv \
          libgmp10 \
          libjpeg62-turbo \
          zlib1g \

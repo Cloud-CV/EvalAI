@@ -95,7 +95,7 @@ RUN (apt-get update && \
      libfreetype6 \
      liblcms2-2 \
      libwebp6 \
-     libopencv4.5 \
+     python3-opencv \
      libgmp10 \
      || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
          libpq5 \
@@ -107,7 +107,7 @@ RUN (apt-get update && \
          libfreetype6 \
          liblcms2-2 \
          libwebp6 \
-         libopencv4.5 \
+         python3-opencv \
          libgmp10)) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
