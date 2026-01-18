@@ -48,8 +48,14 @@ case $opt in
 					export AWS_DEFAULT_REGION=us-east-1
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
-					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					echo "Stopping and removing all existing Docker containers..."
+					docker stop $(docker ps -aq) 2>/dev/null || true
+					docker rm -f $(docker ps -aq) 2>/dev/null || true
+					echo "Removing all existing Docker images..."
+					docker rmi -f $(docker images -q) 2>/dev/null || true
+					echo "All containers and images removed. Pulling new images..."
 					docker-compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
+					echo "Deploying new containers..."
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
 				ENDSSH2
 			ENDSSH
@@ -67,8 +73,14 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
-					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					echo "Stopping and removing all existing Docker containers..."
+					docker stop $(docker ps -aq) 2>/dev/null || true
+					docker rm -f $(docker ps -aq) 2>/dev/null || true
+					echo "Removing all existing Docker images..."
+					docker rmi -f $(docker images -q) 2>/dev/null || true
+					echo "All containers and images removed. Pulling new images..."
 					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
+					echo "Deploying new containers..."
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
