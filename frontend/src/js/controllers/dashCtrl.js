@@ -27,145 +27,116 @@
         // store the next redirect value
         vm.redirectUrl = {};
 
-        var parameters = {};
-        parameters.url = 'auth/user/';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var details = response.data;
-                if (status == 200) {
-                    vm.name = details.username;
-                }
-            },
-            onError: function(response) {
+        // Track pending requests to hide loader when all complete
+        var pendingRequests = 4;
+        var checkAllComplete = function() {
+            pendingRequests--;
+            if (pendingRequests === 0) {
                 utilities.hideLoader();
-                var status = response.status;
-                var error = response.data;
-                if (status == 403) {
-                    vm.error = error;
-                    utilities.storeData('emailError', error.detail);
-                    vm.isPrivileged = false;
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
-                }
             }
         };
-        utilities.sendRequest(parameters);
 
-        vm.getAllChallenges = function(parameters, counter){
-            parameters.callback = {
+        // Helper for common error handling
+        var handleError = function(response) {
+            checkAllComplete();
+            var status = response.status;
+            var error = response.data;
+            if (status == 403) {
+                vm.error = error;
+                vm.isPrivileged = false;
+            } else if (status == 401) {
+                alert("Timeout, Please login again to continue!");
+                utilities.resetStorage();
+                $state.go("auth.login");
+                $rootScope.isAuth = false;
+            }
+        };
+
+        // Get user info
+        var userParams = {
+            url: 'auth/user/',
+            method: 'GET',
+            token: userKey,
+            callback: {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var details = response.data;
-                    if (status == 200) {
-                        vm[counter] += details.results.length;
-                        if (details.next !== null){
-                            var url = details.next;
-                            var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
-                            parameters.url = slicedUrl;
-                            vm.getAllChallenges(parameters, counter);
-                        }
+                    if (response.status == 200) {
+                        vm.name = response.data.username;
                     }
-                    if (vm.hostTeamCount == 0) {
-                        vm.hostTeamExist = false;
-                    } else {
-                        vm.hostTeamExist = true;
-                    }
+                    checkAllComplete();
                 },
                 onError: function(response) {
-                    utilities.hideLoader();
+                    checkAllComplete();
                     var status = response.status;
                     var error = response.data;
                     if (status == 403) {
                         vm.error = error;
+                        utilities.storeData('emailError', error.detail);
                         vm.isPrivileged = false;
                     } else if (status == 401) {
                         alert("Timeout, Please login again to continue!");
                         utilities.resetStorage();
                         $state.go("auth.login");
                         $rootScope.isAuth = false;
-
                     }
                 }
-            };
-
-            utilities.sendRequest(parameters);
-        };
-
-        // get all ongoing challenges.
-        parameters.url = 'challenges/challenge/present/approved/public';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        vm.getAllChallenges(parameters, "challengeCount");
-
-        //check for host teams.
-        parameters.url = 'hosts/challenge_host_team/';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var details = response.data;
-                if (status == 200) {
-                    vm.hostTeamCount = details.results.length;
-                }
-            },
-            onError: function(response) {
-                utilities.hideLoader();
-                var status = response.status;
-                var error = response.data;
-                if (status == 403) {
-                    vm.error = error;
-                    vm.isPrivileged = false;
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
-                }
             }
         };
 
-        utilities.sendRequest(parameters);
-
-        //check for participated teams.
-        parameters.url = 'participants/participant_team';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var details = response.data;
-                if (status == 200) {
-                    vm.participatedTeamCount = details.results.length;
-                }
-                utilities.hideLoader();
-            },
-            onError: function(response) {
-                utilities.hideLoader();
-                var status = response.status;
-                var error = response.data;
-                if (status == 403) {
-                    vm.error = error;
-                    vm.isPrivileged = false;
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
-                }
+        // Get ongoing challenges count - use API's count field instead of paginating
+        var challengeParams = {
+            url: 'challenges/challenge/present/approved/public',
+            method: 'GET',
+            token: userKey,
+            callback: {
+                onSuccess: function(response) {
+                    if (response.status == 200) {
+                        // Use count from API response instead of paginating through all results
+                        vm.challengeCount = response.data.count || response.data.results.length;
+                    }
+                    checkAllComplete();
+                },
+                onError: handleError
             }
         };
 
-        utilities.sendRequest(parameters);
+        // Get host teams count - use API's count field
+        var hostTeamParams = {
+            url: 'hosts/challenge_host_team/',
+            method: 'GET',
+            token: userKey,
+            callback: {
+                onSuccess: function(response) {
+                    if (response.status == 200) {
+                        vm.hostTeamCount = response.data.count || response.data.results.length;
+                        vm.hostTeamExist = vm.hostTeamCount > 0;
+                    }
+                    checkAllComplete();
+                },
+                onError: handleError
+            }
+        };
+
+        // Get participated teams count - use API's count field
+        var participantParams = {
+            url: 'participants/participant_team',
+            method: 'GET',
+            token: userKey,
+            callback: {
+                onSuccess: function(response) {
+                    if (response.status == 200) {
+                        vm.participatedTeamCount = response.data.count || response.data.results.length;
+                    }
+                    checkAllComplete();
+                },
+                onError: handleError
+            }
+        };
+
+        // Fire all requests in parallel
+        utilities.sendRequest(userParams);
+        utilities.sendRequest(challengeParams);
+        utilities.sendRequest(hostTeamParams);
+        utilities.sendRequest(participantParams);
 
         vm.hostChallenge = function() {
             $state.go('web.challenge-host-teams');

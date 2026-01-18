@@ -11,11 +11,15 @@
     function ChallengeListCtrl(utilities, $window, moment) {
         var vm = this;
         var userKey = utilities.getData('userKey');
+        
+        // Pre-compute timezone info once (not per-result)
         var gmtOffset = moment().utcOffset();
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
         var gmtMinutes = Math.abs(gmtOffset % 60);
         var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
+        var timezone = moment.tz.guess();
+        var tzZone = moment.tz.zone(timezone);
 
         utilities.showLoader();
         utilities.hideButton();
@@ -27,76 +31,79 @@
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
-        vm.getAllResults = function(parameters, resultsArray, typ){
+        vm.challengeCreator = {};
+
+        // Track pending category fetches to hide loader only when all complete
+        var pendingCategories = 3;
+        var checkAllComplete = function() {
+            pendingCategories--;
+            if (pendingCategories === 0) {
+                // Store challenge creators once after all fetches complete
+                utilities.storeData("challengeCreator", vm.challengeCreator);
+                utilities.hideLoader();
+            }
+        };
+
+        // Process results batch efficiently
+        var processResults = function(results) {
+            for (var i = 0, len = results.length; i < len; i++) {
+                var challenge = results[i];
+                
+                // Set description truncation flag
+                challenge.isLarge = challenge.description.length >= 50 ? "..." : "";
+                
+                // Set timezone info using pre-computed values
+                var offset = new Date(challenge.start_date).getTimezoneOffset();
+                challenge.time_zone = tzZone.abbr(offset);
+                challenge.gmt_zone = gmtZone;
+                
+                // Track creator
+                vm.challengeCreator[challenge.id] = challenge.creator.id;
+            }
+            return results;
+        };
+
+        vm.getAllResults = function(parameters, resultsArray, typ) {
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
                     var results = data.results;
                     
-                    var timezone = moment.tz.guess();
-                    for (var i in results) {
+                    // Process and add results in batch
+                    var processed = processResults(results);
+                    Array.prototype.push.apply(resultsArray, processed);
 
-                        var descLength = results[i].description.length;
-                        if (descLength >= 50) {
-                            results[i].isLarge = "...";
-                        } else {
-                            results[i].isLarge = "";
-                        }
-
-                        var offset = new Date(results[i].start_date).getTimezoneOffset();
-                        results[i].time_zone = moment.tz.zone(timezone).abbr(offset);
-                        results[i].gmt_zone = gmtZone;
-
-                        var id = results[i].id;
-                        vm.challengeCreator[id] = results[i].creator.id;
-                        utilities.storeData("challengeCreator", vm.challengeCreator);
-
-                        resultsArray.push(results[i]);
-                    }
-
-                    // check for the next page
+                    // Check for next page
                     if (data.next !== null) {
                         var url = data.next;
-                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
-                        parameters.url = slicedUrl;
+                        parameters.url = url.substring(url.indexOf('challenges/challenge'), url.length);
                         vm.getAllResults(parameters, resultsArray, typ);
                     } else {
-                        utilities.hideLoader();
-                        if (resultsArray.length === 0) {
-                            vm[typ] = true;
-                        } else {
-                            vm[typ] = false;
-                        }
+                        // This category is complete
+                        vm[typ] = resultsArray.length === 0;
+                        checkAllComplete();
                     }
                 },
                 onError: function() {
-                    utilities.hideLoader();
+                    vm[typ] = true;
+                    checkAllComplete();
                 }
             };
 
             utilities.sendRequest(parameters);
         };
 
-        
-        vm.challengeCreator = {};
-        var parameters = {};
-        if (userKey) {
-            parameters.token = userKey;
-        } else {
-            parameters.token = null;
-        }
+        var token = userKey ? userKey : null;
 
-        // calls for ongoing challenges
-        parameters.url = 'challenges/challenge/present/approved/public';
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
-        // calls for upcoming challenges
-        parameters.url = 'challenges/challenge/future/approved/public';
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
+        // Fire all three category fetches in parallel
+        var ongoingParams = { token: token, url: 'challenges/challenge/present/approved/public' };
+        var upcomingParams = { token: token, url: 'challenges/challenge/future/approved/public' };
+        var pastParams = { token: token, url: 'challenges/challenge/past/approved/public' };
 
-        // calls for past challenges
-        parameters.url = 'challenges/challenge/past/approved/public';
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
+        vm.getAllResults(ongoingParams, vm.currentList, "noneCurrentChallenge");
+        vm.getAllResults(upcomingParams, vm.upcomingList, "noneUpcomingChallenge");
+        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge");
 
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
