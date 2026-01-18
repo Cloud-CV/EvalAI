@@ -1592,6 +1592,9 @@ th {
 .text-light-gray {
   color: $light-gray;
 }
+.text-light-gray:hover {
+    color: #ffffff;
+}
 
 .text-med-gray {
   color: #3c3e49;
