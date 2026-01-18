@@ -34,14 +34,17 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
+# Install runtime dependencies (apt-get handles multi-arch automatically)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends unzip && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/*
+
 WORKDIR /code
 
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy unzip binary from builder stage (faster than apt-get)
-COPY --from=builder /usr/bin/unzip /usr/bin/unzip
 
 # Copy application code
 COPY . /code/
