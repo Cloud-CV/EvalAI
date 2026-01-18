@@ -124,9 +124,9 @@ def refresh_auth_token(request):
     if token_serializer.is_valid():
         token_serializer.save()
         token = token_serializer.instance
-        outstanding_token = OutstandingToken.objects.filter(user=user).order_by(
-            "-created_at"
-        )[0]
+        outstanding_token = OutstandingToken.objects.filter(
+            user=user
+        ).order_by("-created_at")[0]
         response_data = {
             "token": "{}".format(token.refresh_token),
             "expires_at": outstanding_token.expires_at,
