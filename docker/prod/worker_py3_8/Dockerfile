@@ -74,6 +74,17 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     find /usr/local/lib/python3.8/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python3.8/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
+# Collect OpenCV runtime libraries to architecture-independent location
+# This allows multi-arch builds (amd64/arm64)
+RUN mkdir -p /runtime-libs && \
+    cp -P /usr/lib/*/libopencv* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libilmbase* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libopenexr* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libImath* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libIex* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libIlmThread* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libHalf* /runtime-libs/ 2>/dev/null || true
+
 # Stage 2: Minimal runtime stage (Python 3.8 not available in distroless, use optimized slim)
 FROM python:3.8-slim-bullseye
 
@@ -82,52 +93,31 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
+# Install runtime dependencies (apt-get handles multi-arch automatically)
+# Note: We copy OpenCV libs from builder to avoid python3-opencv dependency issues
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq5 \
+    libcurl4 \
+    libjpeg62-turbo \
+    zlib1g \
+    libpng16-16 \
+    libtiff5 \
+    libfreetype6 \
+    liblcms2-2 \
+    libwebp6 \
+    libgmp10 && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/*
+
 WORKDIR /code
 
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy runtime libraries from builder stage (faster than apt-get, no network needed)
-# PostgreSQL client library
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
-# Image processing libraries (for Pillow)
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libjpeg.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libtiff.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebp.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebpdemux.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libwebpmux.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libsharpyuv.so* /usr/lib/x86_64-linux-gnu/
-# TIFF dependencies
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libjbig.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libzstd.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libLerc.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libdeflate.so* /usr/lib/x86_64-linux-gnu/
-# Curl and dependencies
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libcurl.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libnghttp2.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libbrotlidec.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libbrotlicommon.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libssh2.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpsl.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libldap-2.4.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblber-2.4.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/librtmp.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so* /usr/lib/x86_64-linux-gnu/
-# GMP library
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libgmp.so* /usr/lib/x86_64-linux-gnu/
-# OpenCV libraries and dependencies
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libopencv* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libilmbase* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libopenexr* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libImath* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libIex* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libIlmThread* /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libHalf* /usr/lib/x86_64-linux-gnu/
-# Update library cache
+# Copy OpenCV libraries from builder (architecture-independent path)
+COPY --from=builder /runtime-libs/ /usr/local/lib/
 RUN ldconfig
 
 # Copy application code
