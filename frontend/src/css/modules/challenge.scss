@@ -453,3 +453,785 @@ md-select .md-select-value span:first-child:after {
     color: #000; // Ensure the icon is visible
     font-size: 15px; // Adjust size if needed
 }
+.filter-content {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+}
+  
+.filter-content label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+  
+.filter-content input[type="text"] {
+    width: -webkit-fill-available !important;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+  
+input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 18px !important;
+    height: 18px !important;
+    opacity: 1 !important;
+    position: static !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    margin-right: 8px;
+}
+  
+.sort-options {
+    margin: 15px 0;
+}
+  
+.ChallengeHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+  
+.checkbox-container label {
+    display: inline;
+    cursor: pointer;
+    margin-bottom: 0;
+    font-weight: normal;
+}
+  
+.filter-buttons {
+    margin-top: 20px;
+    display: flex;
+    height: max-content;
+    gap: 40px;
+}
+  
+.apply-button, .reset-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    min-width: 100px;
+}
+  
+.filter-content label input {
+    border: none !important; 
+    border-bottom: 1px solid #ccc !important; 
+    outline: none ; 
+    box-shadow: none; 
+    border-radius: 0;
+}
+
+.apply-button {
+    background-color: rgba(0, 0, 0, 0);
+    font: 14px Roboto;
+    color: #3c3e49;
+    border-radius: 20px;
+    border: 1px solid #3c3e49;
+    box-shadow: 0 4px 8px transparent;
+    transition: background-color 0.3s ease;
+}
+
+.apply-button:hover {
+    box-shadow: 0 0 8px #9d9d9d;
+    background: #3c3e49;
+    color: #fff;
+}
+
+.reset-button:hover {
+    box-shadow: 0 0 8px #9d9d9d;
+    background: #3c3e49;
+    color: #fff;
+}
+
+.apply-button:focus{
+    background-color: #3c3e49 !important;
+    color: white;
+}
+.reset-button:focus{
+    background-color: #3c3e49 !important;
+    color: white;
+}
+
+.reset-button {
+    background-color: rgba(0, 0, 0, 0);
+    font: 14px Roboto;
+    transition: background-color 0.3s ease;
+    color: #3c3e49;
+    border-radius: 20px;
+    border: 1px solid #3c3e49;
+    box-shadow: 0 4px 8px transparent;
+}
+  
+.search-filter-bar {
+    width: 54rem;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+  
+.search-box {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+  
+.filter-button {
+    width: 130px;
+    font: 14px Roboto;
+    border-radius: 50px;
+    background: #3c3e49;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0px 4px 8px #9d9d9d;
+    cursor: pointer;
+    padding: 7px;
+}
+
+.filter-button:hover {
+    background-color: #3c3e49;
+}
+  
+.filter-button:focus {
+    background-color: #3c3e49 !important;
+}
+  
+.no-results {
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.filter-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-panel.active {
+    display: flex;
+}
+
+.filter-content {
+    background-color: white;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.filter-content label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+.filter-content input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-content input[type="text"]:focus {
+    border-bottom: 1px solid #fbbc05 !important;
+    box-shadow: none !important;
+}
+
+.sort-options {
+    margin: 15px 0;
+}
+
+.sort-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sort-option input {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+}
+
+.filter-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+}
+
+.close-btn:focus {
+    background-color: white !important;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.ev-sm-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.text-med-black {
+    font-weight: 500;
+    color: #333;
+}
+
+.text-light-black {
+    color: #555;
+}
+
+.fs-30 {
+    font-size: 30px;
+}
+
+.fs-14 {
+    font-size: 14px;
+}
+
+.fs-12 {
+    font-size: 12px;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.ChallengeHeader {
+    margin-bottom: 20px;
+}
+
+.nav {
+    display: flex;
+    list-style: none;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.nav-item {
+    margin-right: 20px;
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 10px 5px;
+    text-decoration: none;
+    color: #666;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-link.active {
+    color: #4285f4;
+    border-bottom: 2px solid #4285f4;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -10px;
+    justify-content: space-evenly;
+}
+
+.col {
+    padding: 10px;
+}
+
+.col.s12 {
+    width: 100%;
+}
+
+.col.s12.m3 {
+    display: contents;
+}
+
+.col.m3 {
+    width: calc(25% - 20px);
+}
+
+.ev-card-hover {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s;
+}
+
+.ev-card-hover:hover {
+    transform: translateY(-5px);
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-image {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+}
+
+.ev-card-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.ev-card-title img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.orange {
+    background-color: #ff9800;
+}
+
+.light-blue {
+    background-color: #03a9f4;
+}
+
+.white-text {
+    color: white;
+}
+
+.btn-card-detail {
+    padding: 10px 20px;
+    text-align: center;
+    background-color: #e3e3e3;
+    border-top: 1px solid #eee;
+    transition: background-color 0.3s ease;
+}
+
+.w-300 {
+    font-weight: 300;
+}
+
+#scroll-up {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4285f4;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#scroll-up.visible {
+    opacity: 1;
+}
+
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    display: none;
+}
+
+.loader-title {
+    margin-bottom: 20px;
+}
+
+.loader {
+    display: flex;
+}
+
+.loader div {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    margin: 0 5px;
+    animation: loader 0.8s infinite alternate;
+}
+
+.loader div:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.loader div:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.loader div:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.loader div:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes loader {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-10px);
+    }
+}
+
+@media (max-width: 992px) {
+    .col.m3 {
+        width: calc(33.33% - 20px);
+    }
+}
+
+@media (max-width: 768px) {
+    .col.m3 {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .col.m3 {
+        width: calc(100% - 20px);
+    }
+    
+    .filter-content {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        border-radius: 0;
+    }
+    
+    .search-filter-bar {
+        flex-direction: column;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+}
+
+.card-transition {
+    transition: all 0.3s ease-out;
+}
+
+.no-results-message {
+    text-align: center;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Challenge Card Improvements for Search Results */
+
+/* Enhance card transitions and hover effects */
+.card-transition {
+    transition: all 0.3s ease-out;
+    transform: translateY(0);
+}
+
+.card-transition:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/* Make search results more prominent */
+.ev-challenge-card {
+    height: 444px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+}
+
+/* Special styling for search results */
+.searchActive .ev-challenge-card {
+    border-left: 3px solid #4285f4;
+}
+
+/* Add a subtle indicator for search results */
+.searchActive .ev-card-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #4285f4, #34a853, #fbbc05, #ea4335);
+}
+
+/* Make the card image area more attractive */
+.card-image.ev-card-image {
+    height: 160px;
+    overflow: hidden;
+    position: relative;
+}
+
+.bg-img {
+    position: absolute;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.ev-card-hover:hover .bg-img {
+    transform: scale(1.05);
+}
+
+/* Enhance card titles */
+.ev-card-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.ev-card-hover:hover .ev-card-title {
+    background: rgba(0,0,0,0.9);
+}
+
+/* Improve card content area */
+.card-content {
+    padding: 16px;
+    height: calc(100% - 160px - 40px); /* Card height - image height - button height */
+    overflow: auto;
+}
+
+/* Improve tags appearance */
+.chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    transition: transform 0.2s ease;
+}
+
+.chip:hover {
+    transform: scale(1.05);
+}
+
+/* Better button styling */
+.btn-card-detail {
+    padding: 12px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    transition: background-color 0.3s ease;
+}
+
+.ev-card-hover:hover .btn-card-detail {
+    background-color: #ffaf4b;
+}
+
+/* Enhanced search and filter section */
+.search-filter-bar {
+    width: 100%;
+    max-width: 54rem;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.search-box {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #ffaf4b !important;  
+    box-shadow: none !important;
+}
+
+/* Add special class for search active state */
+.searchActive .filteredChallenges {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* No results message improvements */
+.no-results-message {
+    text-align: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin: 30px auto;
+    max-width: 600px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.no-results-message h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.no-results-message p {
+    color: #666;
+}
+
+/* Arrange search results to appear with higher priority */
+.challenge-cards-section {
+    position: relative;
+}
+
+/* This ensures search results appear at the top of the container */
+.row:has(.filteredChallenges) {
+    display: flex;
+    flex-direction: column;
+}
+
+[ng-if="vm.searchActive || vm.hasAppliedFilter"] {
+    order: -1;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 992px) {
+    .col.m3 {
+        width: calc(33.33% - 20px);
+    }
+}
+
+@media (max-width: 768px) {
+    .search-filter-bar {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .col.m3 {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .search-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-button {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .col.m3 {
+        width: 100%;
+    }
+}
