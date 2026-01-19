@@ -7,15 +7,15 @@ from apps.base.management.commands.seed import Command
 def test_handle_default_nc(mock_call_command):
     command = Command()
     command.stdout = MagicMock()
-    command.handle(**{"nc": 20})
+    command.handle(**{"nc": 500})
 
     expected_msg = command.style.SUCCESS(
-        "Starting the database seeder. Hang on..."
+        "Starting the database seeder with 500 challenges. Hang on..."
     )
     command.stdout.write.assert_called_with(expected_msg)
 
     mock_call_command.assert_called_with(
-        "runscript", "seed", "--script-args", 20
+        "runscript", "seed", "--script-args", 500
     )
 
 
@@ -26,7 +26,7 @@ def test_handle_custom_nc(mock_call_command):
     command.handle(**{"nc": 5})
 
     expected_msg = command.style.SUCCESS(
-        "Starting the database seeder. Hang on..."
+        "Starting the database seeder with 5 challenges. Hang on..."
     )
     command.stdout.write.assert_called_with(expected_msg)
 
@@ -43,7 +43,7 @@ def test_add_arguments():
     parser_mock.add_argument.assert_called_with(
         "-nc",
         nargs="?",
-        default=20,
+        default=500,
         type=int,
-        help="Number of challenges.",
+        help="Number of challenges. Default: 500 (40% present, 20% future, 40% past)",
     )
