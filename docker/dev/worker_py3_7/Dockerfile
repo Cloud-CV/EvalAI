@@ -7,22 +7,41 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install all build dependencies
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    python3-dev \
-    libpq-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libpng-dev \
-    libtiff-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libwebp-dev \
-    default-jre-headless \
-    && rm -rf /var/lib/apt/lists/*
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
+     build-essential \
+     python3-dev \
+     libpq-dev \
+     libcurl4-openssl-dev \
+     libssl-dev \
+     libjpeg-dev \
+     zlib1g-dev \
+     libpng-dev \
+     libtiff-dev \
+     libfreetype6-dev \
+     liblcms2-dev \
+     libwebp-dev \
+     default-jre-headless \
+     || (apt-get update && \
+         apt --fix-broken install -y || true && \
+         apt-get install -y --no-install-recommends --fix-missing \
+         build-essential \
+         python3-dev \
+         libpq-dev \
+         libcurl4-openssl-dev \
+         libssl-dev \
+         libjpeg-dev \
+         zlib1g-dev \
+         libpng-dev \
+         libtiff-dev \
+         libfreetype6-dev \
+         liblcms2-dev \
+         libwebp-dev \
+         default-jre-headless)) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -47,7 +66,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install only runtime dependencies (no build tools)
+# Install runtime dependencies (apt-get handles multi-arch automatically)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     default-jre-headless \
@@ -59,8 +78,8 @@ RUN apt-get update && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 \
-    && rm -rf /var/lib/apt/lists/* && \
+    libwebp6 && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code

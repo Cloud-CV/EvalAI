@@ -43,7 +43,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install only runtime dependencies (no build tools)
+# Install runtime dependencies (apt-get handles multi-arch automatically)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq5 \
@@ -54,8 +54,8 @@ RUN apt-get update && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 \
-    && rm -rf /var/lib/apt/lists/* && \
+    libwebp6 && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code

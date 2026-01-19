@@ -7,31 +7,59 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install all build dependencies
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    python3-dev \
-    libpq-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libpng-dev \
-    libtiff-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libwebp-dev \
-    git \
-    cmake \
-    libeigen3-dev \
-    libboost-python-dev \
-    libopencv-dev \
-    python3-opencv \
-    libgmp-dev \
-    libcgal-qt5-dev \
-    swig \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
+     build-essential \
+     python3-dev \
+     libpq-dev \
+     libcurl4-openssl-dev \
+     libssl-dev \
+     libjpeg-dev \
+     zlib1g-dev \
+     libpng-dev \
+     libtiff-dev \
+     libfreetype6-dev \
+     liblcms2-dev \
+     libwebp-dev \
+     git \
+     cmake \
+     libeigen3-dev \
+     libboost-python-dev \
+     libopencv-dev \
+     python3-opencv \
+     libgmp-dev \
+     libcgal-qt5-dev \
+     swig \
+     curl \
+     || (apt-get update && \
+         apt --fix-broken install -y || true && \
+         apt-get install -y --no-install-recommends --fix-missing \
+         build-essential \
+         python3-dev \
+         libpq-dev \
+         libcurl4-openssl-dev \
+         libssl-dev \
+         libjpeg-dev \
+         zlib1g-dev \
+         libpng-dev \
+         libtiff-dev \
+         libfreetype6-dev \
+         liblcms2-dev \
+         libwebp-dev \
+         git \
+         cmake \
+         libeigen3-dev \
+         libboost-python-dev \
+         libopencv-dev \
+         python3-opencv \
+         libgmp-dev \
+         libcgal-qt5-dev \
+         swig \
+         curl)) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -50,6 +78,17 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python3.9/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
+# Collect OpenCV runtime libraries to architecture-independent location
+# This allows multi-arch builds (amd64/arm64)
+RUN mkdir -p /runtime-libs && \
+    cp -P /usr/lib/*/libopencv* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libilmbase* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libopenexr* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libImath* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libIex* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libIlmThread* /runtime-libs/ 2>/dev/null || true && \
+    cp -P /usr/lib/*/libHalf* /runtime-libs/ 2>/dev/null || true
+
 # Stage 2: Runtime stage - minimal dependencies only
 FROM python:3.9.21-slim-bullseye
 
@@ -58,7 +97,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install only runtime dependencies (no build tools, no python3-dev)
+# Install runtime dependencies (apt-get handles multi-arch automatically)
+# Note: We copy OpenCV libs from builder to avoid python3-opencv dependency issues
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq5 \
@@ -70,9 +110,8 @@ RUN apt-get update && \
     libfreetype6 \
     liblcms2-2 \
     libwebp6 \
-    libopencv4.5 \
-    libgmp10 \
-    && rm -rf /var/lib/apt/lists/* && \
+    libgmp10 && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
 WORKDIR /code
@@ -80,6 +119,10 @@ WORKDIR /code
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy OpenCV libraries from builder (architecture-independent path)
+COPY --from=builder /runtime-libs/ /usr/local/lib/
+RUN ldconfig
 
 # Copy application code
 COPY . /code/

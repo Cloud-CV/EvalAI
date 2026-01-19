@@ -34,7 +34,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install only runtime dependencies
+# Install runtime dependencies (apt-get handles multi-arch automatically)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip && \
     rm -rf /var/lib/apt/lists/* && \
