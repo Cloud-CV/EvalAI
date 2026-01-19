@@ -1,7 +1,9 @@
 import csv
+from collections import defaultdict
 from datetime import timedelta
 
 from accounts.permissions import HasVerifiedEmail
+from challenges.models import LeaderboardData
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from django.http import HttpResponse
@@ -38,12 +40,22 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .serializers import (
+    ActivityHeatmap,
+    ActivityHeatmapSerializer,
     ChallengePhaseSubmissionAnalytics,
     ChallengePhaseSubmissionAnalyticsSerializer,
     ChallengePhaseSubmissionCount,
     ChallengePhaseSubmissionCountSerializer,
+    EvaluationTimeMetrics,
+    EvaluationTimeMetricsSerializer,
     LastSubmissionTimestamp,
     LastSubmissionTimestampSerializer,
+    LeaderboardProgression,
+    LeaderboardProgressionSerializer,
+    ScoreImprovements,
+    SubmissionSuccessRate,
+    SubmissionSuccessRateSerializer,
+    TeamProgression,
 )
 
 
@@ -143,7 +155,7 @@ def get_challenge_phase_submission_count_by_team(
     request, challenge_pk, challenge_phase_pk
 ):
     """
-    Returns number of submissions done by a participant team in a challenge phase
+    Returns submissions done by a participant team in a challenge phase.
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -280,10 +292,10 @@ def get_challenge_phase_submission_analysis(
     request, challenge_pk, challenge_phase_pk
 ):
     """
-    Returns
+    Returns:
     1. Total number of submissions in a challenge phase
     2. Number of teams which made submissions in a challenge phase
-    3. Number of submissions with status a)Submitting, b)Submitted, c)Running, d)Failed, e)Cancelled, f)Finished status
+    3. Number of submissions with various status codes
     4. Number of flagged & public submissions in challenge phase
     """
 
@@ -362,3 +374,349 @@ def download_all_participants(request, challenge_pk):
         "error": "Sorry, you are not authorized to make this request"
     }
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Enhanced Analytics Views
+
+
+def calculate_percentile(values, percentile):
+    """Calculate the given percentile of a list of values."""
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    index = int(len(sorted_values) * percentile / 100)
+    return sorted_values[min(index, len(sorted_values) - 1)]
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_submission_success_rates(request, challenge_pk, challenge_phase_pk):
+    """
+    Returns submission success/failure rates and breakdown by status.
+    """
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase,
+        challenge_phase__challenge=challenge,
+    )
+
+    total_submissions = submissions.count()
+
+    # Successful submissions are those with FINISHED status
+    successful = submissions.filter(status=Submission.FINISHED).count()
+
+    # Failed submissions include FAILED, CANCELLED statuses
+    failed_statuses = [Submission.FAILED, Submission.CANCELLED]
+    failed = submissions.filter(status__in=failed_statuses).count()
+
+    # Calculate success rate
+    success_rate = (
+        round((successful / total_submissions) * 100, 2)
+        if total_submissions > 0
+        else 0.0
+    )
+
+    # Breakdown by failure type
+    failure_breakdown = {}
+    for status_choice in failed_statuses:
+        count = submissions.filter(status=status_choice).count()
+        if count > 0:
+            failure_breakdown[status_choice] = count
+
+    # Also include other non-success statuses
+    other_statuses = [
+        Submission.SUBMITTED,
+        Submission.RUNNING,
+        Submission.SUBMITTING,
+        Submission.QUEUED,
+    ]
+    other_count = submissions.filter(status__in=other_statuses).count()
+    if other_count > 0:
+        failure_breakdown["pending"] = other_count
+
+    submission_rate = SubmissionSuccessRate(
+        phase_id=challenge_phase.pk,
+        phase_name=challenge_phase.name,
+        total_submissions=total_submissions,
+        successful=successful,
+        failed=failed,
+        success_rate=success_rate,
+        failure_breakdown=failure_breakdown,
+    )
+
+    serializer = SubmissionSuccessRateSerializer(submission_rate)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_evaluation_time_metrics(request, challenge_pk):
+    """
+    Returns average and percentile evaluation times for all phases.
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    phases_data = []
+    challenge_phases = challenge.challengephase_set.all()
+
+    for phase in challenge_phases:
+        # Get completed submissions with valid execution times
+        submissions = Submission.objects.filter(
+            challenge_phase=phase,
+            challenge_phase__challenge=challenge,
+            status=Submission.FINISHED,
+            started_at__isnull=False,
+            completed_at__isnull=False,
+        )
+
+        execution_times = []
+        for sub in submissions:
+            exec_time = sub.execution_time
+            if exec_time != "None" and exec_time is not None:
+                execution_times.append(float(exec_time))
+
+        avg_time = (
+            sum(execution_times) / len(execution_times)
+            if execution_times
+            else None
+        )
+        p50 = calculate_percentile(execution_times, 50)
+        p90 = calculate_percentile(execution_times, 90)
+        p99 = calculate_percentile(execution_times, 99)
+
+        # Calculate trend for last 7 days
+        trend = []
+        for i in range(7):
+            date = (timezone.now() - timedelta(days=i)).date()
+            day_submissions = submissions.filter(
+                completed_at__date=date, started_at__isnull=False
+            )
+            day_times = []
+            for sub in day_submissions:
+                exec_time = sub.execution_time
+                if exec_time != "None" and exec_time is not None:
+                    day_times.append(float(exec_time))
+            if day_times:
+                trend.append(
+                    {"date": date, "avg_time": sum(day_times) / len(day_times)}
+                )
+
+        trend.reverse()  # Oldest first
+
+        avg_time_rounded = round(avg_time, 2) if avg_time else None
+        phase_metrics = EvaluationTimeMetrics(
+            phase_id=phase.pk,
+            phase_name=phase.name,
+            avg_evaluation_time_seconds=avg_time_rounded,
+            p50=round(p50, 2) if p50 else None,
+            p90=round(p90, 2) if p90 else None,
+            p99=round(p99, 2) if p99 else None,
+            trend=trend,
+        )
+        phases_data.append(phase_metrics)
+
+    serializer = EvaluationTimeMetricsSerializer(phases_data, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_participant_activity_heatmap(request, challenge_pk):
+    """
+    Returns submission activity by hour of day and day of week.
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    challenge_phase_ids = challenge.challengephase_set.all().values_list(
+        "id", flat=True
+    )
+
+    submissions = Submission.objects.filter(
+        challenge_phase__id__in=challenge_phase_ids
+    )
+
+    # Initialize heatmap with all days and hours
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
+    heatmap = {
+        day: {str(hour).zfill(2): 0 for hour in range(24)} for day in days
+    }
+
+    # Count submissions by day and hour
+    day_counts = defaultdict(int)
+    hour_counts = defaultdict(int)
+
+    for submission in submissions:
+        submitted_at = submission.submitted_at
+        day_name = days[submitted_at.weekday()]
+        hour = str(submitted_at.hour).zfill(2)
+        heatmap[day_name][hour] += 1
+        day_counts[day_name] += 1
+        hour_counts[hour] += 1
+
+    # Find peak hours (top 3)
+    sorted_hours = sorted(
+        hour_counts.items(), key=lambda x: x[1], reverse=True
+    )
+    peak_hours = [
+        f"{h}:00-{str(int(h)+1).zfill(2)}:00 UTC"
+        for h, _ in sorted_hours[:3]
+        if _ > 0
+    ]
+
+    # Find most active day
+    most_active_day = (
+        max(day_counts.items(), key=lambda x: x[1])[0]
+        if day_counts
+        else None
+    )
+
+    activity = ActivityHeatmap(
+        challenge_id=challenge.pk,
+        heatmap=heatmap,
+        peak_hours=peak_hours,
+        most_active_day=most_active_day,
+    )
+
+    serializer = ActivityHeatmapSerializer(activity)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_leaderboard_progression(request, challenge_pk, challenge_phase_pk):
+    """
+    Returns top teams' score progression over time.
+    """
+    get_challenge_model(challenge_pk)  # Validate challenge exists
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    # Get the challenge phase split for this phase
+    phase_splits = challenge_phase.challengephasesplit_set.all()
+
+    if not phase_splits.exists():
+        response_data = {
+            "message": "No leaderboard configuration found for this phase"
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    # Use the first phase split
+    phase_split = phase_splits.first()
+
+    # Get leaderboard data ordered by creation time
+    leaderboard_entries = LeaderboardData.objects.filter(
+        challenge_phase_split=phase_split,
+        is_disabled=False,
+    ).select_related(
+        "submission__participant_team"
+    ).order_by("created_at")
+
+    # Track team progression
+    team_progression = defaultdict(list)
+    team_best_scores = {}
+
+    for entry in leaderboard_entries:
+        team_name = entry.submission.participant_team.team_name
+        date = entry.created_at.date()
+
+        # Get the score from result (assumes first metric in schema)
+        result = entry.result
+        if result and isinstance(result, dict):
+            # Get first available score
+            score = list(result.values())[0] if result else 0
+        else:
+            continue
+
+        # Track best score per team
+        if team_name not in team_best_scores:
+            team_best_scores[team_name] = score
+        else:
+            if score > team_best_scores[team_name]:
+                team_best_scores[team_name] = score
+
+        team_progression[team_name].append({
+            "date": date,
+            "score": score,
+        })
+
+    # Get top 10 teams by best score
+    sorted_teams = sorted(
+        team_best_scores.items(), key=lambda x: x[1], reverse=True
+    )[:10]
+
+    # Build progression data with ranks
+    top_teams_progression = []
+    for rank, (team_name, _) in enumerate(sorted_teams, 1):
+        progression_entries = []
+        for entry in team_progression[team_name]:
+            progression_entries.append({
+                "date": entry["date"],
+                "score": entry["score"],
+                "rank": rank,
+            })
+        team_prog = TeamProgression(
+            team_name=team_name,
+            progression=progression_entries,
+        )
+        top_teams_progression.append(team_prog)
+
+    # Calculate score improvements
+    improvements = []
+    for team_name, entries in team_progression.items():
+        if len(entries) >= 2:
+            first_score = entries[0]["score"]
+            last_score = entries[-1]["score"]
+            improvement = last_score - first_score
+            improvements.append(
+                {"team": team_name, "improvement": improvement}
+            )
+
+    biggest_jump = (
+        max(improvements, key=lambda x: x["improvement"])
+        if improvements
+        else None
+    )
+    avg_improvement = (
+        sum(i["improvement"] for i in improvements) / len(improvements)
+        if improvements
+        else 0.0
+    )
+
+    score_improvements = ScoreImprovements(
+        biggest_jump=biggest_jump,
+        avg_improvement=avg_improvement,
+    )
+
+    progression = LeaderboardProgression(
+        phase_id=challenge_phase.pk,
+        top_teams_progression=top_teams_progression,
+        score_improvements=score_improvements,
+    )
+
+    serializer = LeaderboardProgressionSerializer(progression)
+    return Response(serializer.data, status=status.HTTP_200_OK)

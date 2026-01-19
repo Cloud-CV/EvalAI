@@ -1000,3 +1000,211 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetSubmissionSuccessRatesTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetSubmissionSuccessRatesTest, self).setUp()
+        self.url = reverse_lazy(
+            "analytics:get_submission_success_rates",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+
+        # Create submissions with different statuses
+        # Note: Submission.save() overrides status to SUBMITTED on creation,
+        # so we must update the status after creation
+        self.submission_finished = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="finished",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            is_public=True,
+        )
+        self.submission_finished.status = "finished"
+        self.submission_finished.save()
+
+        self.submission_failed = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="failed",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            is_public=True,
+        )
+        self.submission_failed.status = "failed"
+        self.submission_failed.save()
+
+        self.submission_running = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="running",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            is_public=True,
+        )
+        self.submission_running.status = "running"
+        self.submission_running.save()
+
+    def test_get_submission_success_rates(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["phase_id"], self.challenge_phase.pk)
+        self.assertEqual(response.data["total_submissions"], 3)
+        self.assertEqual(response.data["successful"], 1)
+        self.assertEqual(response.data["failed"], 1)
+        self.assertIn("success_rate", response.data)
+        self.assertIn("failure_breakdown", response.data)
+
+    def test_get_submission_success_rates_challenge_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_submission_success_rates",
+            kwargs={
+                "challenge_pk": self.challenge.pk + 100,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_submission_success_rates_phase_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_submission_success_rates",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk + 100,
+            },
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetEvaluationTimeMetricsTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetEvaluationTimeMetricsTest, self).setUp()
+        self.url = reverse_lazy(
+            "analytics:get_evaluation_time_metrics",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # Create a finished submission with execution times
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="finished",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            is_public=True,
+            started_at=timezone.now() - timedelta(seconds=60),
+            completed_at=timezone.now(),
+        )
+
+    def test_get_evaluation_time_metrics(self):
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        if len(response.data) > 0:
+            phase_data = response.data[0]
+            self.assertIn("phase_id", phase_data)
+            self.assertIn("phase_name", phase_data)
+            self.assertIn("avg_evaluation_time_seconds", phase_data)
+            self.assertIn("p50", phase_data)
+            self.assertIn("p90", phase_data)
+            self.assertIn("p99", phase_data)
+            self.assertIn("trend", phase_data)
+
+    def test_get_evaluation_time_metrics_challenge_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_evaluation_time_metrics",
+            kwargs={"challenge_pk": self.challenge.pk + 100},
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetParticipantActivityHeatmapTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetParticipantActivityHeatmapTest, self).setUp()
+        self.url = reverse_lazy(
+            "analytics:get_participant_activity_heatmap",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # Create submissions for heatmap data
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            is_public=True,
+        )
+
+    def test_get_participant_activity_heatmap(self):
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("challenge_id", response.data)
+        self.assertIn("heatmap", response.data)
+        self.assertIn("peak_hours", response.data)
+        self.assertIn("most_active_day", response.data)
+        # Check heatmap structure
+        heatmap = response.data["heatmap"]
+        self.assertIn("Monday", heatmap)
+        self.assertIn("Sunday", heatmap)
+
+    def test_get_participant_activity_heatmap_challenge_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_participant_activity_heatmap",
+            kwargs={"challenge_pk": self.challenge.pk + 100},
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetLeaderboardProgressionTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetLeaderboardProgressionTest, self).setUp()
+        self.url = reverse_lazy(
+            "analytics:get_leaderboard_progression",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+
+    def test_get_leaderboard_progression_no_phase_split(self):
+        # Without phase split configured, should return message
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+
+    def test_get_leaderboard_progression_challenge_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_leaderboard_progression",
+            kwargs={
+                "challenge_pk": self.challenge.pk + 100,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_leaderboard_progression_phase_not_found(self):
+        self.url = reverse_lazy(
+            "analytics:get_leaderboard_progression",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk + 100,
+            },
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
