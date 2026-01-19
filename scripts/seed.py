@@ -33,7 +33,11 @@ from participants.models import Participant, ParticipantTeam
 
 fake = Factory.create()
 
-NUMBER_OF_CHALLENGES = 1
+NUMBER_OF_CHALLENGES = 500
+# Challenge distribution percentages (calculated dynamically from total)
+PRESENT_CHALLENGE_PERCENTAGE = 0.40  # 40%
+FUTURE_CHALLENGE_PERCENTAGE = 0.20  # 20%
+PAST_CHALLENGE_PERCENTAGE = 0.40  # 40%
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
 NUMBER_OF_SUBMISSIONS = 100  # Number of submissions to create for testing
@@ -56,8 +60,14 @@ def check_database():
         try:
             user_confirmed = settings.TEST or input().lower() == "y"
         except EOFError:
-            # Non-interactive environment (e.g., Docker), assume yes
-            user_confirmed = True
+            # Non-interactive environment (e.g., Docker), skip seeding if data exists
+            print(
+                "Database already has data. Skipping seed in non-interactive mode."
+            )
+            print(
+                "To force re-seed, run: python manage.py flush && python manage.py seed"
+            )
+            return False
         if user_confirmed:
             destroy_database()
             return True
@@ -164,31 +174,68 @@ def create_challenge_host_participant_team(challenge_host_team):
 
 
 def create_challenges(
-    number_of_challenges, host_team=None, participant_host_team=None
+    number_of_challenges,
+    host_team=None,
+    participant_host_team=None,
+    num_present=None,
+    num_future=None,
+    num_past=None,
 ):
     """
-    Creates past challenge, on-going challenge and upcoming challenge.
+    Creates past, on-going (present), and upcoming (future) challenges.
+
+    Args:
+        number_of_challenges: Total number of challenges to create
+        host_team: The challenge host team
+        participant_host_team: The participant host team
+        num_present: Number of present/ongoing challenges (optional)
+        num_future: Number of future/upcoming challenges (optional)
+        num_past: Number of past challenges (optional)
+
+    If num_present, num_future, and num_past are not provided, uses percentage
+    distribution: 40% present, 20% future, 40% past.
     """
+    # Use provided counts or calculate from percentages
+    if (
+        num_present is not None
+        and num_future is not None
+        and num_past is not None
+    ):
+        present_count = num_present
+        future_count = num_future
+        past_count = num_past
+    else:
+        # Calculate based on percentages: 40% present, 20% future, 40% past
+        present_count = int(
+            number_of_challenges * PRESENT_CHALLENGE_PERCENTAGE
+        )
+        future_count = int(number_of_challenges * FUTURE_CHALLENGE_PERCENTAGE)
+        past_count = int(number_of_challenges * PAST_CHALLENGE_PERCENTAGE)
+        # Handle rounding to ensure total equals number_of_challenges
+        total_calculated = present_count + future_count + past_count
+        difference = number_of_challenges - total_calculated
+        # Adjust present count to make up any rounding difference
+        if difference != 0:
+            present_count += difference
+            if present_count < 0:
+                # If somehow we got negative, distribute the adjustment
+                past_count += present_count
+                present_count = 0
+
     anon_counter = 0  # two private leaderboards
-    for i in range(number_of_challenges):
-        anonymous_leaderboard = False
-        is_featured = False
-        title = f"{fake.first_name()} Challenge"
-        if anon_counter < 2:
-            anonymous_leaderboard = True
+    challenge_index = 0
+
+    # Create present/ongoing challenges
+    print(f"Creating {present_count} present/ongoing challenges...")
+    for i in range(present_count):
+        anonymous_leaderboard = anon_counter < 2
+        if anonymous_leaderboard:
             anon_counter += 1
+        is_featured = i < 5  # First 5 present challenges are featured
 
-        start_date = timezone.now() - timedelta(days=100)
-        end_date = timezone.now() + timedelta(days=500)
-
-        if i % 4 == 1:
-            start_date = timezone.now() - timedelta(days=100)
-            end_date = timezone.now() - timedelta(days=500)
-        elif i % 4 == 2:
-            start_date = timezone.now() + timedelta(days=100)
-            end_date = timezone.now() + timedelta(days=500)
-        elif i % 4 == 3:
-            is_featured = True
+        title = f"{fake.first_name()} Challenge"
+        start_date = timezone.now() - timedelta(days=random.randint(10, 100))
+        end_date = timezone.now() + timedelta(days=random.randint(100, 500))
 
         challenge_config = {
             "title": title,
@@ -200,6 +247,50 @@ def create_challenges(
             "is_featured": is_featured,
         }
         create_challenge(challenge_config)
+        challenge_index += 1
+
+    # Create future/upcoming challenges
+    print(f"Creating {future_count} future/upcoming challenges...")
+    for i in range(future_count):
+        title = f"{fake.first_name()} Challenge"
+        start_date = timezone.now() + timedelta(days=random.randint(10, 100))
+        end_date = timezone.now() + timedelta(days=random.randint(200, 500))
+
+        challenge_config = {
+            "title": title,
+            "start_date": start_date,
+            "end_date": end_date,
+            "host_team": host_team,
+            "participant_host_team": participant_host_team,
+            "anon_leaderboard": False,
+            "is_featured": False,
+        }
+        create_challenge(challenge_config)
+        challenge_index += 1
+
+    # Create past challenges
+    print(f"Creating {past_count} past challenges...")
+    for i in range(past_count):
+        title = f"{fake.first_name()} Challenge"
+        start_date = timezone.now() - timedelta(days=random.randint(200, 500))
+        end_date = timezone.now() - timedelta(days=random.randint(10, 100))
+
+        challenge_config = {
+            "title": title,
+            "start_date": start_date,
+            "end_date": end_date,
+            "host_team": host_team,
+            "participant_host_team": participant_host_team,
+            "anon_leaderboard": False,
+            "is_featured": False,
+        }
+        create_challenge(challenge_config)
+        challenge_index += 1
+
+    print(
+        f"Created {challenge_index} challenges: "
+        f"{present_count} present, {future_count} future, {past_count} past"
+    )
 
 
 def create_challenge(config):
@@ -631,7 +722,8 @@ def run(*args):
     """Main entry point for the seed script."""
     with transaction.atomic():
         try:
-            num_challenges = int(args[0])
+            # Use command line arg if provided, otherwise use default constant
+            num_challenges = int(args[0]) if args else NUMBER_OF_CHALLENGES
             status = check_database()
             if status is False:
                 print("Seeding aborted.")
