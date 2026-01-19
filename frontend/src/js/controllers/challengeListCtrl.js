@@ -24,6 +24,10 @@
         vm.upcomingList = [];
         vm.pastList = [];
 
+        vm.currentCount = 0;
+        vm.upcomingCount = 0;
+        vm.pastCount = 0;
+
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
@@ -34,6 +38,16 @@
                     var data = response.data;
                     var results = data.results;
                     
+                    if (resultsArray.length === 0 && data.count !== undefined) {
+                        if (typ === "noneCurrentChallenge") {
+                            vm.currentCount = data.count;
+                        } else if (typ === "noneUpcomingChallenge") {
+                            vm.upcomingCount = data.count;
+                        } else if (typ === "nonePastChallenge") {
+                            vm.pastCount = data.count;
+                        }
+                    }
+
                     var timezone = moment.tz.guess();
                     for (var i in results) {
 
