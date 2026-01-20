@@ -5,7 +5,7 @@ if [ -z "$UWSGI_PROCESSES" ]; then
     if [ "$DJANGO_SETTINGS_MODULE" = "settings.staging" ] || [ "${ENVIRONMENT:-}" = "staging" ]; then
         UWSGI_PROCESSES=1
     else
-        UWSGI_PROCESSES=2
+        UWSGI_PROCESSES=3
     fi
 fi
 
