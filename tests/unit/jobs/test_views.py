@@ -552,6 +552,83 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_challenge_submission_when_challenge_is_free_tier_non_staff_user(self):
+        """Test that non-staff users cannot submit to free tier challenges"""
+        # Set the challenge to free tier (default)
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        expected = {"error": "Submissions are not allowed for free tier challenges"}
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_submission_when_challenge_is_free_tier_staff_user(self):
+        """Test that staff users can submit to free tier challenges"""
+        # Set the challenge to free tier and user as staff
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        self.user1.is_staff = True
+        self.user1.save()
+        
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_challenge_submission_when_challenge_is_paid_tier(self):
+        """Test that users can submit to paid tier challenges"""
+        # Set the challenge to a paid tier
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+        
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
     def setUp(self):
@@ -2574,6 +2651,32 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_update_submission_when_challenge_is_free_tier_non_staff_user(self):
+        """Test that non-staff users cannot update submissions for free tier challenges"""
+        # Set the challenge to free tier (default)
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+
+        expected = {
+            "error": "Submissions are not allowed for free tier challenges"
+        }
+        
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_submission_when_challenge_is_free_tier_staff_user(self):
+        """Test that staff users can update submissions for free tier challenges"""
+        # Set the challenge to free tier and user as staff
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        self.challenge_host.user.is_staff = True
+        self.challenge_host.user.save()
+        
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 @mock_s3
 class PresignedURLSubmissionTest(BaseAPITestClass):
@@ -2689,3 +2792,187 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class ReRunSubmissionTest(BaseAPITestClass):
+    def setUp(self):
+        super(ReRunSubmissionTest, self).setUp()
+        
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="finished",
+            input_file=self.input_file,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+        )
+
+        self.url = reverse_lazy(
+            "jobs:re_run_submission",
+            kwargs={"submission_pk": self.submission.pk},
+        )
+
+    def test_re_run_submission_when_challenge_is_free_tier_non_staff_user(self):
+        """Test that non-staff users cannot re-run submissions for free tier challenges"""
+        # Set the challenge to free tier (default)
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+
+        expected = {
+            "error": "Submission re-runs are not allowed for free tier challenges."
+        }
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_re_run_submission_when_challenge_is_free_tier_staff_user(self):
+        """Test that staff users can re-run submissions for free tier challenges"""
+        # Set the challenge to free tier and user as staff
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        self.user1.is_staff = True
+        self.user1.save()
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_re_run_submission_when_challenge_is_paid_tier(self):
+        """Test that users can re-run submissions for paid tier challenges"""
+        # Set the challenge to a paid tier
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ResumeSubmissionTest(BaseAPITestClass):
+    def setUp(self):
+        super(ResumeSubmissionTest, self).setUp()
+        
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="cancelled",
+            input_file=self.input_file,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+        )
+
+        self.url = reverse_lazy(
+            "jobs:resume_submission",
+            kwargs={"submission_pk": self.submission.pk},
+        )
+
+    def test_resume_submission_when_challenge_is_free_tier_non_staff_user(self):
+        """Test that non-staff users cannot resume submissions for free tier challenges"""
+        # Set the challenge to free tier (default)
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+
+        expected = {
+            "error": "Submission resuming is not allowed for free tier challenges."
+        }
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_resume_submission_when_challenge_is_free_tier_staff_user(self):
+        """Test that staff users can resume submissions for free tier challenges"""
+        # Set the challenge to free tier and user as staff
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        self.user1.is_staff = True
+        self.user1.save()
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_resume_submission_when_challenge_is_paid_tier(self):
+        """Test that users can resume submissions for paid tier challenges"""
+        # Set the challenge to a paid tier
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class SendSubmissionMessageTest(BaseAPITestClass):
+    def setUp(self):
+        super(SendSubmissionMessageTest, self).setUp()
+        
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="finished",
+            input_file=self.input_file,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+        )
+
+        self.url = reverse_lazy(
+            "jobs:send_submission_message",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": self.submission.pk,
+            },
+        )
+
+    def test_send_submission_message_when_challenge_is_free_tier_non_staff_user(self):
+        """Test that non-staff users cannot send submission messages for free tier challenges"""
+        # Set the challenge to free tier (default)
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+
+        expected = {
+            "error": "Submissions are not allowed for free tier challenges."
+        }
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_send_submission_message_when_challenge_is_free_tier_staff_user(self):
+        """Test that staff users can send submission messages for free tier challenges"""
+        # Set the challenge to free tier and user as staff
+        self.challenge.payment_tier = "free"
+        self.challenge.save()
+        self.user1.is_staff = True
+        self.user1.save()
+
+        response = self.client.post(self.url)
+        # Note: This will likely return different status based on implementation
+        # We're just checking it doesn't return 403
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_send_submission_message_when_challenge_is_paid_tier(self):
+        """Test that users can send submission messages for paid tier challenges"""
+        # Set the challenge to a paid tier
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+
+        response = self.client.post(self.url)
+        # Note: This will likely return different status based on implementation
+        # We're just checking it doesn't return 403
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
