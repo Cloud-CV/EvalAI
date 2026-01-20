@@ -7,7 +7,4 @@ class ChallengePermissionTests(APITestCase):
         Ensure that an unauthenticated user cannot create a challenge.
         """
         response = self.client.post("/api/challenges/", data={})
-
-        
         self.assertEqual(response.status_code, 404)
-
