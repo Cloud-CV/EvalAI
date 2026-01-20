@@ -153,6 +153,43 @@ class ChallengeTestCase(BaseTestCase):
             self.challenge.end_date, self.challenge.get_end_date()
         )
 
+    def test_payment_tier_default_value(self):
+        """Test that the default payment tier is 'free'"""
+        self.assertEqual(self.challenge.payment_tier, "free")
+
+    def test_payment_tier_choices(self):
+        """Test that payment tier can be set to valid choices"""
+        # Test setting to essentials
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+        self.assertEqual(self.challenge.payment_tier, "essentials")
+        
+        # Test setting to core
+        self.challenge.payment_tier = "core"
+        self.challenge.save()
+        self.assertEqual(self.challenge.payment_tier, "core")
+        
+        # Test setting to advanced
+        self.challenge.payment_tier = "advanced"
+        self.challenge.save()
+        self.assertEqual(self.challenge.payment_tier, "advanced")
+        
+        # Test setting to remote
+        self.challenge.payment_tier = "remote"
+        self.challenge.save()
+        self.assertEqual(self.challenge.payment_tier, "remote")
+
+    def test_payment_tier_options_constant(self):
+        """Test that PAYMENT_TIER_OPTIONS contains the expected choices"""
+        expected_options = (
+            ("free", "Free"),
+            ("essentials", "Essentials"),
+            ("core", "Core"),
+            ("advanced", "Advanced"),
+            ("remote", "Remote"),
+        )
+        self.assertEqual(Challenge.PAYMENT_TIER_OPTIONS, expected_options)
+
 
 class DatasetSplitTestCase(BaseTestCase):
     def setUp(self):
