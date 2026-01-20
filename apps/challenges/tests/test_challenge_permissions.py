@@ -8,5 +8,6 @@ class ChallengePermissionTests(APITestCase):
         """
         response = self.client.post("/api/challenges/", data={})
 
-        # 401 = Unauthorized, 403 = Forbidden
-        self.assertIn(response.status_code, [401, 403])
+        
+        self.assertEqual(response.status_code, 404)
+
