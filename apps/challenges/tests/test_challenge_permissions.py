@@ -1,5 +1,4 @@
 from rest_framework.test import APITestCase
-from django.urls import reverse
 
 
 class ChallengePermissionTests(APITestCase):
@@ -7,8 +6,7 @@ class ChallengePermissionTests(APITestCase):
         """
         Ensure that an unauthenticated user cannot create a challenge.
         """
-        url = reverse("challenge-list")
-        response = self.client.post(url, data={})
+        response = self.client.post("/api/challenges/", data={})
 
         # 401 = Unauthorized, 403 = Forbidden
         self.assertIn(response.status_code, [401, 403])
