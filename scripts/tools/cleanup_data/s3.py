@@ -4,12 +4,12 @@ Cleanup S3 files for challenges - Memory Optimized for 1GB RAM.
 
 Cleans up files from S3 folders (see constants section for folder names):
     - LOGOS_FOLDER/ (Challenge.image) - NOTE: Logos are NOT deleted by this script
-    - EVALUATION_SCRIPTS_FOLDER/ (Challenge.evaluation_script)
-    - TEST_ANNOTATIONS_FOLDER/ (ChallengePhase.test_annotation)
+    - EVALUATION_SCRIPTS_FOLDER/ (Challenge.evaluation_script) - NOTE: NOT deleted by this script
+    - TEST_ANNOTATIONS_FOLDER/ (ChallengePhase.test_annotation) - NOTE: NOT deleted by this script
     - SUBMISSION_FILES_FOLDER/ (Submission files)
     - ZIP_CONFIGURATION_FILES_FOLDER/ (ChallengeConfiguration files)
-    - CLUSTER_YAML_FOLDER/ (ChallengeEvaluationCluster.cluster_yaml)
-    - KUBE_CONFIG_FOLDER/ (ChallengeEvaluationCluster.kube_config)
+    - CLUSTER_YAML_FOLDER/ (ChallengeEvaluationCluster.cluster_yaml) - NOTE: NOT deleted by this script
+    - KUBE_CONFIG_FOLDER/ (ChallengeEvaluationCluster.kube_config) - NOTE: NOT deleted by this script
 
 Memory Optimization Strategy:
     - Uses values_list() to fetch only file paths, not full objects
@@ -98,7 +98,6 @@ import boto3  # noqa: E402
 from challenges.models import (  # noqa: E402
     Challenge,
     ChallengeConfiguration,
-    ChallengeEvaluationCluster,
     ChallengePhase,
 )
 from django.core.files.storage import default_storage  # noqa: E402
@@ -329,40 +328,18 @@ def collect_challenge_files_optimized(challenge_id, logger):
     logger.log(f"Challenge: {challenge_title} (ID: {challenge_id})")
     logger.log(f"{'='*60}")
 
-    # 1. Challenge files - use values_list (skip image/logos, only delete evaluation_script)
+    # 1. Challenge files - skip image/logos and evaluation_script (not deleting them)
     logger.log(
-        f"\n  [Challenge] Fields: evaluation_script (skipping {LOGOS_FOLDER}/image)"
+        f"\n  [Challenge] Skipping: image/{LOGOS_FOLDER} and evaluation_script (not deleted)"
     )
-    for field in ["evaluation_script"]:
-        path = (
-            Challenge.objects.filter(pk=challenge_id)
-            .exclude(**{f"{field}__isnull": True})
-            .exclude(**{field: ""})
-            .values_list(field, flat=True)
-            .first()
-        )
-        if path:
-            all_paths.append(path)
-            logger.log(f"    [FOUND] {field}: {path}")
-        else:
-            logger.log(f"    [EMPTY] {field}")
 
-    # 2. ChallengePhase files
+    # 2. ChallengePhase files - skip test_annotation (not deleting them)
     phase_count = ChallengePhase.objects.filter(
         challenge_id=challenge_id
     ).count()
-    logger.log(f"\n  [ChallengePhase] {phase_count} phases")
-
-    paths = (
-        ChallengePhase.objects.filter(challenge_id=challenge_id)
-        .exclude(test_annotation__isnull=True)
-        .exclude(test_annotation="")
-        .values_list("test_annotation", flat=True)
+    logger.log(
+        f"\n  [ChallengePhase] {phase_count} phases (skipping test_annotation files)"
     )
-
-    phase_files = list(paths)
-    all_paths.extend(phase_files)
-    logger.log(f"    Found {len(phase_files)} test_annotation files")
 
     gc.collect()
     reset_queries()
@@ -433,30 +410,10 @@ def collect_challenge_files_optimized(challenge_id, logger):
     else:
         logger.log("    [SKIP] No ChallengeConfiguration found")
 
-    # 5. ChallengeEvaluationCluster files
-    logger.log("\n  [ChallengeEvaluationCluster]")
-    cluster_fields = ["cluster_yaml", "kube_config"]
-    cluster_count = 0
-
-    for field in cluster_fields:
-        path = (
-            ChallengeEvaluationCluster.objects.filter(
-                challenge_id=challenge_id
-            )
-            .exclude(**{f"{field}__isnull": True})
-            .exclude(**{field: ""})
-            .values_list(field, flat=True)
-            .first()
-        )
-
-        if path:
-            all_paths.append(path)
-            cluster_count += 1
-
-    if cluster_count > 0:
-        logger.log(f"    Found {cluster_count} cluster files")
-    else:
-        logger.log("    [SKIP] No ChallengeEvaluationCluster found")
+    # 5. ChallengeEvaluationCluster files - skip cluster_yaml and kube_config (not deleting them)
+    logger.log(
+        "\n  [ChallengeEvaluationCluster] Skipping: cluster_yaml and kube_config (not deleted)"
+    )
 
     logger.log(f"\n  Challenge Total: {len(all_paths)} files to delete")
 
