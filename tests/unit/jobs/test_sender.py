@@ -97,6 +97,65 @@ def test_publish_submission_message_success(
     assert response == {"MessageId": "12345"}
 
 
+@patch("jobs.sender.Challenge.objects.get")
+@patch("jobs.sender.logger")
+def test_publish_submission_message_free_tier_challenge(
+    mock_logger, mock_challenge_get, message
+):
+    """Test that publishing is skipped for free tier challenges"""
+    # Mock Challenge object with free payment tier
+    mock_challenge = MagicMock()
+    mock_challenge.payment_tier = "free"
+    mock_challenge_get.return_value = mock_challenge
+
+    response = publish_submission_message(message)
+
+    # Assert logger.info is called with the correct message
+    mock_logger.info.assert_called_once_with(
+        "Submission publishing to SQS is skipped as the challenge with PK '{}' is on free payment tier.".format(
+            message["challenge_pk"]
+        )
+    )
+    # Assert the function returns None
+    assert response is None
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_paid_tier_challenge(
+    mock_challenge_get,
+    mock_get_submission_model,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Test that publishing works normally for paid tier challenges"""
+    # Mock Challenge object with paid tier
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue"
+    mock_challenge.slack_webhook_url = "http://slack-webhook-url"
+    mock_challenge.remote_evaluation = False
+    mock_challenge.title = "Test Challenge"
+    mock_challenge.payment_tier = "essentials"  # Non-free tier
+    mock_challenge_get.return_value = mock_challenge
+
+    # Mock SQS queue
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    # Mock Submission object
+    mock_submission = MagicMock()
+    mock_submission.participant_team.team_name = "Test Team"
+    mock_submission.challenge_phase.name = "Test Phase"
+    mock_get_submission_model.return_value = mock_submission
+
+    response = publish_submission_message(message)
+
+    # Assert the function returns the SQS response (not None)
+    assert response == {"MessageId": "12345"}
+
+
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
 def test_get_or_create_sqs_queue_use_host_sqs(

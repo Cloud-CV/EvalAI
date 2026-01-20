@@ -36,8 +36,20 @@
 
 <!-- To Check if Manual Approval is done or off-->
 <div ng-if="challenge.eligible_to_submit">
+<!-- If challenge is free tier -->
+<section class="ev-sm-container ev-view challenge-container" ng-if="challenge.payment_tier === 'free'">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Submission Unavailable</h5>
+                <p class="fs-16 w-300">Submissions are not available for the <strong>Free</strong> tier. Please upgrade
+                    to submit.</p>
+            </div>
+        </div>
+    </div>
+</section>
 <!-- If challenge is docker based -->
-<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based && challenge.payment_tier !== 'free'">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
@@ -81,7 +93,7 @@
 </section>
 
 <!-- If challenge is docker based -->
-<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based && challenge.payment_tier !== 'free'">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
@@ -178,7 +190,7 @@
 </section>
 
 <!-- If challenge is not docker based -->
-<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="!challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="!challenge.page.is_docker_based && challenge.payment_tier !== 'free'">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
