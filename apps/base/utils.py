@@ -322,6 +322,7 @@ def is_model_field_changed(model_obj, field_name):
     return False
 
 
+
 def is_user_a_staff(user):
     """
     Function to check if a user is staff or not
@@ -333,3 +334,32 @@ def is_user_a_staff(user):
         {bool} : True/False if the user is staff or not
     """
     return user.is_staff
+
+
+class ZipSecurityError(Exception):
+    """Custom exception for ZIP security violations."""
+
+    pass
+
+
+def extract_zip_safely(zip_ref, extract_path, max_total_size=None):
+    """
+    Safely extract a zip file, preventing Zip Slip and Zip Bomb attacks.
+    """
+    total_size = 0
+    for member in zip_ref.infolist():
+        # Prevent Zip Slip: check for absolute paths or path traversal
+        member_path = member.filename
+        if os.path.isabs(member_path) or ".." in member_path:
+            raise ZipSecurityError(
+                "Malicious zip file detected: path traversal attempt"
+            )
+
+        # Pre-calculate total size to prevent Zip Bomb
+        total_size += member.file_size
+        if max_total_size and total_size > max_total_size:
+            raise ZipSecurityError(
+                "Decompressed size exceeds safety limits (Zip Bomb protection)"
+            )
+
+    zip_ref.extractall(extract_path)

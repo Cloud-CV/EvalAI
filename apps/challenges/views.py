@@ -18,6 +18,8 @@ from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from allauth.account.models import EmailAddress
 from base.utils import (
+    ZipSecurityError,
+    extract_zip_safely,
     get_queue_name,
     get_slug,
     get_url_from_hostname,
@@ -1262,13 +1264,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # Extract zip file
     try:
         zip_ref = zipfile.ZipFile(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "r")
-        zip_ref.extractall(join(BASE_LOCATION, unique_folder_name))
+        extract_zip_safely(zip_ref, join(BASE_LOCATION, unique_folder_name))
         zip_ref.close()
-    except zipfile.BadZipfile:
-        message = (
-            "The zip file contents cannot be extracted. "
-            "Please check the format!"
-        )
+    except (zipfile.BadZipfile, ZipSecurityError) as e:
+        message = "The zip file contents cannot be extracted. Please check the format!"
+        if isinstance(e, ZipSecurityError):
+            message = str(e)
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
