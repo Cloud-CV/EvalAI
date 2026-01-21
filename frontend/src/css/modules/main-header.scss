@@ -55,6 +55,33 @@
     /* horizontally center */
     align-items: center;
     /* vertically center */
+
+    .close-banner-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        color: $light-gray;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        transition: all 0.2s ease-in-out;
+        opacity: 0.8;
+
+        &:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
 }
 
 @media only screen and (max-width: $med-screen) {
