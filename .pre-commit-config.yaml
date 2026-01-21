@@ -1,4 +1,14 @@
 repos:
+  - repo: local
+    hooks:
+      - id: cleanup-code
+        name: Clean up code (autoflake, autopep8, black)
+        entry: bash scripts/tools/cleanup_code.sh
+        language: system
+        types: [python]
+        pass_filenames: true
+        stages: [commit]
+
   - repo: https://github.com/ambv/black
     rev: 24.8.0
     hooks:

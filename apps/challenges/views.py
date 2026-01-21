@@ -4050,9 +4050,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
     )
 
     data = request.data
-    challenge_config_serializer = ChallengeConfigSerializer(
-        data=data, context={"request": request}
-    )
+    # Check if challenge already exists, if so find existing
+    # ChallengeConfiguration
+    existing_challenge_config = None
+    if challenge_queryset:
+        challenge = challenge_queryset[0]
+        existing_challenge_config = ChallengeConfiguration.objects.filter(
+            challenge=challenge.pk
+        ).first()
+
+    # Use existing instance if found, otherwise create new
+    if existing_challenge_config:
+        challenge_config_serializer = ChallengeConfigSerializer(
+            existing_challenge_config, data=data, context={"request": request}
+        )
+    else:
+        challenge_config_serializer = ChallengeConfigSerializer(
+            data=data, context={"request": request}
+        )
     if challenge_config_serializer.is_valid():
         uploaded_zip_file = challenge_config_serializer.save()
         uploaded_zip_file_path = challenge_config_serializer.data[
