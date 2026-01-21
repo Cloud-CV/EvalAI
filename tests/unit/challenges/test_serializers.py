@@ -6,16 +6,30 @@ from unittest.mock import patch as mockpatch
 
 import pytest
 from allauth.account.models import EmailAddress
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import (
+    Challenge,
+    ChallengePhase,
+    DatasetSplit,
+    Leaderboard,
+)
 from challenges.serializers import (
+    ChallengeConfigSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
+    ChallengeSerializer,
+    DatasetSplitSerializer,
+    LeaderboardDataSerializer,
+    LeaderboardSerializer,
     PWCChallengeLeaderboardSerializer,
+    StarChallengeSerializer,
     UserInvitationSerializer,
+    ZipChallengePhaseSplitSerializer,
+    ZipChallengeSerializer,
 )
 from challenges.utils import add_sponsors_to_challenge
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase as DjangoTestCase
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
@@ -203,6 +217,13 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
             )
+
+    def test_phase_create_serializer_exclude_fields(self):
+        ser = ChallengePhaseCreateSerializer(
+            instance=self.challenge_phase,
+            context={"exclude_fields": ["slug", "nonexistent"]},
+        )
+        self.assertNotIn("slug", ser.fields)
 
     def test_challenge_phase_create_serializer(self):
         data = self.challenge_phase_create_serializer.data
@@ -484,6 +505,155 @@ class ChallengeLeaderboardSerializerTests(TestCase):
 
         result = self.serializer.get_leaderboard(self.obj)
         self.assertEqual(result, ["accuracy", "loss", "f1_score"])
+
+
+class DatasetSplitSerializerInitTests(DjangoTestCase):
+    def test_dataset_split_serializer_sets_config_id(self):
+        ser = DatasetSplitSerializer(data={}, context={"config_id": 7})
+        self.assertEqual(ser.initial_data.get("config_id"), 7)
+
+
+class ChallengeConfigAndLeaderboardSerializerInitTests(DjangoTestCase):
+    def test_challenge_config_serializer_sets_user(self):
+        user = User.objects.create(username="u3")
+
+        class Req:
+            pass
+
+        req = Req()
+        req.user = user
+
+        ser = ChallengeConfigSerializer(data={}, context={"request": req})
+        self.assertEqual(ser.initial_data.get("user"), user.pk)
+
+    def test_leaderboard_serializer_sets_config_id(self):
+        ser = LeaderboardSerializer(data={}, context={"config_id": 5})
+        self.assertEqual(ser.initial_data.get("config_id"), 5)
+
+
+class ZipSerializersInitTests(DjangoTestCase):
+    def test_zip_challenge_serializer_sets_optional_fields_from_context(self):
+        img = object()
+        eval_script = object()
+
+        class Req:
+            method = "GET"
+
+        ser = ZipChallengeSerializer(
+            data={},
+            context={
+                "request": Req(),
+                "image": img,
+                "evaluation_script": eval_script,
+                "github_repository": "org/repo",
+                "github_branch": "main",
+                "github_token": "tok",
+            },
+        )
+        self.assertIs(ser.initial_data.get("image"), img)
+        self.assertIs(ser.initial_data.get("evaluation_script"), eval_script)
+        self.assertEqual(ser.initial_data.get("github_repository"), "org/repo")
+        self.assertEqual(ser.initial_data.get("github_branch"), "main")
+        self.assertEqual(ser.initial_data.get("github_token"), "tok")
+
+    def test_zip_challenge_phase_split_serializer_excludes_fields(self):
+        ser = ZipChallengePhaseSplitSerializer(
+            instance=None,
+            context={"exclude_fields": ["leaderboard", "nonexistent"]},
+        )
+        self.assertNotIn("leaderboard", ser.fields)
+
+
+class StarChallengeSerializerInitTests(DjangoTestCase):
+    def test_star_challenge_serializer_sets_fields_from_context(self):
+        user = User.objects.create(username="u6")
+        team = ChallengeHostTeam.objects.create(
+            team_name="t6", created_by=user
+        )
+        chal = Challenge.objects.create(title="T6", creator=team)
+
+        class Req:
+            pass
+
+        req = Req()
+        req.user = user
+
+        ser = StarChallengeSerializer(
+            data={},
+            context={
+                "challenge": chal,
+                "request": req,
+                "is_starred": True,
+            },
+        )
+        self.assertEqual(ser.initial_data.get("challenge"), chal.pk)
+        self.assertEqual(ser.initial_data.get("user"), user.pk)
+        self.assertTrue(ser.initial_data.get("is_starred"))
+
+
+class LeaderboardDataSerializerInitTests(DjangoTestCase):
+    def test_leaderboard_data_serializer_sets_foreign_keys_from_context(self):
+        user = User.objects.create(username="u7")
+        team = ChallengeHostTeam.objects.create(
+            team_name="t7", created_by=user
+        )
+        chal = Challenge.objects.create(title="T7", creator=team)
+        phase = ChallengePhase.objects.create(
+            name="P", description="d", challenge=chal
+        )
+        ds = DatasetSplit.objects.create(name="N", codename="C")
+        lb = Leaderboard.objects.create(schema={})
+        from challenges.models import ChallengePhaseSplit
+
+        cps = ChallengePhaseSplit.objects.create(
+            challenge_phase=phase, dataset_split=ds, leaderboard=lb
+        )
+
+        class Sub:
+            pk = 101
+
+        ser = LeaderboardDataSerializer(
+            data={},
+            context={"challenge_phase_split": cps, "submission": Sub()},
+        )
+        self.assertEqual(ser.initial_data.get("challenge_phase_split"), cps.pk)
+        self.assertEqual(ser.initial_data.get("submission"), 101)
+
+
+class ChallengeSerializerInitTests(DjangoTestCase):
+    def test_challenge_serializer_sets_creator_and_token_on_non_get(self):
+        user = User.objects.create(username="u")
+        team = ChallengeHostTeam.objects.create(team_name="t", created_by=user)
+
+        class Req:
+            pass
+
+        req = Req()
+        req.method = "POST"
+        req.user = user
+
+        context = {
+            "request": req,
+            "challenge_host_team": team,
+            "github_token": "tok",
+        }
+        data = {"title": "T"}
+        ser = ChallengeSerializer(data=data, context=context)
+        self.assertEqual(ser.initial_data.get("creator"), team.pk)
+        self.assertEqual(ser.initial_data.get("github_token"), "tok")
+
+    def test_challenge_serializer_exposes_creator_field_on_get(self):
+        user = User.objects.create(username="u2")
+        team = ChallengeHostTeam.objects.create(
+            team_name="t2", created_by=user
+        )
+        chal = Challenge.objects.create(title="TT", creator=team)
+
+        class Req:
+            method = "GET"
+
+        ser = ChallengeSerializer(instance=chal, context={"request": Req()})
+        self.assertIn("creator", ser.fields)
 
 
 @pytest.mark.django_db

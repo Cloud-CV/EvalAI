@@ -11,6 +11,7 @@ import botocore
 import requests
 import sendgrid
 from django.conf import settings
+from django.core import serializers
 from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -333,3 +334,10 @@ def is_user_a_staff(user):
         {bool} : True/False if the user is staff or not
     """
     return user.is_staff
+
+
+def deserialize_object(object):
+    deserialized_object = None
+    for obj in serializers.deserialize("json", object):
+        deserialized_object = obj.object
+    return deserialized_object

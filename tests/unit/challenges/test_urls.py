@@ -124,7 +124,7 @@ class TestChallengeUrls(BaseAPITestClass):
         )
         self.assertEqual(
             url,
-            "/api/challenges/"
+            "/api/challenges/challenge/"
             + str(self.challenge.pk)
             + "/participant_team/team_detail",
         )
