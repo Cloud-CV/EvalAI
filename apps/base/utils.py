@@ -5,15 +5,18 @@ import os
 import re
 import uuid
 from contextlib import contextmanager
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 import botocore
 import requests
 import sendgrid
 from django.conf import settings
+from django.db import models
 from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
 from settings.common import SQS_RETENTION_PERIOD
@@ -22,16 +25,27 @@ logger = logging.getLogger(__name__)
 
 
 class StandardResultSetPagination(PageNumberPagination):
+    """Standard pagination class for API results."""
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
 
 
 def paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+        queryset: models.QuerySet,
+        request: Request,
+        pagination_class: PageNumberPagination = PageNumberPagination()
+) -> Tuple[PageNumberPagination, List[Any]]:
     """
-    Return a paginated result for a queryset
+    Return a paginated result for a queryset.
+
+    Args:
+        queryset (models.QuerySet): The queryset to paginate
+        request (Request): The request object
+        pagination_class (PageNumberPagination): The pagination class to use
+
+    Returns:
+        Tuple[PageNumberPagination, List[Any]]: (paginator, result_page)
     """
     paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -40,10 +54,20 @@ def paginated_queryset(
 
 
 def team_paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+        queryset: models.QuerySet,
+        request: Request,
+        pagination_class: PageNumberPagination = PageNumberPagination()
+) -> Tuple[PageNumberPagination, List[Any]]:
     """
-    Return a paginated result for a queryset
+    Return a paginated result for a team queryset.
+
+    Args:
+        queryset (models.QuerySet): The queryset to paginate
+        request (Request): The request object
+        pagination_class (PageNumberPagination): The pagination class to use
+
+    Returns:
+        Tuple[PageNumberPagination, List[Any]]: (paginator, result_page)
     """
     paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["TEAM_PAGE_SIZE"]
@@ -52,39 +76,72 @@ def team_paginated_queryset(
 
 
 @deconstructible
-class RandomFileName(object):
-    def __init__(self, path):
+class RandomFileName:
+    """Generate a random filename for uploaded files."""
+
+    def __init__(self, path: str) -> None:
+        """
+        Initialize with the path pattern.
+
+        Args:
+            path (str): Path pattern to use
+        """
         self.path = path
 
-    def __call__(self, instance, filename):
+    def __call__(self, instance: models.Model, filename: str) -> str:
+        """
+        Generate a random filename.
+
+        Args:
+            instance (models.Model): The model instance
+            filename (str): Original filename
+
+        Returns:
+            str: Generated filename
+        """
         extension = os.path.splitext(filename)[1]
         path = self.path
         if "id" in self.path and instance.pk:
             path = self.path.format(id=instance.pk)
-        filename = "{}{}".format(uuid.uuid4(), extension)
+        filename = f"{uuid.uuid4()}{extension}"
         filename = os.path.join(path, filename)
         return filename
 
 
-def get_model_object(model_name):
+def get_model_object(model_name: models.Model):
+    """
+    Return a function that gets a model object by its primary key.
+
+    Args:
+        model_name (models.Model): The model class
+
+    Returns:
+        function: Function to get model object by pk
+    """
+
     def get_model_by_pk(pk):
         try:
             model_object = model_name.objects.get(pk=pk)
             return model_object
-        except model_name.DoesNotExist:
+        except model_name.DoesNotExist as exc:
             raise NotFound(
-                "{} {} does not exist".format(model_name.__name__, pk)
-            )
+                f"{model_name.__name__} {pk} does not exist"
+            ) from exc
 
-    get_model_by_pk.__name__ = "get_{}_object".format(
-        model_name.__name__.lower()
-    )
+    get_model_by_pk.__name__ = f"get_{model_name.__name__.lower()}_object"
     return get_model_by_pk
 
 
-def encode_data(data):
+def encode_data(data: List[bytes]) -> List[str]:
     """
-    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    Turn `data` into a hash and an encoded string,
+    suitable for use with `decode_data`.
+
+    Args:
+        data (List[bytes]): Data to encode
+
+    Returns:
+        List[str]: Encoded data
     """
     encoded = []
     for i in data:
@@ -92,9 +149,15 @@ def encode_data(data):
     return encoded
 
 
-def decode_data(data):
+def decode_data(data: List[str]) -> List[bytes]:
     """
     The inverse of `encode_data`.
+
+    Args:
+        data (List[str]): Data to decode
+
+    Returns:
+        List[bytes]: Decoded data
     """
     decoded = []
     for i in data:
@@ -103,19 +166,24 @@ def decode_data(data):
 
 
 def send_email(
-    sender=settings.CLOUDCV_TEAM_EMAIL,
-    recipient=None,
-    template_id=None,
-    template_data={},
-):
-    """Function to send email
-
-    Keyword Arguments:
-        sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
-        recipient {string} -- Recipient email address
-        template_id {string} -- Sendgrid template id
-        template_data {dict} -- Dictionary to substitute values in subject and email body
+        sender: str = settings.CLOUDCV_TEAM_EMAIL,
+        recipient: Optional[str] = None,
+        template_id: Optional[str] = None,
+        template_data: Optional[Dict[str, Any]] = None,
+) -> None:
     """
+    Function to send email.
+
+    Args:
+        sender (str): Email of sender (default: settings.TEAM_EMAIL)
+        recipient (Optional[str]): Recipient email address
+        template_id (Optional[str]): Sendgrid template id
+        template_data (Optional[Dict[str, Any]]):
+         Dictionary to substitute values in subject and email body
+    """
+    if template_data is None:
+        template_data = {}
+
     try:
         sg = sendgrid.SendGridAPIClient(
             api_key=os.environ.get("SENDGRID_API_KEY")
@@ -132,28 +200,39 @@ def send_email(
         sg.client.mail.send.post(request_body=mail.get())
     except Exception:
         logger.warning(
-            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+            "Cannot make sendgrid call. "
+            "Please check if SENDGRID_API_KEY is present."
         )
-    return
 
 
-def get_url_from_hostname(hostname):
+def get_url_from_hostname(hostname: str) -> str:
+    """
+    Generate URL from hostname based on environment.
+
+    Args:
+        hostname (str): The hostname
+
+    Returns:
+        str: Complete URL
+    """
     if settings.DEBUG or settings.TEST:
         scheme = "http"
     else:
         scheme = "https"
-    url = "{}://{}".format(scheme, hostname)
-    return url
+    return f"{scheme}://{hostname}"
 
 
-def get_boto3_client(resource, aws_keys):
+def get_boto3_client(resource: str, aws_keys: Dict[str, str]):
     """
-    Returns the boto3 client for a resource in AWS
-    Arguments:
-        resource {str} -- Name of the resource for which client is to be created
-        aws_keys {dict} -- AWS keys which are to be used
+    Returns the boto3 client for a resource in AWS.
+
+    Args:
+        resource (str): Name of the resource for which client is to be created
+        aws_keys (Dict[str, str]): AWS keys which are to be used
+
     Returns:
-        Boto3 client object for the resource
+        Optional[boto3.client]:
+        Boto3 client object for the resource or None if exception occurs
     """
     try:
         client = boto3.client(
@@ -163,11 +242,23 @@ def get_boto3_client(resource, aws_keys):
             aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
         )
         return client
-    except Exception as e:
-        logger.exception(e)
+    except Exception as exc:
+        logger.exception(exc)
+        return None
 
 
-def get_or_create_sqs_queue(queue_name, challenge=None):
+def get_or_create_sqs_queue(queue_name: str, challenge: Optional[Any] = None):
+    """
+    Get or create SQS queue.
+
+    Args:
+        queue_name (str): Name of the queue
+        challenge (Optional[Any]): 
+        Challenge object if queue is challenge-specific
+
+    Returns:
+        boto3.resources.factory.sqs.Queue: SQS queue object
+    """
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
@@ -197,10 +288,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if (
-            ex.response["Error"]["Code"]
-            != "AWS.SimpleQueueService.NonExistentQueue"
+                ex.response["Error"]["Code"]
+                != "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            logger.exception("Cannot get queue: {}".format(queue_name))
+            logger.exception("Cannot get queue: %s", queue_name)
         sqs_retention_period = (
             SQS_RETENTION_PERIOD
             if challenge is None
@@ -213,7 +304,16 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     return queue
 
 
-def get_slug(param):
+def get_slug(param: str) -> str:
+    """
+    Generate a slug from a string.
+
+    Args:
+        param (str): String to convert to slug
+
+    Returns:
+        str: Generated slug
+    """
     slug = param.replace(" ", "-").lower()
     slug = re.sub(r"\W+", "-", slug)
     # The max-length for slug is 200, but 180 is used here so as to append pk
@@ -221,16 +321,16 @@ def get_slug(param):
     return slug
 
 
-def get_queue_name(param, challenge_pk):
+def get_queue_name(param: str, challenge_pk: int) -> str:
     """
-    Generate unique SQS queue name of max length 80 for a challenge
+    Generate unique SQS queue name of max length 80 for a challenge.
 
-    Arguments:
-        param {string} -- challenge title
-        challenge_pk {int} -- challenge primary key
+    Args:
+        param (str): Challenge title
+        challenge_pk (int): Challenge primary key
 
     Returns:
-        {string} -- unique queue name
+        str: Unique queue name
     """
     # The max-length for queue-name is 80 in SQS
     max_len = 80
@@ -240,23 +340,30 @@ def get_queue_name(param, challenge_pk):
     queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
     queue_name = re.sub(r"\W+", "-", queue_name)
 
-    queue_name = "{}-{}-{}-{}".format(
-        queue_name, challenge_pk, env, uuid.uuid4()
-    )[:max_len]
+    queue_name = f"{queue_name}-{challenge_pk}-{env}-{uuid.uuid4()}"[:max_len]
     return queue_name
 
 
-def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
+def send_slack_notification(webhook: str = settings.SLACK_WEB_HOOK_URL,
+                            message: Dict[str, Any] = "") -> Optional[
+                                requests.Response]:
     """
-    Send slack notification to any workspace
-    Keyword Arguments:
-        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
-        message {str} -- JSON/Text message to be sent to slack (default: {""})
+    Send slack notification to any workspace.
+
+    Args:
+        webhook (str): Slack webhook URL
+        message (Dict[str, Any]): JSON/Text message to be sent to slack
+
+    Returns:
+        Optional[requests.Response]:
+        Response object from request or None on error
     """
     try:
         data = {
-            "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
-            "icon_url": "https://eval.ai/dist/images/evalai-logo-single.png",
+            "attachments":
+                [{"color": "ffaf4b", "fields": message["fields"]}],
+            "icon_url":
+                "https://eval.ai/dist/images/evalai-logo-single.png",
             "text": message["text"],
             "username": "EvalAI",
         }
@@ -264,16 +371,26 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
             webhook,
             data=json.dumps(data),
             headers={"Content-Type": "application/json"},
+            timeout=30,
         )
-    except Exception as e:
-        logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(
-                e
-            )
-        )
+    except Exception as exc:
+        logger.exception("Exception raised while "
+                         "sending slack notification. "
+                         "\n Exception message: %s", exc)
+        return None
 
 
-def mock_if_non_prod_aws(aws_mocker):
+def mock_if_non_prod_aws(aws_mocker: callable):
+    """
+    Decorator to mock AWS in non-production environments.
+
+    Args:
+        aws_mocker (callable): Function to use as a mocker
+
+    Returns:
+        Function: Original or mocked function
+    """
+
     def decorator(func):
         if not (settings.DEBUG or settings.TEST):
             return func
@@ -283,7 +400,18 @@ def mock_if_non_prod_aws(aws_mocker):
 
 
 @contextmanager
-def suppress_autotime(model, fields):
+def suppress_autotime(model: models.Model, fields: List[str]):
+    """
+    Context manager to temporarily disable auto_now and auto_now_add.
+
+    Args:
+        model (models.Model): Model class
+        fields (List[str]): Fields to modify
+
+    Note:
+        This function accesses protected members (_meta) of Django models
+        which is necessary for this functionality.
+    """
     _original_values = {}
     for field in model._meta.local_fields:
         if field.name in fields:
@@ -304,32 +432,32 @@ def suppress_autotime(model, fields):
                 ]
 
 
-def is_model_field_changed(model_obj, field_name):
+def is_model_field_changed(model_obj: models.Model, field_name: str) -> bool:
     """
-    Function to check if a model field is changed or not
+    Function to check if a model field is changed or not.
 
     Args:
-        model_obj ([Model Class Object]): Models.model class object
-        field_name ([str]): Field which needs to be checked
+        model_obj (models.Model): Models.model class object
+        field_name (str): Field which needs to be checked
 
-    Return:
-        {bool} : True/False if the model is changed or not
+    Returns:
+        bool: True/False if the model is changed or not
     """
-    prev = getattr(model_obj, "_original_{}".format(field_name))
-    curr = getattr(model_obj, "{}".format(field_name))
+    prev = getattr(model_obj, f"_original_{field_name}")
+    curr = getattr(model_obj, f"{field_name}")
     if prev != curr:
         return True
     return False
 
 
-def is_user_a_staff(user):
+def is_user_a_staff(user: models.Model) -> bool:
     """
-    Function to check if a user is staff or not
+    Function to check if a user is staff or not.
 
     Args:
-        user ([User Class Object]): User model class object
+        user (models.Model): User model class object
 
-    Return:
-        {bool} : True/False if the user is staff or not
+    Returns:
+        bool: True/False if the user is staff or not
     """
     return user.is_staff

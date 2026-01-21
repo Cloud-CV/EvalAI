@@ -2,7 +2,6 @@ from django.core.management import BaseCommand, call_command
 
 
 class Command(BaseCommand):
-
     help = "Seeds the database with random but sensible values."
 
     def add_arguments(self, parser):
@@ -15,10 +14,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.nc = options["nc"]
+        nc = options["nc"]
         self.stdout.write(
             self.style.SUCCESS(
                 f"Starting the database seeder with {self.nc} challenges. Hang on..."
             )
         )
-        call_command("runscript", "seed", "--script-args", self.nc)
+        call_command("runscript", "seed", "--script-args", nc)
+        
