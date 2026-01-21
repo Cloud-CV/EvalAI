@@ -24,15 +24,27 @@
         vm.upcomingList = [];
         vm.pastList = [];
 
+        // Total counts from API (shown immediately, before all pages load)
+        vm.currentCount = 0;
+        vm.upcomingCount = 0;
+        vm.pastCount = 0;
+
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
-        vm.getAllResults = function(parameters, resultsArray, typ){
+        vm.challengeCreator = {};
+
+        vm.getAllResults = function(parameters, resultsArray, typ, countKey, isFirstPage){
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
                     var results = data.results;
+
+                    // Set the total count from API on first page
+                    if (isFirstPage && countKey && data.count !== undefined) {
+                        vm[countKey] = data.count;
+                    }
                     
                     var timezone = moment.tz.guess();
                     for (var i in results) {
@@ -59,8 +71,12 @@
                     if (data.next !== null) {
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
-                        parameters.url = slicedUrl;
-                        vm.getAllResults(parameters, resultsArray, typ);
+                        // Create a new parameters object to avoid race conditions
+                        var nextParams = {
+                            url: slicedUrl,
+                            token: parameters.token
+                        };
+                        vm.getAllResults(nextParams, resultsArray, typ, countKey, false);
                     } else {
                         utilities.hideLoader();
                         if (resultsArray.length === 0) {
@@ -78,25 +94,26 @@
             utilities.sendRequest(parameters);
         };
 
-        
-        vm.challengeCreator = {};
-        var parameters = {};
-        if (userKey) {
-            parameters.token = userKey;
-        } else {
-            parameters.token = null;
-        }
+        // Create separate parameter objects for each API call to avoid race conditions
+        var currentParams = {
+            url: 'challenges/challenge/present/approved/public',
+            token: userKey
+        };
+        var upcomingParams = {
+            url: 'challenges/challenge/future/approved/public',
+            token: userKey
+        };
+        var pastParams = {
+            url: 'challenges/challenge/past/approved/public',
+            token: userKey
+        };
 
         // calls for ongoing challenges
-        parameters.url = 'challenges/challenge/present/approved/public';
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
+        vm.getAllResults(currentParams, vm.currentList, "noneCurrentChallenge", "currentCount", true);
         // calls for upcoming challenges
-        parameters.url = 'challenges/challenge/future/approved/public';
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
-
+        vm.getAllResults(upcomingParams, vm.upcomingList, "noneUpcomingChallenge", "upcomingCount", true);
         // calls for past challenges
-        parameters.url = 'challenges/challenge/past/approved/public';
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
+        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge", "pastCount", true);
 
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {

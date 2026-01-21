@@ -770,8 +770,8 @@ def get_all_challenges(
         q_params["end_date__lt"] = timezone.now()
 
     elif challenge_time.lower() == "present":
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     elif challenge_time.lower() == "future":
         q_params["start_date__gt"] = timezone.now()
@@ -918,8 +918,8 @@ def get_all_participated_challenges(request, challenge_time):
         q_params["end_date__lt"] = timezone.now()
 
     elif challenge_time.lower() == "present":
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     # don't return disabled challenges
     q_params["is_disabled"] = False
@@ -2966,8 +2966,8 @@ def get_broker_urls(request):
 
     q_params = {"approved_by_admin": True}
     if is_active:
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     if not request.user.is_superuser:
         response_data = {
