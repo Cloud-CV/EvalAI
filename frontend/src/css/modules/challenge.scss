@@ -453,3 +453,13 @@ md-select .md-select-value span:first-child:after {
     color: #000; // Ensure the icon is visible
     font-size: 15px; // Adjust size if needed
 }
+
+.filter-dialog md-dialog-actions .custom-apply-button.md-button {
+    background-color: #dedede;
+    color: black;
+}
+
+.filter-dialog md-dialog-actions .custom-apply-button.md-button:hover {
+    background-color: #ff9800;
+    color: white;
+}

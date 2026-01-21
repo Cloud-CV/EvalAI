@@ -1,14 +1,14 @@
 // Invoking IIFE for challenge page
-(function() {
+(function () {
 
     'use strict';
     angular
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$rootScope', '$mdDialog', '$filter'];
 
-    function ChallengeListCtrl(utilities, $window, moment) {
+    function ChallengeListCtrl(utilities, $window, moment, $rootScope, $mdDialog,$filter) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -23,17 +23,25 @@
         vm.currentList = [];
         vm.upcomingList = [];
         vm.pastList = [];
-
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
+        vm.selectedHostTeam = '';
+        vm.sortByTeam = '';
+        vm.host_team_choices = [];
+        vm.filterStartDate = null;
+        vm.filterEndDate = null;
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
-        vm.getAllResults = function(parameters, resultsArray, typ){
-            parameters.method = 'GET';
+
+
+        vm.getAllResults = function (parameters, resultsArray, typ) {
+            parameters.method = parameters.method || 'GET';
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var data = response.data;
                     var results = data.results;
-                    
+
                     var timezone = moment.tz.guess();
                     for (var i in results) {
 
@@ -60,7 +68,7 @@
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
-                        vm.getAllResults(parameters, resultsArray, typ);
+                        vm.getAllResults(parameters, resultsArray);
                     } else {
                         utilities.hideLoader();
                         if (resultsArray.length === 0) {
@@ -70,7 +78,7 @@
                         }
                     }
                 },
-                onError: function() {
+                onError: function () {
                     utilities.hideLoader();
                 }
             };
@@ -78,7 +86,7 @@
             utilities.sendRequest(parameters);
         };
 
-        
+
         vm.challengeCreator = {};
         var parameters = {};
         if (userKey) {
@@ -87,19 +95,30 @@
             parameters.token = null;
         }
 
-        // calls for ongoing challenges
-        parameters.url = 'challenges/challenge/present/approved/public';
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
-        // calls for upcoming challenges
-        parameters.url = 'challenges/challenge/future/approved/public';
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
+        
+        var baseParams = {};
+        baseParams.token = userKey ? userKey : null;
 
-        // calls for past challenges
-        parameters.url = 'challenges/challenge/past/approved/public';
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
+        
+        var presentParams = angular.copy(baseParams);
+        presentParams.url = 'challenges/challenge/present/approved/public';
+        presentParams.method = 'GET';
+        vm.getAllResults(presentParams, vm.currentList, "noneCurrentChallenge");
 
-        vm.scrollUp = function() {
-            angular.element($window).bind('scroll', function() {
+        
+        var futureParams = angular.copy(baseParams);
+        futureParams.url = 'challenges/challenge/future/approved/public';
+        futureParams.method = 'GET';
+        vm.getAllResults(futureParams, vm.upcomingList, "noneUpcomingChallenge");
+
+        
+        var pastParams = angular.copy(baseParams);
+        pastParams.url = 'challenges/challenge/past/approved/public';
+        pastParams.method = 'GET';
+        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge");
+
+        vm.scrollUp = function () {
+            angular.element($window).bind('scroll', function () {
                 if (this.pageYOffset >= 100) {
                     utilities.showButton();
                 } else {
@@ -107,7 +126,117 @@
                 }
             });
         };
+
+        function extractUniqueHostTeams() {
+            const allChallenges = [].concat(
+                vm.currentList || [],
+                vm.upcomingList || [],
+                vm.pastList || []
+            );
+
+            const hostTeamsSet = new Set();
+
+            allChallenges.forEach(function (challenge) {
+                if (challenge.creator && challenge.creator.team_name) {
+                    hostTeamsSet.add(challenge.creator.team_name);
+                }
+            });
+
+            vm.host_team_choices = Array.from(hostTeamsSet).sort();
+        }
+
+       
+        setTimeout(function () {
+            extractUniqueHostTeams();
+        }, 1000);
+
+        parameters.url = "challenges/challenge/get_domain_choices/";
+        parameters.method = 'GET';
+        parameters.data = {};
+        vm.domain_choices = [];
+        parameters.callback = {
+            onSuccess: function (response) {
+                vm.domain_choices.push(["All", "All"]);
+                for (var i = 0; i < response.data.length; i++) {
+                    vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                }
+                vm.domain_choices.push(["None", "None"]);
+            },
+            onError: function (response) {
+                var error = response.data;
+                $rootScope.notify("error", error);
+            }
+        };
+        utilities.sendRequest(parameters);
+
+        vm.resetFilter = function () {
+            vm.selecteddomain = [];
+            vm.searchTitle = [];
+            vm.selectedHostTeam = '';
+            vm.sortByTeam = '';
+            vm.filterStartDate = null;
+            vm.filterEndDate = null;
+        };
+
+        vm.getFilteredCurrentChallenges = function () {
+            let filtered = vm.currentList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+
+        vm.getFilteredUpcomingChallenges = function () {
+            let filtered = vm.upcomingList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+
+        vm.getFilteredPastChallenges = function () {
+            let filtered = vm.pastList;
+            filtered = $filter('customTitleFilter')(filtered, vm.searchTitle);
+            filtered = $filter('customDomainFilter')(filtered, vm.selecteddomain);
+            filtered = $filter('customHostFilter')(filtered, vm.selectedHostTeam);
+            filtered = $filter('customDateRangeFilter')(filtered, vm.filterStartDate, vm.filterEndDate);
+            filtered = $filter('orderByTeam')(filtered, vm.sortByTeam);
+            return filtered;
+        };
+        
+
+        vm.openFilterDialog = function (ev) {
+            $mdDialog.show({
+                controller: 'filterDialogCtrl',
+                controllerAs: 'dialog',
+                templateUrl: 'src/views/web/challenge/challenge-filter-dialog.html',
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose: true,
+                fullscreen: true,
+                locals: {
+                    filterData: {
+                        selecteddomain: vm.selecteddomain,
+                        selectedHostTeam: vm.selectedHostTeam,
+                        sortByTeam: vm.sortByTeam,
+                        filterStartDate: vm.filterStartDate,
+                        filterEndDate: vm.filterEndDate,
+                        domain_choices: vm.domain_choices,
+                        host_team_choices: vm.host_team_choices
+                    }
+                }
+            }).then(function (filters) {
+                vm.selecteddomain = filters.selecteddomain;
+                vm.selectedHostTeam = filters.selectedHostTeam;
+                vm.sortByTeam = filters.sortByTeam;
+                vm.filterStartDate = filters.filterStartDate;
+                vm.filterEndDate = filters.filterEndDate;
+            });
+        };
+
     }
-
 })();
-

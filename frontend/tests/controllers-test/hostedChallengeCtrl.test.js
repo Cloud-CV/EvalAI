@@ -5,6 +5,33 @@ describe('Unit tests for hosted challenge controller', function () {
 
     var $controller, createController, $rootScope, $scope, utilities, vm;
 
+    beforeEach(module(function($provide) {
+        
+        var customTitleFilter = jasmine.createSpy('customTitleFilter').and.callFake(arr => arr.concat('title'));
+        var customDomainFilter = jasmine.createSpy('customDomainFilter').and.callFake(arr => arr.concat('domain'));
+        var customHostFilter = jasmine.createSpy('customHostFilter').and.callFake(arr => arr.concat('host'));
+        var customDateRangeFilter = jasmine.createSpy('customDateRangeFilter').and.callFake(arr => arr.concat('date'));
+        var orderBy = jasmine.createSpy('orderBy').and.callFake(arr => arr.concat('ordered'));
+    
+        
+        $provide.value('$filter', function(name) {
+            switch (name) {
+                case 'customTitleFilter': return customTitleFilter;
+                case 'customDomainFilter': return customDomainFilter;
+                case 'customHostFilter': return customHostFilter;
+                case 'customDateRangeFilter': return customDateRangeFilter;
+                case 'orderBy': return orderBy;
+            }
+        });
+    
+        
+        window.customTitleFilter = customTitleFilter;
+        window.customDomainFilter = customDomainFilter;
+        window.customHostFilter = customHostFilter;
+        window.customDateRangeFilter = customDateRangeFilter;
+        window.orderBy = orderBy;
+    }));
+
     beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
@@ -286,4 +313,207 @@ describe('Unit tests for hosted challenge controller', function () {
             expect(utilities.showLoader).toHaveBeenCalled();
         });
     }); 
+
+    describe('getCurrentChallengeList', function () {
+        beforeEach(function () {
+            vm = createController();
+            
+            vm.ongoingChallenges = [{ id: 1, name: 'Ongoing Challenge' }];
+            vm.upcomingChallenges = [{ id: 2, name: 'Upcoming Challenge' }];
+            vm.pastChallenges = [{ id: 3, name: 'Past Challenge' }];
+        });
+    
+        it('should return ongoing challenges when currentTab is "ongoing"', function () {
+            vm.currentTab = 'ongoing';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.ongoingChallenges);
+        });
+    
+        it('should return upcoming challenges when currentTab is "upcoming"', function () {
+            vm.currentTab = 'upcoming';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.upcomingChallenges);
+        });
+    
+        it('should return past challenges when currentTab is "past"', function () {
+            vm.currentTab = 'past';
+            expect(vm.getCurrentChallengeList()).toEqual(vm.pastChallenges);
+        });
+    
+        it('should return an empty array when currentTab is an unknown value', function () {
+            vm.currentTab = 'unknown'; 
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    
+        it('should return an empty array when currentTab is null', function () {
+            vm.currentTab = null; 
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    
+        it('should return an empty array when currentTab is undefined', function () {
+            vm.currentTab = undefined; 
+            expect(vm.getCurrentChallengeList()).toEqual([]);
+        });
+    });
+
+    describe('Filter function coverage for getFiltered*Challenges', function () {
+        var vm, $httpBackend;
+    
+        beforeEach(inject(function (_$httpBackend_) {
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET(/.*/).respond(200, { results: [] });
+            vm = createController();
+            $httpBackend.flush();
+        
+            // Set up sample data
+            vm.ongoingChallenges = [{ id: 1 }];
+            vm.upcomingChallenges = [{ id: 2 }];
+            vm.pastChallenges = [{ id: 3 }];
+            vm.searchTitle = ['search'];
+            vm.selecteddomain = ['domain'];
+            vm.selectedHostTeam = 'host';
+            vm.filterStartDate = new Date('2023-01-01');
+            vm.filterEndDate = new Date('2023-12-31');
+        }));
+    
+        it('should call all filters in order for getFilteredOngoingChallenges', function () {
+            vm.sortByTeam = 'desc';
+            const result = vm.getFilteredOngoingChallenges();
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.ongoingChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
+            expect(result).toContain('ordered');
+        });
+    
+        it('should call all filters in order for getFilteredUpcomingChallenges', function () {
+            vm.sortByTeam = 'asc';
+            const result = vm.getFilteredUpcomingChallenges();
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.upcomingChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', false);
+            expect(result).toContain('ordered');
+        });
+    
+        it('should call all filters in order for getFilteredPastChallenges', function () {
+            vm.sortByTeam = 'desc';
+            const result = vm.getFilteredPastChallenges();
+            expect(window.customTitleFilter).toHaveBeenCalledWith(vm.pastChallenges, vm.searchTitle);
+            expect(window.customDomainFilter).toHaveBeenCalled();
+            expect(window.customHostFilter).toHaveBeenCalled();
+            expect(window.customDateRangeFilter).toHaveBeenCalled();
+            expect(window.orderBy).toHaveBeenCalledWith(jasmine.any(Array), 'creator.team_name', true);
+            expect(result).toContain('ordered');
+        });
+    
+        it('should handle empty challenge lists', function () {
+            vm.ongoingChallenges = [];
+            vm.upcomingChallenges = [];
+            vm.pastChallenges = [];
+            vm.sortByTeam = '';
+            expect(vm.getFilteredOngoingChallenges()).toContain('ordered');
+            expect(vm.getFilteredUpcomingChallenges()).toContain('ordered');
+            expect(vm.getFilteredPastChallenges()).toContain('ordered');
+        });
+    });
+    
+    describe('Filter and Dialog Functions', function () {
+        var $mdDialog, $q, $rootScope, vm, $httpBackend;
+    
+        beforeEach(inject(function (_$mdDialog_, _$q_, _$rootScope_, _$httpBackend_) {
+            $mdDialog = _$mdDialog_;
+            $q = _$q_;
+            $rootScope = _$rootScope_;
+            $httpBackend = _$httpBackend_;
+            $httpBackend.whenGET(/.*/).respond(200, { results: [] });
+            vm = createController();
+            $httpBackend.flush();
+        }));
+    
+        it('should reset all filter properties to their default state', function () {
+            vm.selecteddomain = ['NLP', 'Computer Vision'];
+            vm.searchTitle = ['Awesome Challenge'];
+            vm.selectedHostTeam = 'Team EvalAI';
+            vm.sortByTeam = 'asc';
+            vm.filterStartDate = new Date('2025-01-01');
+            vm.filterEndDate = new Date('2025-12-31');
+            vm.resetFilter();
+            expect(vm.selecteddomain).toEqual([]);
+            expect(vm.searchTitle).toEqual([]);
+            expect(vm.selectedHostTeam).toBe('');
+            expect(vm.sortByTeam).toBe('');
+            expect(vm.filterStartDate).toBeNull();
+            expect(vm.filterEndDate).toBeNull();
+        });
+    
+        describe('openFilterDialog', function() {
+            var mockEvent;
+            var initialFilterData;
+    
+            beforeEach(function() {
+                mockEvent = { target: 'mockButton' };
+                vm.selecteddomain = ['CV'];
+                vm.selectedHostTeam = 'HostTeam1';
+                vm.sortByTeam = 'asc';
+                vm.filterStartDate = new Date('2025-01-01');
+                vm.filterEndDate = new Date('2025-01-31');
+                vm.domain_choices = [['All', 'All'], ['CV', 'CV']];
+                vm.host_team_choices = ['HostTeam1', 'HostTeam2'];
+                initialFilterData = {
+                    selecteddomain: vm.selecteddomain,
+                    selectedHostTeam: vm.selectedHostTeam,
+                    sortByTeam: vm.sortByTeam,
+                    filterStartDate: vm.filterStartDate,
+                    filterEndDate: vm.filterEndDate,
+                    domain_choices: vm.domain_choices,
+                    host_team_choices: vm.host_team_choices
+                };
+            });
+    
+            it('should open the filter dialog with the correct initial data', function() {
+                spyOn($mdDialog, 'show').and.returnValue($q.defer().promise);
+                vm.openFilterDialog(mockEvent);
+                $rootScope.$apply();
+                expect($mdDialog.show).toHaveBeenCalled();
+                var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
+                expect(dialogArgs.controller).toBe('filterDialogCtrl');
+                expect(dialogArgs.targetEvent).toBe(mockEvent);
+                expect(dialogArgs.locals.filterData).toEqual(initialFilterData);
+            });
+    
+            it('should update controller filters when the dialog is closed with new filters', function() {
+                var newFilters = {
+                    selecteddomain: ['NLP'],
+                    selectedHostTeam: 'HostTeam2',
+                    sortByTeam: 'desc',
+                    filterStartDate: new Date('2025-06-01'),
+                    filterEndDate: new Date('2025-06-30')
+                };
+                spyOn($mdDialog, 'show').and.returnValue($q.resolve(newFilters));
+                vm.openFilterDialog(mockEvent);
+                $rootScope.$apply();
+                expect(vm.selecteddomain).toEqual(newFilters.selecteddomain);
+                expect(vm.selectedHostTeam).toEqual(newFilters.selectedHostTeam);
+                expect(vm.sortByTeam).toEqual(newFilters.sortByTeam);
+                expect(vm.filterStartDate).toEqual(newFilters.filterStartDate);
+                expect(vm.filterEndDate).toEqual(newFilters.filterEndDate);
+            });
+    
+            it('should NOT update controller filters when the dialog is cancelled', function() {
+                
+                var deferred = $q.defer();
+                spyOn($mdDialog, 'show').and.returnValue(deferred.promise.catch(angular.noop));
+                vm.openFilterDialog(mockEvent);
+                deferred.reject(); 
+                $rootScope.$apply();
+                expect(vm.selecteddomain).toEqual(initialFilterData.selecteddomain);
+                expect(vm.selectedHostTeam).toEqual(initialFilterData.selectedHostTeam);
+                expect(vm.sortByTeam).toEqual(initialFilterData.sortByTeam);
+                expect(vm.filterStartDate).toEqual(initialFilterData.filterStartDate);
+                expect(vm.filterEndDate).toEqual(initialFilterData.filterEndDate);
+            });
+        });
+    });
+    
 });

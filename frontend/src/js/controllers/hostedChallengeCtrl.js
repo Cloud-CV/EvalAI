@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('HostedChallengesCtrl', HostedChallengesCtrl);
 
-    HostedChallengesCtrl.$inject = ['utilities'];
+    HostedChallengesCtrl.$inject = ['utilities', '$rootScope', '$mdDialog', '$filter'];
 
-    function HostedChallengesCtrl(utilities) {
+    function HostedChallengesCtrl(utilities, $rootScope, $mdDialog, $filter) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -24,13 +24,32 @@
         vm.upcomingChallenges = [];
         vm.pastChallenges = [];
         vm.challengeCreator = {};
-
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
+        vm.selectedHostTeam = '';
+        vm.sortByTeam = '';
+        vm.host_team_choices = [];
+        vm.filterStartDate = null;
+        vm.filterEndDate = null;
         vm.currentTab = 'ongoing';
+
 
         vm.setCurrentTab = function (tabName) {
             vm.currentTab = tabName;
         };
 
+        vm.getCurrentChallengeList = function () {
+            if (vm.currentTab === 'ongoing') {
+                return vm.ongoingChallenges;
+            } else if (vm.currentTab === 'upcoming') {
+                return vm.upcomingChallenges;
+            } else if (vm.currentTab === 'past') {
+                return vm.pastChallenges;
+            } else {
+                return [];
+            }
+        };
+        
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
@@ -89,5 +108,113 @@
             }
         };
         utilities.sendRequest(parameters);
+
+        vm.getFilteredOngoingChallenges = function () {
+            let result = $filter('customTitleFilter')(vm.ongoingChallenges, vm.searchTitle);
+            result = $filter('customDomainFilter')(result, vm.selecteddomain);
+            result = $filter('customHostFilter')(result, vm.selectedHostTeam);
+            result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
+            return result;
+        };
+        vm.getFilteredUpcomingChallenges = function () {
+            let result = $filter('customTitleFilter')(vm.upcomingChallenges, vm.searchTitle);
+            result = $filter('customDomainFilter')(result, vm.selecteddomain);
+            result = $filter('customHostFilter')(result, vm.selectedHostTeam);
+            result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
+            return result;
+        };
+        vm.getFilteredPastChallenges = function () {
+            let result = $filter('customTitleFilter')(vm.pastChallenges, vm.searchTitle);
+            result = $filter('customDomainFilter')(result, vm.selecteddomain);
+            result = $filter('customHostFilter')(result, vm.selectedHostTeam);
+            result = $filter('customDateRangeFilter')(result, vm.filterStartDate, vm.filterEndDate);
+            result = $filter('orderBy')(result, 'creator.team_name', vm.sortByTeam === 'desc');
+            return result;
+        };
+
+        function extractUniqueHostTeams() {
+            const allChallenges = [].concat(
+                vm.currentList || [],
+                vm.upcomingList || [],
+                vm.pastList || []
+            );
+
+            const hostTeamsSet = new Set();
+
+            allChallenges.forEach(function (challenge) {
+                if (challenge.creator && challenge.creator.team_name) {
+                    hostTeamsSet.add(challenge.creator.team_name);
+                }
+            });
+
+            vm.host_team_choices = Array.from(hostTeamsSet).sort();
+        }
+
+        
+        setTimeout(function () {
+            extractUniqueHostTeams();
+        }, 1000);
+
+        parameters.url = "challenges/challenge/get_domain_choices/";
+        parameters.method = 'GET';
+        parameters.data = {};
+        vm.domain_choices = [];
+        parameters.callback = {
+            onSuccess: function (response) {
+                vm.domain_choices.push(["All", "All"]);
+                for (var i = 0; i < response.data.length; i++) {
+                    vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                }
+                vm.domain_choices.push(["None", "None"]);
+            },
+            onError: function (response) {
+                var error = response.data;
+                $rootScope.notify("error", error);
+            }
+        };
+        utilities.sendRequest(parameters);
+
+        vm.resetFilter = function () {
+            vm.selecteddomain = [];
+            vm.searchTitle = [];
+            vm.selectedHostTeam = '';
+            vm.sortByTeam = '';
+            vm.filterStartDate = null;
+            vm.filterEndDate = null;
+        };
+
+        vm.openFilterDialog = function (ev) {
+            $mdDialog.show({
+                controller: 'filterDialogCtrl',
+                controllerAs: 'dialog',
+                templateUrl: 'src/views/web/challenge/challenge-filter-dialog.html',
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose: true,
+                fullscreen: true,
+                locals: {
+                    filterData: {
+                        selecteddomain: vm.selecteddomain,
+                        selectedHostTeam: vm.selectedHostTeam,
+                        sortByTeam: vm.sortByTeam,
+                        filterStartDate: vm.filterStartDate,
+                        filterEndDate: vm.filterEndDate,
+                        domain_choices: vm.domain_choices,
+                        host_team_choices: vm.host_team_choices
+                    }
+                }
+            }).then(function (filters) {
+                if (filters) {
+                vm.selecteddomain = filters.selecteddomain;
+                vm.selectedHostTeam = filters.selectedHostTeam;
+                vm.sortByTeam = filters.sortByTeam;
+                vm.filterStartDate = filters.filterStartDate;
+                vm.filterEndDate = filters.filterEndDate;
+                }
+            });
+        };
     }
+
 })();
