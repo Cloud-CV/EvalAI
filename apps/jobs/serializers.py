@@ -32,7 +32,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             ignore_submission = context.get("ignore_submission")
             kwargs["data"]["ignore_submission"] = ignore_submission
 
-        super(SubmissionSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Submission
@@ -80,10 +80,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
             ret.pop("environment_log_file", None)
         return ret
 
-    def get_participant_team_name(self, obj):
+    def get_participant_team_name(self, obj): # pylint: disable=no-self-use
         return obj.participant_team.team_name
 
-    def get_execution_time(self, obj):
+    def get_execution_time(self, obj): # pylint: disable=no-self-use
         return obj.execution_time
 
 
@@ -93,7 +93,7 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
     leaderboard_schema = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = LeaderboardData
@@ -106,10 +106,10 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
             "error",
         )
 
-    def get_participant_team_name(self, obj):
+    def get_participant_team_name(self, obj): # pylint: disable=no-self-use
         return obj.submission.participant_team.team_name
 
-    def get_leaderboard_schema(self, obj):
+    def get_leaderboard_schema(self, obj):# pylint: disable=no-self-use
         return obj.leaderboard.schema
 
 
@@ -156,16 +156,16 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "is_verified_by_host",
         )
 
-    def get_participant_team(self, obj):
+    def get_participant_team(self, obj): # pylint: disable=no-self-use
         return obj.participant_team.team_name
 
-    def get_challenge_phase(self, obj):
+    def get_challenge_phase(self, obj): # pylint: disable=no-self-use
         return obj.challenge_phase.name
 
-    def get_created_by(self, obj):
+    def get_created_by(self, obj): # pylint: disable=no-self-use
         return obj.created_by.username
 
-    def get_participant_team_members_email_ids(self, obj):
+    def get_participant_team_members_email_ids(self, obj): # pylint: disable=no-self-use
         try:
             participant_team = ParticipantTeam.objects.get(
                 team_name=obj.participant_team.team_name
@@ -182,10 +182,10 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             )
         )
 
-    def get_created_at(self, obj):
+    def get_created_at(self, obj): # pylint: disable=no-self-use
         return obj.created_at
 
-    def get_participant_team_members(self, obj):
+    def get_participant_team_members(self, obj): # pylint: disable=no-self-use
         try:
             participant_team = ParticipantTeam.objects.get(
                 team_name=obj.participant_team.team_name
@@ -202,7 +202,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             )
         )
 
-    def get_participant_team_members_affiliations(self, obj):
+    def get_participant_team_members_affiliations(self, obj): # pylint: disable=no-self-use
         try:
             participant_team = ParticipantTeam.objects.get(
                 team_name=obj.participant_team.team_name
@@ -217,7 +217,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
         return [user.profile.affiliation for user in users]
 
 
-class SubmissionCount(object):
+class SubmissionCount: # pylint: disable=no-self-use
     def __init__(self, submission_count):
         self.submission_count = submission_count
 
@@ -226,7 +226,7 @@ class SubmissionCountSerializer(serializers.Serializer):
     submission_count = serializers.IntegerField()
 
 
-class LastSubmissionDateTime(object):
+class LastSubmissionDateTime:
     def __init__(self, last_submission_datetime):
         self.last_submission_datetime = last_submission_datetime
 
@@ -249,7 +249,7 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
                 "leaderboard"
             ] = challenge_phase_split.leaderboard.pk
 
-        super(CreateLeaderboardDataSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = LeaderboardData
