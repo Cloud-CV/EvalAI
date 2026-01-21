@@ -6,17 +6,17 @@
             <ul class="nav nav-underline" ng-init="tab = 1">
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 1" class="nav-link" ng-class="{'active': tab === 1}">
-                        <strong class="text-med-black">Ongoing ({{challengeList.currentList.length}})</strong>
+                        <strong class="text-med-black">Ongoing ({{challengeList.currentCount}})</strong>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 2" class="nav-link" ng-class="{'active': tab === 2}">
-                        <strong class="text-med-black">Upcoming ({{challengeList.upcomingList.length}})</strong>
+                        <strong class="text-med-black">Upcoming ({{challengeList.upcomingCount}})</strong>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" ng-click="tab = 3" class="nav-link" ng-class="{'active': tab === 3}">
-                        <strong class="text-med-black">Past ({{challengeList.pastList.length}})</strong>
+                        <strong class="text-med-black">Past ({{challengeList.pastCount}})</strong>
                     </a>
                 </li>
             </ul>

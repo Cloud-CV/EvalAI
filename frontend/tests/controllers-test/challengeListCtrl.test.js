@@ -29,6 +29,9 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.currentList).toEqual([]);
             expect(vm.upcomingList).toEqual([]);
             expect(vm.pastList).toEqual([]);
+            expect(vm.currentCount).toEqual(0);
+            expect(vm.upcomingCount).toEqual(0);
+            expect(vm.pastCount).toEqual(0);
             expect(vm.noneCurrentChallenge).toBeFalsy();
             expect(vm.noneUpcomingChallenge).toBeFalsy();
             expect(vm.nonePastChallenge).toBeFalsy();
@@ -65,11 +68,13 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
             vm = createController();
             expect(vm.currentList).toEqual(successResponse.results);
+            expect(vm.currentCount).toEqual(0);
             expect(vm.noneCurrentChallenge).toBeTruthy();
         });
 
@@ -78,6 +83,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                count: 2,
                 next: null,
                 results: [
                     {
@@ -102,6 +108,7 @@ describe('Unit tests for challenge list controller', function () {
             };
             vm = createController();
             expect(vm.currentList).toEqual(successResponse.results);
+            expect(vm.currentCount).toEqual(2);
             expect(vm.noneCurrentChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -137,11 +144,13 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
             vm = createController();
             expect(vm.upcomingList).toEqual(successResponse.results);
+            expect(vm.upcomingCount).toEqual(0);
             expect(vm.noneUpcomingChallenge).toBeTruthy();
         });
 
@@ -150,6 +159,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                count: 2,
                 next: null,
                 results: [
                     {
@@ -174,6 +184,7 @@ describe('Unit tests for challenge list controller', function () {
             };
             vm = createController();
             expect(vm.upcomingList).toEqual(successResponse.results);
+            expect(vm.upcomingCount).toEqual(2);
             expect(vm.noneUpcomingChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -198,6 +209,7 @@ describe('Unit tests for challenge list controller', function () {
             isPastChallengeSuccess = null;
             // success response for the ongoing challenge
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
@@ -211,11 +223,13 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
             vm = createController();
             expect(vm.pastList).toEqual(successResponse.results);
+            expect(vm.pastCount).toEqual(0);
             expect(vm.nonePastChallenge).toBeTruthy();
         });
 
@@ -224,6 +238,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                count: 2,
                 next: null,
                 results: [
                     {
@@ -248,6 +263,7 @@ describe('Unit tests for challenge list controller', function () {
             };
             vm = createController();
             expect(vm.pastList).toEqual(successResponse.results);
+            expect(vm.pastCount).toEqual(2);
             expect(vm.nonePastChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -273,6 +289,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = true;
             // success response for the ongoing and upcoming challenge
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
@@ -289,6 +306,7 @@ describe('Unit tests for challenge list controller', function () {
 
             // mock response with next property set to a non-null value
             successResponse = {
+                count: 1,
                 next: 'http://example.com/challenges/?page=2',
                 results: [
                     {
@@ -308,9 +326,10 @@ describe('Unit tests for challenge list controller', function () {
             const parameters = {
                 url: 'challenges/challenge/present/approved/public',
                 method: 'GET',
+                token: null,
                 callback: jasmine.any(Function)
             };
-            vm.getAllResults(parameters, []);
+            vm.getAllResults(parameters, [], 'noneCurrentChallenge', 'currentCount', true);
             expect(vm.currentList).toEqual(successResponse.results);
             expect(vm.noneCurrentChallenge).toBeFalsy();
             expect(vm.getAllResults).toHaveBeenCalledTimes(2);
@@ -321,6 +340,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                count: 0,
                 next: null,
                 results: []
             };
@@ -329,10 +349,11 @@ describe('Unit tests for challenge list controller', function () {
             spyOn(utilities, 'sendRequest').and.callThrough();
             
             const parameters = {
-                url: 'challenges/challenge/present/approved/public'
+                url: 'challenges/challenge/present/approved/public',
+                token: null
             };
             
-            vm.getAllResults(parameters, [], 'noneCurrentChallenge');
+            vm.getAllResults(parameters, [], 'noneCurrentChallenge', 'currentCount', true);
             
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect(utilities.sendRequest.calls.argsFor(0)[0].method).toEqual('GET');
