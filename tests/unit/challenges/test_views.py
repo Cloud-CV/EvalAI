@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 import csv
 import io
 import json
@@ -6433,13 +6434,25 @@ class CreateOrUpdateGithubChallengeTest(
         )
 
         # Second push - update challenge
-        # Reset zip file for second read
-        self.zip_file.seek(0)
-        test_zip_file_2 = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
+        # Create fresh zip files for second request
+        with open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_file_2 = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        input_zip_file_2 = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
             content_type="application/zip",
         )
+
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
             resp.content = test_zip_file_2.read()
@@ -6449,7 +6462,7 @@ class CreateOrUpdateGithubChallengeTest(
                 self.url,
                 {
                     "GITHUB_REPOSITORY": github_repository,
-                    "zip_configuration": self.input_zip_file,
+                    "zip_configuration": input_zip_file_2,
                 },
                 format="multipart",
             )
