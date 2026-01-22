@@ -10,7 +10,6 @@
 
     function ChallengeListCtrl(utilities, $window, moment) {
         var vm = this;
-        var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
