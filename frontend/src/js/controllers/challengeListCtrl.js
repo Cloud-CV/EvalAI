@@ -10,7 +10,6 @@
 
     function ChallengeListCtrl(utilities, $window, moment) {
         var vm = this;
-        var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
@@ -72,9 +71,9 @@
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         // Create a new parameters object to avoid race conditions
+                        // Don't pass token for public endpoints
                         var nextParams = {
-                            url: slicedUrl,
-                            token: parameters.token
+                            url: slicedUrl
                         };
                         vm.getAllResults(nextParams, resultsArray, typ, countKey, false);
                     } else {
@@ -95,17 +94,15 @@
         };
 
         // Create separate parameter objects for each API call to avoid race conditions
+        // These are public endpoints, so don't send token (avoids errors with stale tokens after logout)
         var currentParams = {
-            url: 'challenges/challenge/present/approved/public',
-            token: userKey
+            url: 'challenges/challenge/present/approved/public'
         };
         var upcomingParams = {
-            url: 'challenges/challenge/future/approved/public',
-            token: userKey
+            url: 'challenges/challenge/future/approved/public'
         };
         var pastParams = {
-            url: 'challenges/challenge/past/approved/public',
-            token: userKey
+            url: 'challenges/challenge/past/approved/public'
         };
 
         // calls for ongoing challenges

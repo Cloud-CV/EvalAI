@@ -58,19 +58,72 @@
         };
         utilities.sendRequest(parameters);
 
-        vm.getAllChallenges = function(parameters, counter){
-            parameters.callback = {
+        vm.getAllChallenges = function(params, counter){
+            // Create a new parameters object for this request to avoid race conditions
+            var requestParams = {
+                url: params.url,
+                method: params.method,
+                token: params.token,
+                callback: {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var details = response.data;
+                        if (status == 200) {
+                            vm[counter] += details.results.length;
+                            if (details.next !== null){
+                                var url = details.next;
+                                var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
+                                // Create new params for next page request
+                                var nextParams = {
+                                    url: slicedUrl,
+                                    method: 'GET',
+                                    token: params.token
+                                };
+                                vm.getAllChallenges(nextParams, counter);
+                            }
+                        }
+                    },
+                    onError: function(response) {
+                        utilities.hideLoader();
+                        var status = response.status;
+                        var error = response.data;
+                        if (status == 403) {
+                            vm.error = error;
+                            vm.isPrivileged = false;
+                        } else if (status == 401) {
+                            alert("Timeout, Please login again to continue!");
+                            utilities.resetStorage();
+                            $state.go("auth.login");
+                            $rootScope.isAuth = false;
+                        }
+                    }
+                }
+            };
+
+            utilities.sendRequest(requestParams);
+        };
+
+        // Create separate parameter objects for each API call to avoid race conditions
+
+        // get all ongoing challenges.
+        var challengeParams = {
+            url: 'challenges/challenge/present/approved/public',
+            method: 'GET',
+            token: userKey
+        };
+        vm.getAllChallenges(challengeParams, "challengeCount");
+
+        //check for host teams.
+        var hostTeamParams = {
+            url: 'hosts/challenge_host_team/',
+            method: 'GET',
+            token: userKey,
+            callback: {
                 onSuccess: function(response) {
                     var status = response.status;
                     var details = response.data;
                     if (status == 200) {
-                        vm[counter] += details.results.length;
-                        if (details.next !== null){
-                            var url = details.next;
-                            var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
-                            parameters.url = slicedUrl;
-                            vm.getAllChallenges(parameters, counter);
-                        }
+                        vm.hostTeamCount = details.results.length;
                     }
                     if (vm.hostTeamCount == 0) {
                         vm.hostTeamExist = false;
@@ -90,82 +143,43 @@
                         utilities.resetStorage();
                         $state.go("auth.login");
                         $rootScope.isAuth = false;
-
                     }
                 }
-            };
-
-            utilities.sendRequest(parameters);
-        };
-
-        // get all ongoing challenges.
-        parameters.url = 'challenges/challenge/present/approved/public';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        vm.getAllChallenges(parameters, "challengeCount");
-
-        //check for host teams.
-        parameters.url = 'hosts/challenge_host_team/';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var details = response.data;
-                if (status == 200) {
-                    vm.hostTeamCount = details.results.length;
-                }
-            },
-            onError: function(response) {
-                utilities.hideLoader();
-                var status = response.status;
-                var error = response.data;
-                if (status == 403) {
-                    vm.error = error;
-                    vm.isPrivileged = false;
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
-                }
             }
         };
-
-        utilities.sendRequest(parameters);
+        utilities.sendRequest(hostTeamParams);
 
         //check for participated teams.
-        parameters.url = 'participants/participant_team';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var details = response.data;
-                if (status == 200) {
-                    vm.participatedTeamCount = details.results.length;
-                }
-                utilities.hideLoader();
-            },
-            onError: function(response) {
-                utilities.hideLoader();
-                var status = response.status;
-                var error = response.data;
-                if (status == 403) {
-                    vm.error = error;
-                    vm.isPrivileged = false;
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
+        var participantTeamParams = {
+            url: 'participants/participant_team',
+            method: 'GET',
+            token: userKey,
+            callback: {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var details = response.data;
+                    if (status == 200) {
+                        vm.participatedTeamCount = details.results.length;
+                    }
+                    utilities.hideLoader();
+                },
+                onError: function(response) {
+                    utilities.hideLoader();
+                    var status = response.status;
+                    var error = response.data;
+                    if (status == 403) {
+                        vm.error = error;
+                        vm.isPrivileged = false;
+                    } else if (status == 401) {
+                        alert("Timeout, Please login again to continue!");
+                        utilities.resetStorage();
+                        $state.go("auth.login");
+                        $rootScope.isAuth = false;
+                    }
                 }
             }
         };
-
-        utilities.sendRequest(parameters);
+        utilities.sendRequest(participantTeamParams);
 
         vm.hostChallenge = function() {
             $state.go('web.challenge-host-teams');
