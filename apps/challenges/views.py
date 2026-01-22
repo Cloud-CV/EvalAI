@@ -770,8 +770,8 @@ def get_all_challenges(
         q_params["end_date__lt"] = timezone.now()
 
     elif challenge_time.lower() == "present":
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     elif challenge_time.lower() == "future":
         q_params["start_date__gt"] = timezone.now()
@@ -918,8 +918,8 @@ def get_all_participated_challenges(request, challenge_time):
         q_params["end_date__lt"] = timezone.now()
 
     elif challenge_time.lower() == "present":
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     # don't return disabled challenges
     q_params["is_disabled"] = False
@@ -2966,8 +2966,8 @@ def get_broker_urls(request):
 
     q_params = {"approved_by_admin": True}
     if is_active:
-        q_params["start_date__lt"] = timezone.now()
-        q_params["end_date__gt"] = timezone.now()
+        q_params["start_date__lte"] = timezone.now()
+        q_params["end_date__gte"] = timezone.now()
 
     if not request.user.is_superuser:
         response_data = {
@@ -4050,9 +4050,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
     )
 
     data = request.data
-    challenge_config_serializer = ChallengeConfigSerializer(
-        data=data, context={"request": request}
-    )
+    # Check if challenge already exists, if so find existing
+    # ChallengeConfiguration
+    existing_challenge_config = None
+    if challenge_queryset:
+        challenge = challenge_queryset[0]
+        existing_challenge_config = ChallengeConfiguration.objects.filter(
+            challenge=challenge.pk
+        ).first()
+
+    # Use existing instance if found, otherwise create new
+    if existing_challenge_config:
+        challenge_config_serializer = ChallengeConfigSerializer(
+            existing_challenge_config, data=data, context={"request": request}
+        )
+    else:
+        challenge_config_serializer = ChallengeConfigSerializer(
+            data=data, context={"request": request}
+        )
     if challenge_config_serializer.is_valid():
         uploaded_zip_file = challenge_config_serializer.save()
         uploaded_zip_file_path = challenge_config_serializer.data[
