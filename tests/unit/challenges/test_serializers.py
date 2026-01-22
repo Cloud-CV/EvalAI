@@ -574,3 +574,32 @@ class TestChallengePhaseSerializer(TestCase):
 
         serializer = ChallengePhaseSerializer(data=data, context=context)
         assert serializer.initial_data["challenge"] == 123
+
+
+class ChallengeSerializerTest(BaseTestCase):
+    def test_challenge_serializer_includes_payment_tier(self):
+        """Test that ChallengeSerializer includes payment_tier field"""
+        from challenges.serializers import ChallengeSerializer
+        
+        # Test with default payment_tier
+        serializer = ChallengeSerializer(self.challenge)
+        self.assertIn("payment_tier", serializer.data)
+        self.assertEqual(serializer.data["payment_tier"], "free")
+        
+        # Test with different payment tier
+        self.challenge.payment_tier = "essentials"
+        self.challenge.save()
+        serializer = ChallengeSerializer(self.challenge)
+        self.assertEqual(serializer.data["payment_tier"], "essentials")
+
+    def test_challenge_serializer_payment_tier_choices(self):
+        """Test that ChallengeSerializer correctly serializes all payment tier choices"""
+        from challenges.serializers import ChallengeSerializer
+        
+        payment_tiers = ["free", "essentials", "core", "advanced", "remote"]
+        
+        for tier in payment_tiers:
+            self.challenge.payment_tier = tier
+            self.challenge.save()
+            serializer = ChallengeSerializer(self.challenge)
+            self.assertEqual(serializer.data["payment_tier"], tier)
