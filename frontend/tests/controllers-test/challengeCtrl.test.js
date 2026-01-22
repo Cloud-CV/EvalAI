@@ -2776,15 +2776,29 @@ describe('Unit tests for challenge controller', function () {
             spyOn($state, 'go');
 
             utilities.sendRequest = function (parameters) {
-                if (success) {
-                    parameters.callback.onSuccess({
-                        data: 'success',
-                        status: 200
-                    });
-                } else {
-                    parameters.callback.onError({
-                        data: errorResponse
-                    });
+                if (parameters.method == 'GET') {
+                    if (success) {
+                        parameters.callback.onSuccess({
+                            data: {results:[vm.page.challenge_phase]},
+                            status: 200
+                        });
+                    } else {
+                        parameters.callback.onError({
+                            data: errorResponse
+                        });
+                    }
+                }
+                if (parameters.method == 'PATCH') {
+                    if (success) {
+                        parameters.callback.onSuccess({
+                            data: vm.page.challenge_phase,
+                            status: 200
+                        });
+                    } else {
+                        parameters.callback.onError({
+                            data: errorResponse
+                        });
+                    }
                 }
             };
         });
@@ -2799,15 +2813,27 @@ describe('Unit tests for challenge controller', function () {
                 max_submissions_per_day: 500,
                 max_submissions: 5000
             };
+            let before_edit={
+                id:1,
+                name:"challenge name 2",
+                description: "challenge phase description",
+                max_submissions_per_day: 100,
+                max_submissions: 5000
+            }
+            vm.phases.results = [before_edit]
             vm.phaseStartDate = new Date('Fri June 12 2018 22:41:51 GMT+0530');
             vm.phaseEndDate = new Date('Fri June 12 2099 22:41:51 GMT+0530');
 
+
             vm.editChallengePhase(editChallengePhaseForm);
+            expect(vm.phases.results[0].id).toEqual(vm.page.challenge_phase.id);
             expect(vm.challengePhaseId).toEqual(vm.page.challenge_phase.id);
+            expect(vm.phases.results[0].max_submissions_per_day).toEqual(vm.page.challenge_phase.max_submissions_per_day)
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The challenge phase details are successfully updated!");
             expect(utilities.showLoader).toHaveBeenCalled();
+
         });
 
         it('valid `edit challenge phase` form & backend error', function () {
@@ -2820,6 +2846,7 @@ describe('Unit tests for challenge controller', function () {
                 max_submissions_per_day: 500,
                 max_submissions: 5000
             };
+            vm.phases.results = [vm.page.challenge_phase]
             vm.phaseStartDate = new Date('Fri June 12 2018 22:41:51 GMT+0530');
             vm.phaseEndDate = new Date('Fri June 12 2099 22:41:51 GMT+0530');
 
@@ -2832,10 +2859,17 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('invalid `edit challenge phase` form & get successfully challenge phase details', function () {
+            vm.page.challenge_phase ={
+                id: 1,
+                name: "challenge phase name",
+                description: "challenge phase description",
+                max_submissions_per_day: 500,
+                max_submissions: 5000
+            };
             var editChallengePhaseForm = false;
             success = true;
             vm.editChallengePhase(editChallengePhaseForm);
-            expect(vm.phases).toEqual('success');
+            expect(vm.phases.results[0]).toEqual(vm.page.challenge_phase);
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
