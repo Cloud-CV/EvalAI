@@ -27,32 +27,36 @@ class StandardResultSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-def paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+def paginated_queryset(queryset, request, pagination_class=None):
     """
     Return a paginated result for a queryset
     """
-    paginator = pagination_class
+    # Create a new paginator instance for each request to avoid shared state
+    if pagination_class is None:
+        paginator = PageNumberPagination()
+    else:
+        paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
     result_page = paginator.paginate_queryset(queryset, request)
     return (paginator, result_page)
 
 
-def team_paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+def team_paginated_queryset(queryset, request, pagination_class=None):
     """
     Return a paginated result for a queryset
     """
-    paginator = pagination_class
+    # Create a new paginator instance for each request to avoid shared state
+    if pagination_class is None:
+        paginator = PageNumberPagination()
+    else:
+        paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["TEAM_PAGE_SIZE"]
     result_page = paginator.paginate_queryset(queryset, request)
     return (paginator, result_page)
 
 
 @deconstructible
-class RandomFileName(object):
+class RandomFileName:
     def __init__(self, path):
         self.path = path
 
@@ -61,7 +65,7 @@ class RandomFileName(object):
         path = self.path
         if "id" in self.path and instance.pk:
             path = self.path.format(id=instance.pk)
-        filename = "{}{}".format(uuid.uuid4(), extension)
+        filename = f"{uuid.uuid4()}{extension}"
         filename = os.path.join(path, filename)
         return filename
 
@@ -71,20 +75,19 @@ def get_model_object(model_name):
         try:
             model_object = model_name.objects.get(pk=pk)
             return model_object
-        except model_name.DoesNotExist:
+        except model_name.DoesNotExist as exc:
             raise NotFound(
-                "{} {} does not exist".format(model_name.__name__, pk)
-            )
+                f"{model_name.__name__} {pk} does not exist"
+            ) from exc
 
-    get_model_by_pk.__name__ = "get_{}_object".format(
-        model_name.__name__.lower()
-    )
+    get_model_by_pk.__name__ = f"get_{model_name.__name__.lower()}_object"
     return get_model_by_pk
 
 
 def encode_data(data):
     """
-    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    Turn `data` into a hash and an encoded string,
+    suitable for use with `decode_data`.
     """
     encoded = []
     for i in data:
@@ -106,7 +109,7 @@ def send_email(
     sender=settings.CLOUDCV_TEAM_EMAIL,
     recipient=None,
     template_id=None,
-    template_data={},
+    template_data=None,
 ):
     """Function to send email
 
@@ -114,8 +117,11 @@ def send_email(
         sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
         recipient {string} -- Recipient email address
         template_id {string} -- Sendgrid template id
-        template_data {dict} -- Dictionary to substitute values in subject and email body
+        template_data {dict} -- Dictionary to substitute values in
+            subject and email body
     """
+    if template_data is None:
+        template_data = {}
     try:
         sg = sendgrid.SendGridAPIClient(
             api_key=os.environ.get("SENDGRID_API_KEY")
@@ -130,11 +136,11 @@ def send_email(
         to_list.add_to(to_email)
         mail.add_personalization(to_list)
         sg.client.mail.send.post(request_body=mail.get())
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         logger.warning(
-            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+            "Cannot make sendgrid call. "
+            "Please check if SENDGRID_API_KEY is present."
         )
-    return
 
 
 def get_url_from_hostname(hostname):
@@ -142,7 +148,7 @@ def get_url_from_hostname(hostname):
         scheme = "http"
     else:
         scheme = "https"
-    url = "{}://{}".format(scheme, hostname)
+    url = f"{scheme}://{hostname}"
     return url
 
 
@@ -150,7 +156,8 @@ def get_boto3_client(resource, aws_keys):
     """
     Returns the boto3 client for a resource in AWS
     Arguments:
-        resource {str} -- Name of the resource for which client is to be created
+        resource {str} -- Name of the resource for which
+            client is to be created
         aws_keys {dict} -- AWS keys which are to be used
     Returns:
         Boto3 client object for the resource
@@ -163,8 +170,9 @@ def get_boto3_client(resource, aws_keys):
             aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
         )
         return client
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception(e)
+    return None
 
 
 def get_or_create_sqs_queue(queue_name, challenge=None):
@@ -200,7 +208,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            logger.exception("Cannot get queue: {}".format(queue_name))
+            logger.exception("Cannot get queue: %s", queue_name)
         sqs_retention_period = (
             SQS_RETENTION_PERIOD
             if challenge is None
@@ -240,9 +248,7 @@ def get_queue_name(param, challenge_pk):
     queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
     queue_name = re.sub(r"\W+", "-", queue_name)
 
-    queue_name = "{}-{}-{}-{}".format(
-        queue_name, challenge_pk, env, uuid.uuid4()
-    )[:max_len]
+    queue_name = f"{queue_name}-{challenge_pk}-{env}-{uuid.uuid4()}"[:max_len]
     return queue_name
 
 
@@ -250,7 +256,8 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     Send slack notification to any workspace
     Keyword Arguments:
-        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
+        webhook {string} -- slack webhook URL
+            (default: {settings.SLACK_WEB_HOOK_URL})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
     try:
@@ -265,12 +272,13 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
             data=json.dumps(data),
             headers={"Content-Type": "application/json"},
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(
-                e
-            )
+            "Exception raised while sending slack notification. "
+            "Exception message: %s",
+            e,
         )
+    return None
 
 
 def mock_if_non_prod_aws(aws_mocker):
@@ -285,6 +293,7 @@ def mock_if_non_prod_aws(aws_mocker):
 @contextmanager
 def suppress_autotime(model, fields):
     _original_values = {}
+    # pylint: disable=protected-access
     for field in model._meta.local_fields:
         if field.name in fields:
             _original_values[field.name] = {
@@ -315,8 +324,8 @@ def is_model_field_changed(model_obj, field_name):
     Return:
         {bool} : True/False if the model is changed or not
     """
-    prev = getattr(model_obj, "_original_{}".format(field_name))
-    curr = getattr(model_obj, "{}".format(field_name))
+    prev = getattr(model_obj, f"_original_{field_name}")
+    curr = getattr(model_obj, field_name)
     if prev != curr:
         return True
     return False

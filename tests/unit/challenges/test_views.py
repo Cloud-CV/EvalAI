@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 import csv
 import io
 import json
@@ -5,6 +6,7 @@ import os
 import shutil
 from datetime import timedelta
 from os.path import join
+from smtplib import SMTPException
 
 import boto3
 import mock
@@ -88,8 +90,8 @@ class BaseAPITestClass(APITestCase):
             approved_by_admin=False,
             github_repository="challenge/github_repo",
         )
-        self.challenge.slug = "{}-{}".format(
-            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        self.challenge.slug = (
+            f"{self.challenge.title.replace(' ', '-').lower()}-{self.challenge.pk}"
         )[:199]
         self.challenge.save()
 
@@ -111,7 +113,7 @@ class GetChallengeTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_challenge_list")
 
     def setUp(self):
-        super(GetChallengeTest, self).setUp()
+        super().setUp()
 
         self.disabled_challenge = Challenge.objects.create(
             title="Disabled Challenge",
@@ -147,12 +149,12 @@ class GetChallengeTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
@@ -188,9 +190,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -228,7 +230,7 @@ class GetChallengeTest(BaseAPITestClass):
 
 class GetParticipantTeamNameTest(BaseAPITestClass):
     def setUp(self):
-        super(GetParticipantTeamNameTest, self).setUp()
+        super().setUp()
 
         self.participant = Participant.objects.create(
             user=self.user,
@@ -239,6 +241,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
 
     def test_team_name_for_challenge(self):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:participant_team_detail_for_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -254,6 +257,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
     def test_team_name_for_challenge_with_participant_team_does_not_exist(
         self,
     ):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:participant_team_detail_for_challenge",
             kwargs={"challenge_pk": self.challenge.pk + 2},
@@ -266,7 +270,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
 
 class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
     def setUp(self):
-        super(GetApprovedParticipantTeamNameTest, self).setUp()
+        super().setUp()
 
         self.participant = Participant.objects.create(
             user=self.user,
@@ -277,6 +281,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
     def test_add_participant_team_to_approved_list_when_not_in_participant_team(  # noqa: C0301
         self,
     ):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
             kwargs={
@@ -292,6 +297,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
     def test_add_participant_team_to_approved_list_when_team_doesnt_exist(
         self,
     ):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
             kwargs={
@@ -307,6 +313,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
 
     def test_team_in_approved_participant_team(self):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:get_participant_teams_for_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -315,6 +322,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_add_participant_team_already_approved(self):
+        # pylint: disable=attribute-defined-outside-init
         self.challenge.approved_participant_teams.add(self.participant_team)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_approved_list",
@@ -329,6 +337,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_remove_participant_team_doesnt_exist(self):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:remove_participant_team_from_approved_list",
             kwargs={
@@ -342,6 +351,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_remove_participant_team(self):
+        # pylint: disable=attribute-defined-outside-init
         self.challenge.approved_participant_teams.add(self.participant_team)
         self.url = reverse_lazy(
             "challenges:remove_participant_team_from_approved_list",
@@ -356,7 +366,7 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
 
 class DeregisterParticipantTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(DeregisterParticipantTeamTest, self).setUp()
+        super().setUp()
 
         self.user5 = User.objects.create(
             username="otheruser",
@@ -391,6 +401,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
         )
 
     def create_submission(self):
+        # pylint: disable=attribute-defined-outside-init
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase1 = ChallengePhase.objects.create(
                 name="Challenge Phase",
@@ -427,6 +438,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
             )
 
     def test_deregister_participant_team(self):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:deregister_participant_team_from_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -441,6 +453,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
     def test_deregister_participant_team_with_challenge_does_not_exist(
         self,
     ):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:deregister_participant_team_from_challenge",
             kwargs={"challenge_pk": self.challenge.pk + 2},
@@ -449,6 +462,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_deregister_participant_team_with_submission_exist(self):
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:deregister_participant_team_from_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -460,7 +474,7 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
 
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
-        super(CreateChallengeTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_list",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -503,7 +517,7 @@ class CreateChallengeTest(BaseAPITestClass):
 
 class GetParticularChallenge(BaseAPITestClass):
     def setUp(self):
-        super(GetParticularChallenge, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_detail",
             kwargs={
@@ -522,12 +536,12 @@ class GetParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": "{0}{1}".format(
-                self.challenge.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -563,9 +577,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -587,6 +601,7 @@ class GetParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_challenge_when_user_is_not_its_creator(self):
+        # pylint: disable=attribute-defined-outside-init
         self.user1 = User.objects.create(
             username="someuser1",
             email="user1@test.com",
@@ -624,12 +639,12 @@ class GetParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": "{0}{1}".format(
-                self.challenge.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -656,9 +671,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
-            "slug": "{}-{}".format(
-                new_title.replace(" ", "-").lower(), self.challenge.pk
-            )[:199],
+            "slug": f"{new_title.replace(' ', '-').lower()}-{self.challenge.pk}"[
+                :199
+            ],
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
@@ -667,9 +682,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -721,7 +736,7 @@ class GetParticularChallenge(BaseAPITestClass):
 
 class UpdateParticularChallenge(BaseAPITestClass):
     def setUp(self):
-        super(UpdateParticularChallenge, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_detail",
             kwargs={
@@ -739,6 +754,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
         }
 
     def test_particular_challenge_partial_update(self):
+        # pylint: disable=attribute-defined-outside-init
         self.partial_update_data = {
             "title": self.partial_update_challenge_title
         }
@@ -751,8 +767,12 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
+            "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -772,12 +792,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
-            "start_date": "{0}{1}".format(
-                self.challenge.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "banned_email_ids": [],
@@ -785,9 +799,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
-            "slug": "{}-{}".format(
-                self.partial_update_challenge_title.replace(" ", "-").lower(),
-                self.challenge.pk,
+            "slug": (
+                f"{self.partial_update_challenge_title.replace(' ', '-').lower()}-"
+                f"{self.challenge.pk}"
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
@@ -797,9 +811,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -830,8 +844,12 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.update_submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
+            "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -851,12 +869,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "is_active": True,
-            "start_date": "{0}{1}".format(
-                self.challenge.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "banned_email_ids": [],
@@ -864,9 +876,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
-            "slug": "{}-{}".format(
-                self.update_challenge_title.replace(" ", "-").lower(),
-                self.challenge.pk,
+            "slug": (
+                f"{self.update_challenge_title.replace(' ', '-').lower()}-"
+                f"{self.challenge.pk}"
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
@@ -876,9 +888,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -907,7 +919,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
 
 class DeleteParticularChallenge(BaseAPITestClass):
     def setUp(self):
-        super(DeleteParticularChallenge, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_detail",
             kwargs={
@@ -921,9 +933,11 @@ class DeleteParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-class MapChallengeAndParticipantTeam(BaseAPITestClass):
+class MapChallengeAndParticipantTeam(
+    BaseAPITestClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(MapChallengeAndParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -1244,7 +1258,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
 class DisableChallengeTest(BaseAPITestClass):
     def setUp(self):
-        super(DisableChallengeTest, self).setUp()
+        super().setUp()
 
         self.user1 = User.objects.create(
             username="otheruser", password="other_secret_password"
@@ -1329,7 +1343,7 @@ class GetAllChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_all_challenges")
 
     def setUp(self):
-        super(GetAllChallengesTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
             kwargs={
@@ -1433,12 +1447,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge3.submission_guidelines,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge3.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge3.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge3.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge3.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
@@ -1474,9 +1488,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge3.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge3.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1518,12 +1532,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -1559,9 +1573,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1603,12 +1617,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge4.submission_guidelines,
                 "evaluation_details": self.challenge4.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge4.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge4.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge4.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge4.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
@@ -1644,9 +1658,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge4.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge4.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge4.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1688,12 +1702,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge4.submission_guidelines,
                 "evaluation_details": self.challenge4.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge4.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge4.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge4.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge4.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
@@ -1729,9 +1743,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge4.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge4.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge4.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1757,12 +1771,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge3.submission_guidelines,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge3.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge3.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge3.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge3.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
@@ -1798,9 +1812,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge3.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge3.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1826,12 +1840,12 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -1867,9 +1881,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -1910,7 +1924,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_featured_challenges")
 
     def setUp(self):
-        super(GetFeaturedChallengesTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy("challenges:get_featured_challenges")
 
         # Not a featured challenge
@@ -1967,12 +1981,12 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge3.submission_guidelines,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge3.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge3.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge3.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge3.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
@@ -2008,9 +2022,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge3.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge3.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge3.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2035,7 +2049,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
 
 class GetChallengeByPk(BaseAPITestClass):
     def setUp(self):
-        super(GetChallengeByPk, self).setUp()
+        super().setUp()
 
         self.user1 = User.objects.create(
             username="user1",
@@ -2111,9 +2125,11 @@ class GetChallengeByPk(BaseAPITestClass):
         )
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk",
-            kwargs={"pk": self.challenge3.pk + 10},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge3.pk + 10},
+            )
         )
         expected = {"error": "Challenge does not exist!"}
         response = self.client.get(self.url, {})
@@ -2121,8 +2137,11 @@ class GetChallengeByPk(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_challenge_by_pk_when_user_is_challenge_host(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk", kwargs={"pk": self.challenge3.pk}
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge3.pk},
+            )
         )
         expected = {
             "id": self.challenge3.pk,
@@ -2133,12 +2152,12 @@ class GetChallengeByPk(BaseAPITestClass):
             "submission_guidelines": self.challenge3.submission_guidelines,
             "evaluation_details": self.challenge3.evaluation_details,
             "image": None,
-            "start_date": "{0}{1}".format(
-                self.challenge3.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge3.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge3.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge3.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge3.creator.pk,
                 "team_name": self.challenge3.creator.team_name,
@@ -2174,9 +2193,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge3.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge3.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge3.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge3.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -2203,8 +2222,11 @@ class GetChallengeByPk(BaseAPITestClass):
         This is a corner case in which a user is not a challenge host
         but tries but access the challenge created by challenge host.
         """
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk", kwargs={"pk": self.challenge3.pk}
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge3.pk},
+            )
         )
         self.client.force_authenticate(user=self.user1)
         expected = {"error": "Challenge does not exist!"}
@@ -2214,8 +2236,11 @@ class GetChallengeByPk(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_challenge_by_pk_when_user_is_participant(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk", kwargs={"pk": self.challenge4.pk}
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge4.pk},
+            )
         )
         expected = {
             "id": self.challenge4.pk,
@@ -2226,12 +2251,12 @@ class GetChallengeByPk(BaseAPITestClass):
             "submission_guidelines": self.challenge4.submission_guidelines,
             "evaluation_details": self.challenge4.evaluation_details,
             "image": None,
-            "start_date": "{0}{1}".format(
-                self.challenge4.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge4.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge4.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge4.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "creator": {
                 "id": self.challenge4.creator.pk,
                 "team_name": self.challenge4.creator.team_name,
@@ -2267,9 +2292,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,  # noqa: C0301
             "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,  # noqa: C0301
             "workers": self.challenge4.workers,
-            "created_at": "{0}{1}".format(
-                self.challenge4.created_at.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "created_at": f"{self.challenge4.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "queue": self.challenge4.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
@@ -2293,8 +2318,11 @@ class GetChallengeByPk(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_by_pk_when_challenge_is_disabled(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk", kwargs={"pk": self.challenge5.pk}
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge5.pk},
+            )
         )
         expected = {"error": "Sorry, the challenge was removed!"}
         response = self.client.get(self.url, {})
@@ -2304,7 +2332,7 @@ class GetChallengeByPk(BaseAPITestClass):
 
 class GetChallengeBasedOnTeams(BaseAPITestClass):
     def setUp(self):
-        super(GetChallengeBasedOnTeams, self).setUp()
+        super().setUp()
 
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
             team_name="Some Test Challenge Host Team", created_by=self.user
@@ -2369,7 +2397,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.challenge2.participant_teams.add(self.participant_team2)
 
     def test_get_challenge_when_host_team_is_given(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = [
             {
@@ -2381,12 +2411,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -2422,9 +2452,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2450,7 +2480,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_participant_team_is_given(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = [
             {
@@ -2462,12 +2494,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -2503,9 +2535,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2531,7 +2563,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_mode_is_participant(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = [
             {
@@ -2543,12 +2577,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -2584,9 +2618,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2610,7 +2644,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_mode_is_host(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = [
             {
@@ -2622,12 +2658,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
@@ -2663,9 +2699,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2691,12 +2727,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "submission_guidelines": self.challenge2.submission_guidelines,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(
-                    self.challenge2.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge2.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge2.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge2.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
@@ -2732,9 +2768,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,  # noqa: C0301
                 "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,  # noqa: C0301
                 "workers": self.challenge2.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge2.created_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "created_at": f"{self.challenge2.created_at.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
@@ -2758,7 +2794,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_with_incorrect_url_pattern(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = {"error": "Invalid url pattern!"}
         response = self.client.get(
@@ -2768,7 +2806,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_challenge_with_incorrect_url_pattern_with_all_values(self):
-        self.url = reverse_lazy("challenges:get_challenges_based_on_teams")
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy("challenges:get_challenges_based_on_teams")
+        )
 
         expected = {"error": "Invalid url pattern!"}
         response = self.client.get(
@@ -2804,9 +2844,11 @@ class ChallengePrizesTest(BaseAPITestClass):
         )
 
     def test_challenge_has_prize_false(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk",
-            kwargs={"pk": self.challenge.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge.pk},
+            )
         )
 
         self.challenge.has_prize = False
@@ -2816,9 +2858,11 @@ class ChallengePrizesTest(BaseAPITestClass):
         self.assertFalse(response.data["has_prize"])
 
     def test_challenge_has_prize_true(self):
-        self.url = reverse_lazy(
-            "challenges:get_prizes_by_challenge",
-            kwargs={"challenge_pk": self.challenge.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_prizes_by_challenge",
+                kwargs={"challenge_pk": self.challenge.pk},
+            )
         )
 
         self.challenge.has_prize = True
@@ -2864,9 +2908,11 @@ class ChallengeSponsorTest(BaseAPITestClass):
         )
 
     def test_challenge_has_sponsor_false(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk",
-            kwargs={"pk": self.challenge.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_challenge_by_pk",
+                kwargs={"pk": self.challenge.pk},
+            )
         )
 
         self.challenge.has_sponsors = False
@@ -2876,9 +2922,11 @@ class ChallengeSponsorTest(BaseAPITestClass):
         self.assertFalse(response.data["has_sponsors"])
 
     def test_challenge_has_sponsor_true(self):
-        self.url = reverse_lazy(
-            "challenges:get_sponsors_by_challenge",
-            kwargs={"challenge_pk": self.challenge.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_sponsors_by_challenge",
+                kwargs={"challenge_pk": self.challenge.pk},
+            )
         )
 
         self.challenge.has_sponsors = True
@@ -2897,7 +2945,7 @@ class ChallengeSponsorTest(BaseAPITestClass):
 
 class BaseChallengePhaseClass(BaseAPITestClass):
     def setUp(self):
-        super(BaseChallengePhaseClass, self).setUp()
+        super().setUp()
         try:
             os.makedirs("/tmp/evalai")
         except OSError:
@@ -2924,10 +2972,10 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 is_restricted_to_select_one_submission=True,
                 is_partial_submission_evaluation_enabled=False,
             )
-            self.challenge_phase.slug = "{}-{}-{}".format(
-                self.challenge.title.split(" ")[0].lower(),
-                self.challenge_phase.codename.replace(" ", "-").lower(),
-                self.challenge.pk,
+            self.challenge_phase.slug = (
+                f"{self.challenge.title.split(' ')[0].lower()}-"
+                f"{self.challenge_phase.codename.replace(' ', '-').lower()}-"
+                f"{self.challenge.pk}"
             )[:198]
             self.challenge_phase.save()
 
@@ -2951,22 +2999,20 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 is_restricted_to_select_one_submission=True,
                 is_partial_submission_evaluation_enabled=False,
             )
-            self.private_challenge_phase.slug = "{}-{}-{}".format(
-                self.challenge.title.split(" ")[0].lower(),
-                self.private_challenge_phase.codename.replace(
-                    " ", "-"
-                ).lower(),
-                self.challenge.pk,
+            self.private_challenge_phase.slug = (
+                f"{self.challenge.title.split(' ')[0].lower()}-"
+                f"{self.private_challenge_phase.codename.replace(' ', '-').lower()}-"
+                f"{self.challenge.pk}"
             )[:198]
             self.private_challenge_phase.save()
 
-    def tearDown(self):
+    def tearDown(self):  # pylint: disable=no-self-use
         shutil.rmtree("/tmp/evalai")
 
 
 class GetChallengePhaseTest(BaseChallengePhaseClass):
     def setUp(self):
-        super(GetChallengePhaseTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -2979,12 +3025,12 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(
-                    self.challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
@@ -3008,12 +3054,12 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
-                "start_date": "{0}{1}".format(
-                    self.private_challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.private_challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.private_challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.private_challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.private_challenge_phase.challenge.pk,
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
@@ -3045,12 +3091,12 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(
-                    self.challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
@@ -3092,12 +3138,12 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(
-                    self.challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
@@ -3121,12 +3167,12 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
-                "start_date": "{0}{1}".format(
-                    self.private_challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.private_challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.private_challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.private_challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.private_challenge_phase.challenge.pk,
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
@@ -3164,9 +3210,11 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class CreateChallengePhaseTest(BaseChallengePhaseClass):
+class CreateChallengePhaseTest(
+    BaseChallengePhaseClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(CreateChallengePhaseTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -3174,12 +3222,12 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.data = {
             "name": "New Challenge Phase",
             "description": "Description for new challenge phase",
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
         }
 
     @override_settings(MEDIA_ROOT="/tmp/evalai")
@@ -3211,24 +3259,24 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_max_submissions_per_month_if_field_exist(self):
-        self.zip_file = open(
-            join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
-            ),
-            "rb",
+        zip_file_path = join(
+            settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
         )
-        self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
-            content_type="application/zip",
-        )
+        with open(zip_file_path, "rb") as zip_file:
+            zip_file_content = zip_file.read()
+            zip_file_name = zip_file.name
+            self.test_zip_file = SimpleUploadedFile(  # pylint: disable=attribute-defined-outside-init
+                zip_file_name,
+                zip_file_content,
+                content_type="application/zip",
+            )
 
-        self.zip_configuration = ChallengeConfiguration.objects.create(
+        self.zip_configuration = ChallengeConfiguration.objects.create(  # pylint: disable=attribute-defined-outside-init
             user=self.user,
             challenge=self.challenge,
             zip_configuration=SimpleUploadedFile(
-                self.zip_file.name,
-                self.zip_file.read(),
+                zip_file_name,
+                zip_file_content,
                 content_type="application/zip",
             ),
             stdout_file=None,
@@ -3236,15 +3284,17 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         )
         self.client.force_authenticate(user=self.user)
 
-        self.input_zip_file = SimpleUploadedFile(
+        self.input_zip_file = SimpleUploadedFile(  # pylint: disable=attribute-defined-outside-init
             "test_sample.zip",
             b"Dummy File Content",
             content_type="application/zip",
         )
 
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (
+            reverse_lazy(  # pylint: disable=attribute-defined-outside-init
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
@@ -3259,34 +3309,36 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         for zipTestPhase in ChallengePhase.objects.all():
-            max_per_month_field = zipTestPhase._meta.get_field(
+            max_per_month_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
                 "max_submissions_per_month"
             )
             max_per_month = max_per_month_field.value_from_object(zipTestPhase)
-            id_field = zipTestPhase._meta.get_field("name")
+            id_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
+                "name"
+            )
             id_val = id_field.value_from_object(zipTestPhase)
             if id_val == "Challenge Name of the challenge phase":
-                self.assertTrue(max_per_month == 1000 or max_per_month == 345)
+                self.assertTrue(max_per_month in (1000, 345))
 
     def test_max_submissions_per_month_if_field_doesnt_exist(self):
-        self.zip_file = open(
-            join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
-            ),
-            "rb",
+        zip_file_path = join(
+            settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
         )
-        self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
-            content_type="application/zip",
-        )
+        with open(zip_file_path, "rb") as zip_file:
+            zip_file_content = zip_file.read()
+            zip_file_name = zip_file.name
+            self.test_zip_file = SimpleUploadedFile(  # pylint: disable=attribute-defined-outside-init
+                zip_file_name,
+                zip_file_content,
+                content_type="application/zip",
+            )
 
-        self.zip_configuration = ChallengeConfiguration.objects.create(
+        self.zip_configuration = ChallengeConfiguration.objects.create(  # pylint: disable=attribute-defined-outside-init
             user=self.user,
             challenge=self.challenge,
             zip_configuration=SimpleUploadedFile(
-                self.zip_file.name,
-                self.zip_file.read(),
+                zip_file_name,
+                zip_file_content,
                 content_type="application/zip",
             ),
             stdout_file=None,
@@ -3294,15 +3346,17 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         )
         self.client.force_authenticate(user=self.user)
 
-        self.input_zip_file = SimpleUploadedFile(
+        self.input_zip_file = SimpleUploadedFile(  # pylint: disable=attribute-defined-outside-init
             "test_sample.zip",
             b"Dummy File Content",
             content_type="application/zip",
         )
 
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (
+            reverse_lazy(  # pylint: disable=attribute-defined-outside-init
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
@@ -3317,12 +3371,14 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         for zipTestPhase in ChallengePhase.objects.all():
-            max_per_month_field = zipTestPhase._meta.get_field(
+            max_per_month_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
                 "max_submissions_per_month"
             )
             max_per_month = max_per_month_field.value_from_object(zipTestPhase)
 
-            max_field = zipTestPhase._meta.get_field("max_submissions")
+            max_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
+                "max_submissions"
+            )
             max_total = max_field.value_from_object(zipTestPhase)
 
             self.assertTrue(max_per_month == max_total)
@@ -3342,11 +3398,11 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_challenge_phase_when_user_is_a_part_of_host_team(self):
-        self.user1 = User.objects.create(
+        self.user1 = User.objects.create(  # pylint: disable=attribute-defined-outside-init
             username="otheruser", password="other_secret_password"
         )
 
-        self.challenge_host_team1 = ChallengeHostTeam.objects.create(
+        self.challenge_host_team1 = ChallengeHostTeam.objects.create(  # pylint: disable=attribute-defined-outside-init
             team_name="Other Test Challenge Host Team", created_by=self.user1
         )
 
@@ -3358,7 +3414,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             permissions=ChallengeHost.ADMIN,
         )
 
-        self.challenge2 = Challenge.objects.create(
+        self.challenge2 = Challenge.objects.create(  # pylint: disable=attribute-defined-outside-init
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
@@ -3399,16 +3455,16 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_challenge_phase_when_user_is_not_part_of_host_team(self):
-        self.user2 = User.objects.create(
+        self.user2 = User.objects.create(  # pylint: disable=attribute-defined-outside-init
             username="user_is_not_part_of_host_team",
             password="other_secret_password",
         )
 
-        self.challenge_host_team2 = ChallengeHostTeam.objects.create(
+        self.challenge_host_team2 = ChallengeHostTeam.objects.create(  # pylint: disable=attribute-defined-outside-init
             team_name="Other Test Challenge Host Team 2", created_by=self.user2
         )
 
-        self.challenge2 = Challenge.objects.create(
+        self.challenge2 = Challenge.objects.create(  # pylint: disable=attribute-defined-outside-init
             title="Other Test Challenge",
             short_description="Short description for other test challenge",
             description="Description for other test challenge",
@@ -3455,9 +3511,11 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class GetParticularChallengePhase(BaseChallengePhaseClass):
+class GetParticularChallengePhase(
+    BaseChallengePhaseClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(GetParticularChallengePhase, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_detail",
             kwargs={
@@ -3472,12 +3530,12 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
@@ -3507,12 +3565,12 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_submission_public": self.challenge_phase.is_submission_public,
@@ -3523,8 +3581,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,  # noqa: C0301
-            "test_annotation": "http://testserver%s"
-            % (self.challenge_phase.test_annotation.url),
+            "test_annotation": f"http://testserver{self.challenge_phase.test_annotation.url}",
             "slug": self.challenge_phase.slug,
             "environment_image": self.challenge_phase.environment_image,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
@@ -3542,7 +3599,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_challenge_phase_when_user_is_not_its_creator(self):
-        self.user1 = User.objects.create(
+        self.user1 = User.objects.create(  # pylint: disable=attribute-defined-outside-init
             username="someuser1",
             email="user1@test.com",
             password="secret_psassword",
@@ -3575,12 +3632,12 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": new_name,
             "description": new_description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
@@ -3614,9 +3671,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             },
         )
         expected = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(  # noqa: C0301
-                (self.challenge_phase.pk + 2), self.challenge.pk
-            )
+            "error": f"Challenge phase {self.challenge_phase.pk + 2} does not exist for challenge {self.challenge.pk}"  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -3647,9 +3702,11 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class UpdateParticularChallengePhase(BaseChallengePhaseClass):
+class UpdateParticularChallengePhase(
+    BaseChallengePhaseClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(UpdateParticularChallengePhase, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_detail",
             kwargs={
@@ -3669,20 +3726,22 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
         }
 
     def test_particular_challenge_phase_partial_update(self):
-        self.partial_update_data = {
-            "name": self.partial_update_challenge_phase_name
-        }
+        self.partial_update_data = (
+            {  # pylint: disable=attribute-defined-outside-init
+                "name": self.partial_update_challenge_phase_name
+            }
+        )
         expected = {
             "id": self.challenge_phase.id,
             "name": self.partial_update_challenge_phase_name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(
+                "+00:00", ""
+            ),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
@@ -3708,7 +3767,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
     @override_settings(MEDIA_ROOT="/tmp/evalai")
     def test_particular_challenge_phase_update(self):
 
-        self.update_test_annotation = SimpleUploadedFile(
+        self.update_test_annotation = SimpleUploadedFile(  # pylint: disable=attribute-defined-outside-init
             "update_test_sample_file.txt",
             b"Dummy update file content",
             content_type="text/plain",
@@ -3734,7 +3793,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
 
 class DeleteParticularChallengePhase(BaseChallengePhaseClass):
     def setUp(self):
-        super(DeleteParticularChallengePhase, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_detail",
             kwargs={
@@ -3757,9 +3816,11 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class BaseChallengePhaseSplitClass(BaseAPITestClass):
+class BaseChallengePhaseSplitClass(
+    BaseAPITestClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(BaseChallengePhaseSplitClass, self).setUp()
+        super().setUp()
         try:
             os.makedirs("/tmp/evalai")
         except OSError:
@@ -3848,13 +3909,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             show_leaderboard_by_latest_submission=False,
         )
 
-    def tearDown(self):
+    def tearDown(self):  # pylint: disable=no-self-use
         shutil.rmtree("/tmp/evalai")
 
 
 class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
     def setUp(self):
-        super(GetChallengePhaseSplitTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:challenge_phase_split_list",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -3968,7 +4029,9 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class CreateChallengeUsingZipFile(APITestCase):
+class CreateChallengeUsingZipFile(
+    APITestCase
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -3988,55 +4051,55 @@ class CreateChallengeUsingZipFile(APITestCase):
             settings.BASE_DIR, "examples", "example1", "test_zip_file"
         )
 
-        self.challenge = Challenge.objects.create(
-            title="Challenge Title",
-            short_description="Short description of the challenge (preferably 140 characters)",  # noqa: C0301
-            description=open(join(self.path, "description.html"), "rb")
-            .read()
-            .decode("utf-8"),
-            terms_and_conditions=open(
-                join(self.path, "terms_and_conditions.html"), "rb"
+        with open(
+            join(self.path, "description.html"), "rb"
+        ) as desc_file, open(
+            join(self.path, "terms_and_conditions.html"), "rb"
+        ) as terms_file, open(
+            join(self.path, "submission_guidelines.html"), "rb"
+        ) as guidelines_file, open(
+            join(self.path, "evaluation_details.html"), "rb"
+        ) as eval_file:
+            self.challenge = Challenge.objects.create(
+                title="Challenge Title",
+                short_description="Short description of the challenge (preferably 140 characters)",  # noqa: C0301
+                description=desc_file.read().decode("utf-8"),
+                terms_and_conditions=terms_file.read().decode("utf-8"),
+                submission_guidelines=guidelines_file.read().decode("utf-8"),
+                evaluation_details=eval_file.read().decode("utf-8"),
+                creator=self.challenge_host_team,
+                published=False,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
             )
-            .read()
-            .decode("utf-8"),
-            submission_guidelines=open(
-                join(self.path, "submission_guidelines.html"), "rb"
-            )
-            .read()
-            .decode("utf-8"),
-            evaluation_details=open(
-                join(self.path, "evaluation_details.html"), "rb"
-            )
-            .read()
-            .decode("utf-8"),
-            creator=self.challenge_host_team,
-            published=False,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-        )
-        self.challenge.slug = "{}-{}".format(
-            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        self.challenge.slug = (
+            f"{self.challenge.title.replace(' ', '-').lower()}-{self.challenge.pk}"
         )[:199]
         self.challenge.save()
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            with open(
+                join(self.path, "challenge_phase_description.html"), "rb"
+            ) as desc_file:
+                description = desc_file.read().decode("utf-8")
+            with open(
+                join(self.path, "test_annotation.txt"), "rb"
+            ) as test_file:
+                test_file_name = test_file.name
+                test_file_content = test_file.read()
             self.challenge_phase = ChallengePhase.objects.create(
                 name="Challenge Phase",
-                description=open(
-                    join(self.path, "challenge_phase_description.html"), "rb"
-                )
-                .read()
-                .decode("utf-8"),
+                description=description,
                 leaderboard_public=False,
                 is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
-                    open(join(self.path, "test_annotation.txt"), "rb").name,
-                    open(join(self.path, "test_annotation.txt"), "rb").read(),
+                    test_file_name,
+                    test_file_content,
                     content_type="text/plain",
                 ),
             )
@@ -4061,25 +4124,25 @@ class CreateChallengeUsingZipFile(APITestCase):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
-        self.zip_file = open(
-            join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
-            ),
-            "rb",
+        zip_file_path = join(
+            settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
         )
+        with open(zip_file_path, "rb") as zip_file:
+            zip_file_content = zip_file.read()
+            zip_file_name = zip_file.name
 
         self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
+            zip_file_name,
+            zip_file_content,
             content_type="application/zip",
         )
 
-        self.zip_configuration = ChallengeConfiguration.objects.create(
+        self.zip_configuration = ChallengeConfiguration.objects.create(  # pylint: disable=attribute-defined-outside-init
             user=self.user,
             challenge=self.challenge,
             zip_configuration=SimpleUploadedFile(
-                self.zip_file.name,
-                self.zip_file.read(),
+                zip_file_name,
+                zip_file_content,
                 content_type="application/zip",
             ),
             stdout_file=None,
@@ -4098,9 +4161,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
         expected = {"zip_configuration": ["No file was submitted."]}
         response = self.client.post(self.url, {})
@@ -4112,9 +4177,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
 
         expected = {
@@ -4131,9 +4198,11 @@ class CreateChallengeUsingZipFile(APITestCase):
     @responses.activate
     def test_create_challenge_using_zip_file_when_server_error_occurs(self):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
         expected = {
             "error": "A server error occured while processing zip file. Please try again!"  # noqa: C0301
@@ -4151,11 +4220,13 @@ class CreateChallengeUsingZipFile(APITestCase):
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk + 10
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={
+                    "challenge_host_team_pk": self.challenge_host_team.pk + 10
+                },
+            )
         )
         expected = {
             "detail": f"ChallengeHostTeam {self.challenge_host_team.pk + 10} does not exist"  # noqa: C0301
@@ -4173,9 +4244,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
         self.client.force_authenticate(user=None)
 
@@ -4191,10 +4264,8 @@ class CreateChallengeUsingZipFile(APITestCase):
     ):
         challenge_phases = ChallengePhase.objects.all()
         for zipTestPhase in challenge_phases:
-            max_concurrent_submissions_allowed_field = (
-                zipTestPhase._meta.get_field(
-                    "max_concurrent_submissions_allowed"
-                )
+            max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
+                "max_concurrent_submissions_allowed"
             )
             max_con = (
                 max_concurrent_submissions_allowed_field.value_from_object(
@@ -4206,9 +4277,11 @@ class CreateChallengeUsingZipFile(APITestCase):
     @responses.activate
     def test_create_challenge_using_zip_file_success(self):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:create_challenge_using_zip_file",
+                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+            )
         )
 
         self.assertEqual(Challenge.objects.count(), 1)
@@ -4234,9 +4307,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(ChallengePhaseSplit.objects.count(), 2)
 
 
-class GetAllSubmissionsTest(BaseAPITestClass):
+class GetAllSubmissionsTest(
+    BaseAPITestClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(GetAllSubmissionsTest, self).setUp()
+        super().setUp()
 
         self.user5 = User.objects.create(
             username="otheruser",
@@ -4309,8 +4384,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
         self.challenge5 = Challenge.objects.create(
             title="Other Test Challenge",
-            short_description="Short description for other test challenge",
-            description="Description for other test challenge",
+            short_description="Short description for other test challenge",  # noqa: C0301
+            description="Description for other test challenge",  # noqa: C0301
             terms_and_conditions="Terms and conditions for other test challenge",  # noqa: C0301
             submission_guidelines="Submission guidelines for other test challenge",  # noqa: C0301
             creator=self.challenge_host_team5,
@@ -4436,12 +4511,14 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user6)
 
     def test_get_all_submissions_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_all_submissions_of_challenge",
-            kwargs={
-                "challenge_pk": self.challenge5.pk + 10,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_all_submissions_of_challenge",
+                kwargs={
+                    "challenge_pk": self.challenge5.pk + 10,
+                    "challenge_phase_pk": self.challenge5_phase3.pk,
+                },
+            )
         )
         expected = {
             "detail": f"Challenge {self.challenge5.pk + 10} does not exist"
@@ -4451,12 +4528,14 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_submissions_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_all_submissions_of_challenge",
-            kwargs={
-                "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk + 10,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_all_submissions_of_challenge",
+                kwargs={
+                    "challenge_pk": self.challenge5.pk,
+                    "challenge_phase_pk": self.challenge5_phase3.pk + 10,
+                },
+            )
         )
         expected = {
             "error": f"Challenge Phase {self.challenge5_phase3.pk + 10} does not exist"  # noqa: C0301
@@ -4466,19 +4545,23 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
-        self.url_phase1 = reverse_lazy(
-            "challenges:get_all_submissions_of_challenge",
-            kwargs={
-                "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase1.pk,
-            },
+        self.url_phase1 = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_all_submissions_of_challenge",
+                kwargs={
+                    "challenge_pk": self.challenge5.pk,
+                    "challenge_phase_pk": self.challenge5_phase1.pk,
+                },
+            )
         )
-        self.url_phase2 = reverse_lazy(
-            "challenges:get_all_submissions_of_challenge",
-            kwargs={
-                "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase2.pk,
-            },
+        self.url_phase2 = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_all_submissions_of_challenge",
+                kwargs={
+                    "challenge_pk": self.challenge5.pk,
+                    "challenge_phase_pk": self.challenge5_phase2.pk,
+                },
+            )
         )
         self.client.force_authenticate(user=self.user5)
         submissions = [self.submission3, self.submission2]
@@ -4492,15 +4575,14 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "created_by": submission.created_by.username,
                     "status": submission.status,
                     "is_public": submission.is_public,
-                    "is_flagged": submission.is_flagged,
+                    "is_flagged": submission.is_flagged,  # noqa: C0301
                     "submission_number": submission.submission_number,
-                    "submitted_at": "{0}{1}".format(
-                        submission.submitted_at.isoformat(), "Z"
-                    ).replace("+00:00", ""),
-                    "rerun_resumed_at": submission.rerun_resumed_at,
+                    "submitted_at": f"{submission.submitted_at.isoformat()}Z".replace(  # noqa: C0301
+                        "+00:00", ""
+                    ),
+                    "rerun_resumed_at": submission.rerun_resumed_at,  # noqa: C0301
                     "execution_time": submission.execution_time,
-                    "input_file": "http://testserver%s"
-                    % (submission.input_file.url),
+                    "input_file": f"http://testserver{submission.input_file.url}",
                     "submission_input_file": None,
                     "stdout_file": None,
                     "stderr_file": None,
@@ -4529,12 +4611,14 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response_phase2.status_code, status.HTTP_200_OK)
 
     def test_get_all_submissions_when_user_is_participant_of_challenge(self):
-        self.url = reverse_lazy(
-            "challenges:get_all_submissions_of_challenge",
-            kwargs={
-                "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_all_submissions_of_challenge",
+                kwargs={
+                    "challenge_pk": self.challenge5.pk,
+                    "challenge_phase_pk": self.challenge5_phase3.pk,
+                },
+            )
         )
         self.client.force_authenticate(user=self.user6)
         expected = [
@@ -4544,10 +4628,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "participant_team_name": self.submission1.participant_team.team_name,  # noqa: C0301
                 "execution_time": self.submission1.execution_time,
                 "challenge_phase": self.submission1.challenge_phase.pk,
-                "created_by": self.submission1.created_by.pk,
+                "created_by": self.submission1.created_by.pk,  # noqa: C0301
                 "status": self.submission1.status,
-                "input_file": "http://testserver%s"
-                % (self.submission1.input_file.url),
+                "input_file": f"http://testserver{self.submission1.input_file.url}",  # noqa: C0301
                 "submission_input_file": None,
                 "method_name": self.submission1.method_name,
                 "method_description": self.submission1.method_description,
@@ -4558,9 +4641,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submission_result_file": None,
                 "started_at": self.submission1.started_at,
                 "completed_at": self.submission1.completed_at,
-                "submitted_at": "{0}{1}".format(
-                    self.submission1.submitted_at.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "submitted_at": f"{self.submission1.submitted_at.isoformat()}Z".replace(  # noqa: C0301
+                    "+00:00", ""
+                ),
                 "rerun_resumed_at": self.submission1.rerun_resumed_at,
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
@@ -4582,6 +4665,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self,
     ):
         self.client.force_authenticate(user=self.user7)
+        # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:get_all_submissions_of_challenge",
             kwargs={
@@ -4600,7 +4684,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
     def test_get_all_challenges_submission_metrics(self):
 
-        self.user8 = User.objects.create(
+        self.user8 = User.objects.create(  # pylint: disable=attribute-defined-outside-init
             username="admin_test",
             password="admin@123",
             is_staff=True,
@@ -4613,7 +4697,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             verified=True,
         )
 
-        self.maxDiff = None
+        self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
 
         url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
 
@@ -4651,9 +4735,11 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.data, expected_response)
 
 
-class DownloadAllSubmissionsFileTest(BaseAPITestClass):
+class DownloadAllSubmissionsFileTest(
+    BaseAPITestClass
+):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
-        super(DownloadAllSubmissionsFileTest, self).setUp()
+        super().setUp()
 
         self.user1 = User.objects.create(
             username="otheruser1",
@@ -4734,13 +4820,15 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.file_type_pdf = "pdf"
 
     def test_download_all_submissions_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk + 10,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
         expected = {
             "detail": f"Challenge {self.challenge.pk + 10} does not exist"
@@ -4752,13 +4840,15 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_challenge_phase_does_not_exist(
         self,
     ):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk + 10,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
         expected = {
             "error": f"Challenge Phase {self.challenge_phase.pk + 10} does not exist"  # noqa: C0301
@@ -4768,13 +4858,15 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_file_type_is_not_csv(self):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_pdf,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_pdf,
+                },
+            )
         )
         expected = {"error": "The file type requested is not valid!"}
         response = self.client.get(self.url, {})
@@ -4782,25 +4874,29 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_download_all_submissions_when_user_is_challenge_host(self):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_for_host_with_custom_fields(self):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
         submissions = Submission.objects.filter(
             challenge_phase__challenge=self.challenge
@@ -4813,7 +4909,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         expected_submissions.writerow(
             ["id", "Team Members", "Team Members Email Id", "Challenge Phase"]
         )
-        self.data = [
+        self.data = [  # pylint: disable=attribute-defined-outside-init
             "participant_team_members",
             "participant_team_members_email",
             "challenge_phase",
@@ -4849,13 +4945,15 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_challenge_participant(self):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
 
         self.challenge.participant_teams.add(self.participant_team1)
@@ -4866,13 +4964,15 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(  # noqa: C0301
         self,
     ):
-        self.url = reverse_lazy(
-            "challenges:download_all_submissions",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "file_type": self.file_type_csv,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:download_all_submissions",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "challenge_phase_pk": self.challenge_phase.pk,
+                    "file_type": self.file_type_csv,
+                },
+            )
         )
 
         self.client.force_authenticate(user=self.user2)
@@ -4887,7 +4987,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
 
 class CreateLeaderboardTest(BaseAPITestClass):
     def setUp(self):
-        super(CreateLeaderboardTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy("challenges:create_leaderboard")
         self.data = [
             {"schema": {"key": "value"}},
@@ -4908,7 +5008,7 @@ class CreateLeaderboardTest(BaseAPITestClass):
 
 class GetOrUpdateLeaderboardTest(BaseAPITestClass):
     def setUp(self):
-        super(GetOrUpdateLeaderboardTest, self).setUp()
+        super().setUp()
         self.leaderboard = Leaderboard.objects.create(
             schema=json.dumps(
                 {
@@ -4930,9 +5030,7 @@ class GetOrUpdateLeaderboardTest(BaseAPITestClass):
             kwargs={"leaderboard_pk": self.leaderboard.pk + 10},
         )
         expected = {
-            "detail": "Leaderboard {} does not exist".format(
-                self.leaderboard.pk + 10
-            )
+            "detail": f"Leaderboard {self.leaderboard.pk + 10} does not exist"
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -4973,7 +5071,7 @@ class GetOrUpdateLeaderboardTest(BaseAPITestClass):
 
 class CreateDatasetSplitTest(BaseAPITestClass):
     def setUp(self):
-        super(CreateDatasetSplitTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy("challenges:create_dataset_split")
 
         self.data = [
@@ -4995,7 +5093,7 @@ class CreateDatasetSplitTest(BaseAPITestClass):
 
 class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
     def setUp(self):
-        super(GetOrUpdateDatasetSplitTest, self).setUp()
+        super().setUp()
         self.dataset_split = DatasetSplit.objects.create(
             name="Name of the dataset split",
             codename="codename of dataset split",
@@ -5016,9 +5114,7 @@ class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
             kwargs={"dataset_split_pk": self.dataset_split.pk + 10},
         )
         expected = {
-            "detail": "DatasetSplit {} does not exist".format(
-                self.dataset_split.pk + 10
-            )
+            "detail": f"DatasetSplit {self.dataset_split.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -5059,7 +5155,7 @@ class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
 
 class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
     def setUp(self):
-        super(CreateChallengePhaseSplitTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy("challenges:create_challenge_phase_split")
 
         self.data = [
@@ -5091,7 +5187,7 @@ class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
 
 class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
     def setUp(self):
-        super(GetOrUpdateChallengePhaseSplitTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_or_update_dataset_split",
             kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
@@ -5163,7 +5259,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
 
 class StarChallengesTest(BaseAPITestClass):
     def setUp(self):
-        super(StarChallengesTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:star_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -5285,7 +5381,7 @@ class StarChallengesTest(BaseAPITestClass):
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
     def setUp(self):
-        super(GetChallengePhaseByPkTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_by_pk",
             kwargs={"pk": self.challenge_phase.pk},
@@ -5295,14 +5391,14 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
         expected = {
             "id": self.challenge_phase.id,
             "name": self.challenge_phase.name,
-            "description": self.challenge_phase.description,
-            "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(
-                self.challenge_phase.start_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
-            "end_date": "{0}{1}".format(
-                self.challenge_phase.end_date.isoformat(), "Z"
-            ).replace("+00:00", ""),
+            "description": self.challenge_phase.description,  # noqa: C0301
+            "leaderboard_public": self.challenge_phase.leaderboard_public,  # noqa: C0301
+            "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(  # noqa: C0301
+                "+00:00", ""
+            ),
+            "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(  # noqa: C0301
+                "+00:00", ""
+            ),
             "challenge": self.challenge_phase.challenge.pk,
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
@@ -5340,7 +5436,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
 
 class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
     def setUp(self):
-        super(GetChallengePhasesByChallengePkTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:get_challenge_phases_by_challenge_pk",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -5366,12 +5462,12 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,  # noqa: C0301
-                "start_date": "{0}{1}".format(
-                    self.private_challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.private_challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.private_challenge_phase.start_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.private_challenge_phase.end_date.isoformat()}Z".replace(
+                    "+00:00", ""
+                ),
                 "challenge": self.private_challenge_phase.challenge.pk,
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,  # noqa: C0301
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,  # noqa: C0301
@@ -5382,8 +5478,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_submission_public": self.private_challenge_phase.is_submission_public,  # noqa: C0301
                 "annotations_uploaded_using_cli": self.private_challenge_phase.annotations_uploaded_using_cli,  # noqa: C0301
                 "codename": self.private_challenge_phase.codename,
-                "test_annotation": "http://testserver%s"
-                % (self.private_challenge_phase.test_annotation.url),
+                "test_annotation": f"http://testserver{self.private_challenge_phase.test_annotation.url}",  # noqa: C0301
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,  # noqa: C0301
                 "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
@@ -5400,12 +5495,12 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(
-                    self.challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
+                "start_date": f"{self.challenge_phase.start_date.isoformat()}Z".replace(  # noqa: C0301
+                    "+00:00", ""
+                ),
+                "end_date": f"{self.challenge_phase.end_date.isoformat()}Z".replace(  # noqa: C0301
+                    "+00:00", ""
+                ),
                 "challenge": self.challenge_phase.challenge.pk,
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,  # noqa: C0301
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,  # noqa: C0301
@@ -5416,8 +5511,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,  # noqa: C0301
                 "codename": self.challenge_phase.codename,
-                "test_annotation": "http://testserver%s"
-                % (self.challenge_phase.test_annotation.url),
+                "test_annotation": f"http://testserver{self.challenge_phase.test_annotation.url}",  # noqa: C0301
                 "slug": self.challenge_phase.slug,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,  # noqa: C0301
@@ -5445,7 +5539,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         )
 
         expected = {
-            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"  # noqa: C0301
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -5468,7 +5562,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
 
 class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
     def setUp(self):
-        super(GetAWSCredentialsForParticipantTeamTest, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "challenges:star_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -5557,14 +5651,13 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
 
 @mock_s3
 class PresignedURLAnnotationTest(BaseChallengePhaseClass):
-    def setUp(self):
-        super(PresignedURLAnnotationTest, self).setUp()
-
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_get_annotation_presigned_url(self, mock_get_aws_creds):
-        self.url = reverse_lazy(
-            "challenges:get_annotation_file_presigned_url",
-            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_annotation_file_presigned_url",
+                kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+            )
         )
 
         expected = {
@@ -5604,9 +5697,11 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_finish_annotation_file_upload(self, mock_get_aws_creds):
         # Create a annotation using multipart upload
-        self.url = reverse_lazy(
-            "challenges:get_annotation_file_presigned_url",
-            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_annotation_file_presigned_url",
+                kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+            )
         )
 
         self.client.force_authenticate(user=self.challenge_host.user)
@@ -5649,9 +5744,11 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
         parts.append({"ETag": etag, "PartNumber": part})
 
         # Finish multipart upload
-        self.url = reverse_lazy(
-            "challenges:finish_annotation_file_upload",
-            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:finish_annotation_file_upload",
+                kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+            )
         )
 
         response = self.client.post(
@@ -5668,12 +5765,14 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
     def test_get_or_update_allowed_email_ids_success(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         expected = {
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -5683,12 +5782,14 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_or_update_allowed_email_ids_patch_success(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         expected = ["user1@example.com", "user2@example.com"]
         expected.extend(self.challenge_phase.allowed_email_ids)
@@ -5701,12 +5802,14 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_or_update_allowed_email_ids_delete_success(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         allowed_email_ids = ["user1@example.com", "user2@example.com"]
         data = {
@@ -5721,12 +5824,14 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_allowed_email_ids_with_invalid_input(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         allowed_email_ids = "user1@example.com"
         data = {
@@ -5739,12 +5844,14 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
 
     def test_update_allowed_email_ids_when_input_is_none(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         data = {
             "allowed_email_ids": None,
@@ -5756,37 +5863,37 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
 
     def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "phase_pk": self.challenge_phase.pk + 1000,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk + 1000,
+                },
+            )
         )
         expected = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(  # noqa: C0301
-                self.challenge_phase.pk + 1000, self.challenge.pk
-            )
+            "error": f"Challenge phase {self.challenge_phase.pk + 1000} does not exist for challenge {self.challenge.pk}"  # noqa: C0301
         }
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_allowed_email_ids_when_challange_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_or_update_allowed_email_ids",
-            kwargs={
-                "challenge_pk": self.challenge.pk + 1000,
-                "phase_pk": self.challenge_phase.pk,
-            },
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk + 1000,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class ChallengeSendApprovalRequestTest(BaseAPITestClass):
-    def setUp(self):
-        super(ChallengeSendApprovalRequestTest, self).setUp()
 
     @responses.activate
     def test_request_challenge_approval_when_challenge_has_finished_submissions(  # noqa: C0301
@@ -5823,6 +5930,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def test_request_challenge_approval_when_challenge_has_unfinished_submissions(  # noqa: C0301
         self,
     ):
+        # pylint: disable=attribute-defined-outside-init
         self.user1 = User.objects.create(
             username="otheruser1",
             password="other_secret_password",
@@ -5836,18 +5944,18 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             verified=True,
         )
 
-        self.participant_team1 = ParticipantTeam.objects.create(
+        self.participant_team1 = ParticipantTeam.objects.create(  # pylint: disable=attribute-defined-outside-init
             team_name="Participant Team for Challenge8", created_by=self.user1
         )
 
-        self.participant1 = Participant.objects.create(
+        self.participant1 = Participant.objects.create(  # pylint: disable=attribute-defined-outside-init
             user=self.user1,
             status=Participant.ACCEPTED,
             team=self.participant_team1,
         )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
-            self.challenge_phase = ChallengePhase.objects.create(
+            self.challenge_phase = ChallengePhase.objects.create(  # pylint: disable=attribute-defined-outside-init
                 name="Challenge Phase",
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
@@ -6042,8 +6150,6 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
         # Simulate SMTP error
-        from smtplib import SMTPException
-
         mock_send_email.side_effect = SMTPException(
             "SMTP server not available"
         )
@@ -6084,9 +6190,6 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             )
 
         # Create a finished submission for the additional phase to satisfy the submission check  # noqa: C0301
-        from jobs.models import Submission
-        from participants.models import Participant
-
         # Ensure participant team is associated with the challenge and user is a participant  # noqa: C0301
         self.challenge.participant_teams.add(self.participant_team)
         Participant.objects.get_or_create(
@@ -6172,7 +6275,9 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         )
 
 
-class CreateOrUpdateGithubChallengeTest(APITestCase):
+class CreateOrUpdateGithubChallengeTest(
+    APITestCase
+):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -6188,17 +6293,17 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
-        self.zip_file = open(
+        with open(
             join(
                 settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
             ),
             "rb",
-        )
-        self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
-            content_type="application/zip",
-        )
+        ) as zip_file:
+            self.test_zip_file = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
 
         self.input_zip_file = SimpleUploadedFile(
             "test_sample.zip",
@@ -6281,8 +6386,110 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             "https://github.com/yourusername/repository",
         )
 
+    def test_update_challenge_using_github_reuses_existing_challenge_config(
+        self,
+    ):
+        """Test that updating an existing challenge via GitHub push
+        updates the existing ChallengeConfiguration instead of
+        creating a new one.
+        """
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        github_repository = "https://github.com/yourusername/repository"
 
-class ValidateChallengeTest(APITestCase):
+        # First push - create challenge
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": github_repository,
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, 201)
+
+        # Verify challenge and ChallengeConfiguration were created
+        challenge = Challenge.objects.get(github_repository=github_repository)
+        initial_challenge_configs = ChallengeConfiguration.objects.filter(
+            challenge=challenge.pk
+        )
+        self.assertEqual(initial_challenge_configs.count(), 1)
+        initial_challenge_config = initial_challenge_configs.first()
+        initial_challenge_config_pk = initial_challenge_config.pk
+
+        # Create ChallengeHost so user is recognized as a host of the challenge
+        # This is needed for the update request to pass the permission check
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+        # Second push - update challenge
+        # Create fresh zip files for second request
+        with open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_file_2 = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        input_zip_file_2 = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = test_zip_file_2.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": github_repository,
+                    "zip_configuration": input_zip_file_2,
+                },
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, 200)
+            expected = {
+                "Success": (
+                    "The challenge Challenge Title has been updated successfully"
+                )
+            }
+            self.assertEqual(response.json(), expected)
+
+        # Verify that there's still only one ChallengeConfiguration
+        # and it's the same one (updated, not a new one)
+        updated_challenge_configs = ChallengeConfiguration.objects.filter(
+            challenge=challenge.pk
+        )
+        self.assertEqual(updated_challenge_configs.count(), 1)
+        updated_challenge_config = updated_challenge_configs.first()
+        # Verify it's the same ChallengeConfiguration object (same pk)
+        self.assertEqual(
+            initial_challenge_config_pk, updated_challenge_config.pk
+        )
+
+
+class ValidateChallengeTest(
+    APITestCase
+):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -6298,18 +6505,18 @@ class ValidateChallengeTest(APITestCase):
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
-        self.zip_file = open(
+        with open(
             join(
                 settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
             ),
             "rb",
-        )
-        self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
-            content_type="application/zip",
-        )
-        self.zip_incorect_file = open(
+        ) as zip_file:
+            self.test_zip_file = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+        with open(
             join(
                 settings.BASE_DIR,
                 "examples",
@@ -6317,12 +6524,12 @@ class ValidateChallengeTest(APITestCase):
                 "incorrect_zip_file.zip",
             ),
             "rb",
-        )
-        self.test_zip_incorrect_file = SimpleUploadedFile(
-            self.zip_incorect_file.name,
-            self.zip_incorect_file.read(),
-            content_type="application/zip",
-        )
+        ) as zip_incorect_file:
+            self.test_zip_incorrect_file = SimpleUploadedFile(
+                zip_incorect_file.name,
+                zip_incorect_file.read(),
+                content_type="application/zip",
+            )
 
         self.input_zip_file = SimpleUploadedFile(
             "test_sample.zip",
@@ -6360,7 +6567,7 @@ class ValidateChallengeTest(APITestCase):
             self.assertEqual(response.json(), expected)
 
     def test_validate_challenge_using_failure(self):
-        self.maxDiff = None
+        self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
         self.url = reverse_lazy(
             "challenges:validate_challenge_config",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -6387,13 +6594,13 @@ class ValidateChallengeTest(APITestCase):
                 "Please add the terms and conditions.\n"
                 "Please add the submission guidelines.\n"
                 "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"  # noqa: C0301
-                "ERROR: Please add the start_date and end_date.\n"
+                "ERROR: Please add the start_date and end_date.\n"  # noqa: C0301
                 "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"  # noqa: C0301
                 "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"  # noqa: C0301
-                " ERROR: There is no key for description in phase Dev Phase.\n"
+                " ERROR: There is no key for description in phase Dev Phase.\n"  # noqa: C0301
                 "ERROR: Please add the start_date and end_date in challenge phase 1.\n"  # noqa: C0301
                 "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"  # noqa: C0301
-                "ERROR: Challenge phase 1 has the following schema errors:\n"
+                "ERROR: Challenge phase 1 has the following schema errors:\n"  # noqa: C0301
                 " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"  # noqa: C0301
                 "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"  # noqa: C0301
                 "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"  # noqa: C0301
@@ -6407,7 +6614,8 @@ class ValidateChallengeTest(APITestCase):
 
 class TestLeaderboardData(BaseAPITestClass):
     def setUp(self):
-        super(TestLeaderboardData, self).setUp()
+        super().setUp()
+        self.url = None
         self.challenge_phase = ChallengePhase.objects.create(
             name="Challenge Phase",
             description="Description for Challenge Phase",
@@ -6533,7 +6741,8 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
     def setUp(self):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
-        return super().setUp()
+        super().setUp()
+        self.url = None
 
     def test_update_challenge_approval_when_challenge_exists(self):
         self.user.is_staff = True
@@ -6566,7 +6775,8 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
     def setUp(self):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
-        return super().setUp()
+        super().setUp()
+        self.url = None
 
     def test_update_challenge_attributes_when_challenge_exists(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
