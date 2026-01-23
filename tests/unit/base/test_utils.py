@@ -301,7 +301,7 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         get_or_create_sqs_queue(queue_name)
 
         mock_logger.exception.assert_called_once_with(
-            "Cannot get queue: {}".format(queue_name)
+            "Cannot get queue: %s", queue_name
         )
 
     @patch("base.utils.boto3.resource")
