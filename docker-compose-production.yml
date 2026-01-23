@@ -30,6 +30,13 @@ services:
       dockerfile: docker/prod/celery/Dockerfile
     depends_on:
       - django
+    deploy:
+      resources:
+        limits:
+          memory: 1200M
+          cpus: '1.0'
+        reservations:
+          memory: 800M
     logging:
       driver: awslogs
       options:

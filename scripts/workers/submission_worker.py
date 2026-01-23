@@ -902,7 +902,7 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {}
-    q_params["end_date__gt"] = timezone.now()
+    q_params["end_date__gte"] = timezone.now()
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
     if challenge_pk:
