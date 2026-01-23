@@ -175,7 +175,8 @@ def get_challenge_phase_submission_count_by_team(
         return Response(response_data, status=status.HTTP_200_OK)
     except (TypeError, ValueError, AttributeError) as e:
         logger.error(
-            "Error serializing challenge phase submission count: %s", str(e))
+            "Error serializing challenge phase submission count: %s", str(e)
+        )
         response_data = {"error": "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
