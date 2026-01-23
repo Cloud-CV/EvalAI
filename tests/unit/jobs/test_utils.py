@@ -446,7 +446,8 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
         self.challenge_obj.banned_email_ids = ["banned@example.com"]
         self.challenge_phase_split.challenge_phase.is_public = True
-        self.challenge_phase_split.visibility = Mock()
+        # ChallengePhaseSplit.PUBLIC = 3
+        self.challenge_phase_split.visibility = 3
         self.challenge_phase_split.show_execution_time = False
         self.challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
@@ -462,7 +463,9 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_participant_team,
     ):
         mock_is_user_a_staff_or_host.return_value = False
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
@@ -473,7 +476,16 @@ class TestReorderSubmissionsComparator(TestCase):
             }
         ]
 
-        # Mock the bulk prefetch approach
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Mock the bulk prefetch approach - team has banned participant
         mock_team = Mock()
         mock_team.id = 1
         mock_participant = Mock()
@@ -504,7 +516,9 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_participant_team,
     ):
         mock_is_user_a_staff_or_host.return_value = False
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
@@ -515,7 +529,16 @@ class TestReorderSubmissionsComparator(TestCase):
             }
         ]
 
-        # Mock the bulk prefetch approach
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Mock the bulk prefetch approach - team has banned participant
         mock_team = Mock()
         mock_team.id = 1
         mock_participant = Mock()
@@ -548,9 +571,8 @@ class TestReorderSubmissionsComparator(TestCase):
         """Test that participant teams are fetched in bulk to avoid N+1 queries."""
         mock_is_user_a_staff_or_host.return_value = False
 
-        # Simulate multiple leaderboard entries with the same teams (common
-        # case)
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
@@ -576,6 +598,15 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 9, "time": 4},
             },
         ]
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
 
         # Mock teams with non-banned emails
         mock_team1 = Mock()
@@ -624,7 +655,9 @@ class TestReorderSubmissionsComparator(TestCase):
     ):
         """Test that teams with any banned participant are excluded."""
         mock_is_user_a_staff_or_host.return_value = False
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
@@ -642,6 +675,15 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 9, "time": 4},
             },
         ]
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
 
         # Team 1 has one banned participant among multiple
         mock_team1 = Mock()
