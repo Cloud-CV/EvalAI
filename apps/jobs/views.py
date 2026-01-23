@@ -309,6 +309,26 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+            
+            # Validate file extension
+            file_url = request.data["file_url"]
+            file_extension = os.path.splitext(file_url)[1].lower()
+
+            # Get allowed extensions for this challenge phase
+            allowed_extensions = [
+                ext.strip().lower()
+                for ext in challenge_phase.allowed_submission_file_types.split(",")
+            ]
+
+            # Check if file extension is allowed
+            if file_extension not in allowed_extensions:
+                response_data = {
+                    "error": f"Invalid file type '{file_extension}'. This challenge only accepts: {', '.join(allowed_extensions)}"
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
             download_file_and_publish_submission_message.delay(
                 request.data,
                 request.user.id,
