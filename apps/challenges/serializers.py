@@ -215,6 +215,38 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
             request = context.get("request")
             kwargs["data"]["user"] = request.user.pk
 
+    @classmethod
+    def get_config(cls, challenge_queryset, data, request):
+        """
+        Get a serializer for creating or updating a ChallengeConfiguration.
+
+        If a challenge exists in the queryset and has an existing ChallengeConfiguration,
+        returns a serializer for updating. Otherwise, returns a serializer for creating.
+
+        Arguments:
+            challenge_queryset {QuerySet} -- QuerySet of challenges (filtered by github_repository)
+            data {dict} -- Request data containing zip_configuration
+            request {Request} -- The HTTP request object
+
+        Returns:
+            ChallengeConfigSerializer -- Serializer instance configured for create or update
+        """
+        existing_challenge_config = None
+        if challenge_queryset:
+            challenge = challenge_queryset[0]
+            existing_challenge_config = ChallengeConfiguration.objects.filter(
+                challenge=challenge.pk
+            ).first()
+
+        if existing_challenge_config:
+            return cls(
+                existing_challenge_config,
+                data=data,
+                context={"request": request},
+            )
+        else:
+            return cls(data=data, context={"request": request})
+
     class Meta:
         model = ChallengeConfiguration
         fields = ("zip_configuration", "user")
