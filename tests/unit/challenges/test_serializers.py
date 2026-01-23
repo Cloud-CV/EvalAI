@@ -6,8 +6,9 @@ from unittest.mock import patch as mockpatch
 
 import pytest
 from allauth.account.models import EmailAddress
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge, ChallengeConfiguration, ChallengePhase
 from challenges.serializers import (
+    ChallengeConfigSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     PWCChallengeLeaderboardSerializer,
@@ -551,16 +552,19 @@ class AddSponsorsToChallengeTests(TestCase):
         result = add_sponsors_to_challenge(self.yaml_file_data, self.challenge)
 
         # Assertions
-        mock_serializer.save.assert_called_once()  # Ensure save is called on the serializer
+        # Ensure save is called on the serializer
+        mock_serializer.save.assert_called_once()
         self.assertTrue(
             self.challenge.has_sponsors
         )  # Ensure has_sponsors is set to True
-        self.challenge.refresh_from_db()  # Refresh the challenge instance from the database
+        # Refresh the challenge instance from the database
+        self.challenge.refresh_from_db()
         self.assertTrue(
             self.challenge.has_sponsors
         )  # Check again after refreshing
 
-        # Ensure the function does not return any error response (meaning it worked correctly)
+        # Ensure the function does not return any error response (meaning it
+        # worked correctly)
         self.assertIsNone(result)
 
 
@@ -574,3 +578,148 @@ class TestChallengePhaseSerializer(TestCase):
 
         serializer = ChallengePhaseSerializer(data=data, context=context)
         assert serializer.initial_data["challenge"] == 123
+
+
+@pytest.mark.django_db
+class TestChallengeConfigSerializerGetConfig(APITestCase):
+    """Tests for ChallengeConfigSerializer.get_config class method."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser",
+            email="testuser@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email="testuser@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            github_repository="testuser/test-repo",
+        )
+
+        self.mock_request = MagicMock()
+        self.mock_request.user = self.user
+
+        self.mock_data = {
+            "zip_configuration": SimpleUploadedFile(
+                "test.zip",
+                b"test content",
+                content_type="application/zip",
+            ),
+            "user": self.user.pk,
+        }
+
+    def test_get_config_returns_create_serializer_when_no_challenge(self):
+        """Test that get_config returns a create serializer when challenge_queryset is empty."""
+        empty_queryset = Challenge.objects.none()
+
+        serializer = ChallengeConfigSerializer.get_config(
+            empty_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have no instance (create mode)
+        self.assertIsNone(serializer.instance)
+
+    def test_get_config_returns_create_serializer_when_no_existing_config(
+        self,
+    ):
+        """Test that get_config returns a create serializer when challenge exists but no config."""
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        # Ensure no ChallengeConfiguration exists for this challenge
+        ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).delete()
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have no instance (create mode)
+        self.assertIsNone(serializer.instance)
+
+    def test_get_config_returns_update_serializer_when_config_exists(self):
+        """Test that get_config returns an update serializer when config exists."""
+        # Create an existing ChallengeConfiguration
+        existing_config = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                "existing.zip",
+                b"existing content",
+                content_type="application/zip",
+            ),
+        )
+
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have the existing instance (update mode)
+        self.assertIsNotNone(serializer.instance)
+        self.assertEqual(serializer.instance.pk, existing_config.pk)
+
+    def test_get_config_updates_existing_config_on_save(self):
+        """Test that saving the serializer updates existing config instead of creating new."""
+        # Create an existing ChallengeConfiguration
+        existing_config = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                "existing.zip",
+                b"existing content",
+                content_type="application/zip",
+            ),
+        )
+        initial_config_count = ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).count()
+
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        new_zip_data = {
+            "zip_configuration": SimpleUploadedFile(
+                "updated.zip",
+                b"updated content",
+                content_type="application/zip",
+            ),
+            "user": self.user.pk,
+        }
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, new_zip_data, self.mock_request
+        )
+
+        self.assertTrue(serializer.is_valid())
+        saved_config = serializer.save()
+
+        # Should be the same config object (updated, not new)
+        self.assertEqual(saved_config.pk, existing_config.pk)
+
+        # Count should remain the same
+        final_config_count = ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).count()
+        self.assertEqual(initial_config_count, final_config_count)
