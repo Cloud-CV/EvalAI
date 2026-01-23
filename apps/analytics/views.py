@@ -1,4 +1,5 @@
 import csv
+import logging
 from datetime import timedelta
 
 from accounts.permissions import HasVerifiedEmail
@@ -45,6 +46,8 @@ from .serializers import (
     LastSubmissionTimestamp,
     LastSubmissionTimestampSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -170,7 +173,9 @@ def get_challenge_phase_submission_count_by_team(
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except:  # noqa: E722
+    except (TypeError, ValueError, AttributeError) as e:
+        logger.error(
+            "Error serializing challenge phase submission count: %s", str(e))
         response_data = {"error": "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -267,7 +272,8 @@ def get_last_submission_datetime_analysis(
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except:  # noqa: E722
+    except (TypeError, ValueError, AttributeError) as e:
+        logger.error("Error serializing last submission timestamp: %s", str(e))
         response_data = {"error": "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
