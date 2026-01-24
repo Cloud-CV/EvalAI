@@ -58,6 +58,7 @@ OUR_APPS = [
     "hosts",
     "jobs",
     "participants",
+    "payments",
     "web",
 ]
 

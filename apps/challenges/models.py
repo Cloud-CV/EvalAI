@@ -236,16 +236,6 @@ class Challenge(TimeStampedModel):
         max_length=200, blank=True, null=True, default=""
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
-    PAYMENT_TIER_OPTIONS = (
-        ("free", "Free"),
-        ("essentials", "Essentials"),
-        ("core", "Core"),
-        ("advanced", "Advanced"),
-        ("remote", "Remote"),
-    )
-    payment_tier = models.CharField(
-        max_length=50, choices=PAYMENT_TIER_OPTIONS, null=False, blank=False, default="free"
-    )
 
     class Meta:
         app_label = "challenges"

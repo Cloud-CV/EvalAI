@@ -74,6 +74,7 @@ urlpatterns = [
         r"^api/participants/",
         include("participants.urls", namespace="participants"),
     ),
+    url(r"^api/payments/", include("payments.urls", namespace="payments")),
     url(r"^api/web/", include("web.urls", namespace="web")),
     url(r"^email_reporting/", include("django_ses.urls")),
     url(r"^api/schema/", schema_view, name="schema"),
