@@ -40,7 +40,7 @@ FUTURE_CHALLENGE_PERCENTAGE = 0.20  # 20%
 PAST_CHALLENGE_PERCENTAGE = 0.40  # 40%
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
-NUMBER_OF_SUBMISSIONS = 100  # Number of submissions to create for testing
+NUMBER_OF_SUBMISSIONS = 2000  # Number of submissions to create for testing
 CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
 CHALLENGE_CONFIG_DIRS = ["example1", "example2"]
@@ -60,7 +60,8 @@ def check_database():
         try:
             user_confirmed = settings.TEST or input().lower() == "y"
         except EOFError:
-            # Non-interactive environment (e.g., Docker), skip seeding if data exists
+            # Non-interactive environment (e.g., Docker), skip seeding if data
+            # exists
             print(
                 "Database already has data. Skipping seed in non-interactive mode."
             )
