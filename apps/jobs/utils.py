@@ -449,11 +449,28 @@ def calculate_distinct_sorted_leaderboard_data(
         )
 
     all_banned_participant_team = []
+
+    # Convert to list to allow multiple iterations
+    leaderboard_data = list(leaderboard_data)
+
+    # Prefetch all participant teams and their participants' emails in bulk
+    # (fixes N+1 query)
+    unique_team_ids = set(
+        item["submission__participant_team"] for item in leaderboard_data
+    )
+    participant_teams = ParticipantTeam.objects.filter(
+        id__in=unique_team_ids
+    ).prefetch_related("participants__user")
+    # Build lookup: team_id -> list of participant emails
+    team_emails_lookup = {
+        team.id: [p.user.email for p in team.participants.all()]
+        for team in participant_teams
+    }
+
     for leaderboard_item in leaderboard_data:
         participant_team_id = leaderboard_item["submission__participant_team"]
-        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
-        all_participants_email_ids = (
-            participant_team.get_all_participants_email()
+        all_participants_email_ids = team_emails_lookup.get(
+            participant_team_id, []
         )
         for participant_email in all_participants_email_ids:
             if participant_email in all_banned_email_ids:

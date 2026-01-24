@@ -446,73 +446,278 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
         self.challenge_obj.banned_email_ids = ["banned@example.com"]
         self.challenge_phase_split.challenge_phase.is_public = True
-        self.challenge_phase_split.visibility = Mock()
+        # ChallengePhaseSplit.PUBLIC = 3
+        self.challenge_phase_split.visibility = 3
         self.challenge_phase_split.show_execution_time = False
         self.challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
         )
 
+    @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
     def test_banned_email_ids(
-        self, mock_is_user_a_staff_or_host, mock_leaderboard_data_objects
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
     ):
         mock_is_user_a_staff_or_host.return_value = False
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
                 "error": None,
                 "filtering_score": 10,
                 "result": {"score": 10, "time": 5},
             }
         ]
-        ParticipantTeam = Mock()
-        ParticipantTeam.objects.get.return_value.get_all_participants_email.return_value = [
-            "banned@example.com"
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Mock the bulk prefetch approach - team has banned participant
+        mock_team = Mock()
+        mock_team.id = 1
+        mock_participant = Mock()
+        mock_participant.user.email = "banned@example.com"
+        mock_team.participants.all.return_value = [mock_participant]
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team
         ]
 
-        with patch("challenges.models.ParticipantTeam", ParticipantTeam):
-            result, status_code = calculate_distinct_sorted_leaderboard_data(
-                self.user,
-                self.challenge_obj,
-                self.challenge_phase_split,
-                False,
-                "score",
-            )
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
 
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
 
+    @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
     def test_team_in_all_banned_participant_team(
-        self, mock_is_user_a_staff_or_host, mock_leaderboard_data_objects
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
     ):
         mock_is_user_a_staff_or_host.return_value = False
-        mock_leaderboard_data_objects.exclude.return_value.filter.return_value.order_by.return_value = [
+
+        # Test data for leaderboard entries
+        test_data = [
             {
                 "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
                 "error": None,
                 "filtering_score": 10,
                 "result": {"score": 10, "time": 5},
             }
         ]
-        ParticipantTeam = Mock()
-        ParticipantTeam.objects.get.return_value.get_all_participants_email.return_value = [
-            "banned@example.com"
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Mock the bulk prefetch approach - team has banned participant
+        mock_team = Mock()
+        mock_team.id = 1
+        mock_participant = Mock()
+        mock_participant.user.email = "banned@example.com"
+        mock_team.participants.all.return_value = [mock_participant]
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team
         ]
 
-        with patch("challenges.models.ParticipantTeam", ParticipantTeam):
-            result, status_code = calculate_distinct_sorted_leaderboard_data(
-                self.user,
-                self.challenge_obj,
-                self.challenge_phase_split,
-                False,
-                "score",
-            )
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
 
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_bulk_prefetch_avoids_n_plus_one_queries(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test that participant teams are fetched in bulk to avoid N+1 queries."""
+        mock_is_user_a_staff_or_host.return_value = False
+
+        # Test data for leaderboard entries
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 8,
+                "result": {"score": 8, "time": 6},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Mock teams with non-banned emails
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_participant1 = Mock()
+        mock_participant1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_participant1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_participant2 = Mock()
+        mock_participant2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_participant2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Should have 2 distinct teams in result (Team1 and Team2)
+        self.assertEqual(len(result), 2)
+
+        # Verify bulk prefetch was called once with correct team IDs
+        mock_participant_team.objects.filter.assert_called_once()
+        call_kwargs = mock_participant_team.objects.filter.call_args
+        self.assertIn("id__in", call_kwargs[1])
+        self.assertEqual(set(call_kwargs[1]["id__in"]), {1, 2})
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_multiple_banned_participants_in_team(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test that teams with any banned participant are excluded."""
+        mock_is_user_a_staff_or_host.return_value = False
+
+        # Test data for leaderboard entries
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        # Set up chainable mock for:
+        # .exclude().filter().filter().order_by().annotate().values()
+        mock_qs = MagicMock()
+        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+
+        # Team 1 has one banned participant among multiple
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1_1 = Mock()
+        mock_p1_1.user.email = "user1@example.com"
+        mock_p1_2 = Mock()
+        mock_p1_2.user.email = "banned@example.com"  # This one is banned
+        mock_team1.participants.all.return_value = [mock_p1_1, mock_p1_2]
+
+        # Team 2 has no banned participants
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Only Team2 should be in result (Team1 has a banned participant)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["submission__participant_team"], 2)
 
     def test_all_comparisons(self):
         def dummy_comparator(a, b):
