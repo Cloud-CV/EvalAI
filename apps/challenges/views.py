@@ -780,7 +780,11 @@ def get_all_challenges(
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    challenge = (
+        Challenge.objects.select_related("creator", "creator__created_by")
+        .filter(**q_params)
+        .order_by("-pk")
+    )
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}

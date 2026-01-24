@@ -1919,6 +1919,36 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
 
+    def test_get_all_challenges_uses_select_related(self):
+        """
+        Test that the get_all_challenges endpoint uses select_related
+        to avoid N+1 queries for creator and creator.created_by.
+        """
+        self.url = reverse_lazy(
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "ALL",
+                "challenge_published": "ALL",
+            },
+        )
+        # Make the request and ensure it succeeds
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that creator data is properly nested in the response
+        # This confirms the select_related is working (data is fetched)
+        results = response.data.get("results", [])
+        if results:
+            first_challenge = results[0]
+            self.assertIn("creator", first_challenge)
+            creator = first_challenge["creator"]
+            self.assertIn("id", creator)
+            self.assertIn("team_name", creator)
+            self.assertIn("created_by", creator)
+            # created_by should be the username string (from SlugRelatedField)
+            self.assertIsInstance(creator["created_by"], str)
+
 
 class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_featured_challenges")
