@@ -5378,6 +5378,59 @@ class StarChallengesTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_get_challenge_with_multiple_stars(self):
+        """Test count is correct when multiple users have starred."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create additional starred entries from other users
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        user4 = User.objects.create(
+            username="someuser4",
+            email="user4@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=True
+        )
+        StarChallenge.objects.create(
+            user=user4, challenge=self.challenge, is_starred=True
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        expected = {"is_starred": False, "count": 3}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_with_mixed_starred_unstarred(self):
+        """Test count only includes is_starred=True records."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create a user who unstarred (is_starred=False)
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=False
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        # Count should be 1 (only self.star_challenge with is_starred=True)
+        expected = {"is_starred": False, "count": 1}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
     def setUp(self):
