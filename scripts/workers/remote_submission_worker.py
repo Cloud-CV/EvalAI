@@ -47,6 +47,7 @@ EVALUATION_SCRIPTS = {}
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
     "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",
+    "get_message_count_from_queue": "/api/messages/{}/count",
     "get_submission_by_pk": "/api/jobs/submission/{}",
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
@@ -408,6 +409,13 @@ def delete_message_from_sqs_queue(receipt_handle):
     response = make_request(
         url, "POST", data={"receipt_handle": receipt_handle}
     )  # noqa
+    return response
+
+
+def get_message_count_from_queue():
+    url = URLS.get("get_message_count_from_queue").format(QUEUE_NAME)
+    url = return_url_per_environment(url)
+    response = make_request(url, "GET")
     return response
 
 
