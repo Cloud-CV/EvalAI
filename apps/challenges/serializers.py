@@ -94,6 +94,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "worker_image_url",
             "worker_instance_type",
             "sqs_retention_period",
+            "sqs_visibility_timeout",
             "github_repository",
             "github_branch",
         )
@@ -349,6 +350,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "evaluation_module_error",
             "worker_image_url",
             "sqs_retention_period",
+            "sqs_visibility_timeout",
         )
 
 
