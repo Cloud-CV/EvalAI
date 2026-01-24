@@ -357,7 +357,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(
         user=request.user
-    ).prefetch_related("team")
+    ).select_related("team", "team__created_by")
 
     is_challenge_host = is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
@@ -369,7 +369,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
 
         challenges = Challenge.objects.filter(
             participant_teams=participant_team
-        )
+        ).select_related("creator", "creator__created_by")
 
         if challenges.count():
             for challenge in challenges:
