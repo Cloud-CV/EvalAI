@@ -309,6 +309,12 @@ CACHES = {
 FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
+# Maximum number of GET/POST parameters for forms
+# https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-number-fields
+# Increased from default of 1000 to handle Challenge admin forms with many
+# participant teams in ManyToMany relationships
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100_000
+
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
     "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
