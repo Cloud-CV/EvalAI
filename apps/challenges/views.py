@@ -1123,9 +1123,13 @@ def challenge_phase_split_list(request, challenge_pk):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_phase_split = ChallengePhaseSplit.objects.filter(
-        challenge_phase__challenge=challenge
-    ).order_by("pk")
+    challenge_phase_split = (
+        ChallengePhaseSplit.objects.filter(
+            challenge_phase__challenge=challenge
+        )
+        .select_related("challenge_phase", "dataset_split", "leaderboard")
+        .order_by("pk")
+    )
 
     # Check if user is a challenge host or staff
     challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
