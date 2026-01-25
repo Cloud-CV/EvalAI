@@ -315,6 +315,19 @@ def update_sqs_retention_period_for_challenge(
         challenge.save()
 
 
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def update_cloudwatch_log_retention_period_for_challenge(
+    sender, instance, created, **kwargs
+):
+    field_name = "end_date"
+    import challenges.aws_utils as aws
+
+    if created or is_model_field_changed(instance, field_name):
+        serialized_obj = serializers.serialize("json", [instance])
+        aws.update_cloudwatch_log_retention_period_task.delay(serialized_obj)
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
