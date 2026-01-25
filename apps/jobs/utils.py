@@ -7,7 +7,7 @@ import urllib.request
 import requests
 from base.utils import get_model_object, suppress_autotime
 from challenges.models import ChallengePhaseSplit, LeaderboardData
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import get_challenge_phase_model
 from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -27,16 +27,23 @@ logger = logging.getLogger(__name__)
 
 
 def get_remaining_submission_for_a_phase(
-    user, challenge_phase_pk, challenge_pk
+    user, challenge_phase_pk, challenge_pk, challenge_phase=None
 ):
     """
     Returns the number of remaining submissions that a participant can
     do daily, monthly and in total to a particular challenge phase of a
     challenge.
-    """
 
-    get_challenge_model(challenge_pk)
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    Args:
+        user: The user making the request
+        challenge_phase_pk: Primary key of the challenge phase
+        challenge_pk: Primary key of the challenge
+        challenge_phase: Optional pre-fetched ChallengePhase object to avoid N+1 queries
+    """
+    # Use pre-fetched challenge_phase if provided, otherwise fetch it (for
+    # backward compatibility)
+    if challenge_phase is None:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_pk
     )
