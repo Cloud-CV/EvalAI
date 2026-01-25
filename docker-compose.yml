@@ -89,7 +89,6 @@ services:
           cpus: '1.0'
         reservations:
           memory: 1G
-          cpus: '0.5'
 
   statsd-exporter:
     hostname: statsd

@@ -1,6 +1,7 @@
 import os
 
-import raven
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
@@ -36,7 +37,7 @@ DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
 
 MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
 
-INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat")  # noqa
+INSTALLED_APPS += ("storages",)  # noqa
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -77,23 +78,27 @@ CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
     "MEMCACHED_LOCATION"
 )  # noqa: ignore=F405
 
-RAVEN_CONFIG = {
-    "dsn": os.environ.get("SENTRY_URL"),
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    "release": raven.fetch_git_sha(os.path.dirname(os.pardir)),
-}
+# Initialize Sentry SDK
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_URL"),
+    integrations=[DjangoIntegration()],
+    # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
+    profiles_sample_rate=1.0,
+    send_default_pii=True,
+    environment=os.environ.get("ENVIRONMENT"),
+)
 
 # https://docs.djangoproject.com/en/1.10/ref/settings/#secure-proxy-ssl-header
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 LOGGING["root"] = {  # noqa
     "level": "INFO",
-    "handlers": ["console", "sentry", "logfile"],
+    "handlers": ["console", "logfile"],
 }
 
-LOGGING["handlers"]["sentry"] = {  # noqa
-    "level": "ERROR",
-    "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-    "tags": {"custom-tag": "x"},
-}
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_SOFT_TIME_LIMIT = 50 * 60  # 50 minutes
+CELERY_TASK_TIME_LIMIT = 60 * 60  # 60 minutes
