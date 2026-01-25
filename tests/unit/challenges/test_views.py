@@ -2076,6 +2076,77 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)
 
+    def test_get_featured_challenges_no_n_plus_one_queries(self):
+        """
+        Test that fetching featured challenges doesn't cause N+1 queries.
+        The view should use select_related to fetch creator and created_by
+        in a single query instead of N separate queries.
+        """
+        # Create additional featured challenges with different host teams
+        # to ensure we're testing the N+1 scenario properly
+        host_team_2 = ChallengeHostTeam.objects.create(
+            team_name="Host Team 2", created_by=self.user
+        )
+        host_team_3 = ChallengeHostTeam.objects.create(
+            team_name="Host Team 3", created_by=self.participant_user
+        )
+
+        Challenge.objects.create(
+            title="Featured Challenge 4",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=host_team_2,
+            domain="CV",
+            published=True,
+            approved_by_admin=True,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            featured=True,
+        )
+
+        Challenge.objects.create(
+            title="Featured Challenge 5",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=host_team_3,
+            domain="NLP",
+            published=True,
+            approved_by_admin=True,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            featured=True,
+        )
+
+        # With select_related('creator', 'creator__created_by'), we should have
+        # a constant number of queries regardless of the number of challenges:
+        # 1. Main query with JOINs for challenges + creator + created_by
+        # 2. Count query for pagination
+        # Without select_related, we would have 2 + (N * 2) queries
+        with self.assertNumQueries(2):
+            response = self.client.get(self.url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # We should have 3 featured challenges (challenge3 from setUp + 2 new
+        # ones)
+        self.assertEqual(len(response.data["results"]), 3)
+
+        # Verify the response includes properly serialized creator data
+        for challenge in response.data["results"]:
+            self.assertIn("creator", challenge)
+            self.assertIn("team_name", challenge["creator"])
+            self.assertIn("created_by", challenge["creator"])
+            self.assertIsInstance(challenge["creator"]["created_by"], str)
+
 
 class GetChallengeByPk(BaseAPITestClass):
     def setUp(self):
