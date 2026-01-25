@@ -43,7 +43,7 @@ jobs:
         - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
 
         # Frontend Tests
-        - docker-compose run nodejs bash -c "npm install && gulp dev && karma start --single-run --reporters=junit,coverage && pkill -f chrome || true && pkill -f chromium || true && gulp staging" || travis_terminate 1;
+        - docker-compose run nodejs bash -c "npm install && gulp dev && mkdir -p coverage/frontend && karma start --single-run --reporters=junit,coverage && pkill -f chrome || true && pkill -f chromium || true && gulp staging" || travis_terminate 1;
 
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
