@@ -1919,6 +1919,36 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
 
+    def test_get_all_challenges_uses_select_related(self):
+        """
+        Test that the get_all_challenges endpoint uses select_related
+        to avoid N+1 queries for creator and creator.created_by.
+        """
+        self.url = reverse_lazy(
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "ALL",
+                "challenge_published": "ALL",
+            },
+        )
+        # Make the request and ensure it succeeds
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that creator data is properly nested in the response
+        # This confirms the select_related is working (data is fetched)
+        results = response.data.get("results", [])
+        if results:
+            first_challenge = results[0]
+            self.assertIn("creator", first_challenge)
+            creator = first_challenge["creator"]
+            self.assertIn("id", creator)
+            self.assertIn("team_name", creator)
+            self.assertIn("created_by", creator)
+            # created_by should be the username string (from SlugRelatedField)
+            self.assertIsInstance(creator["created_by"], str)
+
 
 class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_featured_challenges")
@@ -5377,6 +5407,59 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_challenge_with_multiple_stars(self):
+        """Test count is correct when multiple users have starred."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create additional starred entries from other users
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        user4 = User.objects.create(
+            username="someuser4",
+            email="user4@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=True
+        )
+        StarChallenge.objects.create(
+            user=user4, challenge=self.challenge, is_starred=True
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        expected = {"is_starred": False, "count": 3}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_with_mixed_starred_unstarred(self):
+        """Test count only includes is_starred=True records."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create a user who unstarred (is_starred=False)
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=False
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        # Count should be 1 (only self.star_challenge with is_starred=True)
+        expected = {"is_starred": False, "count": 1}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):

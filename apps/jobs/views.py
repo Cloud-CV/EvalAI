@@ -172,11 +172,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        submission = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-            ignore_submission=False,
-        ).order_by("-submitted_at")
+        submission = (
+            Submission.objects.filter(
+                participant_team=participant_team_id,
+                challenge_phase=challenge_phase,
+                ignore_submission=False,
+            )
+            .select_related(
+                "participant_team",
+                "challenge_phase",
+                "challenge_phase__challenge",
+                "challenge_phase__challenge__creator",
+            )
+            .order_by("-submitted_at")
+        )
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
