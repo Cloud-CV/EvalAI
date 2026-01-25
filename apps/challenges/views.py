@@ -861,12 +861,16 @@ def get_featured_challenges(request):
     """
     Returns the list of featured challenges
     """
-    challenge = Challenge.objects.filter(
-        featured=True,
-        published=True,
-        approved_by_admin=True,
-        is_disabled=False,
-    ).order_by("-id")
+    challenge = (
+        Challenge.objects.select_related("creator", "creator__created_by")
+        .filter(
+            featured=True,
+            published=True,
+            approved_by_admin=True,
+            is_disabled=False,
+        )
+        .order_by("-id")
+    )
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
