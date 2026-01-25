@@ -903,7 +903,7 @@ def get_remaining_submissions(request, challenge_pk):
             remaining_submission_message,
             response_status,
         ) = get_remaining_submission_for_a_phase(
-            request.user, phase.id, challenge_pk
+            request.user, phase.id, challenge_pk, challenge_phase=phase
         )
         if response_status != status.HTTP_200_OK:
             return Response(
