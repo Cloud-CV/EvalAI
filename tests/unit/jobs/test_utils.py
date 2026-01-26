@@ -66,16 +66,13 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_max_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 1
         mock_challenge_phase.max_submissions_per_month = 5
@@ -102,17 +99,14 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_monthly_and_daily_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         # Setup mocks
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 10
         mock_challenge_phase.max_submissions_per_month = 2
@@ -151,16 +145,13 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_both_monthly_and_daily_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 10
         mock_challenge_phase.max_submissions_per_month = 2
@@ -191,6 +182,79 @@ class TestUtils(unittest.TestCase):
             response["message"],
         )
         self.assertIn("remaining_time", response)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_for_a_phase_with_prefetched_phase(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that passing a pre-fetched challenge_phase avoids N+1 queries."""
+        mock_user = MagicMock()
+        # Create a pre-fetched challenge phase object
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_team_id.return_value = 123
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        # Call with pre-fetched challenge_phase
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1, challenge_phase=mock_challenge_phase
+        )
+
+        self.assertEqual(status_code, 200)
+        # Verify get_challenge_phase_model was NOT called (N+1 fix)
+        mock_get_challenge_phase_model.assert_not_called()
+        # Verify the response contains remaining submissions
+        self.assertIn("remaining_submissions_count", response)
+        self.assertEqual(response["remaining_submissions_count"], 10)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_for_a_phase_without_prefetched_phase(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test backward compatibility - when challenge_phase is not passed, it's fetched."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_challenge_phase_model.return_value = mock_challenge_phase
+        mock_get_team_id.return_value = 123
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        # Call WITHOUT pre-fetched challenge_phase (backward compatibility)
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1
+        )
+
+        self.assertEqual(status_code, 200)
+        # Verify get_challenge_phase_model WAS called (backward compatibility)
+        mock_get_challenge_phase_model.assert_called_once_with(1)
+        # Verify the response contains remaining submissions
+        self.assertIn("remaining_submissions_count", response)
 
     @patch("jobs.utils.LeaderboardData")
     def test_calculate_distinct_sorted_leaderboard_data_missing_labels_key(
