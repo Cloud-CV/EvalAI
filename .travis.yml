@@ -42,26 +42,53 @@ jobs:
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
         - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
 
-        # Frontend Tests
-        - docker-compose run nodejs bash -c "npm install && gulp dev && karma start --single-run --reporters=junit,coverage && pkill -f chrome || true && pkill -f chromium || true && gulp staging" || travis_terminate 1;
+        # Frontend Tests - using set -e to fail fast on any error
+        - |
+          docker-compose run nodejs bash -c '
+            set -e
+            echo "=== Installing dependencies ==="
+            npm install
+            echo "=== Building frontend (dev) ==="
+            gulp dev
+            echo "=== Running frontend tests ==="
+            mkdir -p coverage/frontend
+            karma start --single-run --reporters=junit,coverage
+            echo "=== Frontend tests passed ==="
+            # Cleanup browser processes (ignore errors if not found)
+            pkill -f chrome 2>/dev/null || true
+            pkill -f chromium 2>/dev/null || true
+            echo "=== Building frontend (staging) ==="
+            gulp staging
+            echo "=== Frontend build complete ==="
+          ' || travis_terminate 1;
 
-        # Backend Tests
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy || travis_terminate 1;
+        # Backend Tests - using set -e to fail fast on any error
+        - |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
+            set -e
+            echo "=== Flushing database ==="
+            python manage.py flush --noinput
+            echo "=== Running backend tests with coverage ==="
+            pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy
+            echo "=== Backend tests passed ==="
+          ' || travis_terminate 1;
 
-        # Check Code Quality
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
-          echo 'Installing black, flake8, pylint and isort...' &&
-          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
-          echo 'Running black check...' &&
-          black --check --diff ./ || { echo 'Black check failed!'; travis_terminate 1; } &&
-          echo 'Running isort check...' &&
-          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; travis_terminate 1; } &&
-          echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; travis_terminate 1; } &&
-          echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; travis_terminate 1; } &&
-          echo 'All code quality checks passed!'" || travis_terminate 1;
+        # Check Code Quality - using set -e to fail fast on any error
+        - |
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
+            set -e
+            echo "=== Installing code quality tools ==="
+            pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0
+            echo "=== Running black check ==="
+            black --check --diff ./
+            echo "=== Running isort check ==="
+            isort --check-only --diff --profile=black ./
+            echo "=== Running flake8 check ==="
+            flake8 --config=.flake8 ./
+            echo "=== Running pylint check ==="
+            pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./
+            echo "=== All code quality checks passed ==="
+          ' || travis_terminate 1;
 
       after_success:
         # Install Codecov CLI

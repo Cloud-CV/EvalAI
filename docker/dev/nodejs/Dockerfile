@@ -91,22 +91,23 @@ COPY --from=builder /code/bower_components /code/bower_components
 
 # AMD64-specific stage for Chrome
 FROM base AS amd64
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --fix-missing wget gnupg procps && \
+    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1 \
     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/* && \
-    # Clean Chrome unnecessary files
-    rm -rf /opt/google/chrome/locales/*.pak && \
-    find /opt/google/chrome -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
+    # Clean Chrome unnecessary locale files only (preserve essential .pak files)
+    find /opt/google/chrome/locales -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
 
 # ARM64-specific stage for Chromium
 FROM base AS arm64
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing chromium libxss1 \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing chromium libxss1) && \
+    apt-get install -y --no-install-recommends --fix-missing chromium libxss1 procps \
+    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing chromium libxss1 procps) && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
