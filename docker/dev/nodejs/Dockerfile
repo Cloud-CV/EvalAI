@@ -100,9 +100,8 @@ RUN apt-get update && \
     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/* && \
-    # Clean Chrome unnecessary files
-    rm -rf /opt/google/chrome/locales/*.pak && \
-    find /opt/google/chrome -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
+    # Clean Chrome unnecessary locale files only (preserve essential .pak files)
+    find /opt/google/chrome/locales -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
 
 # ARM64-specific stage for Chromium
 FROM base AS arm64
