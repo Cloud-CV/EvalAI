@@ -16,7 +16,9 @@ omit =
     scripts/seed.py
     node_modules/
     bower_components/
-source = evalai/
+source = 
+    evalai/
+    apps/
 
 [report]
 exclude_lines =
