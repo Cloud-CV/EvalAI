@@ -1,4 +1,3 @@
-from accounts.models import Profile
 from accounts.serializers import UserProfileSerializer
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
@@ -95,7 +94,9 @@ class ParticipantSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def get_profile(self, obj):
-        user_profile = Profile.objects.get(user=obj.user)
+        # Use user.profile directly - with select_related this won't trigger extra queries
+        # Falls back to lazy loading if not prefetched
+        user_profile = obj.user.profile
         serializer = UserProfileSerializer(user_profile)
         return serializer.data
 
@@ -113,7 +114,9 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "team_name", "created_by", "members", "team_url")
 
     def get_members(self, obj):
-        participants = Participant.objects.filter(team__pk=obj.id)
+        # Use prefetched participants via related manager (works with or
+        # without prefetch)
+        participants = obj.participants.all()
         serializer = ParticipantSerializer(participants, many=True)
         return serializer.data
 
