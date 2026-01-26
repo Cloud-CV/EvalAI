@@ -3068,7 +3068,7 @@ def invite_users_to_challenge(request, challenge_pk):
 
     try:
         challenge_host = ChallengeHost.objects.get(user=request.user)
-    except ChallengeHost.DoesNotExist:
+    except (ChallengeHost.DoesNotExist, ChallengeHost.MultipleObjectsReturned):
         response_data = {"error": "You're not a challenge host"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3087,9 +3087,13 @@ def invite_users_to_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        users_email = eval(users_email)
-    except Exception:
-        response_data = {"error": "Invalid format for users email"}
+        # Safely parse JSON instead of using eval() to prevent code injection
+        if isinstance(users_email, str):
+            users_email = json.loads(users_email)
+        if not isinstance(users_email, list):
+            raise ValueError("Expected list of email addresses")
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        response_data = {"error": "Invalid format for users email. Expected a JSON array of email addresses."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []
