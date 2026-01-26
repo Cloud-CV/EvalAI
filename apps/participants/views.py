@@ -9,6 +9,7 @@ from challenges.utils import (
     is_user_in_blocked_email_domains,
 )
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -65,9 +66,18 @@ def participant_team_list(request):
         participant_teams_id = Participant.objects.filter(
             user_id=request.user
         ).values_list("team_id", flat=True)
-        participant_teams = ParticipantTeam.objects.filter(
-            id__in=participant_teams_id
-        ).order_by("-id")
+        participant_teams = (
+            ParticipantTeam.objects.filter(id__in=participant_teams_id)
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .order_by("-id")
+        )
         filtered_teams = ParticipantTeamsFilter(
             request.GET, queryset=participant_teams
         )
