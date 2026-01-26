@@ -892,7 +892,7 @@ def main():
         q_params["pk"] = challenge_pk
 
     if settings.DEBUG or settings.TEST:
-        if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
+        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING and LIMIT_CONCURRENT_SUBMISSION_PROCESSING.lower() in ('true', '1', 'yes'):
             if not challenge_pk:
                 logger.exception(
                     "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(
@@ -926,7 +926,7 @@ def main():
             ):
                 continue
             if settings.DEBUG or settings.TEST:
-                if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
+                if LIMIT_CONCURRENT_SUBMISSION_PROCESSING and LIMIT_CONCURRENT_SUBMISSION_PROCESSING.lower() in ('true', '1', 'yes'):
                     current_running_submissions_count = (
                         Submission.objects.filter(
                             challenge_phase__challenge=challenge.id,

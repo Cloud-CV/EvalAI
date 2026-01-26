@@ -3087,8 +3087,8 @@ def invite_users_to_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        users_email = eval(users_email)
-    except Exception:
+        users_email = json.loads(users_email) if isinstance(users_email, str) else users_email
+    except (json.JSONDecodeError, ValueError):
         response_data = {"error": "Invalid format for users email"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 

@@ -7,132 +7,132 @@ task_definition = """
         {{
             "name": "{container_name}",
             "image": "{WORKER_IMAGE}",
-            "essential": True,
+            "essential": true,
             "environment": [
                 {{
                   "name": "AWS_DEFAULT_REGION",
                   "value": "{AWS_REGION}"
-                }},
+                }}
                 {{
                   "name": "AWS_ACCOUNT_ID",
                   "value": "{AWS_ACCOUNT_ID}"
-                }},
+                }}
                 {{
                   "name": "AWS_ACCESS_KEY_ID",
                   "value": "{AWS_ACCESS_KEY_ID}"
-                }},
+                }}
                 {{
                   "name": "AWS_SECRET_ACCESS_KEY",
                   "value": "{AWS_SECRET_ACCESS_KEY}"
-                }},
+                }}
                 {{
                   "name": "AWS_STORAGE_BUCKET_NAME",
                   "value": "{AWS_STORAGE_BUCKET_NAME}"
-                }},
+                }}
                 {{
                   "name": "CHALLENGE_PK",
                   "value": "{challenge_pk}"
-                }},
+                }}
                 {{
                   "name": "CHALLENGE_QUEUE",
                   "value": "{queue_name}"
-                }},
+                }}
                 {{
                   "name": "DJANGO_SERVER",
                   "value": "{DJANGO_SERVER}"
-                }},
+                }}
                 {{
                   "name": "DJANGO_SETTINGS_MODULE",
                   "value": "settings.{ENV}"
-                }},
+                }}
                 {{
                   "name": "DEBUG",
                   "value": "{DEBUG}"
-                }},
+                }}
                 {{
                   "name": "EMAIL_HOST",
                   "value": "{EMAIL_HOST}"
-                }},
+                }}
                 {{
                   "name": "EMAIL_HOST_PASSWORD",
                   "value": "{EMAIL_HOST_PASSWORD}"
-                }},
+                }}
                 {{
                   "name": "EMAIL_HOST_USER",
                   "value": "{EMAIL_HOST_USER}"
-                }},
+                }}
                 {{
                   "name": "EMAIL_PORT",
                   "value": "{EMAIL_PORT}"
-                }},
+                }}
                 {{
                   "name": "EMAIL_USE_TLS",
                   "value": "{EMAIL_USE_TLS}"
-                }},
+                }}
                 {{
                   "name": "MEMCACHED_LOCATION",
                   "value": "{MEMCACHED_LOCATION}"
-                }},
+                }}
                 {{
                     "name": "PYTHONUNBUFFERED",
                     "value": "1"
-                }},
+                }}
                 {{
                   "name": "RDS_DB_NAME",
                   "value": "{RDS_DB_NAME}"
-                }},
+                }}
                 {{
                   "name": "RDS_HOSTNAME",
                   "value": "{RDS_HOSTNAME}"
-                }},
+                }}
                 {{
                   "name": "RDS_PASSWORD",
                   "value": "{RDS_PASSWORD}"
-                }},
+                }}
                 {{
                   "name": "RDS_USERNAME",
                   "value": "{RDS_USERNAME}"
-                }},
+                }}
                 {{
                   "name": "RDS_PORT",
                   "value": "{RDS_PORT}"
-                }},
+                }}
                 {{
                   "name": "SECRET_KEY",
                   "value": "{SECRET_KEY}"
-                }},
+                }}
                 {{
                   "name": "SENTRY_URL",
                   "value": "{SENTRY_URL}"
-                }},
+                }}
                 {{
                     "name": "AWS_SES_REGION_NAME",
                     "value": "{AWS_SES_REGION_NAME}"
-                }},
+                }}
                 {{
                     "name": "AWS_SES_REGION_ENDPOINT",
                     "value": "{AWS_SES_REGION_ENDPOINT}"
-                }},
+                }}
                 {{
                     "name": "STATSD_ENDPOINT",
                     "value": "{STATSD_ENDPOINT}"
-                }},
+                }}
                 {{
                     "name": "STATSD_PORT",
                     "value": "{STATSD_PORT}"
                 }}
             ],
             "workingDirectory": "/code",
-            "readonlyRootFilesystem": False,
+            "readonlyRootFilesystem": false,
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
                     "awslogs-group": "{log_group_name}",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
-                    "awslogs-create-group": "true",
-                }},
-            }},
+                    "awslogs-create-group": "true"
+                }}
+            }}
         }}
     ],
     "requiresCompatibilities":[
@@ -142,7 +142,7 @@ task_definition = """
     "memory": "{MEMORY}",
     "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    }},
+    }}
 }}
 """
 
@@ -155,63 +155,63 @@ task_definition_code_upload_worker = """
         {{
             "name": "{code_upload_container_name}",
             "image": "{CODE_UPLOAD_WORKER_IMAGE}",
-            "essential": True,
+            "essential": true,
             "environment": [
                 {{
                   "name": "AWS_DEFAULT_REGION",
                   "value": "{AWS_REGION}"
-                }},
+                }}
                 {{
                   "name": "AWS_ACCESS_KEY_ID",
                   "value": "{AWS_ACCESS_KEY_ID}"
-                }},
+                }}
                 {{
                   "name": "AWS_SECRET_ACCESS_KEY",
                   "value": "{AWS_SECRET_ACCESS_KEY}"
-                }},
+                }}
                 {{
                   "name": "CLUSTER_NAME",
                   "value": "{cluster_name}"
-                }},
+                }}
                 {{
                   "name": "CLUSTER_ENDPOINT",
                   "value": "{cluster_endpoint}"
-                }},
+                }}
                 {{
                   "name": "CERTIFICATE",
                   "value": "{certificate}"
-                }},
+                }}
                 {{
                   "name": "CIDR",
                   "value": "{CIDR}"
-                }},
+                }}
                 {{
                   "name": "QUEUE_NAME",
                   "value": "{queue_name}"
-                }},
+                }}
                 {{
                   "name": "EVALAI_API_SERVER",
                   "value": "{EVALAI_API_SERVER}"
-                }},
+                }}
 
                 {{
                     "name": "AUTH_TOKEN",
                     "value": "{auth_token}"
-                }},
+                }}
 
                 {{
                     "name": "EVALAI_DNS",
                     "value": "{EVALAI_DNS}"
-                }},
+                }}
 
                 {{
                     "name": "EFS_ID",
                     "value": "{EFS_ID}"
-                }},
+                }}
                 {{
                     "name": "STATSD_ENDPOINT",
                     "value": "{STATSD_ENDPOINT}"
-                }},
+                }}
                 {{
                     "name": "STATSD_PORT",
                     "value": "{STATSD_PORT}"
@@ -219,16 +219,16 @@ task_definition_code_upload_worker = """
 
             ],
             "workingDirectory": "/code",
-            "readonlyRootFilesystem": False,
+            "readonlyRootFilesystem": false,
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
                     "awslogs-group": "{log_group_name}",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
-                    "awslogs-create-group": "true",
-                }},
-            }},
+                    "awslogs-create-group": "true"
+                }}
+            }}
         }}
     ],
     "requiresCompatibilities":[
@@ -238,7 +238,7 @@ task_definition_code_upload_worker = """
     "memory": "{MEMORY}",
     "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    }},
+    }}
 }}
 """
 
@@ -258,7 +258,7 @@ task_definition_static_code_upload_worker = """
     "memory": "{MEMORY}",
     "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    }},
+    }}
 }}
 """
 
@@ -266,132 +266,132 @@ container_definition_submission_worker = """
 {{
     "name": "{container_name}",
     "image": "{WORKER_IMAGE}",
-    "essential": True,
+    "essential": true,
     "environment": [
         {{
             "name": "AWS_DEFAULT_REGION",
             "value": "{AWS_REGION}"
-        }},
+        }}
         {{
             "name": "AWS_ACCOUNT_ID",
             "value": "{AWS_ACCOUNT_ID}"
-        }},
+        }}
         {{
             "name": "AWS_ACCESS_KEY_ID",
             "value": "{AWS_ACCESS_KEY_ID}"
-        }},
+        }}
         {{
             "name": "AWS_SECRET_ACCESS_KEY",
             "value": "{AWS_SECRET_ACCESS_KEY}"
-        }},
+        }}
         {{
             "name": "AWS_STORAGE_BUCKET_NAME",
             "value": "{AWS_STORAGE_BUCKET_NAME}"
-        }},
+        }}
         {{
             "name": "CHALLENGE_PK",
             "value": "{challenge_pk}"
-        }},
+        }}
         {{
             "name": "CHALLENGE_QUEUE",
             "value": "{queue_name}"
-        }},
+        }}
         {{
             "name": "DJANGO_SERVER",
             "value": "{DJANGO_SERVER}"
-        }},
+        }}
         {{
             "name": "DJANGO_SETTINGS_MODULE",
             "value": "settings.{ENV}"
-        }},
+        }}
         {{
             "name": "DEBUG",
             "value": "{DEBUG}"
-        }},
+        }}
         {{
             "name": "EMAIL_HOST",
             "value": "{EMAIL_HOST}"
-        }},
+        }}
         {{
             "name": "EMAIL_HOST_PASSWORD",
             "value": "{EMAIL_HOST_PASSWORD}"
-        }},
+        }}
         {{
             "name": "EMAIL_HOST_USER",
             "value": "{EMAIL_HOST_USER}"
-        }},
+        }}
         {{
             "name": "EMAIL_PORT",
             "value": "{EMAIL_PORT}"
-        }},
+        }}
         {{
             "name": "EMAIL_USE_TLS",
             "value": "{EMAIL_USE_TLS}"
-        }},
+        }}
         {{
             "name": "MEMCACHED_LOCATION",
             "value": "{MEMCACHED_LOCATION}"
-        }},
+        }}
         {{
             "name": "PYTHONUNBUFFERED",
             "value": "1"
-        }},
+        }}
         {{
             "name": "RDS_DB_NAME",
             "value": "{RDS_DB_NAME}"
-        }},
+        }}
         {{
             "name": "RDS_HOSTNAME",
             "value": "{RDS_HOSTNAME}"
-        }},
+        }}
         {{
             "name": "RDS_PASSWORD",
             "value": "{RDS_PASSWORD}"
-        }},
+        }}
         {{
             "name": "RDS_USERNAME",
             "value": "{RDS_USERNAME}"
-        }},
+        }}
         {{
             "name": "RDS_PORT",
             "value": "{RDS_PORT}"
-        }},
+        }}
         {{
             "name": "SECRET_KEY",
             "value": "{SECRET_KEY}"
-        }},
+        }}
         {{
             "name": "SENTRY_URL",
             "value": "{SENTRY_URL}"
-        }},
+        }}
         {{
             "name": "AWS_SES_REGION_NAME",
             "value": "{AWS_SES_REGION_NAME}"
-        }},
+        }}
         {{
             "name": "AWS_SES_REGION_ENDPOINT",
             "value": "{AWS_SES_REGION_ENDPOINT}"
-        }},
+        }}
         {{
             "name": "STATSD_ENDPOINT",
             "value": "{STATSD_ENDPOINT}"
-        }},
+        }}
         {{
             "name": "STATSD_PORT",
             "value": "{STATSD_PORT}"
         }}
     ],
     "workingDirectory": "/code",
-    "readonlyRootFilesystem": False,
+    "readonlyRootFilesystem": false,
     "logConfiguration": {{
         "logDriver": "awslogs",
         "options": {{
             "awslogs-group": "{log_group_name}",
             "awslogs-region": "us-east-1",
             "awslogs-stream-prefix": "{queue_name}",
-            "awslogs-create-group": "true",
-        }},
-    }},
+            "awslogs-create-group": "true"
+        }}
+    }}
 }}
 """
 
@@ -399,62 +399,62 @@ container_definition_code_upload_worker = """
 {{
     "name": "{code_upload_container_name}",
     "image": "{CODE_UPLOAD_WORKER_IMAGE}",
-    "essential": True,
+    "essential": true,
     "environment": [
         {{
             "name": "AWS_DEFAULT_REGION",
             "value": "{AWS_REGION}"
-        }},
+        }}
         {{
             "name": "AWS_ACCESS_KEY_ID",
             "value": "{AWS_ACCESS_KEY_ID}"
-        }},
+        }}
         {{
             "name": "AWS_SECRET_ACCESS_KEY",
             "value": "{AWS_SECRET_ACCESS_KEY}"
-        }},
+        }}
         {{
             "name": "CLUSTER_NAME",
             "value": "{cluster_name}"
-        }},
+        }}
         {{
             "name": "CLUSTER_ENDPOINT",
             "value": "{cluster_endpoint}"
-        }},
+        }}
         {{
             "name": "CERTIFICATE",
             "value": "{certificate}"
-        }},
+        }}
         {{
             "name": "CIDR",
             "value": "{CIDR}"
-        }},
+        }}
         {{
             "name": "QUEUE_NAME",
             "value": "{queue_name}"
-        }},
+        }}
         {{
             "name": "EVALAI_API_SERVER",
             "value": "{EVALAI_API_SERVER}"
-        }},
+        }}
 
         {{
             "name": "AUTH_TOKEN",
             "value": "{auth_token}"
-        }},
+        }}
 
         {{
             "name": "EVALAI_DNS",
             "value": "{EVALAI_DNS}"
-        }},
+        }}
         {{
             "name": "EFS_ID",
             "value": "{EFS_ID}"
-        }},
+        }}
         {{
             "name": "STATSD_ENDPOINT",
             "value": "{STATSD_ENDPOINT}"
-        }},
+        }}
         {{
             "name": "STATSD_PORT",
             "value": "{STATSD_PORT}"
@@ -462,16 +462,16 @@ container_definition_code_upload_worker = """
 
     ],
     "workingDirectory": "/code",
-    "readonlyRootFilesystem": False,
+    "readonlyRootFilesystem": false,
     "logConfiguration": {{
         "logDriver": "awslogs",
         "options": {{
             "awslogs-group": "{log_group_name}",
             "awslogs-region": "us-east-1",
             "awslogs-stream-prefix": "{queue_name}",
-            "awslogs-create-group": "true",
-        }},
-    }},
+            "awslogs-create-group": "true"
+        }}
+    }}
 }}
 """
 
@@ -488,22 +488,22 @@ service_definition = """
         "awsvpcConfiguration": {{
             "subnets": [
                 "{SUBNET_1}",
-                "{SUBNET_2}",
+                "{SUBNET_2}"
             ],
-            'securityGroups': [
+            "securityGroups": [
                 "{SUBNET_SECURITY_GROUP}",
             ],
             "assignPublicIp": "ENABLED"
         }}
-    }},
+    }}
     "schedulingStrategy":"REPLICA",
     "deploymentController":{{
         "type": "ECS"
-    }},
+    }}
     "deploymentConfiguration":{{
         "deploymentCircuitBreaker":{{
-            "enable": True,
-            "rollback": False
+            "enable": true,
+            "rollback": false
         }}
     }}
 }}
@@ -523,6 +523,6 @@ delete_service_args = """
 {{
     "cluster": "{CLUSTER}",
     "service": "{service_name}",
-    "force": False
+    "force": false
 }}
 """
