@@ -96,6 +96,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_retention_period",
             "github_repository",
             "github_branch",
+            "payment_tier",
         )
 
 
