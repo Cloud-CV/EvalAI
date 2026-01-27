@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
 from django.db import models
+from django.conf import settings
 from django.db.models import signals
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -32,6 +33,7 @@ class Challenge(TimeStampedModel):
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
+        self._original_end_date = self.end_date
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -323,9 +325,14 @@ def update_cloudwatch_log_retention_period_for_challenge(
     field_name = "end_date"
     import challenges.aws_utils as aws
 
-    if created or is_model_field_changed(instance, field_name):
+    if (created or is_model_field_changed(instance, field_name)) and not settings.TEST:
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_cloudwatch_log_retention_period_task.delay(serialized_obj)
+        # Update challenge
+        curr = getattr(instance, "{}".format(field_name))
+        challenge = instance
+        challenge._original_end_date = curr
+        challenge.save()
 
 
 class DatasetSplit(TimeStampedModel):
