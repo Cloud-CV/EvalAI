@@ -64,10 +64,12 @@ def get_auth_token(request):
             token_serializer.save()
         token = token_serializer.instance
 
-    outstanding_token = OutstandingToken.objects.filter(user=user).order_by(
-        "-created_at"
-    ).first()
-    
+    outstanding_token = (
+        OutstandingToken.objects.filter(user=user)
+        .order_by("-created_at")
+        .first()
+    )
+
     if outstanding_token is None:
         return Response(
             {"error": "Token expiration not found."},
@@ -133,4 +135,6 @@ def refresh_auth_token(request):
         response_data = {"token": "{}".format(token.refresh_token)}
         return Response(response_data, status=status.HTTP_200_OK)
 
-    return Response(token_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        token_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+    )
