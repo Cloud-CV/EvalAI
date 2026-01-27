@@ -14,23 +14,27 @@ urlpatterns = [
         name="get_participant_count",
     ),
     re_path(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/(?P<duration>[A-Za-z]+)/count$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/"
+        r"(?P<duration>[A-Za-z]+)/count$",
         views.get_submission_count,
         name="get_submission_count",
     ),
     re_path(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/analytics$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/"
+        r"(?P<challenge_phase_pk>[0-9]+)/analytics$",
         views.get_challenge_phase_submission_analysis,
         name="get_challenge_phase_submission_analysis",
     ),
     re_path(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/count$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/"
+        r"(?P<challenge_phase_pk>[0-9]+)/count$",
         views.get_challenge_phase_submission_count_by_team,
         name="get_challenge_phase_submission_count_by_team",
     ),
     re_path(
         r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/"
-        r"(?P<challenge_phase_pk>[0-9]+)/last_submission/(?P<submission_by>[A-Za-z_]+)$",
+        r"(?P<challenge_phase_pk>[0-9]+)/last_submission/"
+        r"(?P<submission_by>[A-Za-z_]+)$",
         views.get_last_submission_time,
         name="get_last_submission_time",
     ),
@@ -44,6 +48,29 @@ urlpatterns = [
         r"^challenges/(?P<challenge_pk>[0-9]+)/download_all_participants/$",
         views.download_all_participants,
         name="download_all_participants",
+    ),
+    # Enhanced Analytics Endpoints
+    re_path(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phases/"
+        r"(?P<challenge_phase_pk>[0-9]+)/submission-rates/$",
+        views.get_submission_success_rates,
+        name="get_submission_success_rates",
+    ),
+    re_path(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/evaluation-times/$",
+        views.get_evaluation_time_metrics,
+        name="get_evaluation_time_metrics",
+    ),
+    re_path(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/activity-heatmap/$",
+        views.get_participant_activity_heatmap,
+        name="get_participant_activity_heatmap",
+    ),
+    re_path(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/phases/"
+        r"(?P<challenge_phase_pk>[0-9]+)/leaderboard-progression/$",
+        views.get_leaderboard_progression,
+        name="get_leaderboard_progression",
     ),
 ]
 
