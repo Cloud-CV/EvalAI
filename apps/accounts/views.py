@@ -45,7 +45,7 @@ def get_auth_token(request):
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.HTTP_404_NOT_FOUND)
+        return Response(response_data, status.HTTP_404_NOT_FOUND)
 
     try:
         token = JwtToken.objects.get(user=user)
@@ -66,7 +66,13 @@ def get_auth_token(request):
 
     outstanding_token = OutstandingToken.objects.filter(user=user).order_by(
         "-created_at"
-    )[0]
+    ).first()
+    
+    if outstanding_token is None:
+        return Response(
+            {"error": "Token expiration not found."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
     response_data = {
         "token": "{}".format(token.refresh_token),
         "expires_at": outstanding_token.expires_at,
@@ -96,7 +102,7 @@ def refresh_auth_token(request):
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.HTTP_404_NOT_FOUND)
+        return Response(response_data, status.HTTP_404_NOT_FOUND)
 
     token = None
     try:
@@ -127,4 +133,4 @@ def refresh_auth_token(request):
         response_data = {"token": "{}".format(token.refresh_token)}
         return Response(response_data, status=status.HTTP_200_OK)
 
-    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(token_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
