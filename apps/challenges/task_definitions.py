@@ -523,6 +523,6 @@ delete_service_args = """
 {{
     "cluster": "{CLUSTER}",
     "service": "{service_name}",
-    "force": False
+    "force": {force}
 }}
 """
