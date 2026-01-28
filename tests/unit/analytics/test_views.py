@@ -964,7 +964,15 @@ class GetParticipantTeamsTest(BaseAPITestClass):
             is_public=True,
         )
 
+    def _get_expected_participant_teams_queryset(self):
+        """Helper to get participant teams with prefetch for serializer"""
+        challenge = get_challenge_model(self.challenge.pk)
+        return challenge.participant_teams.prefetch_related(
+            "participants__user"
+        ).order_by("-team_name")
+
     def test_host_downloads_participant_team(self):
+        """Test that host can download participant teams as CSV"""
         expected = io.StringIO()
         expected_participant_teams = csv.writer(
             expected, quoting=csv.QUOTE_ALL
@@ -972,10 +980,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         expected_participant_teams.writerow(
             ["Team Name", "Team Members", "Email Id"]
         )
-        challenge = get_challenge_model(self.challenge.pk)
-        participant_team = challenge.participant_teams.all().order_by(
-            "-team_name"
-        )
+        participant_team = self._get_expected_participant_teams_queryset()
         participant_teams = ChallengeParticipantSerializer(
             participant_team, many=True
         )
@@ -993,6 +998,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_not_host_downloads_participant_team(self):
+        """Test that non-host user cannot download participant teams"""
         expected = {
             "error": "Sorry, you are not authorized to make this request"
         }
@@ -1000,3 +1006,128 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_host_gets_participant_team_json_format(self):
+        """Test that host can get participant teams in JSON format"""
+        participant_team = self._get_expected_participant_teams_queryset()
+        participant_teams = ChallengeParticipantSerializer(
+            participant_team, many=True
+        )
+        expected = {
+            "participant_teams": participant_teams.data,
+            "count": len(participant_teams.data),
+        }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"format": "json"})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_not_host_gets_participant_team_json_format(self):
+        """Test that non-host user cannot get participant teams in JSON format"""
+        expected = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {"format": "json"})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_json_format_case_insensitive(self):
+        """Test that format parameter is case-insensitive"""
+        self.client.force_authenticate(user=self.user)
+
+        # Test uppercase
+        response = self.client.get(self.url, {"format": "JSON"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+        self.assertIn("count", response.data)
+
+        # Test mixed case
+        response = self.client.get(self.url, {"format": "Json"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+
+    def test_invalid_format_defaults_to_csv(self):
+        """Test that invalid format parameter defaults to CSV download"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"format": "invalid"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("attachment; filename=", response["Content-Disposition"])
+
+    def test_json_response_structure(self):
+        """Test that JSON response has correct structure"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"format": "json"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+        self.assertIn("count", response.data)
+        self.assertEqual(response.data["count"], 2)  # Two teams added in setUp
+
+        # Verify each team has required fields
+        for team in response.data["participant_teams"]:
+            self.assertIn("team_name", team)
+            self.assertIn("team_members", team)
+            self.assertIn("team_members_email_ids", team)
+            self.assertIsInstance(team["team_members"], list)
+            self.assertIsInstance(team["team_members_email_ids"], list)
+
+    def test_json_response_contains_correct_data(self):
+        """Test that JSON response contains correct participant data"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"format": "json"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Find participant_team in response
+        team_names = [
+            team["team_name"] for team in response.data["participant_teams"]
+        ]
+        self.assertIn("Participant Team", team_names)
+        self.assertIn("Participant Team3", team_names)
+
+        # Verify member data for participant_team
+        for team in response.data["participant_teams"]:
+            if team["team_name"] == "Participant Team":
+                self.assertIn("otheruser", team["team_members"])
+                self.assertIn(
+                    "otheruser@test.com", team["team_members_email_ids"]
+                )
+            elif team["team_name"] == "Participant Team3":
+                self.assertIn("user3", team["team_members"])
+                self.assertIn("user3@test.com", team["team_members_email_ids"])
+
+    def test_csv_response_headers(self):
+        """Test that CSV response has correct headers"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn(
+            "participant_teams_{}.csv".format(self.challenge.pk),
+            response["Content-Disposition"],
+        )
+
+    def test_empty_participant_teams(self):
+        """Test response when challenge has no participant teams"""
+        # Remove all participant teams
+        self.challenge.participant_teams.clear()
+
+        self.client.force_authenticate(user=self.user)
+
+        # Test JSON format
+        response = self.client.get(self.url, {"format": "json"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["participant_teams"], [])
+        self.assertEqual(response.data["count"], 0)
+
+        # Test CSV format
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode("utf-8")
+        # Should only have header row
+        lines = content.strip().split("\n")
+        self.assertEqual(len(lines), 1)
+        self.assertIn("Team Name", lines[0])
