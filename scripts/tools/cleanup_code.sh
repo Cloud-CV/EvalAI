@@ -80,6 +80,13 @@ for file in $FILTERED_FILES; do
     black --line-length 79 --quiet "$file" || true
 done
 
+# Fix import ordering with isort (using black-compatible profile)
+echo ""
+echo "Running isort to fix import ordering..."
+for file in $FILTERED_FILES; do
+    isort --profile=black --line-length=79 --quiet "$file" || true
+done
+
 # Stage the modified files so pylint/flake8 check the cleaned versions
 # Only stage files that were already staged
 echo ""

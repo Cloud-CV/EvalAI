@@ -172,11 +172,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        submission = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-            ignore_submission=False,
-        ).order_by("-submitted_at")
+        submission = (
+            Submission.objects.filter(
+                participant_team=participant_team_id,
+                challenge_phase=challenge_phase,
+                ignore_submission=False,
+            )
+            .select_related(
+                "participant_team",
+                "challenge_phase",
+                "challenge_phase__challenge",
+                "challenge_phase__challenge__creator",
+            )
+            .order_by("-submitted_at")
+        )
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
@@ -894,7 +903,7 @@ def get_remaining_submissions(request, challenge_pk):
             remaining_submission_message,
             response_status,
         ) = get_remaining_submission_for_a_phase(
-            request.user, phase.id, challenge_pk
+            request.user, phase.id, challenge_pk, challenge_phase=phase
         )
         if response_status != status.HTTP_200_OK:
             return Response(

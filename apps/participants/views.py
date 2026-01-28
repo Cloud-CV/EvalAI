@@ -9,6 +9,7 @@ from challenges.utils import (
     is_user_in_blocked_email_domains,
 )
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -65,9 +66,18 @@ def participant_team_list(request):
         participant_teams_id = Participant.objects.filter(
             user_id=request.user
         ).values_list("team_id", flat=True)
-        participant_teams = ParticipantTeam.objects.filter(
-            id__in=participant_teams_id
-        ).order_by("-id")
+        participant_teams = (
+            ParticipantTeam.objects.filter(id__in=participant_teams_id)
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .order_by("-id")
+        )
         filtered_teams = ParticipantTeamsFilter(
             request.GET, queryset=participant_teams
         )
@@ -357,7 +367,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(
         user=request.user
-    ).prefetch_related("team")
+    ).select_related("team", "team__created_by")
 
     is_challenge_host = is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
@@ -369,7 +379,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
 
         challenges = Challenge.objects.filter(
             participant_teams=participant_team
-        )
+        ).select_related("creator", "creator__created_by")
 
         if challenges.count():
             for challenge in challenges:

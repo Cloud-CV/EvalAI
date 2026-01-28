@@ -68,14 +68,29 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_verified_by_host",
         )
 
+    # Cache for challenge_hosts_pk to avoid repeated queries within same
+    # serialization context
+    _challenge_hosts_cache = {}
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        challenge_host_team = ChallengePhase.objects.get(
-            pk=ret["challenge_phase"]
-        ).challenge.creator
-        challenge_hosts_pk = ChallengeHost.objects.filter(
-            team_name=challenge_host_team
-        ).values_list("user__pk", flat=True)
+        # Use the already-loaded relationship from select_related instead of a
+        # new query
+        challenge_host_team = instance.challenge_phase.challenge.creator
+
+        # Cache the challenge_hosts_pk lookup since it's the same for all
+        # submissions in a request
+        cache_key = challenge_host_team.id if challenge_host_team else None
+        if cache_key not in SubmissionSerializer._challenge_hosts_cache:
+            SubmissionSerializer._challenge_hosts_cache[cache_key] = list(
+                ChallengeHost.objects.filter(
+                    team_name=challenge_host_team
+                ).values_list("user__pk", flat=True)
+            )
+
+        challenge_hosts_pk = SubmissionSerializer._challenge_hosts_cache[
+            cache_key
+        ]
         if self.created_by and self.created_by.pk not in challenge_hosts_pk:
             ret.pop("environment_log_file", None)
         return ret
