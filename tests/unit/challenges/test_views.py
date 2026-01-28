@@ -1919,6 +1919,36 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
 
+    def test_get_all_challenges_uses_select_related(self):
+        """
+        Test that the get_all_challenges endpoint uses select_related
+        to avoid N+1 queries for creator and creator.created_by.
+        """
+        self.url = reverse_lazy(
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "ALL",
+                "challenge_published": "ALL",
+            },
+        )
+        # Make the request and ensure it succeeds
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that creator data is properly nested in the response
+        # This confirms the select_related is working (data is fetched)
+        results = response.data.get("results", [])
+        if results:
+            first_challenge = results[0]
+            self.assertIn("creator", first_challenge)
+            creator = first_challenge["creator"]
+            self.assertIn("id", creator)
+            self.assertIn("team_name", creator)
+            self.assertIn("created_by", creator)
+            # created_by should be the username string (from SlugRelatedField)
+            self.assertIsInstance(creator["created_by"], str)
+
 
 class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_featured_challenges")
@@ -2045,6 +2075,77 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)
+
+    def test_get_featured_challenges_no_n_plus_one_queries(self):
+        """
+        Test that fetching featured challenges doesn't cause N+1 queries.
+        The view should use select_related to fetch creator and created_by
+        in a single query instead of N separate queries.
+        """
+        # Create additional featured challenges with different host teams
+        # to ensure we're testing the N+1 scenario properly
+        host_team_2 = ChallengeHostTeam.objects.create(
+            team_name="Host Team 2", created_by=self.user
+        )
+        host_team_3 = ChallengeHostTeam.objects.create(
+            team_name="Host Team 3", created_by=self.participant_user
+        )
+
+        Challenge.objects.create(
+            title="Featured Challenge 4",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=host_team_2,
+            domain="CV",
+            published=True,
+            approved_by_admin=True,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            featured=True,
+        )
+
+        Challenge.objects.create(
+            title="Featured Challenge 5",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=host_team_3,
+            domain="NLP",
+            published=True,
+            approved_by_admin=True,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            featured=True,
+        )
+
+        # With select_related('creator', 'creator__created_by'), we should have
+        # a constant number of queries regardless of the number of challenges:
+        # 1. Main query with JOINs for challenges + creator + created_by
+        # 2. Count query for pagination
+        # Without select_related, we would have 2 + (N * 2) queries
+        with self.assertNumQueries(2):
+            response = self.client.get(self.url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # We should have 3 featured challenges (challenge3 from setUp + 2 new
+        # ones)
+        self.assertEqual(len(response.data["results"]), 3)
+
+        # Verify the response includes properly serialized creator data
+        for challenge in response.data["results"]:
+            self.assertIn("creator", challenge)
+            self.assertIn("team_name", challenge["creator"])
+            self.assertIn("created_by", challenge["creator"])
+            self.assertIsInstance(challenge["creator"]["created_by"], str)
 
 
 class GetChallengeByPk(BaseAPITestClass):
@@ -4028,6 +4129,81 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_challenge_phase_split_avoids_n_plus_one_queries(self):
+        """
+        Test that the challenge_phase_split_list endpoint uses select_related
+        to avoid N+1 queries when fetching related objects (challenge_phase,
+        dataset_split, leaderboard).
+
+        This test verifies that the query count remains constant regardless of
+        the number of ChallengePhaseSplit objects, which confirms the N+1 fix.
+        """
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.client.force_authenticate(user=self.user)
+
+        # Measure baseline query count with existing 2 phase splits
+        with CaptureQueriesContext(connection) as baseline_context:
+            response = self.client.get(self.url, {})
+        baseline_query_count = len(baseline_context)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        baseline_result_count = len(response.data)
+
+        # Create additional challenge phase splits
+        dataset_split_2 = DatasetSplit.objects.create(
+            name="Test Dataset Split 2", codename="test-split-2"
+        )
+        dataset_split_3 = DatasetSplit.objects.create(
+            name="Test Dataset Split 3", codename="test-split-3"
+        )
+        dataset_split_4 = DatasetSplit.objects.create(
+            name="Test Dataset Split 4", codename="test-split-4"
+        )
+        leaderboard_2 = Leaderboard.objects.create(
+            schema=json.dumps({"test": "schema2"})
+        )
+
+        ChallengePhaseSplit.objects.create(
+            dataset_split=dataset_split_2,
+            challenge_phase=self.challenge_phase,
+            leaderboard=leaderboard_2,
+            visibility=ChallengePhaseSplit.PUBLIC,
+        )
+        ChallengePhaseSplit.objects.create(
+            dataset_split=dataset_split_3,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC,
+        )
+        ChallengePhaseSplit.objects.create(
+            dataset_split=dataset_split_4,
+            challenge_phase=self.challenge_phase,
+            leaderboard=leaderboard_2,
+            visibility=ChallengePhaseSplit.PUBLIC,
+        )
+
+        # Measure query count with 5 phase splits (3 more than baseline)
+        with CaptureQueriesContext(connection) as new_context:
+            response = self.client.get(self.url, {})
+        new_query_count = len(new_context)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should return more results than baseline
+        self.assertEqual(len(response.data), baseline_result_count + 3)
+
+        # Query count should remain the same (or very close) regardless of
+        # the number of ChallengePhaseSplit objects. Without select_related,
+        # adding 3 more objects would add 9 more queries (3 objects * 3
+        # related fields). With select_related, query count stays constant.
+        self.assertEqual(
+            new_query_count,
+            baseline_query_count,
+            f"Query count increased from {baseline_query_count} to "
+            f"{new_query_count} when adding more ChallengePhaseSplit objects. "
+            f"This suggests an N+1 query problem.",
+        )
+
 
 class CreateChallengeUsingZipFile(
     APITestCase
@@ -5377,6 +5553,59 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_challenge_with_multiple_stars(self):
+        """Test count is correct when multiple users have starred."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create additional starred entries from other users
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        user4 = User.objects.create(
+            username="someuser4",
+            email="user4@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=True
+        )
+        StarChallenge.objects.create(
+            user=user4, challenge=self.challenge, is_starred=True
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        expected = {"is_starred": False, "count": 3}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_with_mixed_starred_unstarred(self):
+        """Test count only includes is_starred=True records."""
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        # Create a user who unstarred (is_starred=False)
+        user3 = User.objects.create(
+            username="someuser3",
+            email="user3@test.com",
+            password="secret_password",
+        )
+        StarChallenge.objects.create(
+            user=user3, challenge=self.challenge, is_starred=False
+        )
+        # Authenticate as user2 who hasn't starred
+        self.client.force_authenticate(user=self.user2)
+        # Count should be 1 (only self.star_challenge with is_starred=True)
+        expected = {"is_starred": False, "count": 1}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):

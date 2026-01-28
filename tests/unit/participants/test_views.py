@@ -5,6 +5,8 @@ from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -116,6 +118,112 @@ class GetParticipantTeamTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_n_plus_one_queries_for_participant_teams(self):
+        """
+        Test that the participant_team_list endpoint doesn't have N+1 query issues.
+        The number of queries should remain bounded regardless of:
+        - Number of participant teams
+        - Number of participants per team
+        - Number of user profiles
+
+        Before the fix, queries grew as:
+        - 1 query per team for participants
+        - 1 query per participant for user
+        - 1 query per participant for profile
+
+        After the fix using prefetch_related with select_related:
+        - 1 query for teams
+        - 1 query for participants with users and profiles (prefetched)
+        """
+        # Create additional teams with multiple participants
+        additional_teams = []
+        for i in range(3):
+            # Create a new user for each team
+            team_creator = User.objects.create(
+                username=f"team_creator_{i}",
+                email=f"team_creator_{i}@platform.com",
+                password="password",
+            )
+            EmailAddress.objects.create(
+                user=team_creator,
+                email=f"team_creator_{i}@platform.com",
+                primary=True,
+                verified=True,
+            )
+
+            # Create the team
+            team = ParticipantTeam.objects.create(
+                team_name=f"Test Team {i}",
+                created_by=team_creator,
+            )
+            additional_teams.append(team)
+
+            # Add the creator as a participant
+            Participant.objects.create(
+                user=team_creator,
+                status=Participant.SELF,
+                team=team,
+            )
+
+            # Add the main user to each team (so they show up in the response)
+            Participant.objects.create(
+                user=self.user,
+                status=Participant.ACCEPTED,
+                team=team,
+            )
+
+            # Add additional participants to each team
+            for j in range(2):
+                member = User.objects.create(
+                    username=f"team_{i}_member_{j}",
+                    email=f"team_{i}_member_{j}@platform.com",
+                    password="password",
+                )
+                EmailAddress.objects.create(
+                    user=member,
+                    email=f"team_{i}_member_{j}@platform.com",
+                    primary=True,
+                    verified=True,
+                )
+                Participant.objects.create(
+                    user=member,
+                    status=Participant.ACCEPTED,
+                    team=team,
+                )
+
+        # Now we have:
+        # - 1 original team with 2 participants
+        # - 3 additional teams with 4 participants each (creator + main user + 2 members)
+        # Total: 4 teams, 14 participants
+
+        # Capture queries during the request
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        query_count = len(context)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Should return 4 teams (original + 3 new ones where user is a
+        # participant)
+        self.assertEqual(len(response.data["results"]), 4)
+
+        # With the N+1 fix using prefetch_related and select_related:
+        # - Queries should be bounded regardless of team/participant count
+        # - Without the fix, we'd have: 4 (teams) + 14 (users) + 14 (profiles) = 32+ queries
+        # - With the fix, we expect roughly:
+        #   - 1 for participant IDs
+        #   - 1 for teams
+        #   - 1 for participants with users and profiles (prefetched)
+        #   - Plus auth/session overhead (~5-10 queries)
+        # Total should be under 20 queries
+        self.assertLessEqual(
+            query_count,
+            20,
+            f"Too many queries ({query_count}) - possible N+1 issue. "
+            f"Queries: {[q['sql'][:100] for q in context.captured_queries]}",
+        )
 
 
 class CreateParticipantTeamTest(BaseAPITestClass):
@@ -1043,6 +1151,68 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_n_plus_one_queries_with_multiple_challenges(self):
+        """
+        Test that the endpoint doesn't have N+1 query issues.
+        The number of queries should remain constant regardless of
+        the number of challenges the participant team is part of.
+        """
+        # Create additional challenges and add participant team to them
+        challenges = [self.challenge1]
+        for i in range(5):
+            challenge = Challenge.objects.create(
+                title=f"Test Challenge {i + 3}",
+                short_description=f"Short description for test challenge {i + 3}",
+                description=f"Description for test challenge {i + 3}",
+                terms_and_conditions=f"Terms for test challenge {i + 3}",
+                submission_guidelines=f"Guidelines for test challenge {i + 3}",
+                creator=self.challenge_host_team,
+                published=False,
+                is_registration_open=True,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+            )
+            challenges.append(challenge)
+
+        # Add participant team to all challenges
+        for challenge in challenges:
+            challenge.participant_teams.add(self.participant_team)
+            challenge.save()
+
+        # The query count should be bounded (not grow with number of challenges)
+        # Expected queries:
+        # 1. Get participant objects with team and team__created_by (select_related)
+        # 2. Check is_user_a_host_of_challenge
+        # 3-4. Get challenges with creator and creator__created_by (select_related)
+        # Plus some overhead for auth, session, etc.
+        # The key is that it should NOT be O(n) where n = number of challenges
+
+        # Capture queries during the request
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        query_count = len(context)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            len(response.data["challenge_participant_team_list"]),
+            len(challenges),
+        )
+
+        # With the N+1 fix, we expect a bounded number of queries
+        # Without the fix, this would be ~2*N additional queries (one for each
+        # challenge_host_team and one for each auth_user per challenge)
+        # With the fix using select_related, queries should be bounded
+        # We use 25 as a reasonable upper bound for 6 challenges
+        # (includes auth, session, and framework overhead)
+        self.assertLessEqual(
+            query_count,
+            25,
+            f"Too many queries ({query_count}) - possible N+1 issue",
+        )
 
 
 class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):

@@ -780,7 +780,11 @@ def get_all_challenges(
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    challenge = (
+        Challenge.objects.select_related("creator", "creator__created_by")
+        .filter(**q_params)
+        .order_by("-pk")
+    )
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -857,12 +861,16 @@ def get_featured_challenges(request):
     """
     Returns the list of featured challenges
     """
-    challenge = Challenge.objects.filter(
-        featured=True,
-        published=True,
-        approved_by_admin=True,
-        is_disabled=False,
-    ).order_by("-id")
+    challenge = (
+        Challenge.objects.select_related("creator", "creator__created_by")
+        .filter(
+            featured=True,
+            published=True,
+            approved_by_admin=True,
+            is_disabled=False,
+        )
+        .order_by("-id")
+    )
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -1115,9 +1123,13 @@ def challenge_phase_split_list(request, challenge_pk):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_phase_split = ChallengePhaseSplit.objects.filter(
-        challenge_phase__challenge=challenge
-    ).order_by("pk")
+    challenge_phase_split = (
+        ChallengePhaseSplit.objects.filter(
+            challenge_phase__challenge=challenge
+        )
+        .select_related("challenge_phase", "dataset_split", "leaderboard")
+        .order_by("pk")
+    )
 
     # Check if user is a challenge host or staff
     challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
@@ -2938,18 +2950,10 @@ def star_challenge(request, challenge_pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         except StarChallenge.DoesNotExist:
-            starred_challenge = StarChallenge.objects.filter(
-                challenge=challenge
-            )
-            if not starred_challenge:
-                response_data = {"is_starred": False, "count": 0}
-                return Response(response_data, status=status.HTTP_200_OK)
-
-            serializer = StarChallengeSerializer(starred_challenge, many=True)
-            response_data = {
-                "is_starred": False,
-                "count": serializer.data[0]["count"],
-            }
+            count = StarChallenge.objects.filter(
+                challenge=challenge, is_starred=True
+            ).count()
+            response_data = {"is_starred": False, "count": count}
             return Response(response_data, status=status.HTTP_200_OK)
 
 
