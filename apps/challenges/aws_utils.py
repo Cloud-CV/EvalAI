@@ -873,10 +873,13 @@ def update_cloudwatch_log_retention_period(challenge):
     ]
 
     retention_days = 30
-    for days in allowed_days:
-        if days >= days_until_end:
-            retention_days = days
-            break
+    if days_until_end < 0:
+        retention_days = 30
+    else:
+        for days in allowed_days:
+            if days >= days_until_end:
+                retention_days = days
+                break
 
     if days_until_end > allowed_days[-1]:
         retention_days = allowed_days[-1]
