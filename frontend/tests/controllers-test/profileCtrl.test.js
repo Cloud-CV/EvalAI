@@ -177,6 +177,21 @@ describe('Unit tests for profile controller', function () {
         var affiliationInvalid = {
             affiliation: ["affiliation error"]
         };
+        var universityInvalid = {
+            university: ["university error"]
+        };
+        var streetInvalid = {
+            address_street: ["street error"]
+        };
+        var cityInvalid = {
+            address_city: ["city error"]
+        };
+        var stateInvalid = {
+            address_state: ["state error"]
+        };
+        var countryInvalid = {
+            address_country: ["country error"]
+        };
 
         beforeEach(function () {
             spyOn($rootScope, 'notify');
@@ -185,6 +200,11 @@ describe('Unit tests for profile controller', function () {
             vm.user.first_name = "firstname";
             vm.user.last_name = "lastname";
             vm.user.affiliation = "affiliation";
+            vm.user.university = "university";
+            vm.user.address_street = "street";
+            vm.user.address_city = "city";
+            vm.user.address_state = "state";
+            vm.user.address_country = "country";
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -245,6 +265,56 @@ describe('Unit tests for profile controller', function () {
             expect(vm.FormError).toEqual(tryClauseResponse.affiliation[0]);
         });
 
+        it('when university is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = universityInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.university[0]);
+        });
+
+        it('when address_street is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = streetInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_street[0]);
+        });
+
+        it('when address_city is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = cityInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_city[0]);
+        });
+
+        it('when address_state is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = stateInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_state[0]);
+        });
+
+        it('when address_country is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = countryInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_country[0]);
+        });
+
         it('other backend error in try clause', function () {
             var resetconfirmFormValid = true;
             tryClauseResponse = {};
@@ -279,6 +349,24 @@ describe('Unit tests for profile controller', function () {
             vm.updateProfile(resetconfirmFormValid, 'github_url');
             expect(vm.isFormError).toBe(true);
             expect($rootScope.notify).toHaveBeenCalledWith("error", "URL length should not be greater than 200 or is in invalid format!");
+        });
+
+        it('should handle null address fields', function () {
+            var resetconfirmFormValid = true;
+            success = true;
+            vm.user.address_street = null;
+            vm.user.address_city = null;
+            vm.user.address_state = null;
+            vm.user.address_country = null;
+            vm.user.university = null;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.user.address_street).toEqual("");
+            expect(vm.user.address_city).toEqual("");
+            expect(vm.user.address_state).toEqual("");
+            expect(vm.user.address_country).toEqual("");
+            expect(vm.user.university).toEqual("");
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
         });
     });
 
@@ -396,6 +484,11 @@ describe('Unit tests for profile controller', function () {
             { id: 'first_name', title: 'First Name', editid: 'first_name' },
             { id: 'last_name', title: 'Last Name', editid: 'last_name' },
             { id: 'affiliation', title: 'Affiliation', editid: 'affiliation' },
+            { id: 'university', title: 'University', editid: 'university' },
+            { id: 'address_street', title: 'Street Address', editid: 'address_street' },
+            { id: 'address_city', title: 'City', editid: 'address_city' },
+            { id: 'address_state', title: 'State', editid: 'address_state' },
+            { id: 'address_country', title: 'Country', editid: 'address_country' },
             { id: 'github_url', title: 'Github URL', editid: 'github_url' },
             { id: 'google_scholar_url', title: 'Google Scholar URL', editid: 'google_scholar_url' },
             { id: 'linkedin_url', title: 'Linkedin URL', editid: 'linkedin_url' },

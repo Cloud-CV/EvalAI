@@ -1255,6 +1255,71 @@ class MapChallengeAndParticipantTeam(
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_participation_blocked_when_require_complete_profile_and_profile_incomplete(
+        self,
+    ):
+        """Test that participation is blocked when challenge requires complete profile."""
+        self.challenge2.require_complete_profile = True
+        self.challenge2.save()
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("incomplete profiles", response.data["error"])
+
+    def test_participation_allowed_when_require_complete_profile_and_profile_complete(
+        self,
+    ):
+        """Test that participation is allowed when profile is complete."""
+        self.challenge2.require_complete_profile = True
+        self.challenge2.save()
+
+        # Complete the profile for user4 (creator of participant_team3)
+        self.user4.first_name = "Test"
+        self.user4.last_name = "User"
+        self.user4.save()
+        profile = self.user4.profile
+        profile.address_street = "123 Main St"
+        profile.address_city = "Springfield"
+        profile.address_state = "IL"
+        profile.address_country = "USA"
+        profile.save()
+
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_participation_allowed_when_require_complete_profile_is_false(
+        self,
+    ):
+        """Test participation allowed when require_complete_profile is False (default)."""
+        self.challenge2.require_complete_profile = False
+        self.challenge2.save()
+        # Profile is incomplete but should still be allowed
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class DisableChallengeTest(BaseAPITestClass):
     def setUp(self):
