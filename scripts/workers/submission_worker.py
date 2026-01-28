@@ -145,12 +145,8 @@ def alarm_handler(signum, frame):
 
 
 def download_and_extract_file(url, download_location):
-    """
-    * Function to extract download a file.
-    * `download_location` should include name of file as well.
-    """
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=30)
     except Exception as e:
         logger.error(
             "{} Failed to fetch file from {}, error {}".format(
@@ -245,12 +241,8 @@ def delete_old_temp_directories(prefix="tmp"):
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
-    """
-    * Function to extract download a zip file, extract it and then removes the zip file.
-    * `download_location` should include name of file as well.
-    """
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=30)
     except Exception as e:
         logger.error(
             "{} Failed to fetch file from {}, error {}".format(
@@ -482,9 +474,36 @@ def run_submission(
 
     submission_output = None
     phase_id = challenge_phase.id
-    annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(
-        challenge_id
-    ).get(phase_id)
+    phase_annotation_map = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id)
+
+    is_test_env = "settings.test" in os.environ.get(
+        "DJANGO_SETTINGS_MODULE", ""
+    )
+
+    if not phase_annotation_map and not is_test_env:
+        logger.info(
+            "{} Challenge data missing in map, reloading challenge {}".format(
+                WORKER_LOGS_PREFIX, challenge_id
+            )
+        )
+        try:
+            challenge = Challenge.objects.get(pk=challenge_id)
+            load_challenge(challenge)
+            phase_annotation_map = PHASE_ANNOTATION_FILE_NAME_MAP.get(
+                challenge_id
+            )
+        except Exception:
+            logger.exception(
+                "{} Failed to reload challenge {}".format(
+                    WORKER_LOGS_PREFIX, challenge_id
+                )
+            )
+
+    if phase_annotation_map:
+        annotation_file_name = phase_annotation_map.get(phase_id)
+    else:
+        annotation_file_name = None
+
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
         challenge_id=challenge_id,
         phase_id=phase_id,
@@ -803,6 +822,34 @@ def process_submission_callback(body):
                 SUBMISSION_LOGS_PREFIX, e
             )
         )
+        try:
+            if isinstance(body, (bytes, str)):
+                body = yaml.safe_load(body)
+
+            if isinstance(body, dict):
+                submission_pk = body.get("submission_pk")
+                if submission_pk:
+                    try:
+                        submission = Submission.objects.get(pk=submission_pk)
+                        if submission.status in [
+                            Submission.SUBMITTED,
+                            Submission.RUNNING,
+                        ]:
+                            submission.status = Submission.FAILED
+                            submission.save()
+                            logger.info(
+                                "{} Marked submission {} as FAILED after worker exception.".format(
+                                    SUBMISSION_LOGS_PREFIX, submission_pk
+                                )
+                            )
+                    except Submission.DoesNotExist:
+                        pass
+        except Exception as update_error:
+            logger.error(
+                "{} Failed to update submission status during error recovery: {}".format(
+                    SUBMISSION_LOGS_PREFIX, update_error
+                )
+            )
 
 
 def get_or_create_sqs_queue(queue_name, challenge=None):
