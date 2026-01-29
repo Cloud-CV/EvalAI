@@ -83,6 +83,11 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
+    require_complete_profile = models.BooleanField(
+        default=False,
+        verbose_name="Require Complete Profile",
+        help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
+    )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
         blank=True,

@@ -406,6 +406,35 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
     return False
 
 
+def get_participants_with_incomplete_profiles(participant_team):
+    """
+    Check if all team members have complete profiles.
+
+    Arguments:
+        participant_team {ParticipantTeam} -- The participant team to check
+
+    Returns:
+        list -- List of usernames of team members with incomplete profiles
+    """
+    from accounts.models import Profile
+    from participants.models import Participant
+
+    incomplete_profiles = []
+    participants = Participant.objects.filter(
+        team=participant_team
+    ).select_related("user", "user__profile")
+
+    for participant in participants:
+        try:
+            profile = participant.user.profile
+            if not profile.is_complete:
+                incomplete_profiles.append(participant.user.username)
+        except Profile.DoesNotExist:
+            incomplete_profiles.append(participant.user.username)
+
+    return incomplete_profiles
+
+
 def get_unique_alpha_numeric_key(length):
     """
     Returns unique alpha numeric key of length
@@ -536,28 +565,24 @@ def send_subscription_plans_email(challenge):
 
                 emails_sent += 1
                 logger.info(
-                    "Subscription plans email sent to {} for challenge {}".format(
-                        email, challenge.pk
-                    )
+                    "Subscription plans email sent to {} for challenge "
+                    "{}".format(email, challenge.pk)
                 )
             except Exception as e:
                 logger.error(
-                    "Failed to send subscription plans email to {} for challenge {}: {}".format(
-                        email, challenge.pk, str(e)
-                    )
+                    "Failed to send subscription plans email to {} for "
+                    "challenge {}: {}".format(email, challenge.pk, str(e))
                 )
 
         logger.info(
-            "Sent subscription plans email to {}/{} hosts for challenge {}".format(
-                emails_sent, len(challenge_host_emails), challenge.pk
-            )
+            "Sent subscription plans email to {}/{} hosts for challenge "
+            "{}".format(emails_sent, len(challenge_host_emails), challenge.pk)
         )
 
     except Exception as e:
         logger.error(
-            "Error sending subscription plans email for challenge {}: {}".format(
-                challenge.pk, str(e)
-            )
+            "Error sending subscription plans email for challenge {}: "
+            "{}".format(challenge.pk, str(e))
         )
 
 

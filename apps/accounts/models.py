@@ -46,9 +46,40 @@ class Profile(TimeStampedModel):
     github_url = models.URLField(max_length=200, null=True, blank=True)
     google_scholar_url = models.URLField(max_length=200, null=True, blank=True)
     linkedin_url = models.URLField(max_length=200, null=True, blank=True)
+    # Student profile fields for challenges requiring complete profile
+    address_street = models.CharField(max_length=500, null=True, blank=True)
+    address_city = models.CharField(max_length=100, null=True, blank=True)
+    address_state = models.CharField(max_length=100, null=True, blank=True)
+    address_country = models.CharField(max_length=100, null=True, blank=True)
+    university = models.CharField(max_length=512, null=True, blank=True)
 
     def __str__(self):
         return "{}".format(self.user)
+
+    @property
+    def is_complete(self):
+        """
+        Check if the user's profile is complete for challenges requiring complete profile.
+        A complete profile requires: first_name, last_name, address_street, address_city,
+        address_state, address_country, and university.
+        """
+        user = self.user
+        required_fields = [
+            user.first_name,
+            user.last_name,
+            self.address_street,
+            self.address_city,
+            self.address_state,
+            self.address_country,
+            self.university,
+        ]
+        return all(field and field.strip() for field in required_fields)
+
+    def get_full_name(self):
+        """Returns the full name of the user."""
+        return "{} {}".format(
+            self.user.first_name, self.user.last_name
+        ).strip()
 
     class Meta:
         app_label = "accounts"

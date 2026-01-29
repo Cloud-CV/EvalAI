@@ -17,6 +17,7 @@ from challenges.utils import (
     generate_presigned_url,
     generate_presigned_url_for_multipart_upload,
     get_file_content,
+    get_participants_with_incomplete_profiles,
     parse_submission_meta_attributes,
     send_emails,
     send_subscription_plans_email,
@@ -25,6 +26,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from hosts.models import ChallengeHostTeam
+from participants.models import Participant, ParticipantTeam
 
 
 class BaseTestCase(unittest.TestCase):
@@ -195,7 +197,8 @@ class TestChallengeUtils(unittest.TestCase):
         result = parse_submission_meta_attributes(submission)
         self.assertEqual(result, {})
 
-        # Test with submission_metadata containing different types of attributes
+        # Test with submission_metadata containing different types of
+        # attributes
         submission = {
             "submission_metadata": [
                 {
@@ -244,7 +247,8 @@ class TestChallengeUtils(unittest.TestCase):
         self.assertEqual(
             response,
             {
-                "error": "Invalid domain value: invalid_domain, valid values are: ['domain1', 'domain2']"
+                "error": "Invalid domain value: invalid_domain, valid values "
+                "are: ['domain1', 'domain2']"
             },
         )
 
@@ -430,7 +434,8 @@ class SendEmailsTests(unittest.TestCase):
         # Check if send_email was called for each email
         self.assertEqual(mock_send_email.call_count, len(emails))
 
-        # Check that send_email was called with correct arguments for the first email
+        # Check that send_email was called with correct arguments for the first
+        # email
         mock_send_email.assert_any_call(
             sender="team@eval.ai",
             recipient="user1@example.com",
@@ -438,7 +443,8 @@ class SendEmailsTests(unittest.TestCase):
             template_data=template_data,
         )
 
-        # Check that send_email was called with correct arguments for the second email
+        # Check that send_email was called with correct arguments for the
+        # second email
         mock_send_email.assert_any_call(
             sender="team@eval.ai",
             recipient="user2@example.com",
@@ -804,3 +810,87 @@ class SendSubscriptionPlansEmailTests(TestCase):
             from_email="team@eval.ai",
             to=["host1@example.com"],
         )
+
+
+@pytest.mark.django_db
+class GetParticipantsWithIncompleteProfilesTests(unittest.TestCase):
+    """Tests for the get_participants_with_incomplete_profiles utility function."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create users with various profile completion states
+        self.user_complete = User.objects.create_user(
+            username="completeuser",
+            email="complete@test.com",
+            password="12345",
+            first_name="John",
+            last_name="Doe",
+        )
+        # Complete the profile (is_complete requires university + address)
+        profile = self.user_complete.profile
+        profile.address_street = "123 Main St"
+        profile.address_city = "Springfield"
+        profile.address_state = "IL"
+        profile.address_country = "USA"
+        profile.university = "Test University"
+        profile.save()
+
+        self.user_incomplete = User.objects.create_user(
+            username="incompleteuser",
+            email="incomplete@test.com",
+            password="12345",
+        )
+        # Profile is automatically created but incomplete
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="Test Participant Team", created_by=self.user_complete
+        )
+
+    def test_all_profiles_complete(self):
+        """Test returns empty list when all profiles are complete."""
+        Participant.objects.create(
+            user=self.user_complete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, [])
+
+    def test_all_profiles_incomplete(self):
+        """Test returns all usernames when all profiles are incomplete."""
+        Participant.objects.create(
+            user=self.user_incomplete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, ["incompleteuser"])
+
+    def test_mixed_profiles(self):
+        """Test returns only incomplete profile usernames."""
+        Participant.objects.create(
+            user=self.user_complete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        Participant.objects.create(
+            user=self.user_incomplete,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, ["incompleteuser"])
+
+    def test_empty_team(self):
+        """Test returns empty list for team with no participants."""
+        empty_team = ParticipantTeam.objects.create(
+            team_name="Empty Team", created_by=self.user_complete
+        )
+        result = get_participants_with_incomplete_profiles(empty_team)
+        self.assertEqual(result, [])
