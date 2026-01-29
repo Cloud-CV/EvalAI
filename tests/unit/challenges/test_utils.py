@@ -826,12 +826,13 @@ class GetParticipantsWithIncompleteProfilesTests(unittest.TestCase):
             first_name="John",
             last_name="Doe",
         )
-        # Complete the profile
+        # Complete the profile (is_complete requires university + address)
         profile = self.user_complete.profile
         profile.address_street = "123 Main St"
         profile.address_city = "Springfield"
         profile.address_state = "IL"
         profile.address_country = "USA"
+        profile.university = "Test University"
         profile.save()
 
         self.user_incomplete = User.objects.create_user(
