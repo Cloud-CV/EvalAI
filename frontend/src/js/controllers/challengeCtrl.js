@@ -31,8 +31,8 @@
         vm.has_sponsors = false;
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
         vm.phaseSplitLeaderboardSchema = {};
-        vm.submissionMetaAttributes = []; 
-        vm.metaAttributesforCurrentSubmission = null; 
+        vm.submissionMetaAttributes = [];
+        vm.metaAttributesforCurrentSubmission = null;
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -269,46 +269,42 @@
                     onSuccess: function (response) {
                         vm.phaseRemainingSubmissions = response.data;
                         var details = vm.phaseRemainingSubmissions.phases;
-                        for (var i = 0; i < details.length; i++) {
-                            if (details[i].limits.submission_limit_exceeded === true) {
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
-                            } else if (details[i].limits.remaining_submissions_today_count > 0) {
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                        details.forEach(function (phase) {
+                            if (phase.limits.submission_limit_exceeded === true) {
+                                vm.phaseRemainingSubmissionsFlags[phase.id] = "maxExceeded";
+                            } else if (phase.limits.remaining_submissions_today_count > 0) {
+                                vm.phaseRemainingSubmissionsFlags[phase.id] = "showSubmissionNumbers";
                             } else {
-                                vm.eachPhase = details[i];
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
-                                vm.countDownTimer = function () {
-                                    var time = Number(vm.eachPhase.limits.remaining_time);
-                                    if (time > 0) {
-                                        time--;
-                                        vm.eachPhase.limits.remaining_time = time;
+                                var remainingTime = Number(phase.limits.remaining_time);
+                                vm.phaseRemainingSubmissionsFlags[phase.id] = "showClock";
+                                var updateCountdown = function () {
+                                    if (remainingTime > 0) {
+                                        remainingTime--;
+                                        phase.limits.remaining_time = remainingTime;
                                     }
-                                    vm.remainingTime = time;
-                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
-                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
-                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
-                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
-                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
-                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
-                                    if (vm.remainingSeconds < 10) {
-                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
+                                    var days = Math.floor(remainingTime / 86400);
+                                    var hours = Math.floor((remainingTime % 86400) / 3600);
+                                    var minutes = Math.floor((remainingTime % 3600) / 60);
+                                    var seconds = Math.floor(remainingTime % 60);
+                                    if (seconds < 10) {
+                                        seconds = "0" + seconds;
                                     }
-                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
-                                        "days": vm.days,
-                                        "hours": vm.hours,
-                                        "minutes": vm.minutes,
-                                        "seconds": vm.remainingSeconds
+                                    vm.phaseRemainingSubmissionsCountdown[phase.id] = {
+                                        "days": days,
+                                        "hours": hours,
+                                        "minutes": minutes,
+                                        "seconds": seconds
                                     };
-                                    if (vm.remainingTime <= 0) {
-                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                                    if (remainingTime <= 0) {
+                                        vm.phaseRemainingSubmissionsFlags[phase.id] = "showSubmissionNumbers";
                                     }
                                 };
+                                updateCountdown();
                                 setInterval(function () {
-                                    $rootScope.$apply(vm.countDownTimer);
+                                    $rootScope.$apply(updateCountdown);
                                 }, 1000);
-                                vm.countDownTimer();
                             }
-                        }
+                        });
                         utilities.hideLoader();
                     },
                     onError: function (response) {
@@ -738,7 +734,7 @@
             }
         };
         utilities.sendRequest(parameters);
-        vm.loadPhaseAttributes = function (phaseId) { 
+        vm.loadPhaseAttributes = function (phaseId) {
             vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function (element) {
                 return element["phaseId"] == phaseId;
             }).attributes;
@@ -795,7 +791,7 @@
             }
             return isMetaAttributeValid;
         };
-        vm.toggleSelection = function toggleSelection(attribute, value) { 
+        vm.toggleSelection = function toggleSelection(attribute, value) {
             var idx = attribute.values.indexOf(value);
             if (idx > -1) {
                 attribute.values.splice(idx, 1);
@@ -1810,27 +1806,30 @@
                             vm.message = details;
                             vm.showClock = true;
                             vm.disableSubmit = true;
-                            vm.countDownTimer = function () {
-                                vm.remainingTime = vm.message.remaining_time;
-                                vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
-                                vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
-                                vm.hours = Math.floor(vm.hoursLeft / 3600);
-                                vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
-                                vm.minutes = Math.floor(vm.minutesLeft / 60);
-                                vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                            var remainingTime = Number(vm.message.remaining_time);
+                            var updateCountdown = function () {
+                                if (remainingTime > 0) {
+                                    remainingTime--;
+                                    vm.message.remaining_time = remainingTime;
+                                }
+                                vm.remainingTime = remainingTime;
+                                vm.days = Math.floor(remainingTime / 86400);
+                                var hoursLeft = Math.floor(remainingTime % 86400);
+                                vm.hours = Math.floor(hoursLeft / 3600);
+                                var minutesLeft = Math.floor(hoursLeft % 3600);
+                                vm.minutes = Math.floor(minutesLeft / 60);
+                                vm.remainingSeconds = Math.floor(remainingTime % 60);
                                 if (vm.remainingSeconds < 10) {
                                     vm.remainingSeconds = "0" + vm.remainingSeconds;
                                 }
-                                if (vm.remainingTime === 0) {
+                                if (remainingTime <= 0) {
                                     vm.showSubmissionNumbers = true;
-                                } else {
-                                    vm.remainingSeconds--;
                                 }
                             };
+                            updateCountdown();
                             setInterval(function () {
-                                $rootScope.$apply(vm.countDownTimer);
+                                $rootScope.$apply(updateCountdown);
                             }, 1000);
-                            vm.countDownTimer();
                         }
                     }
                 },
@@ -2789,7 +2788,7 @@
                 case 3:
                     return 'trophy-bronze';
                 default:
-                    return 'trophy-black'; 
+                    return 'trophy-black';
             }
         };
     }
