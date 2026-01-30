@@ -11,22 +11,60 @@ from participants.serializers import (
 from rest_framework import serializers
 
 
-class DummyObj:
-    team_name = "nonexistent_team"
-
-
 class TestChallengeParticipantSerializer(TestCase):
-    def test_get_team_members_team_does_not_exist(self):
-        serializer = ChallengeParticipantSerializer()
-        obj = DummyObj()
-        result = serializer.get_team_members(obj)
-        self.assertEqual(result, "Participant team does not exist")
+    """Tests for ChallengeParticipantSerializer (expects ParticipantTeam with participants)."""
 
-    def test_get_team_members_email_ids_team_does_not_exist(self):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser",
+            email="test@example.com",
+        )
+        self.empty_team = ParticipantTeam.objects.create(
+            team_name="Empty Team",
+            created_by=self.user,
+        )
+
+    def test_get_team_members_empty_team(self):
+        """Team with no participants returns empty list."""
         serializer = ChallengeParticipantSerializer()
-        obj = DummyObj()
-        result = serializer.get_team_members_email_ids(obj)
-        self.assertEqual(result, "Participant team does not exist")
+        result = serializer.get_team_members(self.empty_team)
+        self.assertEqual(result, [])
+
+    def test_get_team_members_email_ids_empty_team(self):
+        """Team with no participants returns empty email list."""
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members_email_ids(self.empty_team)
+        self.assertEqual(result, [])
+
+    def test_get_team_members_with_participants(self):
+        """Team with participants returns usernames."""
+        participant_user = User.objects.create(
+            username="member1",
+            email="member1@example.com",
+        )
+        Participant.objects.create(
+            user=participant_user,
+            status=Participant.SELF,
+            team=self.empty_team,
+        )
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members(self.empty_team)
+        self.assertEqual(result, ["member1"])
+
+    def test_get_team_members_email_ids_with_participants(self):
+        """Team with participants returns emails."""
+        participant_user = User.objects.create(
+            username="member1",
+            email="member1@example.com",
+        )
+        Participant.objects.create(
+            user=participant_user,
+            status=Participant.SELF,
+            team=self.empty_team,
+        )
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members_email_ids(self.empty_team)
+        self.assertEqual(result, ["member1@example.com"])
 
 
 class TestInviteParticipantToTeamSerializer(TestCase):

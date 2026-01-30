@@ -1,5 +1,4 @@
 from accounts.serializers import UserProfileSerializer
-from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -174,47 +173,41 @@ class ParticipantCountSerializer(serializers.Serializer):
 
 
 class ChallengeParticipantSerializer(serializers.Serializer):
+    """
+    Serializer for participant teams in challenge analytics.
+
+    Note: For optimal performance, the queryset passed to this serializer
+    should use prefetch_related('participants__user') to avoid N+1 queries.
+    """
+
     team_name = serializers.SerializerMethodField()
     team_members = serializers.SerializerMethodField()
     team_members_email_ids = serializers.SerializerMethodField()
 
     class Meta:
-        model = Challenge
+        model = ParticipantTeam
         fields = ("team_name", "team_members", "team_members_email_ids")
 
     def get_team_name(self, obj):
         return obj.team_name
 
     def get_team_members(self, obj):
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                team_name=obj.team_name
-            )
-        except ParticipantTeam.DoesNotExist:
-            return "Participant team does not exist"
-
-        participant_ids = Participant.objects.filter(
-            team=participant_team
-        ).values_list("user_id", flat=True)
-        return list(
-            User.objects.filter(id__in=participant_ids).values_list(
-                "username", flat=True
-            )
-        )
+        """
+        Get list of usernames for all participants in the team.
+        Uses prefetched data if available to avoid additional queries.
+        """
+        # Use prefetched participants if available (no additional query)
+        # obj.participants is the related_name from Participant.team
+        return [
+            participant.user.username for participant in obj.participants.all()
+        ]
 
     def get_team_members_email_ids(self, obj):
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                team_name=obj.team_name
-            )
-        except ParticipantTeam.DoesNotExist:
-            return "Participant team does not exist"
-
-        participant_ids = Participant.objects.filter(
-            team=participant_team
-        ).values_list("user_id", flat=True)
-        return list(
-            User.objects.filter(id__in=participant_ids).values_list(
-                "email", flat=True
-            )
-        )
+        """
+        Get list of email addresses for all participants in the team.
+        Uses prefetched data if available to avoid additional queries.
+        """
+        # Use prefetched participants if available (no additional query)
+        return [
+            participant.user.email for participant in obj.participants.all()
+        ]

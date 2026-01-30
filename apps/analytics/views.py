@@ -328,18 +328,38 @@ def get_challenge_phase_submission_analysis(
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_participants(request, challenge_pk):
     """
-    Returns the List of Participant Teams and its details in csv format
+    Returns the List of Participant Teams and its details.
+
+    Query Parameters:
+        output (optional): Response format - 'json' or 'csv' (default: 'csv').
+
+    Returns:
+        - If output=json: JSON response with participant teams data
+        - If output=csv (default): CSV file download with participant teams data
     """
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
         challenge = get_challenge_model(challenge_pk)
-        participant_teams = challenge.participant_teams.all().order_by(
-            "-team_name"
-        )
+        # Use prefetch_related to avoid N+1 queries when accessing
+        # participants and their user data in the serializer
+        participant_teams = challenge.participant_teams.prefetch_related(
+            "participants__user"
+        ).order_by("-team_name")
         teams = ChallengeParticipantSerializer(
             participant_teams, many=True, context={"request": request}
         )
+
+        response_format = request.query_params.get("output", "csv").lower()
+
+        if response_format == "json":
+            response_data = {
+                "participant_teams": teams.data,
+                "count": len(teams.data),
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        # Default: Return CSV format
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
             "attachment; filename=participant_teams_{0}.csv".format(
