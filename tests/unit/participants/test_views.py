@@ -1,3 +1,4 @@
+# pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
 import json
 from datetime import timedelta
 
@@ -55,7 +56,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
-        super(GetParticipantTeamTest, self).setUp()
+        super().setUp()
 
         self.user2 = User.objects.create(
             username="user2",
@@ -128,8 +129,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(
-            json.loads(json.dumps(response.data["results"])),
-            json.loads(json.dumps(expected)),
+            json.loads(json.dumps(response.data["results"], default=str)),
+            json.loads(json.dumps(expected, default=str)),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -245,7 +246,7 @@ class CreateParticipantTeamTest(BaseAPITestClass):
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
-        super(CreateParticipantTeamTest, self).setUp()
+        super().setUp()
         self.data = {"team_name": "New Participant Team"}
 
     def test_create_participant_team_with_all_data(self):
@@ -277,7 +278,7 @@ class CreateParticipantTeamTest(BaseAPITestClass):
 
 class GetParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(GetParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -322,6 +323,11 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "github_url": self.participant_profile.github_url,
                         "google_scholar_url": self.participant_profile.google_scholar_url,
                         "linkedin_url": self.participant_profile.linkedin_url,
+                        "address_street": self.participant_profile.address_street,
+                        "address_city": self.participant_profile.address_city,
+                        "address_state": self.participant_profile.address_state,
+                        "address_country": self.participant_profile.address_country,
+                        "university": self.participant_profile.university,
                     },
                 },
                 {
@@ -335,6 +341,11 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "github_url": self.participant2_profile.github_url,
                         "google_scholar_url": self.participant2_profile.google_scholar_url,
                         "linkedin_url": self.participant2_profile.linkedin_url,
+                        "address_street": self.participant2_profile.address_street,
+                        "address_city": self.participant2_profile.address_city,
+                        "address_state": self.participant2_profile.address_state,
+                        "address_country": self.participant2_profile.address_country,
+                        "university": self.participant2_profile.university,
                     },
                 },
             ],
@@ -342,8 +353,8 @@ class GetParticularParticipantTeam(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(
-            json.loads(json.dumps(response.data)),
-            json.loads(json.dumps(expected)),
+            json.loads(json.dumps(response.data, default=str)),
+            json.loads(json.dumps(expected, default=str)),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -360,7 +371,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
 
 class UpdateParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(UpdateParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -405,7 +416,7 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
 
 class DeleteParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(DeleteParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -419,7 +430,7 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
 
 class InviteParticipantToTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(InviteParticipantToTeamTest, self).setUp()
+        super().setUp()
 
         self.user1 = User.objects.create(
             username="user1",
@@ -535,9 +546,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as you're a part of {} team and it has been banned "
-        "from this challenge. Please contact the challenge host."
-        expected = {"error": message.format(self.participant_team1.team_name)}
+        message = (
+            f"You cannot invite as you're a part of {self.participant_team1.team_name} "
+            "team and it has been banned from this challenge. Please contact the "
+            "challenge host."
+        )
+        expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -566,8 +580,10 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             kwargs={"pk": self.participant_team1.pk},
         )
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as the invited user has been banned "
-        "from this challenge. Please contact the challenge host."
+        message = (
+            "You cannot invite as the invited user has been banned "
+            "from this challenge. Please contact the challenge host."
+        )
         expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -598,8 +614,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        expected = {"error": message.format("platform.com")}
+        expected = {
+            "error": (
+                "Sorry, users with platform.com email domain(s) are not allowed "
+                "to participate in this challenge."
+            )
+        }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -629,8 +649,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
-        expected = {"error": message.format("example1")}
+        expected = {
+            "error": (
+                "Sorry, users with example1 email domain(s) are only allowed "
+                "to participate in this challenge."
+            )
+        }
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -732,7 +756,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
 class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(DeleteParticipantFromTeamTest, self).setUp()
+        super().setUp()
 
         self.participant = Participant.objects.create(
             user=self.user, status=Participant.SELF, team=self.participant_team
@@ -859,7 +883,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
 class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
     def setUp(self):
-        super(GetTeamsAndCorrespondingChallengesForAParticipant, self).setUp()
+        super().setUp()
 
         self.user2 = User.objects.create(
             username="user2",
@@ -907,8 +931,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             github_repository="challenge1/github_repo",
         )
-        self.challenge1.slug = "{}-{}".format(
-            self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
+        self.challenge1.slug = (
+            f"{self.challenge1.title.replace(' ', '-').lower()}-"
+            f"{self.challenge1.pk}"
         )[:199]
         self.challenge1.save()
 
@@ -950,12 +975,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,
-                        "image": self.challenge1.image,
-                        "start_date": "{0}{1}".format(
-                            self.challenge1.start_date.isoformat(), "Z"
+                        "image": None,
+                        "start_date": (
+                            f"{self.challenge1.start_date.isoformat()}Z"
                         ).replace("+00:00", ""),
-                        "end_date": "{0}{1}".format(
-                            self.challenge1.end_date.isoformat(), "Z"
+                        "end_date": (
+                            f"{self.challenge1.end_date.isoformat()}Z"
                         ).replace("+00:00", ""),
                         "creator": {
                             "id": self.challenge_host_team.id,
@@ -975,6 +1000,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "leaderboard_description": self.challenge1.leaderboard_description,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                         "manual_participant_approval": self.challenge1.manual_participant_approval,
+                        "require_complete_profile": self.challenge1.require_complete_profile,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
@@ -992,8 +1018,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                         "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
                         "workers": self.challenge1.workers,
-                        "created_at": "{0}{1}".format(
-                            self.challenge1.created_at.isoformat(), "Z"
+                        "created_at": (
+                            f"{self.challenge1.created_at.isoformat()}Z"
                         ).replace("+00:00", ""),
                         "queue": self.challenge1.queue,
                         "worker_cpu_cores": 512,
@@ -1031,7 +1057,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         # deleting field 'datetime_now' from response to check with expected
         # response without time field
         del response.data["datetime_now"]
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data, default=str)),
+            json.loads(json.dumps(expected, default=str)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_participant_team_challenge_list(self):
@@ -1048,12 +1077,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "terms_and_conditions": self.challenge1.terms_and_conditions,
                 "submission_guidelines": self.challenge1.submission_guidelines,
                 "evaluation_details": self.challenge1.evaluation_details,
-                "image": self.challenge1.image,
-                "start_date": "{0}{1}".format(
-                    self.challenge1.start_date.isoformat(), "Z"
+                "image": None,
+                "start_date": (
+                    f"{self.challenge1.start_date.isoformat()}Z"
                 ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge1.end_date.isoformat(), "Z"
+                "end_date": (
+                    f"{self.challenge1.end_date.isoformat()}Z"
                 ).replace("+00:00", ""),
                 "creator": {
                     "id": self.challenge_host_team.id,
@@ -1091,8 +1120,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                 "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
                 "workers": self.challenge1.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge1.created_at.isoformat(), "Z"
+                "created_at": (
+                    f"{self.challenge1.created_at.isoformat()}Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge1.queue,
                 "worker_cpu_cores": 512,
@@ -1117,8 +1146,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(
-            json.loads(json.dumps(response.data["results"])),
-            json.loads(json.dumps(expected)),
+            json.loads(json.dumps(response.data["results"], default=str)),
+            json.loads(json.dumps(expected, default=str)),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -1238,7 +1267,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
 class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(RemoveSelfFromParticipantTeamTest, self).setUp()
+        super().setUp()
 
         # user who create a challenge host team
         self.user2 = User.objects.create(
@@ -1321,7 +1350,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
 
 class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
     def setUp(self):
-        super(RemoveParticipantTeamFromChallengeTest, self).setUp()
+        super().setUp()
         self.user1 = User.objects.create(
             username="user1",
             email="user1@platform.com",
@@ -1355,8 +1384,9 @@ class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge.slug = "{}-{}".format(
-            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        self.challenge.slug = (
+            f"{self.challenge.title.replace(' ', '-').lower()}-"
+            f"{self.challenge.pk}"
         )[:199]
         self.challenge.save()
 
