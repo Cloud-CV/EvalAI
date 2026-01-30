@@ -3,7 +3,10 @@ import logging
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 
-from .admin_filters import OngoingChallengesFilter
+from .admin_filters import (
+    ActiveChallengePhaseFilter,
+    TopActiveChallengesFilter,
+)
 from .models import Submission
 from .sender import publish_submission_message
 from .utils import handle_submission_rerun
@@ -40,8 +43,8 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "job_name",
     )
     list_filter = (
-        OngoingChallengesFilter,
-        "challenge_phase",
+        TopActiveChallengesFilter,
+        ActiveChallengePhaseFilter,
         "status",
         "is_public",
     )
