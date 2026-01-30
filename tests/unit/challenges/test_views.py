@@ -173,6 +173,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -561,6 +562,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -667,6 +669,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -798,6 +801,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -878,6 +882,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -1554,6 +1559,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1642,6 +1648,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1730,6 +1737,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge4.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1818,6 +1826,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge4.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1887,6 +1896,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1956,6 +1966,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2130,6 +2141,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -2375,6 +2387,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "leaderboard_description": self.challenge3.leaderboard_description,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
             "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge3.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2477,6 +2490,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "leaderboard_description": self.challenge4.leaderboard_description,
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
             "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge4.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2640,6 +2654,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2726,6 +2741,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2812,6 +2828,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2896,6 +2913,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2965,6 +2983,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],

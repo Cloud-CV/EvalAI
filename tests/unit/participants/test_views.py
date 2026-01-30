@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from accounts.models import Profile
@@ -96,6 +97,11 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "github_url": self.participant_profile.github_url,
                             "google_scholar_url": self.participant_profile.google_scholar_url,
                             "linkedin_url": self.participant_profile.linkedin_url,
+                            "address_street": self.participant_profile.address_street,
+                            "address_city": self.participant_profile.address_city,
+                            "address_state": self.participant_profile.address_state,
+                            "address_country": self.participant_profile.address_country,
+                            "university": self.participant_profile.university,
                         },
                     },
                     {
@@ -109,6 +115,11 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "github_url": self.participant2_profile.github_url,
                             "google_scholar_url": self.participant2_profile.google_scholar_url,
                             "linkedin_url": self.participant2_profile.linkedin_url,
+                            "address_street": self.participant2_profile.address_street,
+                            "address_city": self.participant2_profile.address_city,
+                            "address_state": self.participant2_profile.address_state,
+                            "address_country": self.participant2_profile.address_country,
+                            "university": self.participant2_profile.university,
                         },
                     },
                 ],
@@ -116,7 +127,10 @@ class GetParticipantTeamTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_no_n_plus_one_queries_for_participant_teams(self):
@@ -327,7 +341,10 @@ class GetParticularParticipantTeam(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_participant_team_does_not_exist(self):
@@ -1056,6 +1073,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "leaderboard_description": self.challenge1.leaderboard_description,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge1.manual_participant_approval,
+                "require_complete_profile": self.challenge1.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1098,7 +1116,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.save()
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_when_participant_team_hasnot_participated_in_any_challenge(self):
