@@ -1018,7 +1018,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
             "count": len(participant_teams.data),
         }
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.url, {"format": "json"})
+        response = self.client.get(self.url, {"output": "json"})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -1028,29 +1028,29 @@ class GetParticipantTeamsTest(BaseAPITestClass):
             "error": "Sorry, you are not authorized to make this request"
         }
         self.client.force_authenticate(user=self.user2)
-        response = self.client.get(self.url, {"format": "json"})
+        response = self.client.get(self.url, {"output": "json"})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_json_format_case_insensitive(self):
-        """Test that format parameter is case-insensitive"""
+        """Test that output parameter is case-insensitive"""
         self.client.force_authenticate(user=self.user)
 
-        # Test uppercase
-        response = self.client.get(self.url, {"format": "JSON"})
+        # Test uppercase (use 'output' to avoid DRF format content negotiation)
+        response = self.client.get(self.url, {"output": "JSON"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("participant_teams", response.data)
         self.assertIn("count", response.data)
 
         # Test mixed case
-        response = self.client.get(self.url, {"format": "Json"})
+        response = self.client.get(self.url, {"output": "Json"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("participant_teams", response.data)
 
     def test_invalid_format_defaults_to_csv(self):
-        """Test that invalid format parameter defaults to CSV download"""
+        """Test that invalid output parameter defaults to CSV download"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.url, {"format": "invalid"})
+        response = self.client.get(self.url, {"output": "invalid"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
         self.assertIn("attachment; filename=", response["Content-Disposition"])
@@ -1058,7 +1058,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
     def test_json_response_structure(self):
         """Test that JSON response has correct structure"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.url, {"format": "json"})
+        response = self.client.get(self.url, {"output": "json"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("participant_teams", response.data)
@@ -1076,7 +1076,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
     def test_json_response_contains_correct_data(self):
         """Test that JSON response contains correct participant data"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.url, {"format": "json"})
+        response = self.client.get(self.url, {"output": "json"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -1118,7 +1118,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user)
 
         # Test JSON format
-        response = self.client.get(self.url, {"format": "json"})
+        response = self.client.get(self.url, {"output": "json"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["participant_teams"], [])
         self.assertEqual(response.data["count"], 0)

@@ -331,11 +331,11 @@ def download_all_participants(request, challenge_pk):
     Returns the List of Participant Teams and its details.
 
     Query Parameters:
-        format (optional): Response format - 'json' or 'csv' (default: 'csv')
+        output (optional): Response format - 'json' or 'csv' (default: 'csv').
 
     Returns:
-        - If format=json: JSON response with participant teams data
-        - If format=csv (default): CSV file download with participant teams data
+        - If output=json: JSON response with participant teams data
+        - If output=csv (default): CSV file download with participant teams data
     """
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
@@ -350,8 +350,7 @@ def download_all_participants(request, challenge_pk):
             participant_teams, many=True, context={"request": request}
         )
 
-        # Check if JSON format is requested
-        response_format = request.query_params.get("format", "csv").lower()
+        response_format = request.query_params.get("output", "csv").lower()
 
         if response_format == "json":
             response_data = {
