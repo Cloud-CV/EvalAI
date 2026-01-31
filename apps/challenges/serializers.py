@@ -23,6 +23,8 @@ from .models import (
 class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+    payment_tier = serializers.ReadOnlyField()
+    payment_tier_display_name = serializers.ReadOnlyField()
     domain_name = serializers.SerializerMethodField()
 
     def get_domain_name(self, obj):
@@ -63,6 +65,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "anonymous_leaderboard",
             "manual_participant_approval",
             "is_active",
+            "payment_tier",
+            "payment_tier_display_name",
             "leaderboard_description",
             "allowed_email_domains",
             "blocked_email_domains",

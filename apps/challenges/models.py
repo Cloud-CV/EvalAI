@@ -273,6 +273,26 @@ class Challenge(TimeStampedModel):
             return True
         return False
 
+    @property
+    def payment_tier(self):
+        """Returns the payment tier name for this challenge"""
+        try:
+            from payments.models import ChallengePaymentTier
+            payment_tier_mapping = ChallengePaymentTier.objects.select_related('payment_tier').get(challenge=self)
+            return payment_tier_mapping.payment_tier.name
+        except ChallengePaymentTier.DoesNotExist:
+            return "free"  # Default to free tier if no mapping exists
+
+    @property
+    def payment_tier_display_name(self):
+        """Returns the payment tier display name for this challenge"""
+        try:
+            from payments.models import ChallengePaymentTier
+            payment_tier_mapping = ChallengePaymentTier.objects.select_related('payment_tier').get(challenge=self)
+            return payment_tier_mapping.payment_tier.display_name
+        except ChallengePaymentTier.DoesNotExist:
+            return "Free"  # Default to free tier if no mapping exists
+
 
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_or_ec2_for_challenge(
