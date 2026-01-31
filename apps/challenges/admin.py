@@ -79,6 +79,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "id",
         "title",
         "creator__team_name",
+        "creator__created_by__email",
         "slug",
         "github_repository",
         "github_branch",
