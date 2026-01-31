@@ -41,6 +41,23 @@ class ProfileSerializer(UserDetailsSerializer):
     linkedin_url = serializers.URLField(
         source="profile.linkedin_url", allow_blank=True
     )
+    # Student profile fields
+    address_street = serializers.CharField(
+        source="profile.address_street", allow_blank=True, required=False
+    )
+    address_city = serializers.CharField(
+        source="profile.address_city", allow_blank=True, required=False
+    )
+    address_state = serializers.CharField(
+        source="profile.address_state", allow_blank=True, required=False
+    )
+    address_country = serializers.CharField(
+        source="profile.address_country", allow_blank=True, required=False
+    )
+    university = serializers.CharField(
+        source="profile.university", allow_blank=True, required=False
+    )
+    is_profile_complete = serializers.SerializerMethodField()
 
     class Meta(UserDetailsSerializer.Meta):
         fields = (
@@ -53,7 +70,19 @@ class ProfileSerializer(UserDetailsSerializer):
             "github_url",
             "google_scholar_url",
             "linkedin_url",
+            "address_street",
+            "address_city",
+            "address_state",
+            "address_country",
+            "university",
+            "is_profile_complete",
         )
+
+    def get_is_profile_complete(self, obj):
+        """Returns whether the user's profile is complete."""
+        if hasattr(obj, "profile"):
+            return obj.profile.is_complete
+        return False
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
@@ -61,6 +90,11 @@ class ProfileSerializer(UserDetailsSerializer):
         github_url = profile_data.get("github_url")
         google_scholar_url = profile_data.get("google_scholar_url")
         linkedin_url = profile_data.get("linkedin_url")
+        address_street = profile_data.get("address_street")
+        address_city = profile_data.get("address_city")
+        address_state = profile_data.get("address_state")
+        address_country = profile_data.get("address_country")
+        university = profile_data.get("university")
 
         instance = super(ProfileSerializer, self).update(
             instance, validated_data
@@ -72,6 +106,16 @@ class ProfileSerializer(UserDetailsSerializer):
             profile.github_url = github_url
             profile.google_scholar_url = google_scholar_url
             profile.linkedin_url = linkedin_url
+            if address_street is not None:
+                profile.address_street = address_street
+            if address_city is not None:
+                profile.address_city = address_city
+            if address_state is not None:
+                profile.address_state = address_state
+            if address_country is not None:
+                profile.address_country = address_country
+            if university is not None:
+                profile.university = university
             profile.save()
         return instance
 
@@ -88,6 +132,11 @@ class UserProfileSerializer(UserDetailsSerializer):
             "github_url",
             "google_scholar_url",
             "linkedin_url",
+            "address_street",
+            "address_city",
+            "address_state",
+            "address_country",
+            "university",
         )
 
 

@@ -76,6 +76,21 @@ describe('Unit tests for update profile controller', function () {
         var affiliationInvalid = {
             affiliation: ["affiliation error"]
         };
+        var universityInvalid = {
+            university: ["university error"]
+        };
+        var streetInvalid = {
+            address_street: ["street error"]
+        };
+        var cityInvalid = {
+            address_city: ["city error"]
+        };
+        var stateInvalid = {
+            address_state: ["state error"]
+        };
+        var countryInvalid = {
+            address_country: ["country error"]
+        };
 
         beforeEach(function () {
             spyOn($rootScope, 'notify');
@@ -86,6 +101,11 @@ describe('Unit tests for update profile controller', function () {
             vm.user.first_name = "firstname";
             vm.user.last_name = "lastname";
             vm.user.affiliation = "affiliation";
+            vm.user.university = "university";
+            vm.user.address_street = "street";
+            vm.user.address_city = "city";
+            vm.user.address_state = "state";
+            vm.user.address_country = "country";
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -169,6 +189,71 @@ describe('Unit tests for update profile controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
+        it('when university is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = universityInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.university[0]);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('when address_street is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = streetInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_street[0]);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('when address_city is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = cityInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_city[0]);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('when address_state is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = stateInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_state[0]);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('when address_country is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = countryInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.address_country[0]);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
         it('other backend error in try clause', function () {
             var resetconfirmFormValid = true;
             tryClauseResponse = {};
@@ -226,6 +311,24 @@ describe('Unit tests for update profile controller', function () {
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.isFormError).toBe(true);
             expect(vm.FormError).toBe("LinkedIn URL length should not be greater than 200!");
+        });
+
+        it('should handle null address fields', function () {
+            var resetconfirmFormValid = true;
+            success = true;
+            vm.user.address_street = null;
+            vm.user.address_city = null;
+            vm.user.address_state = null;
+            vm.user.address_country = null;
+            vm.user.university = null;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.user.address_street).toEqual("");
+            expect(vm.user.address_city).toEqual("");
+            expect(vm.user.address_state).toEqual("");
+            expect(vm.user.address_country).toEqual("");
+            expect(vm.user.university).toEqual("");
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
         });
     });
 });

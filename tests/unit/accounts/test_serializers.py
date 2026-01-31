@@ -81,6 +81,12 @@ class TestProfileSerializer(TestCase):
             "github_url",
             "google_scholar_url",
             "linkedin_url",
+            "address_street",
+            "address_city",
+            "address_state",
+            "address_country",
+            "university",
+            "is_profile_complete",
         ]
         self.assertEqual(set(serializer.data.keys()), set(expected_fields))
 
