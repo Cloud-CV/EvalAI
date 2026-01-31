@@ -173,6 +173,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -213,7 +214,8 @@ class GetChallengeTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(
-            response.data["results"], json.loads(json.dumps(expected))
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -560,6 +562,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -597,7 +600,10 @@ class GetParticularChallenge(BaseAPITestClass):
             "github_branch": self.challenge.github_branch,
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_challenge_when_user_is_not_its_creator(self):
@@ -663,6 +669,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -704,7 +711,10 @@ class GetParticularChallenge(BaseAPITestClass):
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
         )
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_does_not_exist(self):
@@ -791,6 +801,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -831,7 +842,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "github_branch": self.challenge.github_branch,
         }
         response = self.client.patch(self.url, self.partial_update_data)
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_update(self):
@@ -868,6 +882,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -908,7 +923,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "github_branch": self.challenge.github_branch,
         }
         response = self.client.put(self.url, self.data)
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_update_with_no_data(self):
@@ -1212,8 +1230,10 @@ class MapChallengeAndParticipantTeam(
         )
 
         response = self.client.post(self.url, {})
-        message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
-                    to participate in this challenge."
+        message = (
+            "Sorry, team consisting of users with non-{} email "
+            "domain(s) are not allowed to participate in this challenge."
+        )
         expected = {"error": message.format("example1/example2")}
 
         self.assertEqual(response.data, expected)
@@ -1234,8 +1254,10 @@ class MapChallengeAndParticipantTeam(
         )
 
         response = self.client.post(self.url, {})
-        message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
-                    to participate in this challenge."
+        message = (
+            "Sorry, team consisting of users with non-{} email "
+            "domain(s) are not allowed to participate in this challenge."
+        )
         expected = {"error": message.format("example1/example2")}
 
         self.assertEqual(response.data, expected)
@@ -1244,6 +1266,72 @@ class MapChallengeAndParticipantTeam(
     def test_participation_when_participant_is_in_allowed_list(self):
         self.challenge2.allowed_email_domains.append("test.com")
         self.challenge2.save()
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_participation_blocked_when_require_complete_profile_and_profile_incomplete(
+        self,
+    ):
+        """Test that participation is blocked when challenge requires complete profile."""
+        self.challenge2.require_complete_profile = True
+        self.challenge2.save()
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("incomplete profiles", response.data["error"])
+
+    def test_participation_allowed_when_require_complete_profile_and_profile_complete(
+        self,
+    ):
+        """Test that participation is allowed when profile is complete."""
+        self.challenge2.require_complete_profile = True
+        self.challenge2.save()
+
+        # Complete the profile for user4 (creator of participant_team3)
+        self.user4.first_name = "Test"
+        self.user4.last_name = "User"
+        self.user4.save()
+        profile = self.user4.profile
+        profile.address_street = "123 Main St"
+        profile.address_city = "Springfield"
+        profile.address_state = "IL"
+        profile.address_country = "USA"
+        profile.university = "Test University"
+        profile.save()
+
+        self.client.force_authenticate(user=self.participant_team3.created_by)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_participation_allowed_when_require_complete_profile_is_false(
+        self,
+    ):
+        """Test participation allowed when require_complete_profile is False (default)."""
+        self.challenge2.require_complete_profile = False
+        self.challenge2.save()
+        # Profile is incomplete but should still be allowed
         self.client.force_authenticate(user=self.participant_team3.created_by)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -1471,6 +1559,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1510,7 +1599,10 @@ class GetAllChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
 
     def test_get_present_challenges(self):
         self.url = reverse_lazy(
@@ -1556,6 +1648,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1595,7 +1688,10 @@ class GetAllChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
 
     def test_get_future_challenges(self):
         self.url = reverse_lazy(
@@ -1641,6 +1737,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge4.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1680,7 +1777,10 @@ class GetAllChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
 
     def test_get_all_challenges(self):
         self.url = reverse_lazy(
@@ -1726,6 +1826,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge4.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge4.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1795,6 +1896,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1864,6 +1966,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1903,7 +2006,10 @@ class GetAllChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
 
     def test_incorrent_url_pattern_challenges(self):
         self.url = reverse_lazy(
@@ -2035,6 +2141,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "leaderboard_description": self.challenge3.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge3.require_complete_profile,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -2074,7 +2181,10 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
 
     def test_get_featured_challenges_no_n_plus_one_queries(self):
         """
@@ -2277,6 +2387,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "leaderboard_description": self.challenge3.leaderboard_description,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
             "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge3.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2315,7 +2426,10 @@ class GetChallengeByPk(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_by_pk_when_user_is_not_challenge_host(self):
@@ -2376,6 +2490,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "leaderboard_description": self.challenge4.leaderboard_description,
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
             "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
+            "require_complete_profile": self.challenge4.require_complete_profile,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2415,7 +2530,10 @@ class GetChallengeByPk(BaseAPITestClass):
 
         self.client.force_authenticate(user=self.user1)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data)),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_by_pk_when_challenge_is_disabled(self):
@@ -2536,6 +2654,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2577,7 +2696,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         response = self.client.get(
             self.url, {"host_team": self.challenge_host_team2.pk}
         )
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_participant_team_is_given(self):
@@ -2619,6 +2741,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2660,7 +2783,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         response = self.client.get(
             self.url, {"participant_team": self.participant_team2.pk}
         )
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_mode_is_participant(self):
@@ -2702,6 +2828,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2741,7 +2868,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {"mode": "participant"})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_when_mode_is_host(self):
@@ -2783,6 +2913,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2852,6 +2983,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "leaderboard_description": self.challenge2.leaderboard_description,  # noqa: C0301
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
+                "require_complete_profile": self.challenge2.require_complete_profile,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2891,7 +3023,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {"mode": "host"})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_with_incorrect_url_pattern(self):
@@ -3182,7 +3317,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_when_user_is_not_authenticated(self):
@@ -3219,7 +3357,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         ]
         self.client.force_authenticate(user=None)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_for_challenge_phase_does_not_exist(self):
@@ -3296,7 +3437,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_when_a_phase_is_not_public(self):
@@ -3307,7 +3451,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
 
         self.client.force_authenticate(user=None)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
@@ -4834,7 +4981,10 @@ class GetAllSubmissionsTest(
         self.challenge5.participant_teams.add(self.participant_team6)
         self.challenge5.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"])),
+            json.loads(json.dumps(expected)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(  # noqa: C0301
