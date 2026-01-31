@@ -142,6 +142,32 @@ class TestChallengeAdminActions(TestCase):
         )
 
 
+class TestChallengeAdminListDisplay(TestCase):
+    """Tests for ChallengeAdmin list_display configuration."""
+
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = ChallengeAdmin(Challenge, self.site)
+
+    def test_list_display_contains_expected_fields(self):
+        """list_display should contain only the configured admin columns."""
+        expected_fields = (
+            "id",
+            "title",
+            "start_date",
+            "end_date",
+            "creator",
+            "published",
+            "approved_by_admin",
+            "featured",
+            "created_at",
+            "workers",
+            "task_def_arn",
+            "github_repository",
+        )
+        self.assertEqual(self.admin.list_display, expected_fields)
+
+
 class TestChallengeAdminSearch(TestCase):
     """Tests for ChallengeAdmin search functionality."""
 
