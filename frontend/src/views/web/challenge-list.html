@@ -9,7 +9,7 @@
                         <strong class="text-med-black">Ongoing ({{challengeList.currentCount}})</strong>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" ng-if="challengeList.upcomingCount > 0">
                     <a href="#" ng-click="tab = 2" class="nav-link" ng-class="{'active': tab === 2}">
                         <strong class="text-med-black">Upcoming ({{challengeList.upcomingCount}})</strong>
                     </a>
