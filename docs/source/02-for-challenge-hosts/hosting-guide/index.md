@@ -5,6 +5,7 @@
 
 getting-started
 challenge-types
+team-management
 host-challenge
 approval-process
 
