@@ -82,6 +82,7 @@
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
         vm.evaluation_module_error = null;
+        vm.payment_tier = 'free';
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -396,6 +397,7 @@
                 vm.has_sponsors = details.has_sponsors;
                 vm.queueName = details.queue;
                 vm.evaluation_module_error = details.evaluation_module_error;
+                vm.payment_tier = details.payment_tier;
                 vm.githubRepository = details.github_repository;
                 vm.getTeamName(vm.challengeId);
                 if (vm.page.image === null) {
