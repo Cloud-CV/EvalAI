@@ -748,7 +748,9 @@
                 return (typeof arg === undefined ? def : arg);
             }
 
-            timeout = pick(timeout, 5000);
+            // Use longer timeout for error messages (25 seconds) vs success/info (5 seconds)
+            var defaultTimeout = type === 'error' ? 25000 : 5000;
+            timeout = pick(timeout, defaultTimeout);
             toaster.pop({
                 type: type,
                 body: message,

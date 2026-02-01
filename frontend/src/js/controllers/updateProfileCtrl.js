@@ -67,6 +67,11 @@
                 vm.user.github_url = vm.user.github_url === null ? "" : vm.user.github_url;
                 vm.user.google_scholar_url = vm.user.google_scholar_url === null ? "" : vm.user.google_scholar_url;
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
+                vm.user.address_street = vm.user.address_street === null ? "" : vm.user.address_street;
+                vm.user.address_city = vm.user.address_city === null ? "" : vm.user.address_city;
+                vm.user.address_state = vm.user.address_state === null ? "" : vm.user.address_state;
+                vm.user.address_country = vm.user.address_country === null ? "" : vm.user.address_country;
+                vm.user.university = vm.user.university === null ? "" : vm.user.university;
 
                 if (!vm.isURLValid(vm.user.github_url)) {
                     vm.isFormError = true;
@@ -93,7 +98,12 @@
                     "affiliation": vm.user.affiliation,
                     "github_url": vm.user.github_url,
                     "google_scholar_url": vm.user.google_scholar_url,
-                    "linkedin_url": vm.user.linkedin_url
+                    "linkedin_url": vm.user.linkedin_url,
+                    "address_street": vm.user.address_street,
+                    "address_city": vm.user.address_city,
+                    "address_state": vm.user.address_state,
+                    "address_country": vm.user.address_country,
+                    "university": vm.user.university
                 };
                 parameters.token = userKey;
                 parameters.callback = {
@@ -111,19 +121,35 @@
                             vm.stopLoader();
                             vm.isFormError = true;
                             var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid;
+                            var isUniversity_valid, isStreet_valid, isCity_valid, isState_valid, isCountry_valid;
                             try {
                                 isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
                                 isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
                                 isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
                                 isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined' ? true : false;
+                                isUniversity_valid = typeof(response.data.university) !== 'undefined' ? true : false;
+                                isStreet_valid = typeof(response.data.address_street) !== 'undefined' ? true : false;
+                                isCity_valid = typeof(response.data.address_city) !== 'undefined' ? true : false;
+                                isState_valid = typeof(response.data.address_state) !== 'undefined' ? true : false;
+                                isCountry_valid = typeof(response.data.address_country) !== 'undefined' ? true : false;
                                 if (isUsername_valid) {
                                     vm.FormError = response.data.username[0];
                                 } else if (isFirstname_valid) {
                                     vm.FormError = response.data.first_name[0];
                                 } else if (isLastname_valid) {
                                     vm.FormError = response.data.last_name[0];
-                                }else if (isAffiliation_valid) {
-                                    vm.FormError = response.data.affiliation[0]; 
+                                } else if (isAffiliation_valid) {
+                                    vm.FormError = response.data.affiliation[0];
+                                } else if (isUniversity_valid) {
+                                    vm.FormError = response.data.university[0];
+                                } else if (isStreet_valid) {
+                                    vm.FormError = response.data.address_street[0];
+                                } else if (isCity_valid) {
+                                    vm.FormError = response.data.address_city[0];
+                                } else if (isState_valid) {
+                                    vm.FormError = response.data.address_state[0];
+                                } else if (isCountry_valid) {
+                                    vm.FormError = response.data.address_country[0];
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }

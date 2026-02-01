@@ -44,6 +44,7 @@ from challenges.utils import (
     get_dataset_split_model,
     get_leaderboard_model,
     get_participant_model,
+    get_participants_with_incomplete_profiles,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
@@ -377,7 +378,8 @@ def deregister_participant_team_from_challenge(request, challenge_pk):
             submission_exist = False
         if submission_exist:
             response_data = {
-                "error": "Participant teams which have made submissions to a challenge cannot be deregistered."
+                "error": "Participant teams which have made submissions to "
+                "a challenge cannot be deregistered."
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -388,7 +390,8 @@ def deregister_participant_team_from_challenge(request, challenge_pk):
             return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
-            "error": "Your participant team is not registered for this challenge."
+            "error": "Your participant team is not registered for this "
+            "challenge."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -526,7 +529,8 @@ def add_participant_team_to_challenge(
         or challenge.start_date > timezone.now()
     ):
         response_data = {
-            "error": "Sorry, cannot accept participant team since challenge is not active."
+            "error": "Sorry, cannot accept participant team since challenge "
+            "is not active."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -540,10 +544,10 @@ def add_participant_team_to_challenge(
     if len(challenge.banned_email_ids) > 0:
         for participant_email in participant_team.get_all_participants_email():
             if participant_email in challenge.banned_email_ids:
-                message = "You're a part of {} team and it has been banned from this challenge. \
-                Please contact the challenge host.".format(
-                    participant_team.team_name
-                )
+                message = (
+                    "You're a part of {} team and it has been banned from "
+                    "this challenge. Please contact the challenge host."
+                ).format(participant_team.team_name)
                 response_data = {"error": message}
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -560,8 +564,11 @@ def add_participant_team_to_challenge(
             if not is_user_in_allowed_email_domains(
                 participant_email, challenge_pk
             ):
-                message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
-                    to participate in this challenge."
+                message = (
+                    "Sorry, team consisting of users with non-{} email "
+                    "domain(s) are not allowed to participate in this "
+                    "challenge."
+                )
                 response_data = {"error": message.format(domains)}
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -576,6 +583,26 @@ def add_participant_team_to_challenge(
         domains = domains[1:]
         response_data = {"error": message.format(domains)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge requires complete profile
+    if challenge.require_complete_profile:
+        incomplete_profiles = get_participants_with_incomplete_profiles(
+            participant_team
+        )
+        if incomplete_profiles:
+            message = (
+                "This challenge requires all team members to have a "
+                "complete profile. The following team member(s) have "
+                "incomplete profiles: {}. Please complete profile "
+                "information (full name, street address, city, state, "
+                "country, university) before participating."
+            )
+            response_data = {
+                "error": message.format(", ".join(incomplete_profiles))
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
     # check to disallow the user if he is a Challenge Host for this challenge
     participant_team_user_ids = set(
@@ -708,7 +735,10 @@ def remove_participant_team_from_approved_list(
         return Response(status=status.HTTP_204_NO_CONTENT)
     elif submission_exist:
         response_data = {
-            "error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"
+            "error": (
+                f"Participant Team {team_name} has existing submissions "
+                "and cannot be unapproved"
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
@@ -1050,9 +1080,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(
-                pk, challenge.pk
-            )
+            "error": "Challenge phase {} does not exist for challenge "
+            "{}".format(pk, challenge.pk)
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1172,7 +1201,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
         except ChallengeTemplate.DoesNotExist:
             response_data = {
-                "error": "Sorry, a server error occured while creating the challenge. Please try again!"
+                "error": (
+                    "Sorry, a server error occured while creating the "
+                    "challenge. Please try again!"
+                )
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -1409,10 +1441,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             "is_restricted_to_select_one_submission"
         ):
             message = (
-                "is_submission_public can't be 'True' for for challenge phase '{}'"
-                " with is_restricted_to_select_one_submission 'True'. "
-                " Please change is_submission_public to 'False'"
-                " then try again!".format(data["name"])
+                "is_submission_public can't be 'True' for for challenge "
+                "phase '{}' with is_restricted_to_select_one_submission "
+                "'True'. Please change is_submission_public to 'False' "
+                "then try again!".format(data["name"])
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -1438,8 +1470,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         ):
                             options = attribute.get("options")
                             if not options or not len(options):
-                                message = "Please include at least one option in attribute for challenge_phase {}".format(
-                                    data["id"]
+                                message = (
+                                    "Please include at least one option in "
+                                    "attribute for challenge_phase "
+                                    "{}".format(data["id"])
                                 )
                                 response_data = {"error": message}
                                 return Response(
@@ -1448,8 +1482,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 )
                 else:
                     missing_keys_string = ", ".join(missing_keys)
-                    message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(
-                        data["id"], missing_keys_string
+                    message = (
+                        "Please enter the following to the submission meta "
+                        "attribute in phase {}: {}.".format(
+                            data["id"], missing_keys_string
+                        )
                     )
                     response_data = {"error": message}
                     return Response(
@@ -1469,8 +1506,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         "publication_url",
                     ]
                     if not attribute["name"] in valid_attributes:
-                        message = "Default meta attribute: {} in phase: {} does not exist!".format(
-                            attribute["name"], data["id"]
+                        message = (
+                            "Default meta attribute: {} in phase: {} does "
+                            "not exist!".format(attribute["name"], data["id"])
                         )
                         response_data = {"error": message}
                         return Response(
@@ -1479,8 +1517,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         )
                 else:
                     missing_keys_string = ", ".join(missing_keys)
-                    message = "Please enter the following to the default submission meta attribute in phase {}: {}.".format(
-                        data["id"], missing_keys_string
+                    message = (
+                        "Please enter the following to the default "
+                        "submission meta attribute in phase {}: "
+                        "{}.".format(data["id"], missing_keys_string)
                     )
                     response_data = {"error": message}
                     return Response(
@@ -1845,8 +1885,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     challenge_phase_ids.get(str(data["challenge_phase_id"]))
                     is None
                 ):
-                    message = "Challenge phase with phase id {} doesn't exist.".format(
-                        data["challenge_phase_id"]
+                    message = (
+                        "Challenge phase with phase id {} doesn't "
+                        "exist.".format(data["challenge_phase_id"])
                     )
                     response_data = {"error": message}
                     return Response(
@@ -1974,9 +2015,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response = start_workers([zip_config.challenge])
                     count, failures = response["count"], response["failures"]
                     logging.info(
-                        "Total worker start count is {} and failures are: {}".format(
-                            count, failures
-                        )
+                        "Total worker start count is {} and failures are: "
+                        "{}".format(count, failures)
                     )
                     if count:
                         logging.info(
@@ -2008,7 +2048,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
         except:  # noqa: E722
             response_data = {
-                "error": "Error in creating challenge. Please check the yaml configuration!"
+                "error": (
+                    "Error in creating challenge. Please check the yaml "
+                    "configuration!"
+                )
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
@@ -2017,9 +2060,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 logger.info("Zip folder is removed")
             except:  # noqa: E722
                 logger.exception(
-                    "Zip folder for challenge {} is not removed from {} location".format(
-                        challenge.pk, BASE_LOCATION
-                    )
+                    "Zip folder for challenge {} is not removed from {} "
+                    "location".format(challenge.pk, BASE_LOCATION)
                 )
 
 
@@ -2489,7 +2531,10 @@ def download_all_submissions(
                 return response
             else:
                 response_data = {
-                    "error": "You are neither host nor participant of the challenge!"
+                    "error": (
+                        "You are neither host nor participant of the "
+                        "challenge!"
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -3245,7 +3290,10 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
 
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
-            "error": "Sorry, you are not authorized to access these challenge phases."
+            "error": (
+                "Sorry, you are not authorized to access these challenge "
+                "phases."
+            )
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -3307,12 +3355,18 @@ def get_challenge_phase_environment_url(request, slug):
     challenge = get_challenge_model(challenge_phase.challenge.pk)
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
-            "error": "Sorry, you are not authorized to access test environment URL."
+            "error": (
+                "Sorry, you are not authorized to access test environment "
+                "URL."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     if not challenge.is_docker_based:
         response_data = {
-            "error": "The challenge doesn't require uploading Docker images, hence no test environment URL."
+            "error": (
+                "The challenge doesn't require uploading Docker images, "
+                "hence no test environment URL."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     response_data = {"environment_url": challenge_phase.environment_url}
@@ -3337,13 +3391,19 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
-            "error": "Sorry, you are not authorized to access evaluation cluster details."
+            "error": (
+                "Sorry, you are not authorized to access evaluation cluster "
+                "details."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if not challenge.is_docker_based:
         response_data = {
-            "error": "The challenge doesn't require uploading Docker images, hence no evaluation cluster details."
+            "error": (
+                "The challenge doesn't require uploading Docker images, "
+                "hence no evaluation cluster details."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3353,8 +3413,9 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
         )
     except ChallengeEvaluationCluster.DoesNotExist:
         response_data = {
-            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
-                challenge.pk
+            "error": (
+                "Challenge evaluation cluster for the challenge with pk {} "
+                "does not exist".format(challenge.pk)
             )
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -3538,13 +3599,18 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
             )
         elif response.get("Message", "N/A") == "Worker not modified":
             response_data = {
-                "Success": "The challenge's worker cores and memory were not modified."
+                "Success": (
+                    "The challenge's worker cores and memory were not "
+                    "modified."
+                )
             }
         else:
             response_data = {"Success": "Worker scaled successfully!"}
     else:
         response_data = {
-            "error": "Please specify correct config for worker vCPU and memory."
+            "error": (
+                "Please specify correct config for worker vCPU and memory."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)
@@ -3558,7 +3624,10 @@ def manage_worker(request, challenge_pk, action):
     if not request.user.is_staff:
         if not is_user_a_host_of_challenge(request.user, challenge_pk):
             response_data = {
-                "error": "Sorry, you are not authorized for access worker operations."
+                "error": (
+                    "Sorry, you are not authorized for access worker "
+                    "operations."
+                )
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3572,7 +3641,9 @@ def manage_worker(request, challenge_pk, action):
     # Only allow EvalAI admins to delete workers
     if action == "delete" and not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": (
+                "Sorry, you are not authorized for access worker operations."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3670,7 +3741,10 @@ def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
 
     if not challenge.ec2_instance_id:
         response_data = {
-            "error": "No EC2 instance ID found for the challenge. Please ensure instance ID exists."
+            "error": (
+                "No EC2 instance ID found for the challenge. Please ensure "
+                "instance ID exists."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3729,7 +3803,10 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk):
 
     if challenge.end_date < pytz.UTC.localize(datetime.utcnow()):
         response_data = {
-            "error": "Creation of EC2 instance is not supported for an inactive challenge."
+            "error": (
+                "Creation of EC2 instance is not supported for an inactive "
+                "challenge."
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -3867,7 +3944,10 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     """
     if settings.DEBUG:
         response_data = {
-            "error": "Sorry, this feature is not available in development or test environment."
+            "error": (
+                "Sorry, this feature is not available in development or test "
+                "environment."
+            )
         }
         return Response(response_data)
     # Check if the challenge phase exists or not
@@ -3877,7 +3957,10 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         request.user, challenge_phase.challenge.pk
     ):
         response_data = {
-            "error": "Sorry, you are not authorized for uploading an annotation file."
+            "error": (
+                "Sorry, you are not authorized for uploading an annotation "
+                "file."
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -4040,7 +4123,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         challenge = challenge_queryset[0]
         if not is_user_a_host_of_challenge(request.user, challenge.pk):
             response_data = {
-                "error": "Sorry, you are not a host for this challenge. Please check your user access token"
+                "error": (
+                    "Sorry, you are not a host for this challenge. Please "
+                    "check your user access token"
+                )
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -4242,8 +4328,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             )
                             is None
                         ):
-                            message = "Challenge phase with phase id {} doesn't exist.".format(
-                                data["challenge_phase_id"]
+                            message = (
+                                "Challenge phase with phase id {} doesn't "
+                                "exist.".format(data["challenge_phase_id"])
                             )
                             response_data = {"error": message}
                             return Response(
@@ -4268,8 +4355,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             )
                             is None
                         ):
-                            message = "Dataset split with id {} doesn't exist.".format(
-                                data["dataset_split_id"]
+                            message = (
+                                "Dataset split with id {} doesn't "
+                                "exist.".format(data["dataset_split_id"])
                             )
                             response_data = {"error": message}
                             return Response(
@@ -4359,9 +4447,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         send_slack_notification(message=message)
 
                     response_data = {
-                        "Success": "Challenge {} has been created successfully and"
-                        " sent for review to EvalAI Admin.".format(
-                            challenge.title
+                        "Success": (
+                            "Challenge {} has been created successfully and "
+                            "sent for review to EvalAI Admin.".format(
+                                challenge.title
+                            )
                         )
                     }
                     return Response(
@@ -4370,7 +4460,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
             except:  # noqa: E722
                 response_data = {
-                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
+                    "error": (
+                        f"Error in creating challenge: {error_messages}. "
+                        "Please check the yaml configuration!"
+                    )
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4383,9 +4476,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     logger.info("Zip folder is removed")
                 except:  # noqa: E722
                     logger.exception(
-                        "Zip folder for challenge {} is not removed from {} location".format(
-                            challenge.pk, BASE_LOCATION
-                        )
+                        "Zip folder for challenge {} is not removed from {} "
+                        "location".format(challenge.pk, BASE_LOCATION)
                     )
 
         else:
@@ -4608,8 +4700,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         is None
                     ):
-                        message = "Challenge phase with phase id {} doesn't exist.".format(
-                            data["challenge_phase_id"]
+                        message = (
+                            "Challenge phase with phase id {} doesn't "
+                            "exist.".format(data["challenge_phase_id"])
                         )
                         response_data = {"error": message}
                         return Response(
@@ -4690,14 +4783,18 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         raise RuntimeError()
 
                 response_data = {
-                    "Success": "The challenge {} has been updated successfully".format(
-                        challenge.title
+                    "Success": (
+                        "The challenge {} has been updated "
+                        "successfully".format(challenge.title)
                     )
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             except:  # noqa: E722
                 response_data = {
-                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
+                    "error": (
+                        f"Error in creating challenge: {error_messages}. "
+                        "Please check the yaml configuration!"
+                    )
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4856,8 +4953,9 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
-            "error": "Challenge phase {} does not exist for challenge {}".format(
-                phase_pk, challenge.pk
+            "error": (
+                "Challenge phase {} does not exist for challenge "
+                "{}".format(phase_pk, challenge.pk)
             )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -4903,7 +5001,7 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
             serializer = ChallengePhaseSerializer(challenge_phase)
-            response_data = response_data = {
+            response_data = {
                 "allowed_email_ids": serializer.data["allowed_email_ids"],
             }
             return Response(response_data, status=status.HTTP_200_OK)
@@ -4929,7 +5027,7 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
             serializer = ChallengePhaseSerializer(challenge_phase)
-            response_data = response_data = {
+            response_data = {
                 "allowed_email_ids": serializer.data["allowed_email_ids"],
             }
             return Response(response_data, status=status.HTTP_200_OK)
@@ -4982,9 +5080,8 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         )
     except Exception as e:
         logger.error(
-            "Failed to send subscription plans email for challenge {}: {}".format(
-                challenge_pk, str(e)
-            )
+            "Failed to send subscription plans email for challenge {}: "
+            "{}".format(challenge_pk, str(e))
         )
         # Continue with the approval process even if email fails
 
@@ -5029,7 +5126,10 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         if webhook_response:
             if webhook_response.content.decode("utf-8") == "ok":
                 response_data = {
-                    "message": "Approval request sent! You should also receive an email with subscription plan details.",
+                    "message": (
+                        "Approval request sent! You should also receive an "
+                        "email with subscription plan details."
+                    )
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
