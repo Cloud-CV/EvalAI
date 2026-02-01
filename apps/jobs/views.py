@@ -147,6 +147,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # check if the challenge is free tier or not
+    if challenge.payment_tier == "free" and not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Submissions are not allowed for free tier challenges"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
@@ -1182,6 +1189,15 @@ def update_submission(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # Since user is a host of the challenge, it must exist
+    challenge = Challenge.objects.get(pk=challenge)
+    # check if the challenge is free tier or not
+    if challenge.payment_tier == "free" and not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Submissions are not allowed for free tier challenges"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     if request.method == "PUT":
         challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
@@ -2027,6 +2043,12 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    if challenge.payment_tier == "free" and not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Submission re-runs are not allowed for free tier challenges."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     message = handle_submission_rerun(submission, Submission.CANCELLED)
     publish_submission_message(message)
     response_data = {
@@ -2098,6 +2120,12 @@ def resume_submission(request, submission_pk):
             )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if challenge.payment_tier == "free" and not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Submission resuming is not allowed for free tier challenges."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     message = handle_submission_resume(submission, Submission.RESUMING)
     publish_submission_message(message)
@@ -3019,6 +3047,12 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = challenge_phase.challenge
+    
+    if challenge.payment_tier == "free" and not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Submissions are not allowed for free tier challenges."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk

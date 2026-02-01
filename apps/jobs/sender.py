@@ -102,6 +102,13 @@ def publish_submission_message(message):
             )
         )
         return
+    if challenge.payment_tier == "free":
+        logger.info(
+            "Submission publishing to SQS is skipped as the challenge with PK '{}' is on free payment tier.".format(
+                message["challenge_pk"]
+            )
+        )
+        return
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     is_remote = challenge.remote_evaluation
