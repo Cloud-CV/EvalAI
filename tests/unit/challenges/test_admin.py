@@ -3,8 +3,10 @@ from unittest.mock import MagicMock, patch
 from challenges.admin import ChallengeAdmin
 from challenges.models import Challenge
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
+from hosts.models import ChallengeHostTeam
 
 
 class TestChallengeAdminActions(TestCase):
@@ -138,3 +140,101 @@ class TestChallengeAdminActions(TestCase):
         assert any(
             "Challenge 55: Failed to delete" in str(m) for m in messages
         )
+
+
+class TestChallengeAdminListDisplay(TestCase):
+    """Tests for ChallengeAdmin list_display configuration."""
+
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = ChallengeAdmin(Challenge, self.site)
+
+    def test_list_display_contains_expected_fields(self):
+        """list_display should contain only the configured admin columns."""
+        expected_fields = (
+            "id",
+            "title",
+            "start_date",
+            "end_date",
+            "creator",
+            "published",
+            "approved_by_admin",
+            "featured",
+            "created_at",
+            "workers",
+            "task_def_arn",
+            "github_repository",
+        )
+        self.assertEqual(self.admin.list_display, expected_fields)
+
+
+class TestChallengeAdminSearch(TestCase):
+    """Tests for ChallengeAdmin search functionality."""
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.site = AdminSite()
+        self.admin = ChallengeAdmin(Challenge, self.site)
+        self.request = self.factory.get("/")
+        self.request.user = User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="adminpass",
+        )
+
+        # Create user with distinct email for challenge creator
+        self.creator_user = User.objects.create_user(
+            username="challenge_creator",
+            email="creator@evalai.com",
+            password="pass123",
+        )
+        self.other_user = User.objects.create_user(
+            username="other_user",
+            email="other@evalai.com",
+            password="pass123",
+        )
+
+        self.creator_host_team = ChallengeHostTeam.objects.create(
+            team_name="Creator Host Team",
+            created_by=self.creator_user,
+        )
+        self.other_host_team = ChallengeHostTeam.objects.create(
+            team_name="Other Host Team",
+            created_by=self.other_user,
+        )
+
+        self.challenge_by_creator = Challenge.objects.create(
+            title="Challenge by Creator",
+            creator=self.creator_host_team,
+        )
+        self.challenge_by_other = Challenge.objects.create(
+            title="Challenge by Other",
+            creator=self.other_host_team,
+        )
+
+    def test_search_by_creator_email_finds_matching_challenge(self):
+        """Search by creator's email should return challenges created by that user."""
+        queryset = Challenge.objects.all()
+        result, _ = self.admin.get_search_results(
+            self.request, queryset, "creator@evalai.com"
+        )
+        self.assertIn(self.challenge_by_creator, result)
+        self.assertNotIn(self.challenge_by_other, result)
+
+    def test_search_by_creator_email_partial_match(self):
+        """Search by partial creator email should work (icontains)."""
+        queryset = Challenge.objects.all()
+        result, _ = self.admin.get_search_results(
+            self.request, queryset, "creator@evalai"
+        )
+        self.assertIn(self.challenge_by_creator, result)
+        self.assertNotIn(self.challenge_by_other, result)
+
+    def test_search_by_nonexistent_creator_email_returns_empty(self):
+        """Search by non-existent email should return no challenges."""
+        queryset = Challenge.objects.all()
+        result, _ = self.admin.get_search_results(
+            self.request, queryset, "nonexistent@example.com"
+        )
+        self.assertNotIn(self.challenge_by_creator, result)
+        self.assertNotIn(self.challenge_by_other, result)
