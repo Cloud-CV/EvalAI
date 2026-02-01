@@ -13,6 +13,7 @@ ENV NODE_ENV=development \
 # Note: ca-certificates is needed for git to verify SSL certificates when accessing GitHub
 # Add retry logic and --fix-missing to handle transient network issues
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends --fix-missing \
     python2 \
     python-is-python2 \
@@ -20,13 +21,7 @@ RUN apt-get update && \
     g++ \
     git \
     ca-certificates \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
-        python2 \
-        python-is-python2 \
-        make \
-        g++ \
-        git \
-        ca-certificates) && \
+    perl && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code

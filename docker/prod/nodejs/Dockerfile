@@ -14,6 +14,7 @@ ENV NODE_ENV=${NODE_ENV} \
 # Install build dependencies only (for native module compilation and bower)
 # Add retry logic and --fix-missing to handle transient network issues
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends --fix-missing \
     python2 \
     python-is-python2 \
@@ -25,17 +26,7 @@ RUN apt-get update && \
     wget \
     gnupg \
     xvfb \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
-        python2 \
-        python-is-python2 \
-        make \
-        g++ \
-        git \
-        ca-certificates \
-        curl \
-        wget \
-        gnupg \
-        xvfb) && \
+    perl && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -73,7 +64,7 @@ COPY frontend /code/frontend
 COPY . /tmp/build-context/
 RUN mkdir -p /code/ssl && \
     if [ -d /tmp/build-context/ssl ] && [ "$(ls -A /tmp/build-context/ssl 2>/dev/null)" ]; then \
-        cp -r /tmp/build-context/ssl/* /code/ssl/; \
+    cp -r /tmp/build-context/ssl/* /code/ssl/; \
     fi && \
     rm -rf /tmp/build-context
 
@@ -120,5 +111,5 @@ COPY --from=builder /code /code
 # Copy SSL certificates from builder stage if they exist
 RUN mkdir -p /etc/ssl && \
     if [ -d /code/ssl ] && [ "$(ls -A /code/ssl 2>/dev/null)" ]; then \
-        cp -r /code/ssl/* /etc/ssl/; \
+    cp -r /code/ssl/* /etc/ssl/; \
     fi
