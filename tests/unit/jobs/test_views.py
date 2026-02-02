@@ -2691,7 +2691,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-class UpdateLeaderboardDataTest(BaseAPITestClass):
+class UpdateLeaderboardDataTest(ChallengeLeaderboardTest):
     """
     Test class for update_leaderboard_data API endpoint.
     Tests the PATCH /api/jobs/leaderboard_data/<pk>/ endpoint added in PR #2481.
