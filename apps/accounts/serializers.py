@@ -96,9 +96,7 @@ class ProfileSerializer(UserDetailsSerializer):
         address_country = profile_data.get("address_country")
         university = profile_data.get("university")
 
-        instance = super(ProfileSerializer, self).update(
-            instance, validated_data
-        )
+        instance = super().update(instance, validated_data)
 
         profile = instance.profile
         if profile_data:
@@ -165,12 +163,13 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             if not user.is_active:
                 raise ValidationError(
                     {
-                        "details": "Account is not active. Please contact the administrator."
+                        "details": "Account is not active. "
+                                   "Please contact the administrator."
                     }
                 )
-            else:
-                return super().get_email_options()
+            return super().get_email_options()
         except get_user_model().DoesNotExist:
+            exc = get_user_model().DoesNotExist()
             raise ValidationError(
                 {"details": "User with the given email does not exist."}
-            )
+            ) from exc

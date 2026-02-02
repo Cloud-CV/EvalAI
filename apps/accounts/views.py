@@ -28,7 +28,15 @@ from .throttles import ResendEmailThrottle
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def disable_user(request):
-
+    """
+    Disable a user account by setting is_active to False and logging them out.
+    
+    Args:
+        request (Request): HTTP request object with authenticated user
+        
+    Returns:
+        Response: HTTP 200 OK response on successful deactivation
+    """
     user = request.user
     user.is_active = False
     user.save()
@@ -41,6 +49,15 @@ def disable_user(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_auth_token(request):
+    """
+    Generate or retrieve JWT token for authenticated user.
+    
+    Args:
+        request (Request): HTTP request object with authenticated user
+        
+    Returns:
+        Response: Response with JWT token and expiry date
+    """
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
@@ -68,7 +85,7 @@ def get_auth_token(request):
         "-created_at"
     )[0]
     response_data = {
-        "token": "{}".format(token.refresh_token),
+        "token": f"{token.refresh_token}",
         "expires_at": outstanding_token.expires_at,
     }
     return Response(response_data, status=status.HTTP_200_OK)
@@ -92,6 +109,16 @@ def resend_email_confirmation(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def refresh_auth_token(request):
+    """
+    Refresh the JWT auth token for an authenticated user.
+    
+    Args:
+        request (Request): HTTP request object with authenticated user
+        
+    Returns:
+        Response: Response with new JWT token on success, 
+        error response otherwise
+    """
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
@@ -124,7 +151,7 @@ def refresh_auth_token(request):
     if token_serializer.is_valid():
         token_serializer.save()
         token = token_serializer.instance
-        response_data = {"token": "{}".format(token.refresh_token)}
+        response_data = {"token": f"{token.refresh_token}"}
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
