@@ -429,6 +429,46 @@ class ChallengePhase(TimeStampedModel):
         return False
 
     def save(self, *args, **kwargs):
+        from django.core.exceptions import ValidationError
+
+        # Validate challenge dates
+        if self.challenge.start_date and self.challenge.end_date:
+            if self.challenge.start_date >= self.challenge.end_date:
+                raise ValidationError(
+                    "Challenge start date must be before challenge end date"
+                )
+
+        # Validate challenge phase dates against challenge dates
+        if self.start_date and self.end_date and self.challenge:
+            # Phase start datetime < Phase end datetime
+            if self.start_date >= self.end_date:
+                raise ValidationError(
+                    "Challenge phase start date must be before challenge phase end date"
+                )
+
+            # Phase start datetime >= Challenge start datetime
+            if self.challenge.start_date and self.start_date < self.challenge.start_date:
+                raise ValidationError(
+                    "Challenge phase start date cannot be before challenge start date"
+                )
+
+            # Phase start datetime < Challenge end datetime
+            if self.challenge.end_date and self.start_date >= self.challenge.end_date:
+                raise ValidationError(
+                    "Challenge phase start date must be before challenge end date"
+                )
+
+            # Phase end datetime > Challenge start datetime
+            if self.challenge.start_date and self.end_date <= self.challenge.start_date:
+                raise ValidationError(
+                    "Challenge phase end date must be after challenge start date"
+                )
+
+            # Phase end datetime <= Challenge end datetime
+            if self.challenge.end_date and self.end_date > self.challenge.end_date:
+                raise ValidationError(
+                    "Challenge phase end date cannot be after challenge end date"
+                )
 
         # If the max_submissions_per_day is less than the
         # max_concurrent_submissions_allowed.
