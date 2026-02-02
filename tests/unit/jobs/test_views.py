@@ -2689,3 +2689,263 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class UpdateLeaderboardDataTest(BaseAPITestClass):
+    """
+    Test class for update_leaderboard_data API endpoint.
+    Tests the PATCH /api/jobs/leaderboard_data/<pk>/ endpoint added in PR #2481.
+    """
+
+    def setUp(self):
+        super(UpdateLeaderboardDataTest, self).setUp()
+        
+        # Create a leaderboard data entry for testing
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=[
+                {
+                    "split": "split1",
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "score": 0.5,
+                        "test-score": 0.6
+                    },
+                    "error": {}
+                }
+            ]
+        )
+        
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk}
+        )
+
+    def test_update_leaderboard_data_success(self):
+        """
+        Test successful update of leaderboard data by challenge host.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": 0.85,
+                    "test-score": 0.92
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.leaderboard_data.refresh_from_db()
+        self.assertEqual(
+            self.leaderboard_data.result[0]["accuracies"]["score"],
+            0.85
+        )
+        self.assertEqual(
+            self.leaderboard_data.result[0]["accuracies"]["test-score"],
+            0.92
+        )
+
+    def test_update_leaderboard_data_non_host_unauthorized(self):
+        """
+        Test that non-host users cannot update leaderboard data.
+        """
+        # Use participant user (user1) instead of host
+        self.client.force_authenticate(user=self.user1)
+        
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": 0.9,
+                    "test-score": 0.95
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is not a host", response.data["error"])
+
+    def test_update_leaderboard_data_not_found(self):
+        """
+        Test 404 response when leaderboard data does not exist.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        invalid_url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": 99999}
+        )
+        
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": 0.9,
+                    "test-score": 0.95
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            invalid_url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_leaderboard_data_invalid_json(self):
+        """
+        Test error handling when leaderboard_data is not valid JSON.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": "invalid json string"},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_update_leaderboard_data_missing_metrics(self):
+        """
+        Test validation error when required metrics are missing.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        # Only provide 'score', missing 'test-score'
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": 0.85
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("missing_metrics", response.data)
+        self.assertIn("test-score", response.data["missing_metrics"])
+
+    def test_update_leaderboard_data_extra_metrics(self):
+        """
+        Test validation error when extra metrics not in schema are provided.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        # Include all required metrics plus an extra one
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": 0.85,
+                    "test-score": 0.92,
+                    "accuracy": 0.88  # Extra metric not in schema
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("extra_metrics", response.data)
+        self.assertIn("accuracy", response.data["extra_metrics"])
+
+    def test_update_leaderboard_data_malformed_values(self):
+        """
+        Test validation error when metric values are not int or float.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        # Provide string instead of numeric value
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "score": "not a number",
+                    "test-score": 0.92
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("malformed_metrics", response.data)
+        self.assertIn("score", response.data["malformed_metrics"])
+
+    def test_update_leaderboard_data_missing_and_extra_metrics(self):
+        """
+        Test validation error with both missing and extra metrics.
+        """
+        self.client.force_authenticate(user=self.user)
+        
+        # Missing 'score', has extra 'precision'
+        leaderboard_data = json.dumps([
+            {
+                "split": "split1",
+                "show_to_participant": True,
+                "accuracies": {
+                    "test-score": 0.92,
+                    "precision": 0.88
+                },
+                "error": {}
+            }
+        ])
+        
+        response = self.client.patch(
+            self.url,
+            {"leaderboard_data": leaderboard_data},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("missing_metrics", response.data)
+        self.assertIn("extra_metrics", response.data)
+        self.assertIn("score", response.data["missing_metrics"])
+        self.assertIn("precision", response.data["extra_metrics"])
