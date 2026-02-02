@@ -261,3 +261,189 @@ class LeaderboardDataTestCase(BaseTestCase):
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
         )
+
+
+class ChallengePhaseDateValidationTestCase(BaseTestCase):
+    """Test date validation constraints for ChallengePhase"""
+
+    def setUp(self):
+        super(ChallengePhaseDateValidationTestCase, self).setUp()
+
+    def test_phase_start_date_before_challenge_start_date(self):
+        """Test that phase start date cannot be before challenge start date"""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Invalid Phase",
+                description="Phase with invalid start date",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=3),  # Before challenge start
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge phase start date cannot be before challenge start date",
+            str(context.exception),
+        )
+
+    def test_phase_end_date_after_challenge_end_date(self):
+        """Test that phase end date cannot be after challenge end date"""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Invalid Phase",
+                description="Phase with invalid end date",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=1),
+                end_date=timezone.now() + timedelta(days=2),  # After challenge end
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge phase end date cannot be after challenge end date",
+            str(context.exception),
+        )
+
+    def test_phase_start_date_after_phase_end_date(self):
+        """Test that phase start date must be before phase end date"""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Invalid Phase",
+                description="Phase with start date after end date",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() + timedelta(hours=2),
+                end_date=timezone.now() + timedelta(hours=1),  # Before start
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge phase start date must be before challenge phase end date",
+            str(context.exception),
+        )
+
+    def test_phase_start_date_equals_challenge_end_date(self):
+        """Test that phase start date cannot equal challenge end date"""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Invalid Phase",
+                description="Phase starting at challenge end",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=self.challenge.end_date,  # Equals challenge end
+                end_date=self.challenge.end_date + timedelta(hours=1),
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge phase start date must be before challenge end date",
+            str(context.exception),
+        )
+
+    def test_phase_end_date_equals_challenge_start_date(self):
+        """Test that phase end date cannot equal challenge start date"""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Invalid Phase",
+                description="Phase ending at challenge start",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=self.challenge.start_date - timedelta(hours=1),
+                end_date=self.challenge.start_date,  # Equals challenge start
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge phase end date must be after challenge start date",
+            str(context.exception),
+        )
+
+    def test_challenge_start_date_after_challenge_end_date(self):
+        """Test that challenge start date must be before challenge end date"""
+        from django.core.exceptions import ValidationError
+
+        invalid_challenge = Challenge.objects.create(
+            title="Invalid Challenge",
+            description="Challenge with invalid dates",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),  # Before start
+            anonymous_leaderboard=False,
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            ChallengePhase.objects.create(
+                name="Phase for Invalid Challenge",
+                description="Phase description",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() + timedelta(days=1, hours=1),
+                end_date=timezone.now() + timedelta(days=1, hours=2),
+                challenge=invalid_challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+        self.assertIn(
+            "Challenge start date must be before challenge end date",
+            str(context.exception),
+        )
+
+    def test_valid_phase_dates_within_challenge_dates(self):
+        """Test that valid phase dates within challenge dates work correctly"""
+        try:
+            phase = ChallengePhase.objects.create(
+                name="Valid Phase",
+                description="Phase with valid dates",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=1),
+                end_date=timezone.now() + timedelta(hours=12),
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+            self.assertIsNotNone(phase)
+            self.assertEqual(phase.name, "Valid Phase")
+        except Exception as e:
+            self.fail(f"Valid phase dates should not raise exception: {e}")
+
+    def test_phase_dates_equal_challenge_dates(self):
+        """Test that phase dates can equal challenge dates (edge case)"""
+        try:
+            phase = ChallengePhase.objects.create(
+                name="Phase Equal to Challenge",
+                description="Phase with same dates as challenge",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=self.challenge.start_date,
+                end_date=self.challenge.end_date,
+                challenge=self.challenge,
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+            self.assertIsNotNone(phase)
+            self.assertEqual(phase.start_date, self.challenge.start_date)
+            self.assertEqual(phase.end_date, self.challenge.end_date)
+        except Exception as e:
+            self.fail(f"Phase dates equal to challenge dates should be valid: {e}")
+
