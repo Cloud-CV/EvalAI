@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import pytz  # Use this to handle timezones if needed
 from evalai_interface import EvalAI_Interface
+from ..workers.statsd_utils import increment_and_push_metrics_to_statsd
 
 
 def get_submission_time(submission):
@@ -19,7 +20,7 @@ def get_submission_time(submission):
         )
 
 
-def auto_cancel_submissions(challenge_pk, days_threshold=14):
+def auto_cancel_submissions(challenge, days_threshold=14):
     """
     Auto-cancels submissions that have statuses "submitted" or "running" for more than `days_threshold` days,
     considering the "rerun_resumed_at" time if available, otherwise using the "submitted_at" time.
@@ -28,16 +29,17 @@ def auto_cancel_submissions(challenge_pk, days_threshold=14):
     """
     try:
         evalai = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER)
-
         submissions = evalai.get_submissions_for_challenge(
-            challenge_pk, "submitted"
+            challenge["id"], "submitted"
         )
         submissions += evalai.get_submissions_for_challenge(
-            challenge_pk, "running"
+            challenge["id"], "running"
         )
         submissions += evalai.get_submissions_for_challenge(
-            challenge_pk, "resuming"
+            challenge["id"], "resuming"
         )
+        queue_name = challenge["queue"]
+        is_remote = int(challenge.remote_evaluation)
 
         current_time = datetime.now(pytz.utc)
         for submission in submissions:
@@ -51,7 +53,8 @@ def auto_cancel_submissions(challenge_pk, days_threshold=14):
                     "submission": submission["id"],
                     "submission_status": "cancelled",
                 }
-                evalai.update_submission_data(data, challenge_pk)
+                evalai.update_submission_data(data, challenge["id"])
+                increment_and_push_metrics_to_statsd(queue_name, is_remote)
                 print(
                     f"Cancelled submission with PK {submission['id']}. Previous status: {status}. Time Lapsed: {time_difference}"
                 )
@@ -84,7 +87,6 @@ if __name__ == "__main__":
     # Loop through all challenges and run the auto-cancel script for each
     # challenge
     for challenge in challenges:
-        challenge_pk = challenge["id"]
-        print(f"Running auto-cancel script for challenge {challenge_pk}")
-        auto_cancel_submissions(challenge_pk)
+        print(f"Running auto-cancel script for challenge {challenge['id']}")
+        auto_cancel_submissions(challenge)
         time.sleep(5)
