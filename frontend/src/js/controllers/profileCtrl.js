@@ -319,7 +319,6 @@
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
-                                $rootScope.notify("error", vm.FormError);
 
                             } catch (error) {
                                 $rootScope.notify("error", error);
