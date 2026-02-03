@@ -71,6 +71,15 @@
             authpage: true
         };
 
+        var accountActivate = {
+            name: "auth.account-activate",
+            parent: "auth",
+            url: "/account-activate",
+            templateUrl: baseUrl+ "/web/auth/account-activate.html",
+            title: 'Account Activate',
+            authpage: true
+        };
+
         var reset_password = {
             name: "auth.reset-password",
             parent: "auth",
@@ -605,6 +614,7 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(accountActivate);
         $stateProvider.state(verify_email);
         $stateProvider.state(reset_password);
         $stateProvider.state(reset_password_confirm);
