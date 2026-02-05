@@ -124,7 +124,7 @@ Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/c
 ### Step 3: Edit remote evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
-Please refer to <a href="../evaluation/remote-evaluation.html#writing-an-remote-evaluation-script">Writing Remote Evaluation Script</a> section to complete this step.
+Please refer to <a href="../evaluation/remote-evaluation.html#writing-remote-evaluation-script">Writing Remote Evaluation Script</a> section to complete this step.
 
 ### Step 4: Set up remote evaluation worker
 
@@ -151,4 +151,3 @@ If you have issues in creating a challenge on EvalAI, please feel free to contac
 [evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
 [docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
-
