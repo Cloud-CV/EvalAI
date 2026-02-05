@@ -3869,6 +3869,14 @@ describe('Unit tests for challenge controller', function () {
             vm.openLeaderboardDropdown();
             expect(vm.leaderboardDropdown).toBe(false);
         });
+
+        it('should not populate chosenMetrics when show_scores_on_leaderboard is false', function () {
+            vm.chosenMetrics = undefined;
+            vm.selectedPhaseSplit = { show_scores_on_leaderboard: false };
+            vm.openLeaderboardDropdown();
+            expect(vm.chosenMetrics).toBeUndefined();
+            expect(vm.leaderboardDropdown).toBe(true);
+        });
     });
 
     describe('Unit tests for getTrophySize function', function () {

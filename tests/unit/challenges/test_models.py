@@ -231,6 +231,17 @@ class ChallengePhaseSplitTestCase(BaseTestCase):
             string_to_compare, self.challenge_phase_split.__str__()
         )
 
+    def test_show_scores_on_leaderboard_default(self):
+        """Test that show_scores_on_leaderboard defaults to True."""
+        self.assertTrue(self.challenge_phase_split.show_scores_on_leaderboard)
+
+    def test_show_scores_on_leaderboard_can_be_false(self):
+        """Test that show_scores_on_leaderboard can be set to False."""
+        self.challenge_phase_split.show_scores_on_leaderboard = False
+        self.challenge_phase_split.save()
+        self.challenge_phase_split.refresh_from_db()
+        self.assertFalse(self.challenge_phase_split.show_scores_on_leaderboard)
+
 
 class LeaderboardDataTestCase(BaseTestCase):
     def setUp(self):

@@ -190,6 +190,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
             "leaderboard_schema",
             "is_multi_metric_leaderboard",
         )
@@ -384,6 +385,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
         )
 
 

@@ -4180,6 +4180,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             }
@@ -4219,6 +4220,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4231,6 +4233,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split_host.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4255,6 +4258,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4267,6 +4271,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split_host.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -5560,10 +5565,27 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,  # noqa: C0301
             "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
             "show_execution_time": False,
+            "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_split_show_scores_on_leaderboard(self):
+        """Test that show_scores_on_leaderboard can be updated via PATCH."""
+        self.url = reverse_lazy(
+            "challenges:get_or_update_challenge_phase_split",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(
+            self.url, {"show_scores_on_leaderboard": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["show_scores_on_leaderboard"], False)
+
+        self.challenge_phase_split.refresh_from_db()
+        self.assertFalse(self.challenge_phase_split.show_scores_on_leaderboard)
 
     def test_update_challenge_phase_split_with_all_data(self):
         self.url = reverse_lazy(
