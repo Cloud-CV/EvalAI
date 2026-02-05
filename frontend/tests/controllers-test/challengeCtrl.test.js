@@ -3085,6 +3085,32 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
             expect(vm.leaderboard[0].chosenMetrics).toBeUndefined();
         });
+
+        it('should set chosenMetrics to empty when show_scores_on_leaderboard is false', function () {
+            var fakeLeaderboard = [{
+                id: 1,
+                leaderboard__schema: { labels: ['accuracy', 'loss'] },
+                orderLeaderboardBy: 'accuracy',
+                submission__submission_metadata: null,
+                submission__submitted_at: new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
+            }];
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.url && params.url.includes('/leaderboard/')) {
+                    params.callback.onSuccess({ data: { results: fakeLeaderboard } });
+                } else if (params.url && params.url.includes('/challenge_phase_split/')) {
+                    params.callback.onSuccess({
+                        data: {
+                            show_scores_on_leaderboard: false,
+                            show_leaderboard_by_latest_submission: false
+                        }
+                    });
+                }
+            });
+
+            vm.getLeaderboard(123);
+
+            expect(vm.chosenMetrics).toEqual([]);
+        });
     });
 
     describe('Unit tests for re-run submission logic', function () {
