@@ -514,6 +514,7 @@ def calculate_distinct_sorted_leaderboard_data(
             team_list.append(data["submission__participant_team__team_name"])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
+    show_scores = challenge_phase_split.show_scores_on_leaderboard
     for item in distinct_sorted_leaderboard_data:
         item_result = []
         for index in leaderboard_labels:
@@ -529,6 +530,12 @@ def calculate_distinct_sorted_leaderboard_data(
                 item["error"]["error_{0}".format(index)]
                 for index in leaderboard_labels
             ]
+
+        if not show_scores:
+            item["result"] = []
+            item["error"] = None
+            item.pop("filtering_score", None)
+            item.pop("filtering_error", None)
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
 
 
