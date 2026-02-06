@@ -272,3 +272,26 @@ class LeaderboardDataTestCase(BaseTestCase):
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
         )
+
+    def test_leaderboard_query_index_exists(self):
+        """
+        Verify LeaderboardData has the composite index for leaderboard query
+        optimization (EVALAI-HY8). The index supports filtering by
+        challenge_phase_split, is_disabled and ordering by created_at DESC.
+        """
+        index_names = [idx.name for idx in LeaderboardData._meta.indexes]
+        self.assertIn(
+            "ld_chphase_isdisc_created_idx",
+            index_names,
+            "LeaderboardData should have ld_chphase_isdisc_created_idx index",
+        )
+        index = next(
+            idx
+            for idx in LeaderboardData._meta.indexes
+            if idx.name == "ld_chphase_isdisc_created_idx"
+        )
+        self.assertEqual(
+            index.fields,
+            ["challenge_phase_split", "is_disabled", "-created_at"],
+            "Index should cover challenge_phase_split, is_disabled, created_at DESC",
+        )
