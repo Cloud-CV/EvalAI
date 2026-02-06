@@ -2284,6 +2284,28 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_get_leaderboard_hides_scores_when_show_scores_on_leaderboard_false(
+        self,
+    ):
+        """Test that leaderboard API does not return scores when flag is False."""
+        self.challenge_phase_split.show_scores_on_leaderboard = False
+        self.challenge_phase_split.save()
+
+        self.url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+        )
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data["results"]), 0)
+        for entry in response.data["results"]:
+            self.assertEqual(entry["result"], [])
+            self.assertIsNone(entry["error"])
+            self.assertNotIn("filtering_score", entry)
+            self.assertNotIn("filtering_error", entry)
+            self.assertIn("submission__participant_team__team_name", entry)
+
 
 class UpdateSubmissionTest(BaseAPITestClass):
     def setUp(self):
