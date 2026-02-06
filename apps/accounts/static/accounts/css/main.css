@@ -265,7 +265,9 @@ nav ul li a:hover {
 .text-light-gray {
   color: #adb4d0;
 }
-
+.text-light-gray:hover{
+  color: white;
+}
 .text-med-gray {
   color: #3c3e49;
 }
