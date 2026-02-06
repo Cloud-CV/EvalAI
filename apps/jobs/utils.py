@@ -196,17 +196,19 @@ def is_safe_url(url):
             try:
                 ip_obj = ipaddress.ip_address(ip_str)
                 
-                # Block private IP ranges (RFC 1918)
-                if ip_obj.is_private:
-                    return False, f"Access to private IP addresses is not allowed: {ip_str}"
-                
-                # Block loopback addresses (127.0.0.0/8, ::1)
+                # Block loopback addresses FIRST (127.0.0.0/8, ::1)
+                # Note: is_private also returns True for loopback, so check this first
                 if ip_obj.is_loopback:
                     return False, f"Access to loopback addresses is not allowed: {ip_str}"
                 
                 # Block link-local addresses (169.254.0.0/16, fe80::/10)
+                # Note: is_private also returns True for link-local, so check before is_private
                 if ip_obj.is_link_local:
                     return False, f"Access to link-local addresses is not allowed: {ip_str}"
+                
+                # Block private IP ranges (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+                if ip_obj.is_private:
+                    return False, f"Access to private IP addresses is not allowed: {ip_str}"
                 
                 # Block multicast addresses
                 if ip_obj.is_multicast:
@@ -247,9 +249,12 @@ def is_url_valid(url):
     request = urllib.request.Request(url)
     request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
+        urllib.request.urlopen(request, timeout=10)
         return True
     except urllib.request.HTTPError:
+        return False
+    except Exception as e:
+        logger.error(f"Error checking URL reachability: {str(e)}")
         return False
 
 
