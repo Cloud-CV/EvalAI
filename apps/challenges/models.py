@@ -573,6 +573,12 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "leaderboard_data"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase_split", "is_disabled", "-created_at"],
+                name="ld_chphase_isdisc_created_idx",
+            ),
+        ]
 
 
 class ChallengeConfiguration(TimeStampedModel):
