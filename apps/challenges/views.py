@@ -56,6 +56,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -415,7 +416,18 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
         )
-        participant_team = get_participant_model(participant_team_pk)
+        participant_team = (
+            ParticipantTeam.objects.select_related("created_by")
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .get(pk=participant_team_pk)
+        )
         serializer = ParticipantTeamDetailSerializer(participant_team)
         if challenge.approved_participant_teams.filter(
             pk=participant_team_pk

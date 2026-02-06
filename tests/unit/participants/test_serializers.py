@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
+from django.db import connection
 from django.db.models import Prefetch
 from django.test import RequestFactory, TestCase
+from django.test.utils import CaptureQueriesContext
 from participants.models import Participant, ParticipantTeam
 from participants.serializers import (
     ChallengeParticipantSerializer,
@@ -163,6 +165,36 @@ class TestParticipantTeamDetailSerializer(TestCase):
         member_names = [m["member_name"] for m in data["members"]]
         self.assertIn("user1", member_names)
         self.assertIn("user2", member_names)
+
+    def test_get_members_with_prefetch_avoids_n_plus_one_queries(self):
+        """
+        Verify ParticipantTeamDetailSerializer with prefetched data uses
+        no additional queries when serializing members (no N+1 on user/profile).
+        """
+        team_with_prefetch = (
+            ParticipantTeam.objects.select_related("created_by")
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .get(pk=self.team.pk)
+        )
+
+        with CaptureQueriesContext(connection) as context:
+            serializer = ParticipantTeamDetailSerializer(team_with_prefetch)
+            _ = serializer.data
+
+        # With prefetch, serialization should use 0 extra queries (all data
+        # already loaded). Without prefetch, we'd have 2 per participant.
+        self.assertEqual(
+            len(context.captured_queries),
+            0,
+            "Serializer should not trigger queries when data is prefetched",
+        )
 
     def test_serializer_includes_all_expected_fields(self):
         """Test that the serializer includes all expected fields."""

@@ -28,7 +28,9 @@ from challenges.models import (
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -268,6 +270,42 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participant_team_detail_avoids_n_plus_one_queries(self):
+        """
+        Verify participant_team_detail_for_challenge uses prefetch to avoid N+1
+        queries when serializing team members (user + profile per participant).
+        """
+        # Add 4 more participants (5 total) to stress-test the N+1 fix
+        for i in range(4):
+            extra_user = User.objects.create(
+                username=f"member{i}",
+                email=f"member{i}@test.com",
+            )
+            Participant.objects.create(
+                user=extra_user,
+                status=Participant.ACCEPTED,
+                team=self.participant_team,
+            )
+
+        url = reverse_lazy(
+            "challenges:participant_team_detail_for_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # With prefetch (select_related/prefetch_related), query count should be
+        # bounded. Without fix, we'd have 2*N extra queries (auth_user +
+        # user_profile per participant) = 10+ for 5 participants.
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["participant_team"]["members"]), 5)
+        self.assertLessEqual(
+            len(context.captured_queries),
+            12,
+            "Query count too high - possible N+1 when loading participants",
+        )
 
 
 class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
