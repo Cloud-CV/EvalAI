@@ -91,7 +91,7 @@ This means your new code isn't covered by tests. Click on the coverage report to
 
 ## Logs & Debugging
 
-### Q. How do I debug `psycopg2` installation errors while using `pip install -r dev/requirement.txt`?
+### Q. How do I debug `psycopg2` installation errors while using `pip install -r requirements/dev.txt`?
 
 Error:
 
