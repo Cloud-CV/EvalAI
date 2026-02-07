@@ -156,6 +156,9 @@ MEDIA_URL = "/media/"
 
 SITE_ID = 1
 
+# Maximum number of leaderboard rows to load per query (prevents slow queries)
+MAX_LEADERBOARD_QUERY_LIMIT = 10000
+
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": (
         "rest_framework.pagination.LimitOffsetPagination"
