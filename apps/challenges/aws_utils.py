@@ -512,6 +512,22 @@ def service_manager(
         response = update_service_by_challenge_pk(
             client, challenge, num_of_tasks, force_new_deployment
         )
+        # Handle ServiceNotFoundException: ECS service was deleted (e.g. after
+        # AWS key rotation) but DB still has workers set. Sync state and
+        # either create the service (start/restart) or treat stop as success.
+        error_code = response.get("Error", {}).get("Code")
+        if error_code == "ServiceNotFoundException":
+            if num_of_tasks == 0:
+                challenge.workers = 0
+                challenge.save()
+                return {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+            # num_of_tasks > 0: create the service
+            challenge.workers = None
+            challenge.save()
+            client_token = client_token_generator(challenge.pk)
+            return create_service_by_challenge_pk(
+                client, challenge, client_token
+            )
         return response
     else:
         client_token = client_token_generator(challenge.pk)
