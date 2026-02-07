@@ -131,7 +131,7 @@ class ChallengeParticipantTeam(object):
 class ChallengeParticipantTeamSerializer(serializers.Serializer):
     """Serializer to initialize Challenge and Participant's Team"""
 
-    challenge = ChallengeSerializer()
+    challenge = ChallengeSerializer(allow_null=True)
     participant_team = ParticipantTeamSerializer()
 
 
