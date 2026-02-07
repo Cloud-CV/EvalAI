@@ -460,7 +460,10 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__is_verified_by_host",
         )
 
-    all_banned_participant_team = []
+    all_banned_participant_team = set()
+    all_banned_email_ids_set = (
+        set(all_banned_email_ids) if all_banned_email_ids else set()
+    )
 
     # Apply query limit to prevent slow queries on popular challenges
     max_limit = getattr(settings, "MAX_LEADERBOARD_QUERY_LIMIT", 10000)
@@ -489,8 +492,8 @@ def calculate_distinct_sorted_leaderboard_data(
             participant_team_id, []
         )
         for participant_email in all_participants_email_ids:
-            if participant_email in all_banned_email_ids:
-                all_banned_participant_team.append(participant_team_id)
+            if participant_email in all_banned_email_ids_set:
+                all_banned_participant_team.add(participant_team_id)
                 break
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
@@ -508,7 +511,7 @@ def calculate_distinct_sorted_leaderboard_data(
             reverse=True if is_leaderboard_order_descending else False,
         )
     distinct_sorted_leaderboard_data = []
-    team_list = []
+    team_list = set()
     for data in sorted_leaderboard_data:
         if (
             data["submission__participant_team__team_name"] in team_list
@@ -520,7 +523,7 @@ def calculate_distinct_sorted_leaderboard_data(
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
+            team_list.add(data["submission__participant_team__team_name"])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     show_scores = challenge_phase_split.show_scores_on_leaderboard
