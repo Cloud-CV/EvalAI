@@ -8,6 +8,7 @@ import requests
 from base.utils import get_model_object, suppress_autotime
 from challenges.models import ChallengePhaseSplit, LeaderboardData
 from challenges.utils import get_challenge_phase_model
+from django.conf import settings
 from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -364,10 +365,14 @@ def calculate_distinct_sorted_leaderboard_data(
         response_data = {"error": "Sorry, the leaderboard is not public!"}
         return response_data, status.HTTP_400_BAD_REQUEST
 
-    leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails)
-        & Q(submission__is_baseline=False)
-    ).filter(is_disabled=False)
+    leaderboard_data = LeaderboardData.objects.filter(is_disabled=False)
+    # Only exclude host submissions when there are host emails (avoids
+    # auth_user join)
+    if challenge_hosts_emails:
+        leaderboard_data = leaderboard_data.exclude(
+            Q(submission__created_by__email__in=challenge_hosts_emails)
+            & Q(submission__is_baseline=False)
+        )
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
@@ -456,6 +461,10 @@ def calculate_distinct_sorted_leaderboard_data(
         )
 
     all_banned_participant_team = []
+
+    # Apply query limit to prevent slow queries on popular challenges
+    max_limit = getattr(settings, "MAX_LEADERBOARD_QUERY_LIMIT", 10000)
+    leaderboard_data = leaderboard_data[:max_limit]
 
     # Convert to list to allow multiple iterations
     leaderboard_data = list(leaderboard_data)

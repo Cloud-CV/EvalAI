@@ -49,7 +49,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
 
         (
             leaderboard_data,
@@ -302,7 +306,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
+        # When challenge_hosts_emails is [], exclude is not called
 
         mock_leaderboard = MagicMock()
         mock_leaderboard.schema = {
@@ -541,9 +549,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -594,9 +604,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -664,9 +676,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -741,9 +755,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
