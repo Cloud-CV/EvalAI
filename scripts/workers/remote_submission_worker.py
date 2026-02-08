@@ -527,6 +527,33 @@ def run_submission(
                 submission_metadata=submission,
             )
         if remote_evaluation:
+            # Handle successful remote evaluation - save the submission output
+            stdout.close()
+            stderr.close()
+
+            stdout_content = read_file_content(stdout_file)
+            stderr_content = read_file_content(stderr_file)
+
+            submission_data = {
+                "challenge_phase": phase_pk,
+                "submission": submission_pk,
+                "submission_status": "finished",
+                "stdout": stdout_content,
+                "stderr": stderr_content,
+            }
+
+            if "result" in submission_output:
+                submission_data["result"] = json.dumps(
+                    submission_output.get("result")
+                )
+                submission_data["metadata"] = json.dumps(
+                    submission_output.get("submission_metadata")
+                )
+
+            update_submission_data(
+                submission_data, challenge_pk, submission_pk
+            )
+            shutil.rmtree(temp_run_dir)
             return
     except Exception:
         status = "failed"
