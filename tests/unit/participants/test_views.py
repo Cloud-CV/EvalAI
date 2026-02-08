@@ -1063,6 +1063,133 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_teams_and_corresponding_challenges_for_a_participant_with_no_teams(
+        self,
+    ):
+        """User with no participant teams returns empty list."""
+        user_no_teams = User.objects.create(
+            username="user_no_teams",
+            email="user_no_teams@platform.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=user_no_teams,
+            email="user_no_teams@platform.com",
+            primary=True,
+            verified=True,
+        )
+        self.client.force_authenticate(user=user_no_teams)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["challenge_participant_team_list"], [])
+        self.assertIn("is_challenge_host", response.data)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant_team_with_no_challenges(  # noqa: E501
+        self,
+    ):
+        """Participant team with no challenges returns (null, team) entry."""
+        # Create a second team for the user that has no challenges
+        participant_team_no_challenges = ParticipantTeam.objects.create(
+            team_name="Team No Challenges", created_by=self.user
+        )
+        Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=participant_team_no_challenges,
+        )
+
+        # participant_team has challenge1; participant_team_no_challenges has
+        # none
+        self.challenge1.participant_teams.add(self.participant_team)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        items = response.data["challenge_participant_team_list"]
+        self.assertEqual(len(items), 2)
+
+        # One entry with challenge, one with null challenge
+        challenges = [item["challenge"] for item in items]
+        participant_teams = [item["participant_team"] for item in items]
+        self.assertIn(None, challenges)
+        self.assertEqual(
+            len([c for c in challenges if c is not None]),
+            1,
+        )
+        team_names = [pt["team_name"] for pt in participant_teams]
+        self.assertIn("Participant Team", team_names)
+        self.assertIn("Team No Challenges", team_names)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant_multiple_teams(
+        self,
+    ):
+        """User in multiple teams gets correct challenge-team pairs."""
+        # Add user to participant_team2 (second team)
+        Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2,
+        )
+        self.challenge1.participant_teams.add(self.participant_team)
+        self.challenge2.participant_teams.add(self.participant_team2)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        items = response.data["challenge_participant_team_list"]
+        self.assertEqual(len(items), 2)
+
+        challenge_ids = [
+            item["challenge"]["id"] if item["challenge"] else None
+            for item in items
+        ]
+        team_ids = [item["participant_team"]["id"] for item in items]
+        self.assertIn(self.challenge1.id, challenge_ids)
+        self.assertIn(self.challenge2.id, challenge_ids)
+        self.assertIn(self.participant_team.id, team_ids)
+        self.assertIn(self.participant_team2.id, team_ids)
+
+    def test_get_teams_and_corresponding_challenges_no_n_plus_one_multiple_teams(
+        self,
+    ):
+        """Query count stays bounded with multiple participant teams (N+1 fix)."""
+        # Add user to multiple teams
+        for i in range(5):
+            team = ParticipantTeam.objects.create(
+                team_name=f"Team {i}",
+                created_by=self.user,
+            )
+            Participant.objects.create(
+                user=self.user,
+                status=Participant.ACCEPTED,
+                team=team,
+            )
+            challenge = Challenge.objects.create(
+                title=f"Extra Challenge {i}",
+                short_description=f"Short desc {i}",
+                description=f"Desc {i}",
+                creator=self.challenge_host_team,
+                published=False,
+                is_registration_open=True,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+            )
+            challenge.participant_teams.add(team)
+
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # With N+1 fix: queries should not grow with number of teams
+        # (1 participants + 1 is_challenge_host + 1 challenges + 1 prefetch)
+        self.assertLessEqual(
+            len(context),
+            25,
+            f"Too many queries ({len(context)}) - possible N+1 with multiple "
+            "participant teams",
+        )
+
     def test_get_participant_team_challenge_list(self):
         self.url = reverse_lazy(
             "participants:get_participant_team_challenge_list",
@@ -1204,7 +1331,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
     def test_no_n_plus_one_queries_with_multiple_challenges(self):
         """
-        Test that the endpoint doesn't have N+1 query issues.
+        Test that the endpoint doesn't have N+1 query issues when a single
+        participant team is part of many challenges.
         The number of queries should remain constant regardless of
         the number of challenges the participant team is part of.
         """
@@ -1233,12 +1361,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             challenge.save()
 
         # The query count should be bounded (not grow with number of challenges)
-        # Expected queries:
-        # 1. Get participant objects with team and team__created_by (select_related)
-        # 2. Check is_user_a_host_of_challenge
-        # 3-4. Get challenges with creator and creator__created_by (select_related)
-        # Plus some overhead for auth, session, etc.
-        # The key is that it should NOT be O(n) where n = number of challenges
+        # With the N+1 fix: 1 participants + 1 is_challenge_host + 1 challenges
+        # + 1 prefetch participant_teams (bounded, not O(n))
 
         # Capture queries during the request
         with CaptureQueriesContext(connection) as context:
@@ -1253,11 +1377,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         )
 
         # With the N+1 fix, we expect a bounded number of queries
-        # Without the fix, this would be ~2*N additional queries (one for each
-        # challenge_host_team and one for each auth_user per challenge)
-        # With the fix using select_related, queries should be bounded
-        # We use 25 as a reasonable upper bound for 6 challenges
-        # (includes auth, session, and framework overhead)
+        # Without the fix, this would be 2*N queries (COUNT + SELECT per team)
+        # We use 25 as a reasonable upper bound (includes auth, session, etc.)
         self.assertLessEqual(
             query_count,
             25,
