@@ -6925,6 +6925,122 @@ class CreateOrUpdateGithubChallengeTest(
             initial_challenge_config_pk, updated_challenge_config.pk
         )
 
+    def test_update_challenge_using_github_avoids_n_plus_one_queries(self):
+        """
+        Test that updating a challenge via GitHub push uses prefetched
+        challenge_phase_splits to avoid N+1 queries when updating many
+        ChallengePhaseSplit objects.
+
+        Uses example4 which has 4 challenge_phase_splits. Without the prefetch
+        fix, the update would run 4+ separate queries for challenge_phase_split
+        lookups. With the fix, we have at most 2 (validate + prefetch).
+        """
+        from django.test.utils import CaptureQueriesContext
+
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        github_repository = "https://github.com/yourusername/repository"
+
+        # Load example4 zip (4 challenge_phase_splits)
+        with open(
+            join(
+                settings.BASE_DIR,
+                "examples",
+                "example4",
+                "test_zip_file.zip",
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_multi_splits = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        # First push - create challenge with 4 phase splits
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = test_zip_multi_splits.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": github_repository,
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+        self.assertEqual(
+            response.status_code,
+            201,
+            f"Create failed: {response.data if hasattr(response, 'data') else response.content}",
+        )
+
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+        # Second push - update challenge, capture query count
+        with open(
+            join(
+                settings.BASE_DIR,
+                "examples",
+                "example4",
+                "test_zip_file.zip",
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_multi_splits_2 = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        with CaptureQueriesContext(connection) as context:
+            with mock.patch("challenges.views.requests.get") as m:
+                resp = mock.Mock()
+                resp.content = test_zip_multi_splits_2.read()
+                resp.status_code = 200
+                m.return_value = resp
+                response = self.client.post(
+                    self.url,
+                    {
+                        "GITHUB_REPOSITORY": github_repository,
+                        "zip_configuration": SimpleUploadedFile(
+                            "test_sample.zip",
+                            b"Dummy File Content",
+                            content_type="application/zip",
+                        ),
+                    },
+                    format="multipart",
+                )
+
+        self.assertEqual(response.status_code, 200)
+
+        cps_select_queries = [
+            q
+            for q in context.captured_queries
+            if "challenge_phase_split" in q["sql"]
+            and "SELECT" in q["sql"]
+            and "UPDATE" not in q["sql"]
+        ]
+
+        # With N+1 fix: 1 (validate) + 1 (prefetch) = 2. Without fix: 4+ (one
+        # per phase split in the loop). Allow up to 4 for validate prefetch
+        # iteration in challenge_config_utils.
+        self.assertLessEqual(
+            len(cps_select_queries),
+            4,
+            f"Expected at most 4 challenge_phase_split SELECTs, got "
+            f"{len(cps_select_queries)}. N+1 fix may not be applied.",
+        )
+
 
 class ValidateChallengeTest(
     APITestCase
