@@ -3,6 +3,9 @@ import logging
 import os
 import tempfile
 import urllib.request
+import ipaddress
+import socket
+from urllib.parse import urlparse
 
 import requests
 from base.utils import get_model_object, suppress_autotime
@@ -157,37 +160,102 @@ def get_remaining_submission_for_a_phase(
         return response_data, status.HTTP_200_OK
 
 
+def _resolve_hostname(hostname):
+    infos = socket.getaddrinfo(hostname, None)
+    return {info[4][0] for info in infos}
+
+
+def _is_public_ip(ip_str):
+    ip = ipaddress.ip_address(ip_str)
+    return not (
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_multicast
+        or ip.is_reserved
+        or ip.is_unspecified
+    )
+
+
+def _validate_public_http_url(url):
+    parsed = urlparse(url)
+
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("Invalid URL scheme")
+
+    if not parsed.hostname:
+        raise ValueError("Missing hostname")
+
+    for ip in _resolve_hostname(parsed.hostname):
+        if not _is_public_ip(ip):
+            raise ValueError("Non-public IP detected")
+
+    return parsed
+
+
 def is_url_valid(url):
     """
-    Checks that a given URL is reachable.
+    Checks that a given URL is reachable and safe to fetch server-side.
     :param url: A URL
     :return type: bool
     """
-    request = urllib.request.Request(url)
-    request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
-        return True
-    except urllib.request.HTTPError:
+        _validate_public_http_url(url)
+    except Exception:
+        return False
+
+    try:
+        r = requests.head(url, allow_redirects=False, timeout=5)
+
+        if 300 <= r.status_code < 400 and r.headers.get("Location"):
+            redirect_url = r.headers["Location"]
+            _validate_public_http_url(redirect_url)
+            r = requests.head(redirect_url, allow_redirects=False, timeout=5)
+
+        return r.status_code < 400
+    except Exception:
         return False
 
 
 def get_file_from_url(url):
-    """Get file object from a url"""
+    """Get file object from a url."""
+
+    _validate_public_http_url(url)
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
-    file_name = url.split("/")[-1]
+    file_name = url.split("/")[-1] or "downloaded_file"
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
-    file_obj = {}
+
     headers = {"user-agent": "Wget/1.16 (linux-gnu)"}
-    response = requests.get(url, stream=True, headers=headers)
+
+    response = requests.get(
+        url,
+        stream=True,
+        headers=headers,
+        allow_redirects=False,
+        timeout=10,
+    )
+
+    if 300 <= response.status_code < 400 and response.headers.get("Location"):
+        redirect_url = response.headers["Location"]
+        _validate_public_http_url(redirect_url)
+
+        response = requests.get(
+            redirect_url,
+            stream=True,
+            headers=headers,
+            allow_redirects=False,
+            timeout=10,
+        )
+
+    response.raise_for_status()
+
     with open(file_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
-    file_obj["name"] = file_name
-    file_obj["temp_dir_path"] = BASE_TEMP_DIR
-    return file_obj
+
+    return {"name": file_name, "temp_dir_path": BASE_TEMP_DIR}
 
 
 def handle_submission_rerun(submission, updated_status):
