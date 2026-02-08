@@ -137,6 +137,20 @@ def get_participant_team_challenge_list(request, participant_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def participant_team_detail(request, pk):
+    """
+    API endpoint to retrieve or update participant team details.
+
+    GET: Returns team details if the user is a team member
+    PUT: Updates team details (full update)
+    PATCH: Partially updates team details (only team creator can do this)
+
+    Args:
+        request: Django REST framework request object
+        pk: Primary key of the participant team
+
+    Returns:
+        Response with team details or error message
+    """
 
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
@@ -196,6 +210,25 @@ def participant_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_participant_to_team(request, pk):
+    """
+    API endpoint to invite a user to join a participant team.
+
+    Validates that:
+    - The participant team exists
+    - The requesting user is a member of the team
+    - The invited user exists
+    - The invited user is not already part of the team
+    - The invited user hasn't participated in challenges where the team has
+    - Neither the team nor invited user are banned from team's challenges
+    - Email domain restrictions (allowed/blocked) are respected
+
+    Args:
+        request: Django REST framework request object
+        pk: Primary key of the participant team
+
+    Returns:
+        Response with success message or error details
+    """
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
@@ -246,9 +279,10 @@ def invite_participant_to_team(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if len(team_participated_challenges) > 0:
-        for challenge_pk in team_participated_challenges:
-            challenge = get_challenge_model(challenge_pk)
+        # Fetch all challenges in a single query to avoid N+1 problem
+        challenges = Challenge.objects.filter(pk__in=team_participated_challenges)
 
+        for challenge in challenges:
             if len(challenge.banned_email_ids) > 0:
                 # Check if team participants emails are banned
                 for (
@@ -281,7 +315,7 @@ def invite_participant_to_team(request, pk):
 
             # Check if user is in allowed list.
             if len(challenge.allowed_email_domains) > 0:
-                if not is_user_in_allowed_email_domains(email, challenge_pk):
+                if not is_user_in_allowed_email_domains(email, challenge.pk):
                     message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
                     domains = ""
                     for domain in challenge.allowed_email_domains:
@@ -293,7 +327,7 @@ def invite_participant_to_team(request, pk):
                     )
 
             # Check if user is in blocked list.
-            if is_user_in_blocked_email_domains(email, challenge_pk):
+            if is_user_in_blocked_email_domains(email, challenge.pk):
                 message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
                 domains = ""
                 for domain in challenge.blocked_email_domains:
