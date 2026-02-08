@@ -121,6 +121,11 @@ urlpatterns = [
         views.update_submission_meta,
         name="update_submission_meta",
     ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/stale_submissions/$",
+        views.get_stale_submissions,
+        name="get_stale_submissions",
+    ),
 ]
 
 app_name = "jobs"
