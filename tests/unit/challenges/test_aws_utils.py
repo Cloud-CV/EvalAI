@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 from http import HTTPStatus
 from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
@@ -32,6 +33,8 @@ from challenges.aws_utils import (
     stop_ec2_instance,
     stop_workers,
     terminate_ec2_instance,
+    update_cloudwatch_log_retention_period,
+    update_cloudwatch_log_retention_period_task,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
     update_sqs_retention_period_task,
@@ -39,6 +42,7 @@ from challenges.aws_utils import (
 from challenges.models import Challenge
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
 
@@ -4131,3 +4135,80 @@ class TestChallengeApprovalCallback(TestCase):
         )
 
         mock_logger.error.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.timezone")
+    @patch("challenges.aws_utils.settings")
+    def test_update_cloudwatch_log_retention_period_success(
+        self, mock_settings, mock_timezone, mock_get_boto3_client
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_logs = MagicMock()
+        mock_get_boto3_client.return_value = mock_logs
+
+        now = timezone.now()
+        mock_timezone.now.return_value = now
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.end_date = now + timedelta(days=45)
+
+        result = update_cloudwatch_log_retention_period(challenge)
+
+        log_group_name = "challenge-pk-1-test-workers"
+        mock_logs.create_log_group.assert_called_once_with(
+            logGroupName=log_group_name
+        )
+        mock_logs.put_retention_policy.assert_called_once_with(
+            logGroupName=log_group_name, retentionInDays=60
+        )
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.timezone")
+    @patch("challenges.aws_utils.settings")
+    def test_update_cloudwatch_log_retention_period_no_end_date(
+        self, mock_settings, mock_timezone, mock_get_boto3_client
+    ):
+        challenge = MagicMock()
+        challenge.end_date = None
+
+        result = update_cloudwatch_log_retention_period(challenge)
+
+        self.assertEqual(result, {"message": "Challenge has no end date."})
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.timezone")
+    @patch("challenges.aws_utils.settings")
+    def test_update_cloudwatch_log_retention_period_past_due(
+        self, mock_settings, mock_timezone, mock_get_boto3_client
+    ):
+        mock_settings.ENVIRONMENT = "test"
+        mock_logs = MagicMock()
+        mock_get_boto3_client.return_value = mock_logs
+
+        now = timezone.now()
+        mock_timezone.now.return_value = now
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.end_date = now - timedelta(days=1)
+
+        result = update_cloudwatch_log_retention_period(challenge)
+
+        mock_logs.put_retention_policy.assert_called_once_with(
+            logGroupName="challenge-pk-1-test-workers", retentionInDays=30
+        )
+
+    @patch("challenges.aws_utils.update_cloudwatch_log_retention_period")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    def test_update_cloudwatch_log_retention_period_task_success(
+        self, mock_deserialize, mock_update_retention
+    ):
+        mock_obj = MagicMock()
+        mock_deserialize.return_value = [mock_obj]
+
+        update_cloudwatch_log_retention_period_task("serialized_challenge")
+
+        mock_update_retention.assert_called_once_with(mock_obj.object)
