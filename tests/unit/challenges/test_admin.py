@@ -159,13 +159,17 @@ class TestChallengeAdminListDisplay(TestCase):
             "creator",
             "published",
             "approved_by_admin",
-            "featured",
+            "remote_evaluation",
             "created_at",
             "workers",
             "task_def_arn",
             "github_repository",
         )
         self.assertEqual(self.admin.list_display, expected_fields)
+
+    def test_list_filter_contains_remote_evaluation(self):
+        """list_filter should include remote_evaluation for filtering challenges."""
+        self.assertIn("remote_evaluation", self.admin.list_filter)
 
 
 class TestChallengeAdminSearch(TestCase):
