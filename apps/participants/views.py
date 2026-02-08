@@ -1,5 +1,5 @@
 from accounts.permissions import HasVerifiedEmail
-from base.utils import team_paginated_queryset
+from base.utils import team_paginated_queryset, is_user_a_staff
 from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
@@ -396,6 +396,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     )
     response_data = serializer.data
     response_data["is_challenge_host"] = is_challenge_host
+    response_data["is_staff"] = is_user_a_staff(request.user)
     return Response(response_data, status=status.HTTP_200_OK)
 
 

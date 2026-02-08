@@ -49,6 +49,7 @@
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.isChallengeHost = false;
+        vm.isStaff = false;
         vm.isDockerBased = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
@@ -458,6 +459,7 @@
                             }
 
                             vm.isChallengeHost = details.is_challenge_host;
+                            vm.isStaff = details.is_staff;
 
                             if (!vm.isParticipated) {
 
@@ -2799,8 +2801,13 @@
                 var formData = new FormData();
                 formData.append("name", vm.page.challenge_phase.name);
                 formData.append("description", vm.page.challenge_phase.description);
-                formData.append("start_date", vm.phaseStartDate.toISOString());
-                formData.append("end_date", vm.phaseEndDate.toISOString());
+                
+                // Only include date fields if user is staff
+                if (vm.isStaff) {
+                    formData.append("start_date", vm.phaseStartDate.toISOString());
+                    formData.append("end_date", vm.phaseEndDate.toISOString());
+                }
+                
                 formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
                 formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);

@@ -248,6 +248,13 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # Prevent non-staff users from editing challenge end dates
+        if "end_date" in request.data and not is_user_a_staff(request.user):
+            response_data = {
+                "error": "You do not have permission to update the challenge end date. Only administrators can modify challenge end dates."
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
                 overview_file = request.FILES["overview_file"]
@@ -1069,6 +1076,14 @@ def challenge_phase_detail(request, challenge_pk, pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # Prevent non-staff users from updating challenge phase start_date or end_date
+        if not is_user_a_staff(request.user):
+            if "start_date" in request.data or "end_date" in request.data:
+                response_data = {
+                    "error": "You do not have permission to update challenge phase dates. Only administrators can modify challenge phase start and end dates."
+                }
+                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            
         if request.method == "PATCH":
             if "phase_description_file" in request.FILES:
                 phase_description_file = request.FILES[
@@ -4391,6 +4406,26 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         else:
             try:
                 error_messages = None
+                warning_messages = []
+                
+                # Prevent non-staff users from updating challenge start_date and end_date via GitHub
+                # Remove dates from YAML data to preserve existing dates
+                if "start_date" in yaml_file_data and not is_user_a_staff(request.user):
+                    original_start_date = yaml_file_data.pop("start_date")
+                    warning_messages.append(
+                        f"Challenge start_date update ignored (was: {original_start_date}). "
+                        "Only administrators can modify challenge start dates. "
+                        "Current start_date preserved."
+                    )
+                    
+                if "end_date" in yaml_file_data and not is_user_a_staff(request.user):
+                    original_end_date = yaml_file_data.pop("end_date")
+                    warning_messages.append(
+                        f"Challenge end_date update ignored (was: {original_end_date}). "
+                        "Only administrators can modify challenge end dates. "
+                        "Current end_date preserved."
+                    )
+                    
                 # Updating ChallengeConfiguration object
                 challenge_configuration = (
                     ChallengeConfiguration.objects.filter(
@@ -4513,6 +4548,21 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     )
                     if default_submission_meta_attributes is None:
                         data["default_submission_meta_attributes"] = None
+
+                    # Prevent non-staff users from updating challenge phase start_date and end_date via GitHub
+                    if "start_date" in data and not is_user_a_staff(request.user):
+                        original_phase_start_date = data.pop("start_date")
+                        warning_messages.append(
+                            f"Challenge phase '{data.get('name', data.get('id'))}' start_date update ignored "
+                            f"(was: {original_phase_start_date}). Only administrators can modify phase start dates."
+                        )
+                        
+                    if "end_date" in data and not is_user_a_staff(request.user):
+                        original_phase_end_date = data.pop("end_date")
+                        warning_messages.append(
+                            f"Challenge phase '{data.get('name', data.get('id'))}' end_date update ignored "
+                            f"(was: {original_phase_end_date}). Only administrators can modify phase end dates."
+                        )
 
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]

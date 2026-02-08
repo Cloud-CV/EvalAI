@@ -916,6 +916,76 @@ class UpdateParticularChallenge(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_host_cannot_update_challenge_end_date(self):
+        """Test that non-staff challenge hosts cannot update challenge end_date"""
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        original_end_date = self.challenge.end_date
+        new_end_date = timezone.now() + timedelta(days=30)
+        
+        # Try to update end_date as a regular host (non-staff)
+        update_data = {
+            "title": "Updated Title",
+            "end_date": new_end_date.isoformat()
+        }
+        
+        response = self.client.patch(self.url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Verify the error message
+        expected_error = {
+            "error": "You do not have permission to update the challenge end date. Only administrators can modify challenge end dates."
+        }
+        self.assertEqual(response.data, expected_error)
+        
+        # Verify the challenge was not updated at all
+        updated_challenge = Challenge.objects.get(pk=self.challenge.pk)
+        self.assertEqual(updated_challenge.title, self.challenge.title)  # Should remain unchanged
+        self.assertEqual(updated_challenge.end_date, original_end_date)
+
+    def test_host_can_update_other_fields_without_end_date(self):
+        """Test that hosts can still update other challenge fields when not attempting to update end_date"""
+        
+        # Try to update only title (no end_date in request)
+        update_data = {
+            "title": "Updated Title Without End Date",
+        }
+        
+        response = self.client.patch(self.url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify the challenge title was updated successfully
+        updated_challenge = Challenge.objects.get(pk=self.challenge.pk)
+        self.assertEqual(updated_challenge.title, "Updated Title Without End Date")
+
+    def test_staff_can_update_challenge_end_date(self):
+        """Test that staff users can update challenge end_date"""
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        # Make the user a staff member
+        self.user.is_staff = True
+        self.user.save()
+        
+        original_end_date = self.challenge.end_date
+        new_end_date = timezone.now() + timedelta(days=30)
+        
+        # Try to update end_date as staff
+        update_data = {
+            "title": "Updated Title by Staff",
+            "end_date": new_end_date.isoformat()
+        }
+        
+        response = self.client.patch(self.url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify both title and end_date were updated
+        updated_challenge = Challenge.objects.get(pk=self.challenge.pk)
+        self.assertEqual(updated_challenge.title, "Updated Title by Staff")
+        # Note: Compare dates with some tolerance due to potential microsecond differences
+        self.assertNotEqual(updated_challenge.end_date, original_end_date)
+
 
 class DeleteParticularChallenge(BaseAPITestClass):
     def setUp(self):
@@ -3915,6 +3985,98 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_host_cannot_update_challenge_phase_end_date(self):
+        """Test that non-staff challenge hosts cannot update challenge phase end_date"""
+        new_end_date = timezone.now() + timedelta(days=10)
+        data = {
+            "name": "Updated Phase Name",
+            "end_date": new_end_date.isoformat()
+        }
+        
+        # Try to update end_date as a regular host (non-staff)
+        response = self.client.patch(self.url, data)
+        
+        expected = {
+            "error": "You do not have permission to update the challenge phase end date. Only administrators can modify challenge phase end dates."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Verify the challenge phase wasn't updated
+        self.challenge_phase.refresh_from_db()
+        self.assertNotEqual(self.challenge_phase.end_date.date(), new_end_date.date())
+        self.assertNotEqual(self.challenge_phase.name, "Updated Phase Name")
+
+    def test_staff_can_update_challenge_phase_end_date(self):
+        """Test that staff users can update challenge phase end_date"""
+        new_end_date = timezone.now() + timedelta(days=10)
+        
+        # Make the user a staff member
+        self.user.is_staff = True
+        self.user.save()
+        
+        data = {
+            "name": "Updated Phase Name by Staff",
+            "end_date": new_end_date.isoformat()
+        }
+        
+        # Try to update end_date as staff
+        response = self.client.patch(self.url, data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify the challenge phase was updated
+        updated_challenge_phase = ChallengePhase.objects.get(pk=self.challenge_phase.pk)
+        self.assertEqual(updated_challenge_phase.name, "Updated Phase Name by Staff")
+        # Compare dates (ignore time precision differences)
+        self.assertEqual(updated_challenge_phase.end_date.date(), new_end_date.date())
+
+    def test_host_cannot_update_challenge_phase_start_date(self):
+        """Test that non-staff challenge hosts cannot update challenge phase start_date"""
+        new_start_date = timezone.now() + timedelta(days=5)
+        data = {
+            "name": "Updated Phase Name",
+            "start_date": new_start_date.isoformat()
+        }
+        
+        # Try to update start_date as a regular host (non-staff)
+        response = self.client.patch(self.url, data)
+        
+        expected = {
+            "error": "You do not have permission to update challenge phase dates. Only administrators can modify challenge phase start and end dates."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Verify the challenge phase wasn't updated
+        self.challenge_phase.refresh_from_db()
+        self.assertNotEqual(self.challenge_phase.start_date.date(), new_start_date.date())
+        self.assertNotEqual(self.challenge_phase.name, "Updated Phase Name")
+
+    def test_staff_can_update_challenge_phase_start_date(self):
+        """Test that staff users can update challenge phase start_date"""
+        new_start_date = timezone.now() + timedelta(days=5)
+        
+        # Make the user a staff member
+        self.user.is_staff = True
+        self.user.save()
+        
+        data = {
+            "name": "Updated Phase Name by Staff",
+            "start_date": new_start_date.isoformat()
+        }
+        
+        # Try to update start_date as staff
+        response = self.client.patch(self.url, data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify the challenge phase was updated
+        updated_challenge_phase = ChallengePhase.objects.get(pk=self.challenge_phase.pk)
+        self.assertEqual(updated_challenge_phase.name, "Updated Phase Name by Staff")
+        # Compare dates (ignore time precision differences)
+        self.assertEqual(updated_challenge_phase.start_date.date(), new_start_date.date())
 
 
 class BaseChallengePhaseSplitClass(

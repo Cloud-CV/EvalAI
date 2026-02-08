@@ -1003,6 +1003,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
+            "is_staff": False,
         }
         response = self.client.get(self.url, {})
         # checking 'datetime_now' separately because of time difference in
@@ -1116,6 +1117,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
+            "is_staff": False,
         }
         response = self.client.get(self.url, {})
         # checking 'datetime_now' separately because of time difference in
@@ -1137,6 +1139,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         expected = {
             "challenge_participant_team_list": [],
             "is_challenge_host": False,
+            "is_staff": False,
         }
 
         response = self.client.get(self.url, {})
