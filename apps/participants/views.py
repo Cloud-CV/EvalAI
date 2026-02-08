@@ -379,23 +379,52 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     )
 
     challenge_participated_teams = []
+    participant_teams = [p.team for p in participant_objs]
+    if not participant_teams:
+        serializer = ChallengeParticipantTeamListSerializer(
+            ChallengeParticipantTeamList(challenge_participated_teams)
+        )
+        response_data = serializer.data
+        response_data["is_challenge_host"] = is_challenge_host
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    participant_team_ids = [t.id for t in participant_teams]
+    # Batch fetch: single query for all challenges across all participant teams
+    # to avoid N+1 (COUNT + SELECT per participant team)
+    all_challenges = (
+        Challenge.objects.filter(participant_teams__in=participant_teams)
+        .select_related("creator", "creator__created_by")
+        .prefetch_related(
+            Prefetch(
+                "participant_teams",
+                queryset=ParticipantTeam.objects.filter(
+                    id__in=participant_team_ids
+                ),
+            )
+        )
+        .order_by("title")
+    )
+
+    # Build mapping: participant_team_id -> [challenges]
+    team_to_challenges = {tid: [] for tid in participant_team_ids}
+    for challenge in all_challenges:
+        for team in challenge.participant_teams.all():
+            if team.id in team_to_challenges:
+                team_to_challenges[team.id].append(challenge)
+
     for participant_obj in participant_objs:
         participant_team = participant_obj.team
-
-        challenges = Challenge.objects.filter(
-            participant_teams=participant_team
-        ).select_related("creator", "creator__created_by")
-
-        if challenges.count():
+        challenges = team_to_challenges.get(participant_team.id, [])
+        if challenges:
             for challenge in challenges:
                 challenge_participated_teams.append(
                     ChallengeParticipantTeam(challenge, participant_team)
                 )
         else:
-            challenge = None
             challenge_participated_teams.append(
-                ChallengeParticipantTeam(challenge, participant_team)
+                ChallengeParticipantTeam(None, participant_team)
             )
+
     serializer = ChallengeParticipantTeamListSerializer(
         ChallengeParticipantTeamList(challenge_participated_teams)
     )
