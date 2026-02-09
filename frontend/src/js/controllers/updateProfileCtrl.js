@@ -87,6 +87,26 @@
                     return;
                 }
 
+                // Required profile fields cannot be blank (skip when locked)
+                if (!vm.user.is_profile_fields_locked) {
+                    var requiredFields = [
+                        { key: 'address_street', label: 'Street address' },
+                        { key: 'address_city', label: 'City' },
+                        { key: 'address_state', label: 'State' },
+                        { key: 'address_country', label: 'Country' },
+                        { key: 'university', label: 'University' }
+                    ];
+                    for (var i = 0; i < requiredFields.length; i++) {
+                        var field = requiredFields[i];
+                        var value = vm.user[field.key];
+                        if (!value || (typeof value === 'string' && !value.trim())) {
+                            vm.isFormError = true;
+                            vm.FormError = field.label + ' cannot be blank.';
+                            return;
+                        }
+                    }
+                }
+
                 vm.startLoader("Updating Your Profile");
                 var parameters = {};
                 parameters.url = 'auth/user/';
