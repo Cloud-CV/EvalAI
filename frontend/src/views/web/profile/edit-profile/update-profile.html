@@ -1,4 +1,7 @@
 <section class="ev-md-container-ui">
+    <div ng-if="profile.userdetails.is_profile_fields_locked" class="wrn-msg text-highlight margin-bottom-20">
+        <i class="fa fa-info-circle"></i> Name, address, and university cannot be edited after participating in a challenge that requires complete profile.
+    </div>
     <div class="row">
         <div class="ev-md-container ev-card-panel ev-z-depth-5
             challenge-title-container">
@@ -22,7 +25,7 @@
                             <span class="text-light-black fs-12">First Name<br></span>
                             <span>{{profile.userdetails.first_name || "-"}}
                             </span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="first_name" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -31,7 +34,7 @@
                           <li>
                             <span class="text-light-black fs-12">Last Name<br></span>
                             <span>{{profile.userdetails.last_name || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="last_name" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -50,7 +53,7 @@
                         <li>
                             <span class="text-light-black fs-12">University<br></span>
                             <span>{{profile.userdetails.university || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="university" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -74,7 +77,7 @@
                         <li>
                             <span class="text-light-black fs-12">Street Address<br></span>
                             <span>{{profile.userdetails.address_street || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="address_street" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -83,7 +86,7 @@
                         <li>
                             <span class="text-light-black fs-12">City<br></span>
                             <span>{{profile.userdetails.address_city || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="address_city" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -92,7 +95,7 @@
                         <li>
                             <span class="text-light-black fs-12">State<br></span>
                             <span>{{profile.userdetails.address_state || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="address_state" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -101,7 +104,7 @@
                         <li>
                             <span class="text-light-black fs-12">Country<br></span>
                             <span>{{profile.userdetails.address_country || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="address_country" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>

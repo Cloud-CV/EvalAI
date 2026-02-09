@@ -359,6 +359,7 @@ describe('Unit tests for profile controller', function () {
             vm.user.address_state = null;
             vm.user.address_country = null;
             vm.user.university = null;
+            vm.user.is_profile_fields_locked = true;
 
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.user.address_street).toEqual("");
@@ -367,6 +368,34 @@ describe('Unit tests for profile controller', function () {
             expect(vm.user.address_country).toEqual("");
             expect(vm.user.university).toEqual("");
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
+        });
+
+        it('should skip required field validation when is_profile_fields_locked is true', function () {
+            var resetconfirmFormValid = true;
+            success = true;
+            vm.user.is_profile_fields_locked = true;
+            vm.user.address_city = "";
+            vm.user.address_state = "";
+
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                parameters.callback.onSuccess({ data: 'success', status: 200 });
+            });
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
+        });
+
+        it('should notify error when required field is blank and not locked', function () {
+            var resetconfirmFormValid = true;
+            vm.user.is_profile_fields_locked = false;
+            vm.user.address_city = "";
+
+            spyOn(utilities, 'sendRequest');
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "City cannot be blank.");
+            expect(utilities.sendRequest).not.toHaveBeenCalled();
         });
     });
 
