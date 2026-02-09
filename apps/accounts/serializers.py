@@ -95,9 +95,7 @@ class ProfileSerializer(UserDetailsSerializer):
 
     def get_is_profile_fields_locked(self, obj):
         """True if user has participated in a challenge requiring complete profile."""
-        if obj and hasattr(obj, "pk"):
-            return has_participated_in_require_complete_profile_challenge(obj)
-        return False
+        return self._is_profile_fields_locked()
 
     def get_is_profile_complete(self, obj):
         """Returns whether the user's profile is complete."""
@@ -106,12 +104,20 @@ class ProfileSerializer(UserDetailsSerializer):
         return False
 
     def _is_profile_fields_locked(self):
-        """Check if the user being updated has locked profile fields."""
-        if self.instance and hasattr(self.instance, "pk"):
-            return has_participated_in_require_complete_profile_challenge(
-                self.instance
-            )
-        return False
+        """Check if the user being updated has locked profile fields.
+        Caches the result to avoid redundant DB queries within a single
+        request (called from validate, update, and get_is_profile_fields_locked).
+        """
+        if not hasattr(self, "_cached_is_profile_fields_locked"):
+            if self.instance and hasattr(self.instance, "pk"):
+                self._cached_is_profile_fields_locked = (
+                    has_participated_in_require_complete_profile_challenge(
+                        self.instance
+                    )
+                )
+            else:
+                self._cached_is_profile_fields_locked = False
+        return self._cached_is_profile_fields_locked
 
     def validate(self, attrs):
         """
@@ -177,9 +183,7 @@ class ProfileSerializer(UserDetailsSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
-        fields_locked = has_participated_in_require_complete_profile_challenge(
-            instance
-        )
+        fields_locked = self._is_profile_fields_locked()
 
         # Remove locked fields from validated_data so they keep existing values
         if fields_locked:

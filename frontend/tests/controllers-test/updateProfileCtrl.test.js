@@ -355,5 +355,27 @@ describe('Unit tests for update profile controller', function () {
             expect(vm.FormError).toBe("City cannot be blank.");
             expect(vm.startLoader).not.toHaveBeenCalled();
         });
+
+        it('should set FormError when first_name is blank and not locked', function () {
+            var resetconfirmFormValid = true;
+            vm.user.is_profile_fields_locked = false;
+            vm.user.first_name = "";
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("First name cannot be blank.");
+            expect(vm.startLoader).not.toHaveBeenCalled();
+        });
+
+        it('should set FormError when last_name is blank and not locked', function () {
+            var resetconfirmFormValid = true;
+            vm.user.is_profile_fields_locked = false;
+            vm.user.last_name = "";
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toBe("Last name cannot be blank.");
+            expect(vm.startLoader).not.toHaveBeenCalled();
+        });
     });
 });

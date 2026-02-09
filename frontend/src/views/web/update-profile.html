@@ -18,7 +18,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left">
-                        <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.first_name" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.first_name" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="first_name">First Name</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.first_name.$error" ng-if="updateProfileForm.first_name.$touched || updateProfileForm.$submitted">
@@ -27,7 +27,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left">
-                        <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.last_name" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.last_name" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="last_name">Last Name</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.last_name.$error" ng-if="updateProfileForm.last_name.$touched || updateProfileForm.$submitted">
@@ -45,7 +45,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left"> 
-                        <input id="university" name="university" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.university" ng-maxlength="512" required focus-if="updateProfile.user.university" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="university" name="university" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.university" ng-maxlength="512" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.university" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="university">University</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.university.$error" ng-if="updateProfileForm.university.$touched || updateProfileForm.$submitted">
@@ -53,7 +53,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left"> 
-                        <input id="address_street" name="address_street" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_street" ng-maxlength="500" required focus-if="updateProfile.user.address_street" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="address_street" name="address_street" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_street" ng-maxlength="500" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.address_street" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="address_street">Street Address</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.address_street.$error" ng-if="updateProfileForm.address_street.$touched || updateProfileForm.$submitted">
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left"> 
-                        <input id="address_city" name="address_city" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_city" ng-maxlength="100" required focus-if="updateProfile.user.address_city" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="address_city" name="address_city" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_city" ng-maxlength="100" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.address_city" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="address_city">City</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.address_city.$error" ng-if="updateProfileForm.address_city.$touched || updateProfileForm.$submitted">
@@ -69,7 +69,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left"> 
-                        <input id="address_state" name="address_state" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_state" ng-maxlength="100" required focus-if="updateProfile.user.address_state" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="address_state" name="address_state" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_state" ng-maxlength="100" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.address_state" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="address_state">State</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.address_state.$error" ng-if="updateProfileForm.address_state.$touched || updateProfileForm.$submitted">
@@ -77,7 +77,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left"> 
-                        <input id="address_country" name="address_country" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_country" ng-maxlength="100" required focus-if="updateProfile.user.address_country" ng-readonly="updateProfile.user.is_profile_fields_locked">
+                        <input id="address_country" name="address_country" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.address_country" ng-maxlength="100" ng-required="!updateProfile.user.is_profile_fields_locked" focus-if="updateProfile.user.address_country" ng-readonly="updateProfile.user.is_profile_fields_locked">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="address_country">Country</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.address_country.$error" ng-if="updateProfileForm.address_country.$touched || updateProfileForm.$submitted">

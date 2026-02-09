@@ -284,18 +284,21 @@
                 parameters.url = 'auth/user/';
                 parameters.method = 'PUT';
                 parameters.data = {
-                    "first_name": vm.user.first_name,
-                    "last_name": vm.user.last_name,
                     "affiliation": vm.user.affiliation,
                     "github_url": vm.user.github_url,
                     "google_scholar_url": vm.user.google_scholar_url,
-                    "linkedin_url": vm.user.linkedin_url,
-                    "address_street": vm.user.address_street,
-                    "address_city": vm.user.address_city,
-                    "address_state": vm.user.address_state,
-                    "address_country": vm.user.address_country,
-                    "university": vm.user.university
+                    "linkedin_url": vm.user.linkedin_url
                 };
+                // Only include locked fields when profile is not locked
+                if (!vm.user.is_profile_fields_locked) {
+                    parameters.data.first_name = vm.user.first_name;
+                    parameters.data.last_name = vm.user.last_name;
+                    parameters.data.address_street = vm.user.address_street;
+                    parameters.data.address_city = vm.user.address_city;
+                    parameters.data.address_state = vm.user.address_state;
+                    parameters.data.address_country = vm.user.address_country;
+                    parameters.data.university = vm.user.university;
+                }
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
