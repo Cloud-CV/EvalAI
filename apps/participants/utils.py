@@ -77,9 +77,15 @@ def get_list_of_challenges_participated_by_a_user(user):
 
 def has_participated_in_require_complete_profile_challenge(user):
     """
-    Returns True if the user has participated in any challenge that requires
-    a complete profile. When True, profile fields (name, address, university)
-    become read-only and cannot be edited.
+    Returns True if the user has participated in any active challenge that
+    requires a complete profile. When True, profile fields (name, address,
+    university) become read-only and cannot be edited. Once all such
+    challenges have ended (end_date < now), profile fields become editable
+    again.
     """
+    from django.utils import timezone
+
     challenges = get_list_of_challenges_participated_by_a_user(user)
-    return challenges.filter(require_complete_profile=True).exists()
+    return challenges.filter(
+        require_complete_profile=True, end_date__gt=timezone.now()
+    ).exists()
