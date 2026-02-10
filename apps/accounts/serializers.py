@@ -151,8 +151,10 @@ class ProfileSerializer(UserDetailsSerializer):
                     current_str = str(current).strip() if current else ""
                     if new_str != current_str:
                         errors[field] = [
-                            "This field cannot be edited after participating "
-                            "in a challenge that requires complete profile."
+                            "This field cannot be edited while participating "
+                            "in an active challenge that requires complete "
+                            "profile. It will become editable after the "
+                            "challenge ends."
                         ]
             if errors:
                 raise ValidationError(errors)
