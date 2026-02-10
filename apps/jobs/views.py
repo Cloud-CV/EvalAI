@@ -409,11 +409,29 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
         if serializer.is_valid():
             serializer.save()
-            response_data = serializer.data
             submission = serializer.instance
             message["submission_pk"] = submission.id
-            # publish message in the queue
-            publish_submission_message(message)
+
+            try:
+                publish_submission_message(message)
+            except Exception:
+                logger.exception(
+                    "SQS publish failed for submission %s in challenge %s, "
+                    "cancelling submission",
+                    submission.pk,
+                    challenge_id,
+                )
+                submission.status = Submission.CANCELLED
+                submission.save()
+                response_data = {
+                    "error": "Failed to process your submission. Please try again."
+                }
+                return Response(
+                    response_data,
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
