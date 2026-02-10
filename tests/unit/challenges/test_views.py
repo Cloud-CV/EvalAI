@@ -644,6 +644,13 @@ class GetParticularChallenge(BaseAPITestClass):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_particular_challenge_when_user_is_not_host_or_creator(self):
+        self.client.force_authenticate(user=self.participant_user)
+        expected = {"error": "You are not authorized to make this request"}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_challenge_when_user_is_not_its_creator(self):
         # pylint: disable=attribute-defined-outside-init
         self.user1 = User.objects.create(
@@ -6219,6 +6226,22 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_allowed_email_ids_when_user_is_not_host_or_creator(self):
+        self.url = (  # pylint: disable=attribute-defined-outside-init
+            reverse_lazy(
+                "challenges:get_or_update_allowed_email_ids",
+                kwargs={
+                    "challenge_pk": self.challenge.pk,
+                    "phase_pk": self.challenge_phase.pk,
+                },
+            )
+        )
+        self.client.force_authenticate(user=self.participant_user)
+        expected = {"error": "You are not authorized to make this request"}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_or_update_allowed_email_ids_patch_success(self):
         self.url = (  # pylint: disable=attribute-defined-outside-init
