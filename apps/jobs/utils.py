@@ -159,16 +159,37 @@ def get_remaining_submission_for_a_phase(
 
 def is_url_valid(url):
     """
-    Checks that a given URL is reachable.
+    Checks that a given URL is reachable and not an internal/private address.
     :param url: A URL
     :return type: bool
     """
-    request = urllib.request.Request(url)
-    request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
+        from urllib.parse import urlparse
+        import ipaddress
+        import socket
+
+        parsed = urlparse(url)
+
+        # Only allow http and https schemes
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        # Resolve hostname and check against private/reserved IP ranges
+        resolved_ip = socket.gethostbyname(hostname)
+        ip = ipaddress.ip_address(resolved_ip)
+        if ip.is_private or ip.is_reserved or ip.is_loopback or ip.is_link_local:
+            return False
+
+        request = urllib.request.Request(url)
+        request.get_method = lambda: "HEAD"
+        urllib.request.urlopen(request, timeout=5)
         return True
-    except urllib.request.HTTPError:
+    except (urllib.request.HTTPError, urllib.request.URLError,
+            socket.gaierror, ValueError, OSError):
         return False
 
 
