@@ -4,7 +4,7 @@
             <div class="ev-md-container ev-card-body update-profile-card">
                 <div class="pass-title">Update Profile</div>
                 <div ng-if="updateProfile.user.is_profile_fields_locked" class="wrn-msg text-highlight margin-bottom-20">
-                    <i class="fa fa-info-circle"></i> Some fields (name, address, university) cannot be edited after participating in a challenge that requires complete profile.
+                    <i class="fa fa-info-circle"></i> Some fields (name, address, university) cannot be edited while participating in an active challenge that requires complete profile. They will become editable after the challenge ends.
                 </div>
                 <form name="updateProfileForm" ng-submit="updateProfile.updateProfile(updateProfileForm.$valid)" novalidate>
                     <div class="input-field align-left">

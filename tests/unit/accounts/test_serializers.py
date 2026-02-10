@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from accounts.serializers import (
     CustomPasswordResetSerializer,
     ProfileSerializer,
@@ -5,6 +7,7 @@ from accounts.serializers import (
 from challenges.models import Challenge
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 from rest_framework.exceptions import ValidationError
@@ -177,6 +180,8 @@ class TestProfileSerializer(TestCase):
             title="Test Challenge",
             creator=host_team,
             require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
         )
         challenge.participant_teams.add(participant_team)
 
@@ -222,6 +227,8 @@ class TestProfileSerializer(TestCase):
             title="Test Challenge",
             creator=host_team,
             require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
         )
         challenge.participant_teams.add(participant_team)
 
@@ -267,6 +274,8 @@ class TestProfileSerializer(TestCase):
             title="Test Challenge",
             creator=host_team,
             require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
         )
         challenge.participant_teams.add(participant_team)
 
