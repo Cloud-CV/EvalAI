@@ -5,6 +5,8 @@ services:
       - "5432:5432"
     env_file:
       - docker/dev/docker.env
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
 
   sqs:
     image: softwaremill/elasticmq
