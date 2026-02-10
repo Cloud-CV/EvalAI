@@ -51,7 +51,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "creator",
         "published",
         "approved_by_admin",
-        "featured",
+        "remote_evaluation",
         "created_at",
         "workers",
         "task_def_arn",
@@ -63,7 +63,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
-        "featured",
+        "remote_evaluation",
         "start_date",
         "end_date",
     )
@@ -264,6 +264,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
         "show_execution_time",
+        "show_scores_on_leaderboard",
     )
     list_filter = ("visibility",)
     search_fields = (

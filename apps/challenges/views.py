@@ -56,6 +56,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -415,7 +416,18 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
         )
-        participant_team = get_participant_model(participant_team_pk)
+        participant_team = (
+            ParticipantTeam.objects.select_related("created_by")
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .get(pk=participant_team_pk)
+        )
         serializer = ParticipantTeamDetailSerializer(participant_team)
         if challenge.approved_participant_teams.filter(
             pk=participant_team_pk
@@ -4549,20 +4561,44 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         error_messages, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                # Prefetch all challenge_phase_splits for this challenge to avoid
+                # N+1 queries in the leaderboard, dataset_split, and
+                # challenge_phase_split update loops.
+                all_challenge_phase_splits = list(
+                    ChallengePhaseSplit.objects.filter(
+                        challenge_phase__challenge__pk=challenge.pk
+                    ).select_related(
+                        "challenge_phase", "dataset_split", "leaderboard"
+                    )
+                )
+                cps_by_leaderboard_config_id = {
+                    cps.leaderboard.config_id: cps
+                    for cps in all_challenge_phase_splits
+                    if cps.leaderboard.config_id is not None
+                }
+                cps_by_dataset_split_config_id = {
+                    cps.dataset_split.config_id: cps
+                    for cps in all_challenge_phase_splits
+                    if cps.dataset_split.config_id is not None
+                }
+                cps_by_phase_split_leaderboard = {
+                    (
+                        cps.challenge_phase_id,
+                        cps.dataset_split_id,
+                        cps.leaderboard_id,
+                    ): cps
+                    for cps in all_challenge_phase_splits
+                }
+
                 # Updating Leaderboard object
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
                 for data in yaml_file_data_of_leaderboard:
-                    challenge_phase_split_qs = (
-                        ChallengePhaseSplit.objects.filter(
-                            challenge_phase__challenge__pk=challenge.pk,
-                            leaderboard__config_id=data["config_id"],
-                        )
+                    leaderboard_config_id = data.get("config_id", data["id"])
+                    challenge_phase_split = cps_by_leaderboard_config_id.get(
+                        leaderboard_config_id
                     )
-                    if challenge_phase_split_qs:
-                        challenge_phase_split = (
-                            challenge_phase_split_qs.first()
-                        )
+                    if challenge_phase_split is not None:
                         leaderboard = challenge_phase_split.leaderboard
                         serializer = LeaderboardSerializer(
                             leaderboard,
@@ -4660,16 +4696,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 ]
                 dataset_split_ids = {}
                 for data in yaml_file_data_of_dataset_split:
-                    challenge_phase_split_qs = (
-                        ChallengePhaseSplit.objects.filter(
-                            challenge_phase__challenge__pk=challenge.pk,
-                            dataset_split__config_id=data["id"],
-                        )
+                    challenge_phase_split = cps_by_dataset_split_config_id.get(
+                        data["id"]
                     )
-                    if challenge_phase_split_qs:
-                        challenge_phase_split = (
-                            challenge_phase_split_qs.first()
-                        )
+                    if challenge_phase_split is not None:
                         dataset_split = challenge_phase_split.dataset_split
                         serializer = DatasetSplitSerializer(
                             dataset_split,
@@ -4758,17 +4788,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "leaderboard_decimal_precision": leaderboard_decimal_precision,
                     }
 
-                    challenge_phase_split_qs = (
-                        ChallengePhaseSplit.objects.filter(
-                            challenge_phase__pk=challenge_phase,
-                            dataset_split__pk=dataset_split,
-                            leaderboard__pk=leaderboard,
-                        )
+                    challenge_phase_split = cps_by_phase_split_leaderboard.get(
+                        (challenge_phase, dataset_split, leaderboard)
                     )
-                    if challenge_phase_split_qs:
-                        challenge_phase_split = (
-                            challenge_phase_split_qs.first()
-                        )
+                    if challenge_phase_split is not None:
                         serializer = ZipChallengePhaseSplitSerializer(
                             challenge_phase_split, data=data
                         )
@@ -4779,7 +4802,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        error_messages = f"challenge phase split update (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
+                        error_messages = (
+                            f"challenge phase split update "
+                            f"(phase:{challenge_phase}, leaderboard:{leaderboard}, "
+                            f"dataset split: {dataset_split}):{str(serializer.errors)}"
+                        )
                         raise RuntimeError()
 
                 response_data = {

@@ -502,6 +502,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
     show_execution_time = models.BooleanField(default=False)
+    show_scores_on_leaderboard = models.BooleanField(default=True)
     # Allow ordering leaderboard by all metrics
     is_multi_metric_leaderboard = models.BooleanField(default=True)
 
@@ -572,6 +573,12 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "leaderboard_data"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase_split", "is_disabled", "-created_at"],
+                name="ld_chphase_isdisc_created_idx",
+            ),
+        ]
 
 
 class ChallengeConfiguration(TimeStampedModel):

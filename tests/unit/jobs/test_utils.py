@@ -49,7 +49,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
 
         (
             leaderboard_data,
@@ -302,7 +306,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
+        # When challenge_hosts_emails is [], exclude is not called
 
         mock_leaderboard = MagicMock()
         mock_leaderboard.schema = {
@@ -516,6 +524,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
         )
+        self.challenge_phase_split.show_scores_on_leaderboard = True
 
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
@@ -541,9 +550,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -594,9 +605,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -664,9 +677,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -741,9 +756,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -782,6 +799,330 @@ class TestReorderSubmissionsComparator(TestCase):
         # Only Team2 should be in result (Team1 has a banned participant)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["submission__participant_team"], 2)
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_empty_banned_email_ids_includes_all_teams(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test that empty banned_email_ids excludes no teams."""
+        mock_is_user_a_staff_or_host.return_value = False
+        self.challenge_obj.banned_email_ids = []
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 2)
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_none_banned_email_ids_includes_all_teams(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test that None banned_email_ids excludes no teams (set conversion)."""
+        mock_is_user_a_staff_or_host.return_value = False
+        self.challenge_obj.banned_email_ids = None
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 1)
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 2)
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_distinct_team_list_with_many_duplicates(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test set-based team_list gives correct distinct result with many entries."""
+        mock_is_user_a_staff_or_host.return_value = False
+
+        # Many entries from same teams - Team1 appears 5x, Team2 appears 3x
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": float(i),
+                "result": {"score": str(i), "time": "0"},
+            }
+            for i in range(10, 5, -1)
+        ] + [
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": float(i),
+                "result": {"score": str(i), "time": "0"},
+            }
+            for i in range(9, 6, -1)
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Only 2 distinct teams (best entry per team)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(
+            result[0]["submission__participant_team__team_name"], "Team1"
+        )
+        self.assertEqual(
+            result[1]["submission__participant_team__team_name"], "Team2"
+        )
+
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_baseline_entries_always_included(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+    ):
+        """Test baseline entries are always included regardless of team_list."""
+        mock_is_user_a_staff_or_host.return_value = False
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": "10", "time": "0"},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Baseline",
+                "submission__is_baseline": True,
+                "error": None,
+                "filtering_score": 5,
+                "result": {"score": "5", "time": "0"},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Baseline",
+                "submission__is_baseline": True,
+                "error": None,
+                "filtering_score": 3,
+                "result": {"score": "3", "time": "0"},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "baseline@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Team1 (1) + 2 baseline entries = 3
+        self.assertEqual(len(result), 3)
+
+    def _create_mock_leaderboard_chain(
+        self, mock_leaderboard_data_objects, test_data
+    ):
+        """Helper to create mock chain for LeaderboardData queryset."""
+        mock_qs = MagicMock()
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+        return mock_qs
 
     def test_all_comparisons(self):
         def dummy_comparator(a, b):

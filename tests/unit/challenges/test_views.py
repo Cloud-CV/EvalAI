@@ -28,7 +28,9 @@ from challenges.models import (
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -268,6 +270,42 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participant_team_detail_avoids_n_plus_one_queries(self):
+        """
+        Verify participant_team_detail_for_challenge uses prefetch to avoid N+1
+        queries when serializing team members (user + profile per participant).
+        """
+        # Add 4 more participants (5 total) to stress-test the N+1 fix
+        for i in range(4):
+            extra_user = User.objects.create(
+                username=f"member{i}",
+                email=f"member{i}@test.com",
+            )
+            Participant.objects.create(
+                user=extra_user,
+                status=Participant.ACCEPTED,
+                team=self.participant_team,
+            )
+
+        url = reverse_lazy(
+            "challenges:participant_team_detail_for_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # With prefetch (select_related/prefetch_related), query count should be
+        # bounded. Without fix, we'd have 2*N extra queries (auth_user +
+        # user_profile per participant) = 10+ for 5 participants.
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["participant_team"]["members"]), 5)
+        self.assertLessEqual(
+            len(context.captured_queries),
+            12,
+            "Query count too high - possible N+1 when loading participants",
+        )
 
 
 class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
@@ -4180,6 +4218,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             }
@@ -4219,6 +4258,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4231,6 +4271,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split_host.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4255,6 +4296,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -4267,6 +4309,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,  # noqa: C0301
                 "show_execution_time": False,
+                "show_scores_on_leaderboard": self.challenge_phase_split_host.show_scores_on_leaderboard,  # noqa: C0301
                 "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,  # noqa: C0301
                 "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,  # noqa: C0301
             },
@@ -5560,10 +5603,27 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,  # noqa: C0301
             "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,  # noqa: C0301
             "show_execution_time": False,
+            "show_scores_on_leaderboard": self.challenge_phase_split.show_scores_on_leaderboard,  # noqa: C0301
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_split_show_scores_on_leaderboard(self):
+        """Test that show_scores_on_leaderboard can be updated via PATCH."""
+        self.url = reverse_lazy(
+            "challenges:get_or_update_challenge_phase_split",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(
+            self.url, {"show_scores_on_leaderboard": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["show_scores_on_leaderboard"], False)
+
+        self.challenge_phase_split.refresh_from_db()
+        self.assertFalse(self.challenge_phase_split.show_scores_on_leaderboard)
 
     def test_update_challenge_phase_split_with_all_data(self):
         self.url = reverse_lazy(
@@ -6863,6 +6923,122 @@ class CreateOrUpdateGithubChallengeTest(
         # Verify it's the same ChallengeConfiguration object (same pk)
         self.assertEqual(
             initial_challenge_config_pk, updated_challenge_config.pk
+        )
+
+    def test_update_challenge_using_github_avoids_n_plus_one_queries(self):
+        """
+        Test that updating a challenge via GitHub push uses prefetched
+        challenge_phase_splits to avoid N+1 queries when updating many
+        ChallengePhaseSplit objects.
+
+        Uses example4 which has 4 challenge_phase_splits. Without the prefetch
+        fix, the update would run 4+ separate queries for challenge_phase_split
+        lookups. With the fix, we have at most 2 (validate + prefetch).
+        """
+        from django.test.utils import CaptureQueriesContext
+
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        github_repository = "https://github.com/yourusername/repository"
+
+        # Load example4 zip (4 challenge_phase_splits)
+        with open(
+            join(
+                settings.BASE_DIR,
+                "examples",
+                "example4",
+                "test_zip_file.zip",
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_multi_splits = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        # First push - create challenge with 4 phase splits
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = test_zip_multi_splits.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": github_repository,
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+        self.assertEqual(
+            response.status_code,
+            201,
+            f"Create failed: {response.data if hasattr(response, 'data') else response.content}",
+        )
+
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+        # Second push - update challenge, capture query count
+        with open(
+            join(
+                settings.BASE_DIR,
+                "examples",
+                "example4",
+                "test_zip_file.zip",
+            ),
+            "rb",
+        ) as zip_file:
+            test_zip_multi_splits_2 = SimpleUploadedFile(
+                zip_file.name,
+                zip_file.read(),
+                content_type="application/zip",
+            )
+
+        with CaptureQueriesContext(connection) as context:
+            with mock.patch("challenges.views.requests.get") as m:
+                resp = mock.Mock()
+                resp.content = test_zip_multi_splits_2.read()
+                resp.status_code = 200
+                m.return_value = resp
+                response = self.client.post(
+                    self.url,
+                    {
+                        "GITHUB_REPOSITORY": github_repository,
+                        "zip_configuration": SimpleUploadedFile(
+                            "test_sample.zip",
+                            b"Dummy File Content",
+                            content_type="application/zip",
+                        ),
+                    },
+                    format="multipart",
+                )
+
+        self.assertEqual(response.status_code, 200)
+
+        cps_select_queries = [
+            q
+            for q in context.captured_queries
+            if "challenge_phase_split" in q["sql"]
+            and "SELECT" in q["sql"]
+            and "UPDATE" not in q["sql"]
+        ]
+
+        # With N+1 fix: 1 (validate) + 1 (prefetch) = 2. Without fix: 4+ (one
+        # per phase split in the loop). Allow up to 4 for validate prefetch
+        # iteration in challenge_config_utils.
+        self.assertLessEqual(
+            len(cps_select_queries),
+            4,
+            f"Expected at most 4 challenge_phase_split SELECTs, got "
+            f"{len(cps_select_queries)}. N+1 fix may not be applied.",
         )
 
 

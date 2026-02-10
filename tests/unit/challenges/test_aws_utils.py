@@ -636,6 +636,66 @@ class TestServiceManager:
                     mock_client, mock_challenge, "mock_client_token"
                 )
 
+    def test_service_manager_service_not_found_stop_returns_success(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks=0
+        (stop), treat as success and sync challenge.workers to 0."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            response = service_manager(
+                mock_client, mock_challenge, num_of_tasks=0
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 0
+        mock_challenge.save.assert_called()
+
+    def test_service_manager_service_not_found_start_creates_service(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks>0
+        (start), create the service instead."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+        response_metadata_ok = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            with patch(
+                "challenges.aws_utils.client_token_generator",
+                return_value="mock_client_token",
+            ):
+                with patch(
+                    "challenges.aws_utils.create_service_by_challenge_pk",
+                    return_value=response_metadata_ok,
+                ) as mock_create:
+                    response = service_manager(
+                        mock_client, mock_challenge, num_of_tasks=1
+                    )
+
+        assert response == response_metadata_ok
+        assert mock_challenge.workers is None
+        mock_challenge.save.assert_called()
+        mock_create.assert_called_once_with(
+            mock_client, mock_challenge, "mock_client_token"
+        )
+
 
 class TestStopEc2Instance(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")

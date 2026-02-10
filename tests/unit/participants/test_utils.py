@@ -1,12 +1,16 @@
+from datetime import timedelta
+
 from challenges.models import Challenge
 from django.contrib.auth.models import User
 from django.core.exceptions import FieldError
 from django.test import TestCase
-from hosts.models import ChallengeHostTeam
+from django.utils import timezone
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
     has_participant_team_participated_in_challenge,
+    has_participated_in_require_complete_profile_challenge,
 )
 
 
@@ -147,3 +151,116 @@ class TestGetParticipantTeamIdOfUserForAChallenge(TestCase):
             )
 
         self.assertEqual(result, teams[-1].id)
+
+
+class TestHasParticipatedInRequireCompleteProfileChallenge(TestCase):
+    """Tests for has_participated_in_require_complete_profile_challenge."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser", email="test@example.com"
+        )
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="hostteam1", created_by=self.user
+        )
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="team1", created_by=self.user
+        )
+        Participant.objects.create(
+            user=self.user,
+            team=self.participant_team,
+            status=Participant.SELF,
+        )
+
+    def test_returns_true_when_participated_in_active_require_complete_profile_challenge(
+        self,
+    ):
+        """Returns True when user participated in an active challenge with require_complete_profile."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_challenge_has_ended(self):
+        """Returns False when the require_complete_profile challenge has ended,
+        allowing the user to edit profile fields again."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=30),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_true_when_one_active_and_one_ended(self):
+        """Returns True if at least one active require_complete_profile challenge exists."""
+        ended_challenge = Challenge.objects.create(
+            title="ended_challenge",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=60),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+        ended_challenge.participant_teams.add(self.participant_team)
+
+        active_challenge = Challenge.objects.create(
+            title="active_challenge",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        active_challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_participated_in_normal_challenge(self):
+        """Returns False when user participated in challenge without require_complete_profile."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=False,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_not_participated(self):
+        """Returns False when user has not participated in any challenge."""
+        Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        # Don't add participant_team to challenge
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )

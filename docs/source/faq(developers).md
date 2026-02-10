@@ -27,7 +27,7 @@ We have removed the documentation for setting up using virtual environment since
 
 ### Common Errors during installation
 
-#### Q. While using `pip install -r dev/requirement.txt`
+#### Q. While using `pip install -r requirements/dev.txt`
 
 ```
   Writing manifest file 'pip-egg-info/psycopg2.egg-info/SOURCES.txt'
@@ -43,7 +43,7 @@ Use the following commands in order to solve the error:
 2. `sudo apt-get install python-psycopg2`
 3. `sudo apt-get install libpq-dev`
 
-#### Q. While using `pip install -r dev/requirement.txt`
+#### Q. While using `pip install -r requirements/dev.txt`
 
 ```
 Command “python setup.py egg_info” failed with error code 1 in

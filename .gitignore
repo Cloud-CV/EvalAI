@@ -57,6 +57,9 @@ media/
 docker/prod/docker_staging.env
 docker/prod/docker_production.env
 
+# Local Postgres data (docker-compose dev)
+postgres_data/
+
 # SSL files
 ssl/
 
