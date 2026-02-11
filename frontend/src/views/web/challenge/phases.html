@@ -7,7 +7,7 @@
                         ng-if="item.showPrivate"></span></h5>
             </div>
             <div class="col s12 m1 l1">
-                <h5><a ng-if="challenge.isChallengeHost" class="pointer theme-text fs-16"
+                <h5><a ng-if="challenge.isChallengeHost || challenge.isStaff" class="pointer theme-text fs-16"
                         ng-click="challenge.challengePhaseDialog($event, item)"><i class="fa fa-pencil"
                             aria-hidden="true"></i>&nbsp;edit</a></h5>
             </div>

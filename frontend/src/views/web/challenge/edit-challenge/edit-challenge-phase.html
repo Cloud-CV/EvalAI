@@ -42,8 +42,12 @@
                                     value="{{challenge.phaseStartDate}}" ng-model="challenge.phaseStartDate"
                                     start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
                                     moment-picker="challenge.phaseStartDate" start-date="challenge.phaseStartDate"
-                                    required>
+                                    ng-disabled="!challenge.isStaff" required 
+                                    ng-class="{'disabled-field': !challenge.isStaff}">
                                 <span class="form-icon"><i class="fa fa-text"></i></span>
+                                <div ng-if="!challenge.isStaff" class="text-small red-text" style="margin-top: 5px;">
+                                    <i class="fa fa-lock"></i> Only administrators can modify phase dates
+                                </div>
                             </div>
                         </div>
                         <div class="col s12 m3 l3">
@@ -52,8 +56,13 @@
                                 <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
                                     value="{{challenge.phaseEndDate}}" ng-model="challenge.phaseEndDate"
                                     start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
-                                    moment-picker="challenge.phaseEndDate" min-date="challenge.phaseStartDate" required>
+                                    moment-picker="challenge.phaseEndDate" min-date="challenge.phaseStartDate" 
+                                    ng-disabled="!challenge.isStaff" required
+                                    ng-class="{'disabled-field': !challenge.isStaff}">
                                 <span class="form-icon"><i class="fa fa-text"></i></span>
+                                <div ng-if="!challenge.isStaff" class="text-small red-text" style="margin-top: 5px;">
+                                    <i class="fa fa-lock"></i> Only administrators can modify phase dates
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -150,7 +159,7 @@
                             <li>
                                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
                                     type="submit" value="submit"
-                                    ng-disabled="!challenge.sanityCheckPass">Submit</button>
+                                    ng-disabled="challenge.testAnnotationFile.name.length && !challenge.sanityCheckPass">Submit</button>
                             </li>
                         </ul>
                     </div>

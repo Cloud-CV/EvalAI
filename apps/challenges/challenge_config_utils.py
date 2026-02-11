@@ -5,6 +5,7 @@ from os.path import basename, isfile, join
 
 import requests
 import yaml
+from base.utils import is_user_a_staff
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -560,6 +561,10 @@ class ValidateChallengeConfigUtil:
             self.error_messages.append(message)
 
     def validate_dates(self):
+        # Skip date validation for non-staff users since dates are stripped before validation
+        if not is_user_a_staff(self.request.user):
+            return
+            
         start_date = self.yaml_file_data.get("start_date")
         end_date = self.yaml_file_data.get("end_date")
 
@@ -745,17 +750,20 @@ class ValidateChallengeConfigUtil:
 
             start_date = data.get("start_date")
             end_date = data.get("end_date")
-            if not start_date or not end_date:
-                message = self.error_messages_dict.get(
-                    "missing_dates_challenge_phase"
-                ).format(data.get("id"))
-                self.error_messages.append(message)
-            if start_date and end_date:
-                if start_date > end_date:
+            
+            # Skip date validation for non-staff users since dates are stripped before validation
+            if is_user_a_staff(self.request.user):
+                if not start_date or not end_date:
                     message = self.error_messages_dict.get(
-                        "start_date_greater_than_end_date_challenge_phase"
+                        "missing_dates_challenge_phase"
                     ).format(data.get("id"))
                     self.error_messages.append(message)
+                if start_date and end_date:
+                    if start_date > end_date:
+                        message = self.error_messages_dict.get(
+                            "start_date_greater_than_end_date_challenge_phase"
+                        ).format(data.get("id"))
+                        self.error_messages.append(message)
 
             # To ensure that the schema for submission meta attributes is valid
             if data.get("submission_meta_attributes"):
