@@ -97,11 +97,10 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from yaml.scanner import ScannerError
+
+from apps.accounts.authentication import ExpiringTokenAuthentication
 
 from .aws_utils import (
     create_ec2_instance,
