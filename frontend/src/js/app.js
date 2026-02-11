@@ -44,7 +44,7 @@ angular
 						utilities.resetStorage();
 						$rootScope.isAuth = false;
 						$state.go('auth.login');
-						alert('Timeout, Please login again to continue!');
+						$rootScope.notify('error', 'Timeout, Please login again to continue!');
 					}
 					return $q.reject(response);
 				}

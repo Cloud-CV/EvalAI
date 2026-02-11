@@ -20,10 +20,10 @@ describe('Unit tests for authFailureInterceptor', function () {
     }));
 
     describe('responseError', function () {
-        it('on 401 calls resetStorage, sets isAuth false, redirects to auth.login, shows alert', function () {
+        it('on 401 calls resetStorage, sets isAuth false, redirects to auth.login, shows toast', function () {
             spyOn(utilities, 'resetStorage');
             spyOn($state, 'go');
-            spyOn(window, 'alert');
+            spyOn($rootScope, 'notify');
 
             $rootScope.isAuth = true;
 
@@ -33,13 +33,13 @@ describe('Unit tests for authFailureInterceptor', function () {
             expect(utilities.resetStorage).toHaveBeenCalled();
             expect($rootScope.isAuth).toBe(false);
             expect($state.go).toHaveBeenCalledWith('auth.login');
-            expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Timeout, Please login again to continue!');
         });
 
         it('on 401 returns a rejected promise with the response', function (done) {
             spyOn(utilities, 'resetStorage');
             spyOn($state, 'go');
-            spyOn(window, 'alert');
+            spyOn($rootScope, 'notify');
 
             var response = { status: 401 };
             var rejected = authFailureInterceptor.responseError(response);
@@ -57,10 +57,10 @@ describe('Unit tests for authFailureInterceptor', function () {
             );
         });
 
-        it('on non-401 does not call resetStorage, go, or alert', function () {
+        it('on non-401 does not call resetStorage, go, or notify', function () {
             spyOn(utilities, 'resetStorage');
             spyOn($state, 'go');
-            spyOn(window, 'alert');
+            spyOn($rootScope, 'notify');
 
             $rootScope.isAuth = true;
 
@@ -69,7 +69,7 @@ describe('Unit tests for authFailureInterceptor', function () {
 
             expect(utilities.resetStorage).not.toHaveBeenCalled();
             expect($state.go).not.toHaveBeenCalled();
-            expect(window.alert).not.toHaveBeenCalled();
+            expect($rootScope.notify).not.toHaveBeenCalled();
             expect($rootScope.isAuth).toBe(true);
         });
 
