@@ -195,6 +195,10 @@ class Challenge(TimeStampedModel):
     github_branch = models.CharField(
         max_length=200, null=True, blank=True, default=""
     )
+    # GitHub Personal Access Token for bi-directional sync
+    github_token = models.CharField(
+        max_length=500, null=True, blank=True, default=""
+    )
     # The number of vCPU for a Fargate worker for the challenge. Default value
     # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
@@ -318,6 +322,28 @@ def update_sqs_retention_period_for_challenge(
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def challenge_details_sync(sender, instance, created, **kwargs):
+    """
+    Signal to sync Challenge changes to GitHub repository.
+    Triggered on post_save when a Challenge is updated.
+    """
+    # Skip on create - only sync updates
+    if created:
+        return
+
+    # Skip if no GitHub config
+    if not instance.github_repository or not instance.github_token:
+        return
+
+    # Import here to avoid circular imports
+    from challenges.github_utils import trigger_challenge_sync
+
+    # Get update_fields from kwargs if available
+    update_fields = kwargs.get("update_fields")
+    trigger_challenge_sync(instance, update_fields)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -460,6 +486,31 @@ def post_save_connect(field_name, sender):
 
 post_save_connect("evaluation_script", Challenge)
 post_save_connect("test_annotation", ChallengePhase)
+
+
+@receiver(signals.post_save, sender="challenges.ChallengePhase")
+def challenge_phase_details_sync(sender, instance, created, **kwargs):
+    """
+    Signal to sync ChallengePhase changes to GitHub repository.
+    Triggered on post_save when a ChallengePhase is updated.
+    """
+    # Skip on create - only sync updates
+    if created:
+        return
+
+    # Get parent challenge
+    challenge = instance.challenge
+
+    # Skip if no GitHub config on parent challenge
+    if not challenge.github_repository or not challenge.github_token:
+        return
+
+    # Import here to avoid circular imports
+    from challenges.github_utils import trigger_challenge_phase_sync
+
+    # Get update_fields from kwargs if available
+    update_fields = kwargs.get("update_fields")
+    trigger_challenge_phase_sync(instance, update_fields)
 
 
 class Leaderboard(TimeStampedModel):
