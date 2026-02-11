@@ -1,3 +1,5 @@
 # Linux Setup
 
-Guide to setup EvalAI on Linux.
+This page will contain detailed instructions for setting up EvalAI on Linux systems.
+
+**Work in progress — contributions welcome!**
