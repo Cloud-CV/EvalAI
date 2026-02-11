@@ -1,0 +1,162 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  padding: 0;
+  margin: 16px auto; /* Center the card horizontally */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation effect */
+  background: #fff; /* White background */
+  text-align: center;
+  max-width: 320px; /* Reduce width slightly to prevent stretching */
+  position: relative;
+  min-height: 520px; /* Match the height in the provided design */
+  overflow: hidden; /* Ensure content stays within the card */
+}
+
+.card-header {
+  display: flex;
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
+  padding: 10px 16px; /* Adjust padding for better alignment */
+  color: #fff;
+  border-radius: 12px; /* Increase rounding for a softer look */
+  width: 90%; /* Reduce width slightly to fit within the card */
+  position: absolute;
+  top: 10px; /* Adjust top margin for better placement */
+  left: 5%; /* Center horizontally within the card */
+  z-index: 2;
+  height: auto; /* Allow height to adjust dynamically */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.card-logo-small {
+  width: 28px; /* Slightly increase size for better visibility */
+  height: 28px;
+  margin-right: 8px; /* Adjust spacing */
+}
+
+.card-title {
+  font-size: 0.95em; /* Adjust font size for readability */
+  font-weight: bold;
+  margin: 0;
+  color: #fff;
+  line-height: 1.2; /* Adjust line height for better spacing */
+  font-family: 'Roboto', sans-serif; /* Match font family */
+  text-align: center; /* Ensure proper alignment */
+  max-width: 90%; /* Prevent text from stretching beyond the black box */
+  word-wrap: break-word; /* Ensure long text wraps properly */
+}
+
+.title-highlight {
+  color: #ff8c00; /* Orange color for "eBay" */
+}
+
+.card-main {
+  margin: 0;
+  padding-top: 60px;
+}
+
+.logo-box {
+  width: 100%;
+  height: 220px; /* Slightly increase height for better logo visibility */
+  background-color: #e0e0e0; /* Change to a slightly darker gray */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 15px 15px;
+}
+
+.card-logo-large {
+  max-width: 90%; /* Slightly increase size for better visibility */
+  height: auto; /* Maintain aspect ratio */
+  object-fit: contain; /* Prevent distortion of the logo */
+}
+
+.card-tags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px; /* Adjust spacing between tags to match the design */
+  margin: 16px 0;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #ff8c00; /* Orange color for tags */
+  color: #fff;
+  padding: 8px 14px; /* Adjust padding for uniform size */
+  margin: 8px; /* Ensure consistent spacing between tags */
+  border-radius: 20px; /* Match rounded edges */
+  font-size: 0.9em; /* Match font size */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.tag:nth-child(4) {
+  background-color: #0064D2; /* Blue color for "NLP" */
+}
+
+.tag:hover {
+  transform: scale(1.05);
+  background-color: #e67e00; /* Darker orange on hover */
+}
+
+.show-more-button {
+  background-color: #3b82f6; /* Lighter blue */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px; /* Rounded edges */
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.show-more-button:hover {
+  background-color: #2563eb; /* Slightly darker blue on hover */
+}
+
+.card-details {
+  margin: 16px 0;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.card-organizer {
+  font-weight: bold;
+  color: #666;
+  font-family: 'Roboto', sans-serif;
+}
+
+.card-organizer strong {
+  color: #ff8c00; /* Yellow for "eBay" */
+  font-weight: bold; /* Ensure "ML Challenge" is bold */
+}
+
+.card-date {
+  color: #555; /* Slightly darken the text for better readability */
+  font-size: 0.9em; /* Match font size */
+  margin-top: 4px; /* Adjust spacing */
+}
+
+.card-button {
+  display: block;
+  width: 90%; /* Adjust width to match the design */
+  padding: 16px 20px; /* Increase height by adjusting padding */
+  background-color: #ff8c00; /* Bright orange button */
+  color: #fff;
+  border: none;
+  border-radius: 20px; /* Match rounded edges */
+  font-size: 1em; /* Ensure consistent font size */
+  font-weight: bold; /* Add bold font for better visibility */
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); /* Slightly darker shadow */
+  margin: 8px auto; /* Reduce space between buttons */
+  text-align: center; /* Ensure text is centered */
+}
+
+.card-button:hover {
+  background-color: #e67e00; /* Darker orange on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Enhance hover shadow */
+}
