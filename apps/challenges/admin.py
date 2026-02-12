@@ -51,6 +51,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "creator",
         "published",
         "approved_by_admin",
+        "is_frozen",
         "remote_evaluation",
         "created_at",
         "workers",
@@ -60,6 +61,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     list_filter = (
         ChallengeFilter,
         "published",
+        "is_frozen",
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
@@ -82,6 +84,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "freeze_selected_challenges",
+        "unfreeze_selected_challenges",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -210,6 +214,26 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     delete_selected_workers.short_description = (
         "Delete all selected challenge workers."
+    )
+
+    def freeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=True)
+        messages.success(
+            request,
+            "{} challenge(s) successfully frozen.".format(updated),
+        )
+
+    freeze_selected_challenges.short_description = "Freeze selected challenges (prevent hosts from changing start/end dates)."
+
+    def unfreeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=False)
+        messages.success(
+            request,
+            "{} challenge(s) successfully unfrozen.".format(updated),
+        )
+
+    unfreeze_selected_challenges.short_description = (
+        "Unfreeze selected challenges (allow hosts to change start/end dates)."
     )
 
 
