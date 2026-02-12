@@ -82,6 +82,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "delete_selected_workers_and_start_selected_workers",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -210,6 +211,14 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     delete_selected_workers.short_description = (
         "Delete all selected challenge workers."
+    )
+
+    def delete_selected_workers_and_start_selected_workers(self, request, queryset):
+        self.delete_selected_workers(request, queryset)
+        self.start_selected_workers(request, queryset)
+
+    delete_selected_workers_and_start_selected_workers.short_description = (
+        "Delete and Start all selected challenge workers."
     )
 
 
