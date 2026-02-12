@@ -421,8 +421,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     submission.pk,
                     challenge_id,
                 )
-                submission.status = Submission.CANCELLED
-                submission.save()
+                submission.status = Submission.FAILED
+                submission.save(update_fields=["status"])
                 response_data = {
                     "error": "Failed to process your submission. Please try again."
                 }
