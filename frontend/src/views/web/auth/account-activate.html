@@ -1,0 +1,32 @@
+<div class="col s12 m6 offset-m3 left">
+    <ul class="left">
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="dark-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Sign Up</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.account-activate" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Account Activate</a></li>
+    </ul>
+</div>
+<div class="col s12 m6 offset-m3">
+    <form name="activateForm" ng-submit="auth.activateAccount(activateForm.$valid)" id="activate-account" novalidate>
+        <div class="input-field align-left">
+            <input type="email" id="email" class="dark-autofill" name="email" ng-model="auth.getUser.email" required>
+            <span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>
+            <label for="email">Email*</label>
+            <div class="wrn-msg text-highlight" ng-messages="resetpassForm.email.$error" ng-if="resetpassForm.email.$touched || resetpassForm.$submitted">
+                <p ng-message="email">Please enter valid email address.</p>
+                <p ng-message="required">Email address is required.</p>
+            </div>
+        </div>
+        <div class="row">
+            <br>
+            <div class="col s6 align-left rm-gut">
+                <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit">Activate Account</button>
+            </div>
+        </div>
+        <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left">{{auth.FormError}}</div>
+        <div>
+            <p class="text-light-gray">
+                <span class="text-med-black">Start with a new account </span><a class="highlight-link" ui-sref="auth.signup" ng-click="auth.resetForm()"> Sign Up</a>
+            </p>
+        </div>
+    </form>
+</div>
