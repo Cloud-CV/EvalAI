@@ -417,12 +417,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             except Exception:
                 logger.exception(
                     "SQS publish failed for submission %s in challenge %s, "
-                    "cancelling submission",
+                    "deleting submission",
                     submission.pk,
                     challenge_id,
                 )
-                submission.status = Submission.FAILED
-                submission.save(update_fields=["status"])
+                submission.delete()
                 response_data = {
                     "error": "Failed to process your submission. Please try again."
                 }

@@ -563,10 +563,8 @@ class BaseAPITestClass(APITestCase):
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         self.assertIn("error", response.data)
-        # Submission must be kept but marked as CANCELLED
-        self.assertEqual(Submission.objects.count(), submission_count_before + 1)
-        submission = Submission.objects.latest("id")
-        self.assertEqual(submission.status, Submission.CANCELLED)
+        # Orphaned submission must be deleted
+        self.assertEqual(Submission.objects.count(), submission_count_before)
 
     @mock.patch(
         "jobs.views.publish_submission_message",
@@ -599,10 +597,7 @@ class BaseAPITestClass(APITestCase):
             response.status_code,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        # Submission must be kept but marked as CANCELLED
-        self.assertEqual(Submission.objects.count(), submission_count_before + 1)
-        submission = Submission.objects.latest("id")
-        self.assertEqual(submission.status, Submission.CANCELLED)
+        self.assertEqual(Submission.objects.count(), submission_count_before)
 
     @mock.patch(
         "jobs.views.publish_submission_message",
@@ -623,7 +618,6 @@ class BaseAPITestClass(APITestCase):
         self.challenge.save()
 
         # First attempt fails due to SQS
-        submission_count_before = Submission.objects.count()
         response = self.client.post(
             self.url,
             {"status": "submitting", "input_file": self.input_file},
@@ -633,10 +627,6 @@ class BaseAPITestClass(APITestCase):
             response.status_code,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        # Submission must be kept but marked as CANCELLED
-        self.assertEqual(Submission.objects.count(), submission_count_before + 1)
-        submission = Submission.objects.latest("id")
-        self.assertEqual(submission.status, Submission.CANCELLED)
 
         # Participant's quota should not be consumed — retry must still be allowed
         mock_publish.side_effect = None
