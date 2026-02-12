@@ -491,6 +491,7 @@ class SendSubscriptionPlansEmailTests(TestCase):
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
+            "host_name": "Test Host Team",
             "support_email": "team@eval.ai",
         }
         mock_render_to_string.assert_called_once_with(
@@ -579,6 +580,7 @@ class SendSubscriptionPlansEmailTests(TestCase):
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
+            "host_name": "Test Host Team",
             "support_email": "team@eval.ai",
             "challenge_image_url": "https://example.com/challenge-image.jpg",
         }
@@ -647,6 +649,7 @@ class SendSubscriptionPlansEmailTests(TestCase):
             "challenge_manage_url": "http://localhost:8000/web/challenges/challenge-page/123/manage",
             "challenge_id": 123,
             "host_team_name": "Test Host Team",
+            "host_name": "Test Host Team",
             "support_email": "team@eval.ai",
         }
         mock_render_to_string.assert_called_once_with(
