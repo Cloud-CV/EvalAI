@@ -688,6 +688,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "job_name": self.submission.job_name,
                 "submission_metadata": None,
                 "is_verified_by_host": False,
+                "from_cli": False,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1400,6 +1401,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1454,6 +1456,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1525,6 +1528,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1615,6 +1619,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.host_participant_team_submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1697,6 +1702,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1746,6 +1752,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "job_name": self.submission.job_name,
             "submission_metadata": None,
             "is_verified_by_host": False,
+            "from_cli": False,
         }
 
         self.client.force_authenticate(user=self.user)
