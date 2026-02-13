@@ -45,6 +45,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
+# git: for running git commit from container (pre-commit in Linux env, avoids macOS/ARM issues)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq5 \
@@ -55,7 +56,9 @@ RUN apt-get update && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 && \
+    libwebp6 \
+    git \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
