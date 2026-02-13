@@ -93,9 +93,9 @@
                         <th class="fs-18 w-300" data-field="file">Result file</th>
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
                         <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
-                        <th class="fs-18 w-300" data-field="button">Rerun submission</th>
+                        <th class="fs-18 w-300" ng-if="challenge.payment_tier !== 'free'" data-field="button">Rerun submission</th>
                         <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
-                                challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
+                                challenge.allowResumingSubmissions && challenge.payment_tier !== 'free'" data-field="button">Resume submission</th>
                         <th class="fs-18 w-300" ng-if="challenge.isChallengeHost && 
                                 challenge.allowHostCancelSubmissions">Cancel submission</th>
                         <th class="fs-18 w-300" data-field="button">Verify submission</th>
@@ -152,11 +152,11 @@
                                 <label for="isPublic{{ key.id }}"></label>
                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                             </td> -->
-                            <td>
+                            <td ng-if="challenge.payment_tier !== 'free'">
                                 <center><a ng-class="key.classList" class="fa fa-refresh pointer"
                                         ng-click="challenge.reRunSubmission(key)"></a></center>
                             </td>
-                            <td ng-if="challenge.isChallengeHost && challenge.allowResumingSubmissions">
+                            <td ng-if="challenge.isChallengeHost && challenge.allowResumingSubmissions && challenge.payment_tier !== 'free'">
                                 <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
                                 </center>
                             </td>
