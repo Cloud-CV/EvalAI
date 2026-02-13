@@ -159,6 +159,7 @@ class TestChallengeAdminListDisplay(TestCase):
             "creator",
             "published",
             "approved_by_admin",
+            "is_frozen",
             "remote_evaluation",
             "created_at",
             "workers",
