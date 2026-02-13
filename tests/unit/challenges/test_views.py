@@ -211,6 +211,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
+                "is_frozen": False,
             }
         ]
 
@@ -636,6 +637,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "is_frozen": False,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(
@@ -745,6 +747,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "is_frozen": False,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -878,6 +881,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "is_frozen": False,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(
@@ -959,6 +963,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
+            "is_frozen": False,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(
@@ -971,6 +976,96 @@ class UpdateParticularChallenge(BaseAPITestClass):
         self.data = {"title": ""}
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class FrozenChallengeTest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse_lazy(
+            "challenges:get_challenge_detail",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "challenge_pk": self.challenge.pk,
+            },
+        )
+        # Freeze the challenge
+        self.challenge.is_frozen = True
+        self.challenge.save()
+
+    def test_frozen_challenge_patch_start_date_rejected(self):
+        new_start_date = timezone.now() - timedelta(days=5)
+        response = self.client.patch(
+            self.url,
+            {"start_date": new_start_date.isoformat()},
+        )
+        expected = {
+            "error": "The challenge is frozen and the start_date cannot be changed. "
+            "Please contact the EvalAI admin at team@eval.ai to make changes."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_frozen_challenge_patch_end_date_rejected(self):
+        new_end_date = timezone.now() + timedelta(days=30)
+        response = self.client.patch(
+            self.url,
+            {"end_date": new_end_date.isoformat()},
+        )
+        expected = {
+            "error": "The challenge is frozen and the end_date cannot be changed. "
+            "Please contact the EvalAI admin at team@eval.ai to make changes."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_frozen_challenge_patch_both_dates_rejected(self):
+        response = self.client.patch(
+            self.url,
+            {
+                "start_date": (timezone.now() - timedelta(days=5)).isoformat(),
+                "end_date": (timezone.now() + timedelta(days=30)).isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("start_date", response.data["error"])
+        self.assertIn("end_date", response.data["error"])
+
+    def test_frozen_challenge_put_with_dates_rejected(self):
+        response = self.client.put(
+            self.url,
+            {
+                "title": "Updated Title",
+                "description": "Updated Description",
+                "start_date": (timezone.now() - timedelta(days=5)).isoformat(),
+            },
+        )
+        expected = {
+            "error": "The challenge is frozen and the start_date cannot be changed. "
+            "Please contact the EvalAI admin at team@eval.ai to make changes."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_frozen_challenge_patch_non_date_fields_allowed(self):
+        new_title = "Updated Frozen Challenge Title"
+        response = self.client.patch(
+            self.url,
+            {"title": new_title},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], new_title)
+
+    def test_unfrozen_challenge_patch_dates_allowed(self):
+        # Unfreeze the challenge
+        self.challenge.is_frozen = False
+        self.challenge.save()
+
+        new_end_date = timezone.now() + timedelta(days=30)
+        response = self.client.patch(
+            self.url,
+            {"end_date": new_end_date.isoformat()},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class DeleteParticularChallenge(BaseAPITestClass):
@@ -1633,6 +1728,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "is_frozen": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1722,6 +1818,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1811,6 +1908,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
+                "is_frozen": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1900,6 +1998,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
+                "is_frozen": False,
             },
             {
                 "id": self.challenge3.pk,
@@ -1970,6 +2069,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "is_frozen": False,
             },
             {
                 "id": self.challenge2.pk,
@@ -2040,6 +2140,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2215,6 +2316,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
+                "is_frozen": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2461,6 +2563,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "sqs_retention_period": self.challenge3.sqs_retention_period,
             "github_repository": self.challenge3.github_repository,
             "github_branch": self.challenge3.github_branch,
+            "is_frozen": False,
         }
 
         response = self.client.get(self.url, {})
@@ -2564,6 +2667,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "sqs_retention_period": self.challenge4.sqs_retention_period,
             "github_repository": self.challenge4.github_repository,
             "github_branch": self.challenge4.github_branch,
+            "is_frozen": False,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2728,6 +2832,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             }
         ]
 
@@ -2815,6 +2920,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             }
         ]
 
@@ -2902,6 +3008,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             }
         ]
 
@@ -2987,6 +3094,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
+                "is_frozen": False,
             },
             {
                 "id": self.challenge2.pk,
@@ -3057,6 +3165,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
+                "is_frozen": False,
             },
         ]
 
@@ -7310,6 +7419,19 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_challenge_is_frozen_when_approved_by_admin(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.url = reverse_lazy("challenges:update_challenge_approval")
+        self.assertFalse(self.challenge.is_frozen)
+        self.client.post(
+            self.url,
+            {"challenge_pk": self.challenge.pk, "approved_by_admin": True},
+        )
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_frozen)
+        self.assertTrue(self.challenge.approved_by_admin)
 
     def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")

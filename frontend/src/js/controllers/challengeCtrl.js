@@ -384,6 +384,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.isFrozen = details.is_frozen;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
