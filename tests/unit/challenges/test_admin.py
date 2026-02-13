@@ -141,6 +141,20 @@ class TestChallengeAdminActions(TestCase):
             "Challenge 55: Failed to delete" in str(m) for m in messages
         )
 
+    def test_freeze_selected_challenges(self):
+        self.queryset.update = MagicMock(return_value=2)
+        self.admin.freeze_selected_challenges(self.request, self.queryset)
+        self.queryset.update.assert_called_once_with(is_frozen=True)
+        messages = list(self.request._messages)
+        assert any("successfully frozen" in str(m) for m in messages)
+
+    def test_unfreeze_selected_challenges(self):
+        self.queryset.update = MagicMock(return_value=2)
+        self.admin.unfreeze_selected_challenges(self.request, self.queryset)
+        self.queryset.update.assert_called_once_with(is_frozen=False)
+        messages = list(self.request._messages)
+        assert any("successfully unfrozen" in str(m) for m in messages)
+
 
 class TestChallengeAdminListDisplay(TestCase):
     """Tests for ChallengeAdmin list_display configuration."""
@@ -159,6 +173,7 @@ class TestChallengeAdminListDisplay(TestCase):
             "creator",
             "published",
             "approved_by_admin",
+            "is_frozen",
             "remote_evaluation",
             "created_at",
             "workers",

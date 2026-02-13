@@ -64,10 +64,14 @@
                         {{ challenge.page.start_date | date:'medium' }} {{ challenge.page.time_zone }} ({{ challenge.page.gmt_zone }})
                     </span>
                     &nbsp;
-                    <span ng-if="challenge.isChallengeHost" class="fs-16 w-300">
+                    <span ng-if="challenge.isChallengeHost && !challenge.isFrozen" class="fs-16 w-300">
                         <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
+                    </span>
+                    <span ng-if="challenge.isChallengeHost && challenge.isFrozen" class="fs-16 w-300"
+                        title="Challenge dates are frozen. Please email at team@eval.ai with your challenge link to unfreeze your challenge.">
+                        <i class="fa fa-lock" aria-hidden="true" style="color: #888; cursor: not-allowed;"></i>
                     </span>
                     <br>
                     <span class="fs-16 w-300">
@@ -75,10 +79,14 @@
                         {{ challenge.page.end_date | date:'medium' }} {{ challenge.page.time_zone }} ({{ challenge.page.gmt_zone }})
                     </span>
                     &nbsp;
-                    <span ng-if="challenge.isChallengeHost">
+                    <span ng-if="challenge.isChallengeHost && !challenge.isFrozen">
                         <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
+                    </span>
+                    <span ng-if="challenge.isChallengeHost && challenge.isFrozen"
+                        title="Challenge dates are frozen. Please email at team@eval.ai with your challenge link to unfreeze your challenge.">
+                        <i class="fa fa-lock" aria-hidden="true" style="color: #888; cursor: not-allowed;"></i>
                     </span>
                     <ul class="list-unstyled list-inline">
                         <li ng-if="challenge.page.list_tags[0]" ng-repeat="tags in challenge.page.list_tags" class="list-inline-item chip orange white-text">{{tags}}</li>

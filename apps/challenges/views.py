@@ -250,6 +250,23 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # Prevent hosts from changing start/end dates when challenge is frozen
+        if challenge.is_frozen:
+            frozen_fields = ["start_date", "end_date"]
+            changed_frozen_fields = [
+                field for field in frozen_fields if field in request.data
+            ]
+            if changed_frozen_fields:
+                response_data = {
+                    "error": "The challenge is frozen and the {} cannot be changed. "
+                    "Please contact the EvalAI admin at team@eval.ai to make changes.".format(
+                        ", ".join(changed_frozen_fields)
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
                 overview_file = request.FILES["overview_file"]
@@ -5247,6 +5264,9 @@ def update_challenge_approval(request):
         response_data = {"error": "Challenge not found!"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     challenge.approved_by_admin = approved_by_admin
+    # Freeze the challenge when approved so hosts can't change start/end dates
+    if approved_by_admin:
+        challenge.is_frozen = True
     try:
         challenge.save()
     except Exception as e:  # noqa: E722
