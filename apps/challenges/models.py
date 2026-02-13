@@ -686,6 +686,10 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         max_length=512, null=True, blank=True
     )
     route_table_id = models.CharField(max_length=512, null=True, blank=True)
+    # Association ids of route table with subntes
+    route_table_association_ids = ArrayField(
+        models.CharField(max_length=256, blank=True), default=list, blank=True
+    )
     efs_security_group_id = models.CharField(
         max_length=512, null=True, blank=True
     )
@@ -696,6 +700,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     efs_mount_target_ids = ArrayField(
         models.CharField(max_length=256, blank=True), default=list, blank=True
     )
+    active = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

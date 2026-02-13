@@ -1385,6 +1385,349 @@ def delete_log_group(log_group_name):
             logger.exception(e)
 
 
+def delete_eks_nodegroup(challenge, cluster_name):
+    """
+    Delete nodegroup when EKS cluster is deleted by the EvalAI admin
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the challenge model
+        cluster_name {str} -- name of eks cluster
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    # deleting the code-upload-worker
+    delete_workers([challenge_obj])
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    nodegroup_name = "{}-{}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-"), environment_suffix
+    )
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("eks", challenge_aws_keys)
+    try:
+        response = client.delete_nodegroup(
+            clusterName=cluster_name,
+            nodegroupName=nodegroup_name,
+        )
+        logger.info("Nodegroup delete: {}".format(response))
+    except ClientError as e:
+        logger.exception(e)
+        return
+    waiter = client.get_waiter("nodegroup_deleted")
+    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+
+
+def delete_eks_cluster(challenge):
+    """
+    Called by the EvalAI admin to delete Evaluation Cluster
+    calls the delete_eks_nodegroup function
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+
+    if challenge_obj.is_docker_based:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+        cluster_name = challenge_evaluation_cluster.name
+        # Deleting nodegroup
+        delete_eks_nodegroup(challenge, cluster_name)
+        challenge_aws_keys = get_aws_credentials_for_challenge(
+            challenge_obj.pk
+        )
+        try:
+            efs_client = get_boto3_client("efs", challenge_aws_keys)
+            # Delete mount targets for subnets
+            mount_target_ids = (
+                challenge_evaluation_cluster.efs_mount_target_ids
+            )
+            if mount_target_ids:
+                for mount_target_id in mount_target_ids:
+                    efs_client.delete_mount_target(
+                        MountTargetId=mount_target_id,
+                    )
+
+            # Delete Cluster
+            client = get_boto3_client("eks", challenge_aws_keys)
+            response = client.delete_cluster(
+                name=cluster_name,
+            )
+            waiter = client.get_waiter("cluster_deleted")
+            waiter.wait(name=cluster_name)
+            return response
+        except ClientError as e:
+            logger.exception(e)
+            return
+
+
+def delete_eks_cluster_subnets(challenge):
+    """
+    Delets EKS and NodeGroup ARN roles
+
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model
+    """
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    # Delete eks cluster
+    delete_eks_cluster(challenge)
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+
+    # Create internet gateway and attach to vpc
+    try:
+        # Delete EFS
+        efs_client = get_boto3_client("efs", challenge_aws_keys)
+        efs_client.delete_file_system(
+            FileSystemId=challenge_evaluation_cluster.efs_id,
+        )
+
+        client = get_boto3_client("ec2", challenge_aws_keys)
+
+        client.revoke_security_group_ingress(
+            GroupId=challenge_evaluation_cluster.efs_security_group_id,
+            IpPermissions=[
+                {
+                    "FromPort": 2049,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": challenge_obj.vpc_cidr,
+                        },
+                    ],
+                    "ToPort": 2049,
+                }
+            ],
+        )
+
+        # Delete Security Group
+        client.delete_security_group(
+            GroupName="evalai-code-upload-challenge-efs-{}".format(
+                environment_suffix
+            ),
+            GroupId=challenge_evaluation_cluster.efs_security_group_id,
+        )
+
+        client.delete_security_group(
+            GroupName="EvalAI code upload challenge",
+            GroupId=challenge_evaluation_cluster.security_group_id,
+        )
+
+        # Disassociate route table with subnets
+        route_table_association_ids = (
+            challenge_evaluation_cluster.route_table_association_ids
+        )
+        if route_table_association_ids:
+            for route_table_association_id in route_table_association_ids:
+                client.disassociate_route_table(
+                    AssociationId=route_table_association_id,
+                )
+
+        # Delete subnets
+        subnet_ids = [
+            challenge_evaluation_cluster.subnet_1_id,
+            challenge_evaluation_cluster.subnet_2_id,
+        ]
+        for subnet_id in subnet_ids:
+            client.delete_subnet(SubnetId=subnet_id)
+
+        # Delete and detach route table
+        client.delete_route(
+            DestinationCidrBlock="0.0.0.0/0",
+            RouteTableId=challenge_evaluation_cluster.route_table_id,
+        )
+        client.delete_route_table(
+            RouteTableId=challenge_evaluation_cluster.route_table_id
+        )
+
+        client.detach_internet_gateway(
+            InternetGatewayId=challenge_evaluation_cluster.internet_gateway_id,
+            VpcId=challenge_evaluation_cluster.vpc_id,
+        )
+        client.delete_internet_gateway(
+            InternetGatewayId=challenge_evaluation_cluster.internet_gateway_id
+        )
+
+        client.delete_vpc(VpcId=challenge_evaluation_cluster.vpc_id)
+
+    except ClientError as e:
+        logger.exception(e)
+        return
+
+
+def delete_setup_eks_cluster(challenge):
+    """
+    Delets EKS and NodeGroup ARN roles
+
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model
+    """
+    from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
+    from .utils import get_aws_credentials_for_challenge
+
+    # Delete eks cluster vpc and subnets
+    delete_eks_cluster_subnets(challenge)
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("iam", challenge_aws_keys)
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+
+    node_group_role_name = "evalai-code-upload-nodegroup-role-{}".format(
+        environment_suffix
+    )
+    # Delete custom ECR all access policy and detach to node_group_role
+    try:
+        # Detach custom ECR policy
+        client.detach_role_policy(
+            RoleName=node_group_role_name,
+            PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn,
+        )
+        client.delete_policy(
+            PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return
+
+    task_execution_policies = settings.EKS_NODE_GROUP_POLICIES
+    for policy_arn in task_execution_policies:
+        try:
+            # Detach AWS managed EKS worker node policy to the role
+            client.detach_role_policy(
+                RoleName=node_group_role_name,
+                PolicyArn=policy_arn,
+            )
+        except ClientError as e:
+            logger.exception(e)
+            return
+
+    try:
+        client.delete_role(
+            RoleName=node_group_role_name,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return
+
+    eks_role_name = "evalai-code-upload-eks-role-{}".format(environment_suffix)
+    try:
+        # Detach AWS managed EKS cluster policy to the role
+        client.detach_role_policy(
+            RoleName=eks_role_name,
+            PolicyArn=settings.EKS_CLUSTER_POLICY,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return
+
+    try:
+        client.delete_role(
+            RoleName=eks_role_name,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return
+
+    try:
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "active": False,
+            },
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return serializer.data
+    except Exception as e:
+        logger.exception(e)
+        return
+
+
+def delete_evaluation_clusters(queryset):
+    """
+    The function called by the admin action method to delete all the selected evaluation clusters.
+
+    Calls the delete_setup_eks_cluster method. Before calling, verifies that the evaluation cluster is active.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of evaluation clusters successfully deleted.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    from .models import ChallengeEvaluationCluster
+
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Evaluation cluster cannot be deleted on AWS EKS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        if not challenge.is_docker_based:
+            response = "Sorry. This feature is not available for non code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+            continue
+        try:
+            challenge_evaluation_cluster = (
+                ChallengeEvaluationCluster.objects.get(challenge=challenge)
+            )
+        except ChallengeEvaluationCluster.DoesNotExist:
+            response = "Challenge evaluation cluster for the challenge does not exist."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+            continue
+        if challenge_evaluation_cluster.active:
+            serialized_obj = serializers.serialize("json", [challenge])
+            response = delete_setup_eks_cluster(serialized_obj)
+            if not response:
+                failures.append(
+                    {
+                        "message": "Error deleting Evaluation Cluster",
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+            count += 1
+        else:
+            response = "Please select challenges with active evaluation clusters only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+    return {"count": count, "failures": failures}
+
+
 @app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
@@ -1393,6 +1736,8 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
+    from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
     from .utils import get_aws_credentials_for_challenge
 
     for obj in serializers.deserialize("json", challenge):
@@ -1427,6 +1772,23 @@ def create_eks_nodegroup(challenge, cluster_name):
         return
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "active": True,
+            },
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+    except Exception as e:
+        logger.exception(e)
+        return
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
     # starting the code-upload-worker
     client = get_boto3_client("ecs", aws_keys)
@@ -1631,16 +1993,19 @@ def create_eks_cluster_subnets(challenge):
                 SubnetId=subnet_id,
             )
 
+        route_table_association_ids = []
         # Associate route table with subnets
         response = client.associate_route_table(
             RouteTableId=route_table_id,
             SubnetId=subnet_1_id,
         )
+        route_table_association_ids.append(response["AssociationId"])
 
         response = client.associate_route_table(
             RouteTableId=route_table_id,
             SubnetId=subnet_2_id,
         )
+        route_table_association_ids.append(response["AssociationId"])
 
         # Create security group
         response = client.create_security_group(
@@ -1692,6 +2057,7 @@ def create_eks_cluster_subnets(challenge):
                 "vpc_id": vpc_ids[0],
                 "internet_gateway_id": internet_gateway_id,
                 "route_table_id": route_table_id,
+                "route_table_association_ids": route_table_association_ids,
                 "security_group_id": security_group_id,
                 "subnet_1_id": subnet_1_id,
                 "subnet_2_id": subnet_2_id,

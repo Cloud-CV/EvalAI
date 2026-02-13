@@ -5,6 +5,7 @@ from django.contrib.admin.helpers import ActionForm
 
 from .admin_filters import ChallengeFilter
 from .aws_utils import (
+    delete_evaluation_clusters,
     delete_workers,
     restart_workers,
     scale_workers,
@@ -82,6 +83,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "delete_selected_evaluation_clusters",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -210,6 +212,31 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     delete_selected_workers.short_description = (
         "Delete all selected challenge workers."
+    )
+
+    def delete_selected_evaluation_clusters(self, request, queryset):
+        response = delete_evaluation_clusters(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenge evaluation cluster successfully deleted."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenge evaluation cluster(s) successfully deleted.".format(
+                    count
+                ),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    delete_selected_evaluation_clusters.short_description = (
+        "Delete all selected challenge evaluation clusters."
     )
 
 
