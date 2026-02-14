@@ -56,7 +56,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Case, Count, Prefetch, Q, When
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -857,31 +857,45 @@ def get_all_challenges(
 def get_all_challenges_submission_metrics(request):
     """
     Returns the submission metrics for all challenges and their phases
+
+    This function optimizes database queries by using aggregation to count
+    submissions in a single query rather than looping through challenges.
     """
     if not is_user_a_staff(request.user):
         response_data = {
             "error": "Sorry, you are not authorized to make this request"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-    challenges = Challenge.objects.all()
-    submission_metrics = {}
 
     submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
 
-    for challenge in challenges:
-        challenge_id = challenge.id
-        challenge_metrics = {}
+    # Get all challenge IDs
+    challenge_ids = Challenge.objects.values_list('id', flat=True)
 
-        # Fetch challenge phases for the challenge
-        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    # Initialize metrics dictionary with all challenges and zero counts
+    submission_metrics = {}
+    for challenge_id in challenge_ids:
+        submission_metrics[challenge_id] = {
+            status_choice: 0 for status_choice in submission_statuses
+        }
 
-        for submission_status in submission_statuses:
-            count = Submission.objects.filter(
-                challenge_phase__in=challenge_phases, status=submission_status
-            ).count()
-            challenge_metrics[submission_status] = count
+    # Use aggregation to count submissions by challenge and status in a single query
+    # Group submissions by their challenge phase's challenge and by status
+    submission_counts = (
+        Submission.objects
+        .select_related('challenge_phase__challenge')
+        .values('challenge_phase__challenge_id', 'status')
+        .annotate(count=Count('id'))
+    )
 
-        submission_metrics[challenge_id] = challenge_metrics
+    # Populate the metrics dictionary with actual counts
+    for item in submission_counts:
+        challenge_id = item['challenge_phase__challenge_id']
+        submission_status = item['status']
+        count = item['count']
+
+        if challenge_id in submission_metrics:
+            submission_metrics[challenge_id][submission_status] = count
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
 
