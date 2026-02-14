@@ -370,32 +370,52 @@ describe('Unit tests for profile controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
         });
 
-        it('should skip required field validation when is_profile_fields_locked is true', function () {
+        it('should allow saving a single field when other fields are blank', function () {
             var resetconfirmFormValid = true;
-            success = true;
-            vm.user.is_profile_fields_locked = true;
+            vm.user.first_name = "John";
+            vm.user.last_name = "";
             vm.user.address_city = "";
             vm.user.address_state = "";
+            vm.user.address_street = "";
+            vm.user.address_country = "";
+            vm.user.university = "";
+            vm.user.is_profile_fields_locked = false;
 
             spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // Verify only the edited field + non-empty fields are sent
+                expect(parameters.data.first_name).toEqual("John");
+                expect(parameters.data.last_name).toBeUndefined();
+                expect(parameters.data.address_city).toBeUndefined();
                 parameters.callback.onSuccess({ data: 'success', status: 200 });
             });
 
-            vm.updateProfile(resetconfirmFormValid);
+            vm.updateProfile(resetconfirmFormValid, 'first_name');
             expect(utilities.sendRequest).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
         });
 
-        it('should notify error when required field is blank and not locked', function () {
+        it('should include non-empty fields even when not the field being edited', function () {
             var resetconfirmFormValid = true;
+            vm.user.first_name = "John";
+            vm.user.last_name = "Doe";
+            vm.user.address_city = "Boston";
+            vm.user.address_state = "";
+            vm.user.address_street = "";
+            vm.user.address_country = "";
+            vm.user.university = "";
             vm.user.is_profile_fields_locked = false;
-            vm.user.address_city = "";
 
-            spyOn(utilities, 'sendRequest');
+            spyOn(utilities, 'sendRequest').and.callFake(function (parameters) {
+                // first_name is being edited, last_name and address_city are non-empty
+                expect(parameters.data.first_name).toEqual("John");
+                expect(parameters.data.last_name).toEqual("Doe");
+                expect(parameters.data.address_city).toEqual("Boston");
+                expect(parameters.data.address_state).toBeUndefined();
+                parameters.callback.onSuccess({ data: 'success', status: 200 });
+            });
 
-            vm.updateProfile(resetconfirmFormValid);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "City cannot be blank.");
-            expect(utilities.sendRequest).not.toHaveBeenCalled();
+            vm.updateProfile(resetconfirmFormValid, 'first_name');
+            expect(utilities.sendRequest).toHaveBeenCalled();
         });
     });
 

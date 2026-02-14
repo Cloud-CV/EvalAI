@@ -10,6 +10,7 @@ from challenges.utils import (
 )
 from django.contrib.auth.models import User
 from django.db.models import Prefetch
+from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -300,6 +301,36 @@ def invite_participant_to_team(request, pk):
                     domains = "{}{}{}".format(domains, "/", domain)
                 domains = domains[1:]
                 response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
+
+    # If team is in any active challenge that requires complete profile,
+    # the invited user must have a complete profile (prevents bypassing
+    # the check by inviting incomplete users after the team has joined).
+    if len(team_participated_challenges) > 0:
+        from challenges.models import Challenge
+
+        active_require_profile = Challenge.objects.filter(
+            pk__in=team_participated_challenges,
+            require_complete_profile=True,
+            end_date__gt=timezone.now(),
+        ).exists()
+        profile = getattr(user, "profile", None)
+        profile_is_complete = bool(
+            profile and getattr(profile, "is_complete", False)
+        )
+        if active_require_profile:
+            if not profile_is_complete:
+                response_data = {
+                    "error": (
+                        "This team has participated in a challenge that "
+                        "requires a complete profile. The invited user must "
+                        "complete their profile (full name, street address, "
+                        "city, state, country, university) before being "
+                        "added to the team."
+                    )
+                }
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )

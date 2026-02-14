@@ -14,8 +14,14 @@ from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
+from participants.views import invite_participant_to_team
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import (
+    APIClient,
+    APIRequestFactory,
+    APITestCase,
+    force_authenticate,
+)
 
 
 class BaseAPITestClass(APITestCase):
@@ -476,6 +482,29 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_invite_blocked_when_team_in_require_complete_profile_challenge_and_invitee_profile_incomplete(
+        self,
+    ):
+        """Inviting a user with incomplete profile to a team that is in an
+        active require_complete_profile challenge must be rejected."""
+        host_team = ChallengeHostTeam.objects.create(
+            team_name="Host Team", created_by=self.user
+        )
+        challenge = Challenge.objects.create(
+            title="Require Profile Challenge",
+            creator=host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        # invite_user has no first_name/last_name/address, so profile
+        # incomplete
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("error", response.data)
+        self.assertIn("complete profile", response.data["error"])
+
     def test_invite_self_to_team(self):
         self.data = {"email": self.user.email}
         expected = {"error": "User is already part of the team!"}
@@ -752,6 +781,103 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class InviteParticipantRequireProfileGuardTest(APITestCase):
+    """Focused tests for require_complete_profile invite guard."""
+
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.inviter = User.objects.create_user(
+            username="invite_guard_inviter",
+            email="invite_guard_inviter@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.inviter,
+            email=self.inviter.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.invitee = User.objects.create_user(
+            username="invite_guard_invitee",
+            email="invite_guard_invitee@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.invitee,
+            email=self.invitee.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.team = ParticipantTeam.objects.create(
+            team_name="Invite Guard Team", created_by=self.inviter
+        )
+        Participant.objects.create(
+            user=self.inviter, status=Participant.SELF, team=self.team
+        )
+
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="Invite Guard Host Team", created_by=self.inviter
+        )
+
+    def _invite(self):
+        request = self.factory.post(
+            "/api/participants/participant_team/{}/invite".format(
+                self.team.pk
+            ),
+            {"email": self.invitee.email},
+            format="json",
+        )
+        force_authenticate(request, user=self.inviter)
+        return invite_participant_to_team(request, self.team.pk)
+
+    def test_invite_blocked_for_incomplete_invitee_when_active_require_profile_challenge(
+        self,
+    ):
+        Challenge.objects.create(
+            title="Require Profile Active",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
+        ).participant_teams.add(self.team)
+
+        response = self._invite()
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("complete profile", response.data["error"])
+
+    def test_invite_allowed_for_complete_invitee_when_active_require_profile_challenge(
+        self,
+    ):
+        self.invitee.first_name = "First"
+        self.invitee.last_name = "Last"
+        self.invitee.save()
+        self.invitee.profile.address_street = "123 Street"
+        self.invitee.profile.address_city = "City"
+        self.invitee.profile.address_state = "State"
+        self.invitee.profile.address_country = "Country"
+        self.invitee.profile.university = "University"
+        self.invitee.profile.save()
+
+        Challenge.objects.create(
+            title="Require Profile Active 2",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
+        ).participant_teams.add(self.team)
+
+        response = self._invite()
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(
+            response.data["message"],
+            "User has been successfully added to the team!",
+        )
 
 
 class DeleteParticipantFromTeamTest(BaseAPITestClass):
@@ -1036,6 +1162,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
                         "github_repository": self.challenge1.github_repository,
                         "github_branch": self.challenge1.github_branch,
+                        "is_frozen": False,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -1265,6 +1392,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
                 "github_repository": self.challenge1.github_repository,
                 "github_branch": self.challenge1.github_branch,
+                "is_frozen": False,
             }
         ]
 
