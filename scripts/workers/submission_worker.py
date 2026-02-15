@@ -795,8 +795,23 @@ def process_submission_callback(body):
             )
         )
         body = yaml.safe_load(body)
-        body = dict((k, int(v)) for k, v in body.items())
-        process_submission_message(body)
+        # Convert only integer fields to int, leave others as-is
+        # This handles cases where values might be strings, booleans, etc.
+        processed_body = {}
+        for k, v in body.items():
+            if k in ["challenge_pk", "phase_pk", "submission_pk"]:
+                try:
+                    processed_body[k] = int(v)
+                except (ValueError, TypeError):
+                    logger.warning(
+                        "{} Could not convert {} to int for key {}, using original value".format(
+                            SUBMISSION_LOGS_PREFIX, v, k
+                        )
+                    )
+                    processed_body[k] = v
+            else:
+                processed_body[k] = v
+        process_submission_message(processed_body)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
@@ -841,18 +856,20 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     except botocore.exceptions.ClientError as ex:
         if (
             ex.response["Error"]["Code"]
-            != "AWS.SimpleQueueService.NonExistentQueue"
+            == "AWS.SimpleQueueService.NonExistentQueue"
         ):
+            sqs_retention_period = (
+                SQS_RETENTION_PERIOD
+                if challenge is None
+                else str(challenge.sqs_retention_period)
+            )
+            queue = sqs.create_queue(
+                QueueName=queue_name,
+                Attributes={"MessageRetentionPeriod": sqs_retention_period},
+            )
+        else:
             logger.exception("Cannot get queue: {}".format(queue_name))
-        sqs_retention_period = (
-            SQS_RETENTION_PERIOD
-            if challenge is None
-            else str(challenge.sqs_retention_period)
-        )
-        queue = sqs.create_queue(
-            QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": sqs_retention_period},
-        )
+            raise
     return queue
 
 
