@@ -132,6 +132,7 @@ class TestRandomFileName(BaseAPITestClass):
 
 
 class TestSeeding(BaseAPITestClass):
+    @patch("scripts.seed.settings.TEST", True)
     def test_if_seeding_works(self):
         seed.run(1)
         self.assertEqual(Challenge.objects.all().count(), 1)
