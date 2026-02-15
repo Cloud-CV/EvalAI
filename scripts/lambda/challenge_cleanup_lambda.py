@@ -119,8 +119,12 @@ def handler(event, context):
             try:
                 ecs.deregister_task_definition(taskDefinition=task_def_arn)
                 logger.info("Deregistered task definition %s", task_def_arn)
-            except ClientError:
-                pass
+            except ClientError as e:
+                logger.info(
+                    "Task definition deregister skipped for %s: %s",
+                    task_def_arn,
+                    e.response["Error"]["Code"],
+                )
     except ClientError as e:
         logger.info(
             "Service deletion skipped for %s: %s",
@@ -132,8 +136,12 @@ def handler(event, context):
     try:
         logs.delete_log_group(logGroupName=log_group_name)
         logger.info("Deleted log group %s", log_group_name)
-    except ClientError:
-        pass  # Log group may not exist
+    except ClientError as e:
+        logger.info(
+            "Log group deletion skipped for %s: %s",
+            log_group_name,
+            e.response["Error"]["Code"],
+        )
 
     logger.info(
         "Cleanup completed for challenge %s (service: %s)",
