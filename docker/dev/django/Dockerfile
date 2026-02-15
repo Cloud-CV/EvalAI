@@ -48,6 +48,9 @@ ENV PYTHONUNBUFFERED=1 \
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --fix-missing \
+# git: for running git commit from container (pre-commit in Linux env, avoids macOS/ARM issues)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     libpq5 \
     libcurl4 \
     libjpeg62-turbo \
@@ -56,7 +59,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 && \
+    libwebp6 \
+    git \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
