@@ -273,7 +273,6 @@ error_message_dict = {
     "missing_challenge_phase_id_config": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
     "missing_leaderboard_id_config": "ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
     "missing_existing_leaderboard_id": "ERROR: The leaderboard with ID: {} was not found in the configuration. Deletion of an existing leaderboard after challenge creation is not allowed.",
-    "missing_existing_challenge_phase_id": "ERROR: Challenge phase {} was not found in the configuration. Deletion of an existing challenge phase after challenge creation is not allowed.",
     "missing_dataset_splits_key": "ERROR: There is no key for dataset splits.",
     "missing_dataset_split_name": "ERROR: There is no name for dataset split {}.",
     "missing_dataset_split_codename": "ERROR: There is no codename for dataset split {}.",
@@ -293,7 +292,6 @@ error_message_dict = {
     "missing_submission_meta_attribute_fields": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
     "challenge_phase_schema_errors": "ERROR: Challenge phase {} has the following schema errors:\n {}",
     "challenge_phase_addition": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
-    "challenge_phase_not_found": "ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.",
     "is_submission_public_restricted": "ERROR: is_submission_public can't be 'True' for challenge phase '{}' with is_restricted_to_select_one_submission 'True'. Please change is_submission_public to 'False' and try again!",
     "missing_option_in_submission_meta_attribute": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_fields_in_submission_meta_attribute": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
@@ -830,12 +828,7 @@ class ValidateChallengeConfigUtil:
                     self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
 
-        for current_challenge_phase_id in current_phase_config_ids:
-            if current_challenge_phase_id not in self.phase_ids:
-                message = self.error_messages_dict[
-                    "challenge_phase_not_found"
-                ].format(current_challenge_phase_id)
-                self.error_messages.append(message)
+        return self.error_messages, self.yaml_file_data, self.files
 
     def validate_challenge_phase_splits(self, current_phase_split_ids):
         challenge_phase_splits = self.yaml_file_data.get(
