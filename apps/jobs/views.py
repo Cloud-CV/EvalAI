@@ -1195,6 +1195,13 @@ def update_submission(request, challenge_pk):
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
 
+        # Verify submission belongs to the challenge specified in the URL
+        if submission.challenge_phase.challenge_id != int(challenge_pk):
+            response_data = {
+                "error": "Submission does not belong to this challenge"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         public_results = []
         successful_submission = (
             True if submission_status == Submission.FINISHED else False
@@ -1353,6 +1360,14 @@ def update_submission(request, challenge_pk):
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
         submission = get_submission_model(submission_pk)
+
+        # Verify submission belongs to the challenge specified in the URL
+        if submission.challenge_phase.challenge_id != int(challenge_pk):
+            response_data = {
+                "error": "Submission does not belong to this challenge"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         # Update submission_input_file for is_static_dataset_code_upload
         # submission evaluation
         if (
@@ -1630,6 +1645,13 @@ def update_partially_evaluated_submission(request, challenge_pk):
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
 
+        # Verify submission belongs to the challenge specified in the URL
+        if submission.challenge_phase.challenge_id != int(challenge_pk):
+            response_data = {
+                "error": "Submission does not belong to this challenge"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         public_results = []
         successful_submission = (
             True
@@ -1798,6 +1820,14 @@ def update_partially_evaluated_submission(request, challenge_pk):
         submission_status = request.data.get("submission_status", "").lower()
         job_name = request.data.get("job_name", "").lower()
         submission = get_submission_model(submission_pk)
+
+        # Verify submission belongs to the challenge specified in the URL
+        if submission.challenge_phase.challenge_id != int(challenge_pk):
+            response_data = {
+                "error": "Submission does not belong to this challenge"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
