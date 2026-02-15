@@ -46,6 +46,12 @@ aws_keys = {
     ),
 }
 
+CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get(
+    "CHALLENGE_CLEANUP_LAMBDA_ARN", ""
+)
+EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
+    "EVENTBRIDGE_SCHEDULER_ROLE_ARN", ""
+)
 
 COMMON_SETTINGS_DICT = {
     "EXECUTION_ROLE_ARN": os.environ.get(
@@ -136,14 +142,6 @@ def get_log_group_name(challenge_pk):
         f"challenge-pk-{challenge_pk}-{settings.ENVIRONMENT}-workers"
     )
     return log_group_name
-
-
-CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get(
-    "CHALLENGE_CLEANUP_LAMBDA_ARN", ""
-)
-EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
-    "EVENTBRIDGE_SCHEDULER_ROLE_ARN", ""
-)
 
 
 def setup_auto_scaling_for_service(challenge):
@@ -348,7 +346,9 @@ def schedule_challenge_cleanup(challenge):
         )
         return
 
-    schedule_name = f"evalai-cleanup-challenge-{challenge.pk}"
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
     # EventBridge Scheduler uses the 'at()' expression for one-time schedules
     schedule_expression = "at({})".format(
         challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
@@ -409,7 +409,9 @@ def update_challenge_cleanup_schedule(challenge):
         )
         return
 
-    schedule_name = f"evalai-cleanup-challenge-{challenge.pk}"
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
     schedule_expression = "at({})".format(
         challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
     )
@@ -465,7 +467,9 @@ def delete_challenge_cleanup_schedule(challenge):
         )
         return
 
-    schedule_name = f"evalai-cleanup-challenge-{challenge.pk}"
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
     try:
         scheduler_client = get_boto3_client("scheduler", aws_keys)
         scheduler_client.delete_schedule(Name=schedule_name)

@@ -4395,6 +4395,7 @@ class TestScheduleChallengeCleanup(unittest.TestCase):
         "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
         "arn:aws:lambda:us-east-1:123:function:cleanup",
     )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
     @patch("challenges.aws_utils.get_boto3_client")
     def test_schedule_cleanup_success(self, mock_get_boto3_client):
         mock_scheduler = MagicMock()
@@ -4411,7 +4412,7 @@ class TestScheduleChallengeCleanup(unittest.TestCase):
 
         mock_scheduler.create_schedule.assert_called_once()
         call_kwargs = mock_scheduler.create_schedule.call_args[1]
-        assert call_kwargs["Name"] == "evalai-cleanup-challenge-42"
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
         assert call_kwargs["ScheduleExpression"] == "at(2026-12-31T23:59:59)"
         assert call_kwargs["ActionAfterCompletion"] == "DELETE"
         assert "challenge_pk" in call_kwargs["Target"]["Input"]
@@ -4471,6 +4472,7 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
         "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
         "arn:aws:lambda:us-east-1:123:function:cleanup",
     )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
     @patch("challenges.aws_utils.get_boto3_client")
     def test_update_schedule_success(self, mock_get_boto3_client):
         mock_scheduler = MagicMock()
@@ -4487,7 +4489,7 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
 
         mock_scheduler.update_schedule.assert_called_once()
         call_kwargs = mock_scheduler.update_schedule.call_args[1]
-        assert call_kwargs["Name"] == "evalai-cleanup-challenge-42"
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
         assert call_kwargs["ScheduleExpression"] == "at(2027-06-15T12:00:00)"
 
     @patch(
@@ -4543,6 +4545,7 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
 
 
 class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
     @patch("challenges.aws_utils.get_boto3_client")
     def test_delete_schedule_success(self, mock_get_boto3_client):
         mock_scheduler = MagicMock()
@@ -4554,7 +4557,7 @@ class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
         delete_challenge_cleanup_schedule(challenge)
 
         mock_scheduler.delete_schedule.assert_called_once_with(
-            Name="evalai-cleanup-challenge-42"
+            Name="evalai-cleanup-challenge-staging-42"
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
