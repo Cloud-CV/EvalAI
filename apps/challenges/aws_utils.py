@@ -13,6 +13,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
+from django.utils import timezone
 
 from evalai.celery import app
 
@@ -874,6 +875,69 @@ def update_sqs_retention_period(challenge):
         response = sqs.set_queue_attributes(
             QueueUrl=queue_url,
             Attributes={"MessageRetentionPeriod": sqs_retention_period},
+        )
+        return {"message": response}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": str(e),
+        }
+
+
+def update_cloudwatch_log_retention_period(challenge):
+    if not challenge.end_date:
+        return {"message": "Challenge has no end date."}
+
+    log_group_name = get_log_group_name(challenge.pk)
+    days_until_end = (challenge.end_date - timezone.now()).days
+
+    allowed_days = [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1096,
+        1827,
+        2192,
+        2557,
+        2922,
+        3288,
+        3653,
+    ]
+
+    retention_days = 30
+    if days_until_end < 0:
+        retention_days = 30
+    else:
+        for days in allowed_days:
+            if days >= days_until_end:
+                retention_days = days
+                break
+
+    if days_until_end > allowed_days[-1]:
+        retention_days = allowed_days[-1]
+
+    try:
+        logs_client = get_boto3_client("logs", aws_keys)
+        try:
+            logs_client.create_log_group(logGroupName=log_group_name)
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "ResourceAlreadyExistsException":
+                raise e
+
+        response = logs_client.put_retention_policy(
+            logGroupName=log_group_name, retentionInDays=retention_days
         )
         return {"message": response}
     except Exception as e:
@@ -1915,3 +1979,10 @@ def update_sqs_retention_period_task(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     return update_sqs_retention_period(challenge_obj)
+
+
+@app.task
+def update_cloudwatch_log_retention_period_task(challenge):
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    return update_cloudwatch_log_retention_period(challenge_obj)
