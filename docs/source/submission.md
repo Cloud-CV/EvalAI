@@ -126,6 +126,11 @@ Upon receiving a message from `submission_task_queue` with a binding key of `sub
 
 * Finally, the temporary computation directory allocated for this submission is removed.
 
+## Submission Invariants
+
+The submission workflow enforces a set of invariants to ensure challenge integrity.
+See [Submission Workflow Invariants](submission_workflow_invariants.md) for details.
+
 ### Notes
 
 * REST API with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.11/topics/http/urls/#url-namespaces)
