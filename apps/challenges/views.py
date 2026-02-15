@@ -5382,3 +5382,65 @@ def modify_leaderboard_data(request):
         # Serialize and return the updated data
         response_data = {"message": "Leaderboard data updated successfully!"}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes(())
+@authentication_classes(())
+def update_evaluation_module_error(request, challenge_pk):
+    """
+    Internal API endpoint for Lambda functions to update evaluation_module_error
+    on a challenge. Authenticated via a shared secret token passed in the
+    Authorization header (Bearer <token>).
+
+    Used by the OOM handler Lambda to notify challenge hosts when a worker
+    is killed due to OutOfMemoryError.
+    """
+    # Authenticate via shared secret token
+    expected_token = os.environ.get("LAMBDA_AUTH_TOKEN")
+    if not expected_token:
+        return Response(
+            {"error": "Server misconfiguration: LAMBDA_AUTH_TOKEN not set."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if not auth_header.startswith("Bearer "):
+        return Response(
+            {"error": "Missing or invalid Authorization header."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    token = auth_header[len("Bearer ") :]
+    if token != expected_token:
+        return Response(
+            {"error": "Invalid auth token."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Validate request body
+    error_message = request.data.get("evaluation_module_error")
+    if error_message is None:
+        return Response(
+            {"error": "evaluation_module_error field is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": f"Challenge with pk {challenge_pk} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    challenge.evaluation_module_error = error_message
+    challenge.save()
+
+    return Response(
+        {
+            "message": f"evaluation_module_error updated for challenge {challenge_pk}."
+        },
+        status=status.HTTP_200_OK,
+    )
