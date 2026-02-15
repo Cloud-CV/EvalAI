@@ -3,6 +3,8 @@ networkx==2.5
 numpy==1.21.0
 pandas==1.1.4
 pycocotools==2.0.2
-scikit-learn==0.24.0
 scipy==1.5.4
 tqdm==4.54.0
+scikit-learn==0.24.0 \
+    --hash=sha256:5e6e3c042cea83f2e20a45e563b8eabc1f8f72446251fe23ebefdf111a173a33 \
+    --hash=sha256:a5cad6ff83cc7ec0e6856d3c152bfdefa8647122429e431c75e900edb2c4f5cc
