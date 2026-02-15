@@ -526,6 +526,7 @@ class TestReorderSubmissionsComparator(TestCase):
         )
         self.challenge_phase_split.show_scores_on_leaderboard = True
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -534,8 +535,12 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -581,6 +586,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -589,8 +595,12 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -636,6 +646,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -644,9 +655,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that participant teams are fetched in bulk to avoid N+1 queries."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -723,6 +738,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertIn("id__in", call_kwargs[1])
         self.assertEqual(set(call_kwargs[1]["id__in"]), {1, 2})
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -731,9 +747,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that teams with any banned participant are excluded."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -800,6 +820,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["submission__participant_team"], 2)
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -808,9 +829,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that empty banned_email_ids excludes no teams."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
         self.challenge_obj.banned_email_ids = []
 
         test_data = [
@@ -864,6 +889,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(len(result), 2)
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -872,9 +898,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that None banned_email_ids excludes no teams (set conversion)."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
         self.challenge_obj.banned_email_ids = None
 
         test_data = [
@@ -964,6 +994,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(len(result), 2)
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -972,9 +1003,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test set-based team_list gives correct distinct result with many entries."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Many entries from same teams - Team1 appears 5x, Team2 appears 3x
         test_data = [
@@ -1038,6 +1073,7 @@ class TestReorderSubmissionsComparator(TestCase):
             result[1]["submission__participant_team__team_name"], "Team2"
         )
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -1046,9 +1082,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test baseline entries are always included regardless of team_list."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         test_data = [
             {

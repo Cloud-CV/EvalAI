@@ -9,6 +9,7 @@ from base.utils import get_model_object, suppress_autotime
 from challenges.models import ChallengePhaseSplit, LeaderboardData
 from challenges.utils import get_challenge_phase_model
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -366,13 +367,19 @@ def calculate_distinct_sorted_leaderboard_data(
         return response_data, status.HTTP_400_BAD_REQUEST
 
     leaderboard_data = LeaderboardData.objects.filter(is_disabled=False)
-    # Only exclude host submissions when there are host emails (avoids
-    # auth_user join)
+    # Exclude host submissions using created_by_id (avoids auth_user JOIN in
+    # main query; resolve emails to IDs with a single small query instead)
     if challenge_hosts_emails:
-        leaderboard_data = leaderboard_data.exclude(
-            Q(submission__created_by__email__in=challenge_hosts_emails)
-            & Q(submission__is_baseline=False)
+        host_user_ids = list(
+            User.objects.filter(email__in=challenge_hosts_emails).values_list(
+                "id", flat=True
+            )
         )
+        if host_user_ids:
+            leaderboard_data = leaderboard_data.exclude(
+                Q(submission__created_by_id__in=host_user_ids)
+                & Q(submission__is_baseline=False)
+            )
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
