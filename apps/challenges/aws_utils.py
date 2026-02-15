@@ -492,10 +492,10 @@ def ensure_workers_for_host_submission(challenge):
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge to ensure workers for.
     """
-    if settings.DEBUG:
+    if settings.DEBUG or settings.TEST:
         logger.info(
             "Skipping ensure_workers_for_host_submission for challenge %s "
-            "in development environment.",
+            "in development/test environment.",
             challenge.pk,
         )
         return

@@ -4587,9 +4587,10 @@ class TestHandleEndDateChange(TestCase):
     ):
         """When end_date is extended after resources were cleaned up,
         recreate everything."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = False
@@ -4597,8 +4598,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = True
         challenge.workers = None  # Resources were cleaned up
-        challenge._original_end_date = datetime(2026, 1, 1)
-        challenge.end_date = datetime.now() + timedelta(days=30)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=30)
 
         mock_start_workers.return_value = {"count": 1, "failures": []}
 
@@ -4614,9 +4615,10 @@ class TestHandleEndDateChange(TestCase):
     ):
         """When end_date is extended and workers are still active,
         just reschedule the cleanup."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = False
@@ -4624,8 +4626,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = True
         challenge.workers = 1  # Workers still active
-        challenge._original_end_date = datetime(2026, 6, 1)
-        challenge.end_date = datetime.now() + timedelta(days=60)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
 
         handle_end_date_change_for_challenge(
             sender=None, instance=challenge, created=False
@@ -4636,9 +4638,10 @@ class TestHandleEndDateChange(TestCase):
     @patch("challenges.aws_utils.delete_workers")
     def test_end_date_set_to_past_triggers_cleanup(self, mock_delete_workers):
         """When end_date is changed to the past, trigger cleanup."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = False
@@ -4646,8 +4649,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = True
         challenge.workers = 1
-        challenge._original_end_date = datetime.now() + timedelta(days=30)
-        challenge.end_date = datetime.now() - timedelta(days=1)
+        challenge._original_end_date = timezone.now() + timedelta(days=30)
+        challenge.end_date = timezone.now() - timedelta(days=1)
 
         mock_delete_workers.return_value = {"count": 1, "failures": []}
 
@@ -4659,9 +4662,10 @@ class TestHandleEndDateChange(TestCase):
 
     def test_end_date_change_skipped_for_docker_based(self):
         """Docker-based challenges should be skipped."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = True
@@ -4669,8 +4673,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = True
         challenge.workers = 1
-        challenge._original_end_date = datetime(2026, 6, 1)
-        challenge.end_date = datetime.now() + timedelta(days=60)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
 
         # Should not call any AWS functions
         with patch(
@@ -4685,9 +4689,10 @@ class TestHandleEndDateChange(TestCase):
         self,
     ):
         """Unapproved challenges with no workers should be skipped."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = False
@@ -4695,8 +4700,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = False
         challenge.workers = None
-        challenge._original_end_date = datetime(2026, 6, 1)
-        challenge.end_date = datetime.now() + timedelta(days=60)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
             handle_end_date_change_for_challenge(
@@ -4710,9 +4715,10 @@ class TestHandleEndDateChange(TestCase):
     ):
         """Unapproved challenges with active workers (set up by host
         testing) should still update the EventBridge schedule."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
         challenge.is_docker_based = False
@@ -4720,8 +4726,8 @@ class TestHandleEndDateChange(TestCase):
         challenge.remote_evaluation = False
         challenge.approved_by_admin = False
         challenge.workers = 1  # Workers created via host submission
-        challenge._original_end_date = datetime(2026, 6, 1)
-        challenge.end_date = datetime.now() + timedelta(days=60)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
 
         handle_end_date_change_for_challenge(
             sender=None, instance=challenge, created=False
@@ -4731,13 +4737,14 @@ class TestHandleEndDateChange(TestCase):
 
     def test_end_date_change_skipped_on_create(self):
         """New challenge creation should not trigger end_date handler."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
 
         challenge = MagicMock()
-        challenge._original_end_date = datetime(2026, 6, 1)
-        challenge.end_date = datetime.now() + timedelta(days=60)
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
             handle_end_date_change_for_challenge(
@@ -4759,9 +4766,22 @@ class TestEnsureWorkersForHostSubmission(TestCase):
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
+    def test_returns_early_in_test_mode(self, mock_settings):
+        """Should return early without calling start_workers in TEST mode."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = True
+        challenge = MagicMock()
+        challenge.pk = 1
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_host_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
     def test_returns_early_for_docker_based_challenge(self, mock_settings):
         """Should skip docker-based challenges."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = True
@@ -4776,6 +4796,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
     def test_returns_early_for_ec2_challenge(self, mock_settings):
         """Should skip EC2-based challenges."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
@@ -4792,6 +4813,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
     ):
         """Should skip remote evaluation challenges."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
@@ -4806,6 +4828,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
     def test_returns_early_when_workers_already_exist(self, mock_settings):
         """Should be a no-op when workers are already set up."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
@@ -4822,6 +4845,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         """Should be a no-op when workers are stopped (0) since
         auto-scaling will handle scale-up."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
@@ -4840,6 +4864,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
     ):
         """Should call start_workers when workers is None (stack never created)."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
@@ -4860,6 +4885,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
     ):
         """Should log error when start_workers fails."""
         mock_settings.DEBUG = False
+        mock_settings.TEST = False
         challenge = MagicMock()
         challenge.pk = 1
         challenge.is_docker_based = False
