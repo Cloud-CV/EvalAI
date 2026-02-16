@@ -56,7 +56,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -898,18 +898,23 @@ def get_challenge_submission_metrics_by_pk(request, pk):
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenge = get_challenge_model(pk)
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-    submission_metrics = {}
 
-    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+    submission_statuses = [s[0] for s in Submission.STATUS_OPTIONS]
 
-    # Fetch challenge phases for the challenge
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-    for submission_status in submission_statuses:
-        count = Submission.objects.filter(
-            challenge_phase__in=challenge_phases, status=submission_status
-        ).count()
-        submission_metrics[submission_status] = count
+    # Single aggregated query: JOIN + GROUP BY instead of 10 separate
+    # COUNT subqueries (one per status).
+    submission_counts = (
+        Submission.objects.filter(challenge_phase__challenge=challenge)
+        .values("status")
+        .annotate(count=Count("id"))
+    )
+    submission_metrics = {
+        row["status"]: row["count"] for row in submission_counts
+    }
+
+    # Ensure every status key is present even when count is 0
+    for s in submission_statuses:
+        submission_metrics.setdefault(s, 0)
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
 

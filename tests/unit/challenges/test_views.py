@@ -7499,3 +7499,227 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
+    """Tests for the get_challenge_submission_metrics_by_pk endpoint."""
+
+    def setUp(self):
+        super().setUp()
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase1 = ChallengePhase.objects.create(
+                name="Phase 1",
+                description="Description for Phase 1",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                codename="phase_1_codename",
+                test_annotation=SimpleUploadedFile(
+                    "test_annotation1.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+            self.challenge_phase2 = ChallengePhase.objects.create(
+                name="Phase 2",
+                description="Description for Phase 2",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                codename="phase_2_codename",
+                test_annotation=SimpleUploadedFile(
+                    "test_annotation2.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        self.url = reverse_lazy(
+            "challenges:get_challenge_submission_metrics_by_pk",
+            kwargs={"pk": self.challenge.pk},
+        )
+
+    def _create_submissions(self, phase, status_counts):
+        """Helper to create submissions with given status counts.
+
+        Note: Submission.save() always forces status='submitted' for new
+        records, so we create them first and then use queryset .update()
+        to set the desired status without triggering the save override.
+        """
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            for sub_status, count in status_counts.items():
+                pks = []
+                for _ in range(count):
+                    sub = Submission.objects.create(
+                        participant_team=self.participant_team,
+                        challenge_phase=phase,
+                        created_by=self.user,
+                        status="submitted",
+                        input_file=SimpleUploadedFile(
+                            "test_file.txt",
+                            b"Dummy file content",
+                            content_type="text/plain",
+                        ),
+                    )
+                    pks.append(sub.pk)
+                if sub_status != "submitted":
+                    Submission.objects.filter(pk__in=pks).update(
+                        status=sub_status
+                    )
+
+    def test_returns_403_for_non_staff_user(self):
+        """Non-staff users should be denied access."""
+        self.user.is_staff = False
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_returns_all_status_keys_for_empty_challenge(self):
+        """Even with no submissions, all STATUS_OPTIONS keys should appear as 0."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected_statuses = [s[0] for s in Submission.STATUS_OPTIONS]
+        for s in expected_statuses:
+            self.assertIn(s, response.data)
+            self.assertEqual(response.data[s], 0)
+
+    def test_returns_correct_counts_single_phase(self):
+        """Counts should be correct when submissions exist in one phase."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        self._create_submissions(
+            self.challenge_phase1,
+            {"submitted": 3, "finished": 5, "failed": 2},
+        )
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["submitted"], 3)
+        self.assertEqual(response.data["finished"], 5)
+        self.assertEqual(response.data["failed"], 2)
+        self.assertEqual(response.data["running"], 0)
+
+    def test_returns_correct_counts_multiple_phases(self):
+        """Counts should aggregate across all phases of the challenge."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        self._create_submissions(
+            self.challenge_phase1,
+            {"submitted": 2, "finished": 4},
+        )
+        self._create_submissions(
+            self.challenge_phase2,
+            {"submitted": 1, "finished": 3, "failed": 7},
+        )
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["submitted"], 3)  # 2 + 1
+        self.assertEqual(response.data["finished"], 7)  # 4 + 3
+        self.assertEqual(response.data["failed"], 7)
+        self.assertEqual(response.data["running"], 0)
+
+    def test_does_not_count_submissions_from_other_challenges(self):
+        """Submissions belonging to a different challenge must not be counted."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        other_challenge = Challenge.objects.create(
+            title="Other Challenge",
+            short_description="Other short desc",
+            description="Other description",
+            terms_and_conditions="Other terms",
+            submission_guidelines="Other guidelines",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            other_phase = ChallengePhase.objects.create(
+                name="Other Phase",
+                description="Other phase desc",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=other_challenge,
+                codename="other_phase_codename",
+                test_annotation=SimpleUploadedFile(
+                    "test_annotation_other.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        self._create_submissions(
+            self.challenge_phase1,
+            {"finished": 2},
+        )
+        self._create_submissions(
+            other_phase,
+            {"finished": 10},
+        )
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["finished"], 2)
+
+    def test_query_count_is_constant(self):
+        """
+        The endpoint should use a constant number of DB queries regardless
+        of how many statuses have submissions.  The old code ran 10 separate
+        COUNT queries; the fix uses a single aggregated GROUP BY query.
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        self._create_submissions(
+            self.challenge_phase1,
+            {
+                "submitted": 1,
+                "running": 1,
+                "failed": 1,
+                "finished": 1,
+                "cancelled": 1,
+                "queued": 1,
+            },
+        )
+
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Auth (token check, user load) + challenge lookup + 1 aggregated query
+        # should be well under 10.  The old code alone produced 10 COUNT
+        # queries.
+        self.assertLessEqual(
+            len(context.captured_queries),
+            8,
+            "Query count too high – possible N+1 regression in "
+            "get_challenge_submission_metrics_by_pk. "
+            f"Queries: {[q['sql'] for q in context.captured_queries]}",
+        )
