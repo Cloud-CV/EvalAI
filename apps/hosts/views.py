@@ -247,15 +247,16 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
     except ChallengeHostTeam.DoesNotExist:
         response_data = {"error": "ChallengeHostTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    try:
-        challenge_host = ChallengeHost.objects.filter(
-            user=request.user.id, team_name__pk=challenge_host_team_pk
-        )
-        challenge_host.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    except:  # noqa E722
+
+    challenge_host = ChallengeHost.objects.filter(
+        user=request.user.id, team_name__pk=challenge_host_team_pk
+    )
+    if not challenge_host.exists():
         response_data = {"error": "Sorry, you do not belong to this team."}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_host.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
