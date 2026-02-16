@@ -530,6 +530,7 @@ def send_subscription_plans_email(challenge):
             "challenge_manage_url": challenge_manage_url,
             "challenge_id": challenge.pk,
             "host_team_name": challenge.creator.team_name,
+            "host_name": challenge.creator.team_name,
             "support_email": getattr(
                 settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
             ),

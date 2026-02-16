@@ -241,6 +241,12 @@ class Challenge(TimeStampedModel):
         max_length=200, blank=True, null=True, default=""
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
+    is_frozen = models.BooleanField(
+        default=False,
+        verbose_name="Is Frozen",
+        db_index=True,
+        help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
+    )
 
     class Meta:
         app_label = "challenges"

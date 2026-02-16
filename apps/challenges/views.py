@@ -56,7 +56,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -249,6 +249,23 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # Prevent hosts from changing start/end dates when challenge is frozen
+        if challenge.is_frozen:
+            frozen_fields = ["start_date", "end_date"]
+            changed_frozen_fields = [
+                field for field in frozen_fields if field in request.data
+            ]
+            if changed_frozen_fields:
+                response_data = {
+                    "error": "The challenge is frozen and the {} cannot be changed. "
+                    "Please contact the EvalAI admin at team@eval.ai to make changes.".format(
+                        ", ".join(changed_frozen_fields)
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
                 overview_file = request.FILES["overview_file"]
@@ -880,18 +897,23 @@ def get_challenge_submission_metrics_by_pk(request, pk):
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenge = get_challenge_model(pk)
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-    submission_metrics = {}
 
-    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+    submission_statuses = [s[0] for s in Submission.STATUS_OPTIONS]
 
-    # Fetch challenge phases for the challenge
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-    for submission_status in submission_statuses:
-        count = Submission.objects.filter(
-            challenge_phase__in=challenge_phases, status=submission_status
-        ).count()
-        submission_metrics[submission_status] = count
+    # Single aggregated query: JOIN + GROUP BY instead of 10 separate
+    # COUNT subqueries (one per status).
+    submission_counts = (
+        Submission.objects.filter(challenge_phase__challenge=challenge)
+        .values("status")
+        .annotate(count=Count("id"))
+    )
+    submission_metrics = {
+        row["status"]: row["count"] for row in submission_counts
+    }
+
+    # Ensure every status key is present even when count is 0
+    for s in submission_statuses:
+        submission_metrics.setdefault(s, 0)
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
 
@@ -5246,6 +5268,9 @@ def update_challenge_approval(request):
         response_data = {"error": "Challenge not found!"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     challenge.approved_by_admin = approved_by_admin
+    # Freeze the challenge when approved so hosts can't change start/end dates
+    if approved_by_admin:
+        challenge.is_frozen = True
     try:
         challenge.save()
     except Exception as e:  # noqa: E722
