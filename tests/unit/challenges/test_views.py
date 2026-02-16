@@ -7606,6 +7606,8 @@ class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
         # Verify the challenge was updated
         self.challenge.refresh_from_db()
         self.assertEqual(self.challenge.evaluation_module_error, error_msg)
+
+
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
     """Tests for the get_challenge_submission_metrics_by_pk endpoint."""
 
