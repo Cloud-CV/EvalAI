@@ -4311,6 +4311,15 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         # Should not raise, just log
         setup_auto_scaling_for_service(challenge)
 
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_setup_auto_scaling_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        setup_auto_scaling_for_service(challenge)
+
+        # No boto3 calls should be made in DEBUG mode
+
 
 class TestCleanupAutoScalingForService(unittest.TestCase):
     @patch("challenges.aws_utils.delete_challenge_cleanup_schedule")
@@ -4384,6 +4393,13 @@ class TestCleanupAutoScalingForService(unittest.TestCase):
         # Should not raise
         cleanup_auto_scaling_for_service(challenge)
         mock_delete_schedule.assert_called_once_with(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_cleanup_auto_scaling_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        cleanup_auto_scaling_for_service(challenge)
 
 
 class TestScheduleChallengeCleanup(unittest.TestCase):
@@ -4460,6 +4476,13 @@ class TestScheduleChallengeCleanup(unittest.TestCase):
         challenge.end_date = datetime(2026, 12, 31, 23, 59, 59)
 
         # Should not raise, just log
+        schedule_challenge_cleanup(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_schedule_cleanup_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
         schedule_challenge_cleanup(challenge)
 
 
@@ -4543,6 +4566,49 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
 
         mock_get_boto3_client.assert_not_called()
 
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_update_schedule_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        update_challenge_cleanup_schedule(challenge)
+
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_update_schedule_other_client_error_logs_exception(
+        self, mock_get_boto3_client
+    ):
+        """Non-ResourceNotFoundException errors should be logged, not re-raised."""
+        mock_scheduler = MagicMock()
+        mock_scheduler.update_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "InternalServerError"},
+                "ResponseMetadata": {"HTTPStatusCode": 500},
+            },
+            operation_name="UpdateSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2027, 6, 15, 12, 0, 0)
+
+        # Should not raise, just log the exception
+        update_challenge_cleanup_schedule(challenge)
+
+        mock_scheduler.update_schedule.assert_called_once()
+
 
 class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
     @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
@@ -4577,6 +4643,13 @@ class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
         challenge.pk = 42
 
         # Should not raise
+        delete_challenge_cleanup_schedule(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_delete_schedule_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
         delete_challenge_cleanup_schedule(challenge)
 
 
