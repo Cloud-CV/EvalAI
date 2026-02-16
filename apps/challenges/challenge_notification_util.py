@@ -55,3 +55,30 @@ def construct_and_send_eks_cluster_creation_mail(challenge):
         template_id=template_id,
         template_data=template_data,
     )
+
+
+def construct_and_send_challenge_details_mail(challenge):
+    if settings.DEBUG:
+        return
+
+    challenge_url = "{}/web/challenges/challenge-page/{}".format(
+        settings.EVALAI_API_SERVER, challenge.pk
+    )
+
+    template_data = {
+        "CHALLENGE_PK": challenge.id,
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_IMAGE_URL": challenge.get_image_url(),
+        "CHALLENGE_URL": challenge_url,
+        "CHALLENGE_QUEUE_NAME": challenge.queue,
+    }
+
+    template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+        "REMOTE_CHALLENGE_EVALUATION_DETAILS_EMAIL"
+    )
+    send_email(
+        sender=settings.CLOUDCV_TEAM_EMAIL,
+        recipient=settings.ADMIN_EMAIL,
+        template_id=template_id,
+        template_data=template_data,
+    )
