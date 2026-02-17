@@ -1214,6 +1214,33 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
+    try:
+        membership = ChallengeHost.objects.get(
+            user=request.user,
+            team_name=challenge_host_team,  # Note: The field name is 'team_name' in the model
+        )
+    except ChallengeHost.DoesNotExist:
+        return Response(
+            {"error": "You are not a member of this host team"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # 1. Check if they accepted the invite
+    if membership.status != ChallengeHost.ACCEPTED:
+        return Response(
+            {"error": "You must accept the team invitation first."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # 2. Check if they have ADMIN or WRITE permissions
+    ALLOWED_PERMISSIONS = [ChallengeHost.ADMIN, ChallengeHost.WRITE]
+    if membership.permissions not in ALLOWED_PERMISSIONS:
+        return Response(
+            {"error": "You do not have permission to create challenges."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    
+
     if request.data.get("is_challenge_template"):
         is_challenge_template = True
     else:
