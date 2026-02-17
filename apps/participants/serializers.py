@@ -1,6 +1,4 @@
-from accounts.models import Profile
 from accounts.serializers import UserProfileSerializer
-from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -95,7 +93,9 @@ class ParticipantSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def get_profile(self, obj):
-        user_profile = Profile.objects.get(user=obj.user)
+        # Use user.profile directly - with select_related this won't trigger extra queries
+        # Falls back to lazy loading if not prefetched
+        user_profile = obj.user.profile
         serializer = UserProfileSerializer(user_profile)
         return serializer.data
 
@@ -113,7 +113,9 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "team_name", "created_by", "members", "team_url")
 
     def get_members(self, obj):
-        participants = Participant.objects.filter(team__pk=obj.id)
+        # Use prefetched participants via related manager (works with or
+        # without prefetch)
+        participants = obj.participants.all()
         serializer = ParticipantSerializer(participants, many=True)
         return serializer.data
 
@@ -129,7 +131,7 @@ class ChallengeParticipantTeam(object):
 class ChallengeParticipantTeamSerializer(serializers.Serializer):
     """Serializer to initialize Challenge and Participant's Team"""
 
-    challenge = ChallengeSerializer()
+    challenge = ChallengeSerializer(allow_null=True)
     participant_team = ParticipantTeamSerializer()
 
 
@@ -171,47 +173,41 @@ class ParticipantCountSerializer(serializers.Serializer):
 
 
 class ChallengeParticipantSerializer(serializers.Serializer):
+    """
+    Serializer for participant teams in challenge analytics.
+
+    Note: For optimal performance, the queryset passed to this serializer
+    should use prefetch_related('participants__user') to avoid N+1 queries.
+    """
+
     team_name = serializers.SerializerMethodField()
     team_members = serializers.SerializerMethodField()
     team_members_email_ids = serializers.SerializerMethodField()
 
     class Meta:
-        model = Challenge
+        model = ParticipantTeam
         fields = ("team_name", "team_members", "team_members_email_ids")
 
     def get_team_name(self, obj):
         return obj.team_name
 
     def get_team_members(self, obj):
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                team_name=obj.team_name
-            )
-        except ParticipantTeam.DoesNotExist:
-            return "Participant team does not exist"
-
-        participant_ids = Participant.objects.filter(
-            team=participant_team
-        ).values_list("user_id", flat=True)
-        return list(
-            User.objects.filter(id__in=participant_ids).values_list(
-                "username", flat=True
-            )
-        )
+        """
+        Get list of usernames for all participants in the team.
+        Uses prefetched data if available to avoid additional queries.
+        """
+        # Use prefetched participants if available (no additional query)
+        # obj.participants is the related_name from Participant.team
+        return [
+            participant.user.username for participant in obj.participants.all()
+        ]
 
     def get_team_members_email_ids(self, obj):
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                team_name=obj.team_name
-            )
-        except ParticipantTeam.DoesNotExist:
-            return "Participant team does not exist"
-
-        participant_ids = Participant.objects.filter(
-            team=participant_team
-        ).values_list("user_id", flat=True)
-        return list(
-            User.objects.filter(id__in=participant_ids).values_list(
-                "email", flat=True
-            )
-        )
+        """
+        Get list of email addresses for all participants in the team.
+        Uses prefetched data if available to avoid additional queries.
+        """
+        # Use prefetched participants if available (no additional query)
+        return [
+            participant.user.email for participant in obj.participants.all()
+        ]

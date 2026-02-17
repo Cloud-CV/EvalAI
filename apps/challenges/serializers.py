@@ -67,6 +67,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
             "approved_by_admin",
             "forum_url",
             "is_docker_based",
@@ -97,6 +98,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_visibility_timeout",
             "github_repository",
             "github_branch",
+            "is_frozen",
         )
 
 
@@ -190,6 +192,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
             "leaderboard_schema",
             "is_multi_metric_leaderboard",
         )
@@ -215,6 +218,38 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
         if context:
             request = context.get("request")
             kwargs["data"]["user"] = request.user.pk
+
+    @classmethod
+    def get_config(cls, challenge_queryset, data, request):
+        """
+        Get a serializer for creating or updating a ChallengeConfiguration.
+
+        If a challenge exists in the queryset and has an existing ChallengeConfiguration,
+        returns a serializer for updating. Otherwise, returns a serializer for creating.
+
+        Arguments:
+            challenge_queryset {QuerySet} -- QuerySet of challenges (filtered by github_repository)
+            data {dict} -- Request data containing zip_configuration
+            request {Request} -- The HTTP request object
+
+        Returns:
+            ChallengeConfigSerializer -- Serializer instance configured for create or update
+        """
+        existing_challenge_config = None
+        if challenge_queryset:
+            challenge = challenge_queryset[0]
+            existing_challenge_config = ChallengeConfiguration.objects.filter(
+                challenge=challenge.pk
+            ).first()
+
+        if existing_challenge_config:
+            return cls(
+                existing_challenge_config,
+                data=data,
+                context={"request": request},
+            )
+        else:
+            return cls(data=data, context={"request": request})
 
     class Meta:
         model = ChallengeConfiguration
@@ -287,6 +322,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
             "forum_url",
             "remote_evaluation",
             "allow_resuming_submissions",
@@ -352,6 +388,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
         )
 
 

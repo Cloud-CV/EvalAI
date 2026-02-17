@@ -443,7 +443,11 @@ def delete_service_by_challenge_pk(challenge):
                 client, challenge, 0, False
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
-                return response
+                # If service doesn't exist, proceed to delete anyway (will be
+                # handled gracefully)
+                error_code = response.get("Error", {}).get("Code")
+                if error_code != "ServiceNotFoundException":
+                    return response
 
         response = client.delete_service(**kwargs)
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -456,6 +460,30 @@ def delete_service_by_challenge_pk(challenge):
             challenge.save()
         return response
     except ClientError as e:
+        # Handle ServiceNotFoundException gracefully - if the service doesn't exist,
+        # the deletion goal is achieved. Clean up challenge state and return
+        # success.
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ServiceNotFoundException":
+            logger.info(
+                "Service for challenge %s does not exist, treating delete as success",
+                challenge.pk,
+            )
+            challenge.workers = None
+            challenge.save()
+            # Try to deregister task definition if it exists, but don't fail if
+            # it doesn't
+            if challenge.task_def_arn:
+                try:
+                    client.deregister_task_definition(
+                        taskDefinition=challenge.task_def_arn
+                    )
+                except ClientError:
+                    pass  # Task definition may not exist either
+            challenge.task_def_arn = ""
+            challenge.save()
+            # Return a success-like response
+            return {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
         logger.exception(e)
         return e.response
 
@@ -484,6 +512,22 @@ def service_manager(
         response = update_service_by_challenge_pk(
             client, challenge, num_of_tasks, force_new_deployment
         )
+        # Handle ServiceNotFoundException: ECS service was deleted (e.g. after
+        # AWS key rotation) but DB still has workers set. Sync state and
+        # either create the service (start/restart) or treat stop as success.
+        error_code = response.get("Error", {}).get("Code")
+        if error_code == "ServiceNotFoundException":
+            if num_of_tasks == 0:
+                challenge.workers = 0
+                challenge.save()
+                return {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+            # num_of_tasks > 0: create the service
+            challenge.workers = None
+            challenge.save()
+            client_token = client_token_generator(challenge.pk)
+            return create_service_by_challenge_pk(
+                client, challenge, client_token
+            )
         return response
     else:
         client_token = client_token_generator(challenge.pk)

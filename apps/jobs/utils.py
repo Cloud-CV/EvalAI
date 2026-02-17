@@ -7,7 +7,9 @@ import urllib.request
 import requests
 from base.utils import get_model_object, suppress_autotime
 from challenges.models import ChallengePhaseSplit, LeaderboardData
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import get_challenge_phase_model
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -27,16 +29,23 @@ logger = logging.getLogger(__name__)
 
 
 def get_remaining_submission_for_a_phase(
-    user, challenge_phase_pk, challenge_pk
+    user, challenge_phase_pk, challenge_pk, challenge_phase=None
 ):
     """
     Returns the number of remaining submissions that a participant can
     do daily, monthly and in total to a particular challenge phase of a
     challenge.
-    """
 
-    get_challenge_model(challenge_pk)
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    Args:
+        user: The user making the request
+        challenge_phase_pk: Primary key of the challenge phase
+        challenge_pk: Primary key of the challenge
+        challenge_phase: Optional pre-fetched ChallengePhase object to avoid N+1 queries
+    """
+    # Use pre-fetched challenge_phase if provided, otherwise fetch it (for
+    # backward compatibility)
+    if challenge_phase is None:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_pk
     )
@@ -357,10 +366,20 @@ def calculate_distinct_sorted_leaderboard_data(
         response_data = {"error": "Sorry, the leaderboard is not public!"}
         return response_data, status.HTTP_400_BAD_REQUEST
 
-    leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails)
-        & Q(submission__is_baseline=False)
-    ).filter(is_disabled=False)
+    leaderboard_data = LeaderboardData.objects.filter(is_disabled=False)
+    # Exclude host submissions using created_by_id (avoids auth_user JOIN in
+    # main query; resolve emails to IDs with a single small query instead)
+    if challenge_hosts_emails:
+        host_user_ids = list(
+            User.objects.filter(email__in=challenge_hosts_emails).values_list(
+                "id", flat=True
+            )
+        )
+        if host_user_ids:
+            leaderboard_data = leaderboard_data.exclude(
+                Q(submission__created_by_id__in=host_user_ids)
+                & Q(submission__is_baseline=False)
+            )
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
@@ -448,16 +467,40 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__is_verified_by_host",
         )
 
-    all_banned_participant_team = []
+    all_banned_participant_team = set()
+    all_banned_email_ids_set = (
+        set(all_banned_email_ids) if all_banned_email_ids else set()
+    )
+
+    # Apply query limit to prevent slow queries on popular challenges
+    max_limit = getattr(settings, "MAX_LEADERBOARD_QUERY_LIMIT", 10000)
+    leaderboard_data = leaderboard_data[:max_limit]
+
+    # Convert to list to allow multiple iterations
+    leaderboard_data = list(leaderboard_data)
+
+    # Prefetch all participant teams and their participants' emails in bulk
+    # (fixes N+1 query)
+    unique_team_ids = set(
+        item["submission__participant_team"] for item in leaderboard_data
+    )
+    participant_teams = ParticipantTeam.objects.filter(
+        id__in=unique_team_ids
+    ).prefetch_related("participants__user")
+    # Build lookup: team_id -> list of participant emails
+    team_emails_lookup = {
+        team.id: [p.user.email for p in team.participants.all()]
+        for team in participant_teams
+    }
+
     for leaderboard_item in leaderboard_data:
         participant_team_id = leaderboard_item["submission__participant_team"]
-        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
-        all_participants_email_ids = (
-            participant_team.get_all_participants_email()
+        all_participants_email_ids = team_emails_lookup.get(
+            participant_team_id, []
         )
         for participant_email in all_participants_email_ids:
-            if participant_email in all_banned_email_ids:
-                all_banned_participant_team.append(participant_team_id)
+            if participant_email in all_banned_email_ids_set:
+                all_banned_participant_team.add(participant_team_id)
                 break
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
@@ -475,7 +518,7 @@ def calculate_distinct_sorted_leaderboard_data(
             reverse=True if is_leaderboard_order_descending else False,
         )
     distinct_sorted_leaderboard_data = []
-    team_list = []
+    team_list = set()
     for data in sorted_leaderboard_data:
         if (
             data["submission__participant_team__team_name"] in team_list
@@ -487,9 +530,10 @@ def calculate_distinct_sorted_leaderboard_data(
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
+            team_list.add(data["submission__participant_team__team_name"])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
+    show_scores = challenge_phase_split.show_scores_on_leaderboard
     for item in distinct_sorted_leaderboard_data:
         item_result = []
         for index in leaderboard_labels:
@@ -505,6 +549,12 @@ def calculate_distinct_sorted_leaderboard_data(
                 item["error"]["error_{0}".format(index)]
                 for index in leaderboard_labels
             ]
+
+        if not show_scores:
+            item["result"] = []
+            item["error"] = None
+            item.pop("filtering_score", None)
+            item.pop("filtering_error", None)
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
 
 

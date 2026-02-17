@@ -384,6 +384,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.isFrozen = details.is_frozen;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
@@ -1071,6 +1072,9 @@
                     vm.selectedPhaseSplit = response.data;
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
                         "Sort by best":"Sort by latest";
+                    if (vm.selectedPhaseSplit.show_scores_on_leaderboard === false) {
+                        vm.chosenMetrics = [];
+                    }
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1105,7 +1109,11 @@
 
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
-                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
+                        if (vm.selectedPhaseSplit && vm.selectedPhaseSplit.show_scores_on_leaderboard === false) {
+                            vm.chosenMetrics = [];
+                        } else {
+                            vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
+                        }
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -2173,6 +2181,17 @@
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
+                // Generate dynamic filename based on challenge and phase info
+                var challengeName = vm.page.title.replace(/\s+/g, '_').replace(/\//g, '_');
+                var phaseName = '';
+                for (var i = 0; i < vm.phases.results.length; i++) {
+                    if (vm.phases.results[i].id == vm.phaseId) {
+                        phaseName = vm.phases.results[i].name.replace(/\s+/g, '_').replace(/\//g, '_');
+                        break;
+                    }
+                }
+                var filename = 'all_submissions_' + challengeName + '_' + vm.challengeId + '_' + phaseName + '_' + vm.phaseId + '.csv';
+                
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
@@ -2182,7 +2201,7 @@
                             var anchor = angular.element('<a/>');
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: 'all_submissions.csv'
+                                download: filename
                             })[0].click();
                         },
                         onError: function(response) {
@@ -2195,7 +2214,7 @@
                 else {
                     parameters.method = "POST";
                     var fieldsExport = [];
-                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                    for(let i = 0 ; i < vm.fields.length ; i++) {
                         if (vm.fieldsToGet.includes(vm.fields[i].id)) {
                             fieldsExport.push(vm.fields[i].id);
                         }
@@ -2207,7 +2226,7 @@
                             var anchor = angular.element('<a/>');
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: 'all_submissions.csv'
+                                download: filename
                             })[0].click();
                         },
                         onError: function(response) {
@@ -3097,7 +3116,9 @@
         };
 
         vm.openLeaderboardDropdown = function() {
-            if (vm.chosenMetrics == undefined) {
+            if (vm.chosenMetrics == undefined &&
+                (!vm.selectedPhaseSplit || vm.selectedPhaseSplit.show_scores_on_leaderboard !== false) &&
+                vm.leaderboard && vm.leaderboard[0]) {
                 var index = [];
                 for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
                     var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();

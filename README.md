@@ -10,8 +10,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Documentation Status](https://readthedocs.org/projects/markdown-guide/badge/?version=latest)](http://evalai.readthedocs.io/en/latest/)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Cloud-CV/EvalAI?style=flat-square)](https://github.com/Cloud-CV/EvalAI/tree/master)
-[![Open Collective](https://opencollective.com/evalai/backers/badge.svg)](https://opencollective.com/evalai#backers)
-[![Open Collective](https://opencollective.com/evalai/sponsors/badge.svg)](https://opencollective.com/evalai#sponsors)
 [![Twitter Follow](https://img.shields.io/twitter/follow/eval_ai?style=social)](https://twitter.com/eval_ai)
 
 
@@ -106,7 +104,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 
 ## Team
 
-EvalAI is maintained by <a href="https://rishabhjain.xyz/" target="_blank">Rishabh Jain</a>, <a href="https://gchhablani.github.io/" target="_blank">Gunjan Chhablani</a> and <a href="https://www.cc.gatech.edu/~dbatra/" target="_blank">Dhruv Batra</a>.
+EvalAI is maintained by <a href="https://rishabhjain.xyz/" target="_blank">Rishabh Jain</a>, <a href="https://www.linkedin.com/in/akanshajain231999/" target="_blank">Akansha Jain</a>, <a href="https://gchhablani.github.io/" target="_blank">Gunjan Chhablani</a> and <a href="https://www.cc.gatech.edu/~dbatra/" target="_blank">Dhruv Batra</a>.
 
 A non-exhaustive list of past contributors includes: <a href="http://deshraj.xyz/" target="_blank">Deshraj Yadav</a>, <a href="https://ram81.github.io/" target="_blank">Ram Ramrakhya</a>,<a href="http://www.jainakash.in/" target="_blank">Akash Jain</a>, <a href="https://taranjeet.cc/" target="_blank">Taranjeet Singh</a>, <a href="https://github.com/spyshiv" target="_blank">Shiv Baran Singh</a>, <a href="https://dexter1691.github.io/" target="_blank">Harsh Agarwal</a>, <a href="https://prithv1.github.io/" target="_blank">Prithvijit Chattopadhyay</a>, and <a href="https://www.cc.gatech.edu/~parikh/" target="_blank">Devi Parikh</a>.
 

@@ -406,6 +406,35 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
     return False
 
 
+def get_participants_with_incomplete_profiles(participant_team):
+    """
+    Check if all team members have complete profiles.
+
+    Arguments:
+        participant_team {ParticipantTeam} -- The participant team to check
+
+    Returns:
+        list -- List of usernames of team members with incomplete profiles
+    """
+    from accounts.models import Profile
+    from participants.models import Participant
+
+    incomplete_profiles = []
+    participants = Participant.objects.filter(
+        team=participant_team
+    ).select_related("user", "user__profile")
+
+    for participant in participants:
+        try:
+            profile = participant.user.profile
+            if not profile.is_complete:
+                incomplete_profiles.append(participant.user.username)
+        except Profile.DoesNotExist:
+            incomplete_profiles.append(participant.user.username)
+
+    return incomplete_profiles
+
+
 def get_unique_alpha_numeric_key(length):
     """
     Returns unique alpha numeric key of length
@@ -501,6 +530,7 @@ def send_subscription_plans_email(challenge):
             "challenge_manage_url": challenge_manage_url,
             "challenge_id": challenge.pk,
             "host_team_name": challenge.creator.team_name,
+            "host_name": challenge.creator.team_name,
             "support_email": getattr(
                 settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
             ),
@@ -536,28 +566,24 @@ def send_subscription_plans_email(challenge):
 
                 emails_sent += 1
                 logger.info(
-                    "Subscription plans email sent to {} for challenge {}".format(
-                        email, challenge.pk
-                    )
+                    "Subscription plans email sent to {} for challenge "
+                    "{}".format(email, challenge.pk)
                 )
             except Exception as e:
                 logger.error(
-                    "Failed to send subscription plans email to {} for challenge {}: {}".format(
-                        email, challenge.pk, str(e)
-                    )
+                    "Failed to send subscription plans email to {} for "
+                    "challenge {}: {}".format(email, challenge.pk, str(e))
                 )
 
         logger.info(
-            "Sent subscription plans email to {}/{} hosts for challenge {}".format(
-                emails_sent, len(challenge_host_emails), challenge.pk
-            )
+            "Sent subscription plans email to {}/{} hosts for challenge "
+            "{}".format(emails_sent, len(challenge_host_emails), challenge.pk)
         )
 
     except Exception as e:
         logger.error(
-            "Error sending subscription plans email for challenge {}: {}".format(
-                challenge.pk, str(e)
-            )
+            "Error sending subscription plans email for challenge {}: "
+            "{}".format(challenge.pk, str(e))
         )
 
 
@@ -737,3 +763,49 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
     else:
         challenge.has_sponsors = False
         challenge.save()
+
+
+def get_submissions_csv_filename(challenge, challenge_phase):
+    """
+    Generate CSV filename for submissions export with challenge and phase information
+
+    Args:
+        challenge: Challenge instance
+        challenge_phase: ChallengePhase instance
+
+    Returns:
+        str: Formatted filename in format: all_submissions_{challenge_name}_{challenge_id}_{phase_name}_{phase_id}.csv
+    """
+    challenge_name = challenge.title.replace(" ", "_").replace("/", "_")
+    phase_name = challenge_phase.name.replace(" ", "_").replace("/", "_")
+    return f"all_submissions_{challenge_name}_{challenge.pk}_{phase_name}_{challenge_phase.pk}.csv"
+
+
+def extract_team_member_info(submission):
+    """
+    Extract team member information from a submission efficiently using prefetched data
+
+    Args:
+        submission: Submission instance with prefetched participant team data
+
+    Returns:
+        tuple: (team_members, team_emails, team_affiliations) as lists
+            - team_members: List of team member usernames
+            - team_emails: List of team member email addresses
+            - team_affiliations: List of team member affiliations
+    """
+    participants = submission.participant_team.participants.all()
+    team_members = []
+    team_emails = []
+    team_affiliations = []
+
+    for participant in participants:
+        team_members.append(participant.user.username)
+        team_emails.append(participant.user.email)
+        team_affiliations.append(
+            participant.user.profile.affiliation
+            if hasattr(participant.user, "profile")
+            else ""
+        )
+
+    return team_members, team_emails, team_affiliations

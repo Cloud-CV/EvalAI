@@ -31,7 +31,13 @@ module.exports = function(config) {
             '--disable-gpu',
             '--disable-dev-shm-usage',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
+            '--disable-features=VizDisplayCompositor',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            '--disable-ipc-flooding-protection'
           ],
         },
       },
@@ -108,13 +114,20 @@ module.exports = function(config) {
     // Browser disconnect timeout
     browserDisconnectTimeout: 10000,
     browserDisconnectTolerance: 3,
-    browserNoActivityTimeout: 60000,
+    browserNoActivityTimeout: 30000,
+    
+    // Force process exit after tests complete
+    processKillTimeout: 5000,
+    captureTimeout: 30000,
+    
+    // Ensure Karma exits after single run
+    failOnEmptyTestSuite: false,
 
     coverageReporter: {
         includeAllSources: true,
-        dir: 'coverage/frontend/',
+        dir: 'coverage/',
         reporters: [
-            { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
+            { type: 'lcovonly', subdir: 'frontend', file: 'lcov.info' },
             { type: 'text-summary' }
         ]
     }

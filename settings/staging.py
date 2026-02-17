@@ -11,3 +11,8 @@ CORS_ORIGIN_WHITELIST = (
     "https://monitoring-staging.eval.ai",
     "https://monitoring.eval.ai",
 )
+
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100  # Recycle more frequently
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_SOFT_TIME_LIMIT = 40 * 60  # 40 minutes (shorter for staging)
+CELERY_TASK_TIME_LIMIT = 50 * 60  # 50 minutes

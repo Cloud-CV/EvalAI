@@ -235,9 +235,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -270,9 +268,7 @@ class GetParticipantCountTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -436,7 +432,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -448,15 +444,13 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -468,15 +462,13 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(  # noqa C0301
         self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
@@ -499,7 +491,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(  # noqa C0301
         self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
@@ -625,7 +617,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(
+    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -645,7 +637,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(
+    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(  # noqa C0301
         self,
     ):
         self.url = reverse_lazy(
@@ -735,9 +727,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -756,9 +746,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -775,9 +763,9 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
             },
         )
         expected = {
-            "last_submission_datetime": "{0}{1}".format(
-                self.submission.created_at.isoformat(), "Z"
-            ).replace("+00:00", "")
+            "last_submission_datetime": f"{self.submission.created_at.isoformat()}Z".replace(
+                "+00:00", ""
+            )
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -844,9 +832,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge {} does not exist".format(
-                self.challenge.pk + 10
-            )
+            "detail": f"Challenge {self.challenge.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -864,9 +850,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(
-                self.challenge_phase.pk + 10
-            )
+            "detail": f"ChallengePhase {self.challenge_phase.pk + 10} does not exist"
         }
 
         response = self.client.get(self.url, {})
@@ -904,17 +888,17 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         datetime = self.submission.created_at.isoformat()
         expected = {
             "last_submission_timestamp_in_challenge_phase": "You dont have any submissions in this challenge phase!",
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         response = self.client.get(self.url, {})
         response_data = {
             "last_submission_timestamp_in_challenge_phase": "You dont have any submissions in this challenge phase!",
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         self.assertEqual(response_data, expected)
@@ -931,12 +915,12 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
 
         datetime = self.submission.created_at.isoformat()
         expected = {
-            "last_submission_timestamp_in_challenge_phase": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge_phase": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         response = self.client.get(self.url, {})
@@ -944,12 +928,12 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             "last_submission_timestamp_in_challenge_phase"
         ].isoformat()
         response_data = {
-            "last_submission_timestamp_in_challenge_phase": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
-            "last_submission_timestamp_in_challenge": "{0}{1}".format(
-                datetime, "Z"
-            ).replace("+00:00", ""),
+            "last_submission_timestamp_in_challenge_phase": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
+            "last_submission_timestamp_in_challenge": f"{datetime}Z".replace(
+                "+00:00", ""
+            ),
             "challenge_phase": self.challenge_phase.pk,
         }
         self.assertEqual(response_data, expected)
@@ -980,16 +964,23 @@ class GetParticipantTeamsTest(BaseAPITestClass):
             is_public=True,
         )
 
+    def _get_expected_participant_teams_queryset(self):
+        """Helper to get participant teams with prefetch for serializer"""
+        challenge = get_challenge_model(self.challenge.pk)
+        return challenge.participant_teams.prefetch_related(
+            "participants__user"
+        ).order_by("-team_name")
+
     def test_host_downloads_participant_team(self):
+        """Test that host can download participant teams as CSV"""
         expected = io.StringIO()
-        expected_participant_teams = csv.writer(expected)
+        expected_participant_teams = csv.writer(
+            expected, quoting=csv.QUOTE_ALL
+        )
         expected_participant_teams.writerow(
             ["Team Name", "Team Members", "Email Id"]
         )
-        challenge = get_challenge_model(self.challenge.pk)
-        participant_team = challenge.participant_teams.all().order_by(
-            "-team_name"
-        )
+        participant_team = self._get_expected_participant_teams_queryset()
         participant_teams = ChallengeParticipantSerializer(
             participant_team, many=True
         )
@@ -1007,6 +998,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_not_host_downloads_participant_team(self):
+        """Test that non-host user cannot download participant teams"""
         expected = {
             "error": "Sorry, you are not authorized to make this request"
         }
@@ -1014,3 +1006,128 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_host_gets_participant_team_json_format(self):
+        """Test that host can get participant teams in JSON format"""
+        participant_team = self._get_expected_participant_teams_queryset()
+        participant_teams = ChallengeParticipantSerializer(
+            participant_team, many=True
+        )
+        expected = {
+            "participant_teams": participant_teams.data,
+            "count": len(participant_teams.data),
+        }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"output": "json"})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_not_host_gets_participant_team_json_format(self):
+        """Test that non-host user cannot get participant teams in JSON format"""
+        expected = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {"output": "json"})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_json_format_case_insensitive(self):
+        """Test that output parameter is case-insensitive"""
+        self.client.force_authenticate(user=self.user)
+
+        # Test uppercase (use 'output' to avoid DRF format content negotiation)
+        response = self.client.get(self.url, {"output": "JSON"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+        self.assertIn("count", response.data)
+
+        # Test mixed case
+        response = self.client.get(self.url, {"output": "Json"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+
+    def test_invalid_format_defaults_to_csv(self):
+        """Test that invalid output parameter defaults to CSV download"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"output": "invalid"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("attachment; filename=", response["Content-Disposition"])
+
+    def test_json_response_structure(self):
+        """Test that JSON response has correct structure"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"output": "json"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("participant_teams", response.data)
+        self.assertIn("count", response.data)
+        self.assertEqual(response.data["count"], 2)  # Two teams added in setUp
+
+        # Verify each team has required fields
+        for team in response.data["participant_teams"]:
+            self.assertIn("team_name", team)
+            self.assertIn("team_members", team)
+            self.assertIn("team_members_email_ids", team)
+            self.assertIsInstance(team["team_members"], list)
+            self.assertIsInstance(team["team_members_email_ids"], list)
+
+    def test_json_response_contains_correct_data(self):
+        """Test that JSON response contains correct participant data"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"output": "json"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Find participant_team in response
+        team_names = [
+            team["team_name"] for team in response.data["participant_teams"]
+        ]
+        self.assertIn("Participant Team", team_names)
+        self.assertIn("Participant Team3", team_names)
+
+        # Verify member data for participant_team
+        for team in response.data["participant_teams"]:
+            if team["team_name"] == "Participant Team":
+                self.assertIn("otheruser", team["team_members"])
+                self.assertIn(
+                    "otheruser@test.com", team["team_members_email_ids"]
+                )
+            elif team["team_name"] == "Participant Team3":
+                self.assertIn("user3", team["team_members"])
+                self.assertIn("user3@test.com", team["team_members_email_ids"])
+
+    def test_csv_response_headers(self):
+        """Test that CSV response has correct headers"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn(
+            "participant_teams_{}.csv".format(self.challenge.pk),
+            response["Content-Disposition"],
+        )
+
+    def test_empty_participant_teams(self):
+        """Test response when challenge has no participant teams"""
+        # Remove all participant teams
+        self.challenge.participant_teams.clear()
+
+        self.client.force_authenticate(user=self.user)
+
+        # Test JSON format
+        response = self.client.get(self.url, {"output": "json"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["participant_teams"], [])
+        self.assertEqual(response.data["count"], 0)
+
+        # Test CSV format
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode("utf-8")
+        # Should only have header row
+        lines = content.strip().split("\n")
+        self.assertEqual(len(lines), 1)
+        self.assertIn("Team Name", lines[0])

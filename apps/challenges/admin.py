@@ -37,6 +37,11 @@ class UpdateNumOfWorkersForm(ActionForm):
 @admin.register(Challenge)
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ("created_at",)
+    raw_id_fields = (
+        "creator",
+        "participant_teams",
+        "approved_participant_teams",
+    )
     ordering = ["-id"]
     list_display = (
         "id",
@@ -45,28 +50,22 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
         "creator",
         "published",
-        "is_registration_open",
-        "enable_forum",
-        "anonymous_leaderboard",
-        "featured",
+        "approved_by_admin",
+        "is_frozen",
+        "remote_evaluation",
         "created_at",
-        "is_docker_based",
-        "is_static_dataset_code_upload",
-        "slug",
-        "submission_time_limit",
-        "banned_email_ids",
         "workers",
         "task_def_arn",
         "github_repository",
-        "github_branch",
     )
     list_filter = (
         ChallengeFilter,
         "published",
+        "is_frozen",
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
-        "featured",
+        "remote_evaluation",
         "start_date",
         "end_date",
     )
@@ -74,6 +73,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "id",
         "title",
         "creator__team_name",
+        "creator__created_by__email",
         "slug",
         "github_repository",
         "github_branch",
@@ -84,6 +84,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "freeze_selected_challenges",
+        "unfreeze_selected_challenges",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -214,6 +216,26 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
+    def freeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=True)
+        messages.success(
+            request,
+            "{} challenge(s) successfully frozen.".format(updated),
+        )
+
+    freeze_selected_challenges.short_description = "Freeze selected challenges (prevent hosts from changing start/end dates)."
+
+    def unfreeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=False)
+        messages.success(
+            request,
+            "{} challenge(s) successfully unfrozen.".format(updated),
+        )
+
+    unfreeze_selected_challenges.short_description = (
+        "Unfreeze selected challenges (allow hosts to change start/end dates)."
+    )
+
 
 @admin.register(ChallengeConfiguration)
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
@@ -266,6 +288,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
         "show_execution_time",
+        "show_scores_on_leaderboard",
     )
     list_filter = ("visibility",)
     search_fields = (

@@ -432,6 +432,143 @@ def test_delete_service_client_error(mock_challenge, mock_client):
     mock_client.deregister_task_definition.assert_not_called()
 
 
+def test_delete_service_service_not_found_returns_success(
+    mock_challenge, mock_client
+):
+    """Test that ServiceNotFoundException is treated as success since the
+    deletion goal is achieved (service doesn't exist)."""
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ServiceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeleteService",
+        )
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return success since the service doesn't exist
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # Challenge state should be cleaned up
+    assert mock_challenge.workers is None
+    assert mock_challenge.task_def_arn == ""
+    mock_challenge.save.assert_called()
+    # Should attempt to deregister task definition
+    mock_client.deregister_task_definition.assert_called_once_with(
+        taskDefinition="valid_task_def_arn"
+    )
+
+
+def test_delete_service_service_not_found_with_deregister_failure(
+    mock_challenge, mock_client
+):
+    """Test that ServiceNotFoundException still succeeds even if deregister
+    task definition also fails."""
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ServiceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeleteService",
+        )
+        mock_client.deregister_task_definition.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "TaskDefinitionNotFound"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeregisterTaskDefinition",
+        )
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should still return success
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # Challenge state should be cleaned up
+    assert mock_challenge.workers is None
+    assert mock_challenge.task_def_arn == ""
+    mock_challenge.save.assert_called()
+
+
+def test_update_service_service_not_found_proceeds_to_delete(
+    mock_challenge, mock_client
+):
+    """Test that when update_service fails with ServiceNotFoundException,
+    the code proceeds to delete_service anyway."""
+    mock_challenge.workers = 3
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    response_metadata_ok = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+    }
+    response_service_not_found = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        "Error": {"Code": "ServiceNotFoundException"},
+    }
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            mock_client.delete_service.return_value = response_metadata_ok
+
+            response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return success since delete succeeded
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # delete_service should have been called despite update failure
+    mock_client.delete_service.assert_called_once()
+    mock_challenge.save.assert_called()
+
+
+def test_update_service_other_error_does_not_proceed_to_delete(
+    mock_challenge, mock_client
+):
+    """Test that when update_service fails with a non-ServiceNotFoundException
+    error, the code does NOT proceed to delete_service."""
+    mock_challenge.workers = 3
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+
+    response_other_error = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        "Error": {"Code": "SomeOtherError"},
+    }
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_other_error,
+        ):
+            response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return the error response
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.BAD_REQUEST
+    )
+    # delete_service should NOT have been called
+    mock_client.delete_service.assert_not_called()
+
+
 class TestServiceManager:
     @pytest.fixture
     def mock_client(self):
@@ -480,7 +617,8 @@ class TestServiceManager:
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
-        # Mock client_token_generator and create_service_by_challenge_pk to return a mock response
+        # Mock client_token_generator and create_service_by_challenge_pk to
+        # return a mock response
         with patch(
             "challenges.aws_utils.client_token_generator",
             return_value="mock_client_token",
@@ -497,6 +635,66 @@ class TestServiceManager:
                 mock_create.assert_called_once_with(
                     mock_client, mock_challenge, "mock_client_token"
                 )
+
+    def test_service_manager_service_not_found_stop_returns_success(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks=0
+        (stop), treat as success and sync challenge.workers to 0."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            response = service_manager(
+                mock_client, mock_challenge, num_of_tasks=0
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 0
+        mock_challenge.save.assert_called()
+
+    def test_service_manager_service_not_found_start_creates_service(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks>0
+        (start), create the service instead."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+        response_metadata_ok = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            with patch(
+                "challenges.aws_utils.client_token_generator",
+                return_value="mock_client_token",
+            ):
+                with patch(
+                    "challenges.aws_utils.create_service_by_challenge_pk",
+                    return_value=response_metadata_ok,
+                ) as mock_create:
+                    response = service_manager(
+                        mock_client, mock_challenge, num_of_tasks=1
+                    )
+
+        assert response == response_metadata_ok
+        assert mock_challenge.workers is None
+        mock_challenge.save.assert_called()
+        mock_create.assert_called_once_with(
+            mock_client, mock_challenge, "mock_client_token"
+        )
 
 
 class TestStopEc2Instance(unittest.TestCase):
@@ -1152,7 +1350,8 @@ class TestTerminateEC2Instance(unittest.TestCase):
             mock_ec2.terminate_instances.side_effect
         )
 
-        # Ensure the EC2 instance ID was not cleared and the challenge was not saved
+        # Ensure the EC2 instance ID was not cleared and the challenge was not
+        # saved
         self.assertNotEqual(challenge.ec2_instance_id, "")
         challenge.save.assert_not_called()
 
@@ -2162,7 +2361,8 @@ class TestDeleteWorkers(TestCase):
         # Assertions
         self.assertEqual(result, {"count": 1, "failures": []})
 
-        # Ensure the delete_service_by_challenge_pk, get_log_group_name, and delete_log_group methods were called
+        # Ensure the delete_service_by_challenge_pk, get_log_group_name, and
+        # delete_log_group methods were called
         mock_delete_service_by_challenge_pk.assert_called_once_with(
             challenge=challenge_with_workers
         )
@@ -2186,7 +2386,8 @@ class TestDeleteWorkers(TestCase):
         challenge_with_workers = MagicMock(pk=1, workers=5)
         mock_queryset = [challenge_with_workers]
 
-        # Mock the delete_service_by_challenge_pk response to simulate a failure
+        # Mock the delete_service_by_challenge_pk response to simulate a
+        # failure
         mock_delete_service_by_challenge_pk.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
             "Error": "An error occurred",
@@ -2694,7 +2895,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Assert that get_boto3_client was called with the correct arguments
         mock_get_boto3_client.assert_called_once_with("logs", aws_keys)
 
-        # Assert that delete_log_group was called on the client with the correct argument
+        # Assert that delete_log_group was called on the client with the
+        # correct argument
         mock_client.delete_log_group.assert_called_once_with(
             logGroupName="test-log-group"
         )
@@ -2731,7 +2933,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Assert that get_boto3_client was called with the correct arguments
         mock_get_boto3_client.assert_called_once_with("logs", aws_keys)
 
-        # Assert that delete_log_group was called on the client with the correct argument
+        # Assert that delete_log_group was called on the client with the
+        # correct argument
         mock_client.delete_log_group.assert_called_once_with(
             logGroupName="test-log-group"
         )
@@ -2739,7 +2942,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Retrieve the actual arguments passed to logger.exception
         args, kwargs = mock_logger.exception.call_args
 
-        # Check if the first argument of logger.exception contains the correct message
+        # Check if the first argument of logger.exception contains the correct
+        # message
         self.assertTrue(
             "Delete failed" in str(args[0]),
             f"Expected 'Delete failed' in {args[0]}",
@@ -3192,7 +3396,8 @@ class TestSetupEC2(TestCase):
         self.challenge.save()
         # Call the function
         setup_ec2(self.serialized_challenge)
-        # Check if start_ec2_instance was called since the EC2 instance already exists
+        # Check if start_ec2_instance was called since the EC2 instance already
+        # exists
         mock_start_ec2.assert_called_once_with(self.challenge)
         mock_create_ec2.assert_not_called()
 
@@ -3211,7 +3416,8 @@ class TestSetupEC2(TestCase):
         self.challenge.save()
         # Call the function
         setup_ec2(self.serialized_challenge)
-        # Check if create_ec2_instance was called since the EC2 instance doesn't exist
+        # Check if create_ec2_instance was called since the EC2 instance
+        # doesn't exist
         mock_create_ec2.assert_called_once_with(self.challenge)
         mock_start_ec2.assert_not_called()
 

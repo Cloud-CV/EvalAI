@@ -1,9 +1,22 @@
 from django.contrib.auth import get_user_model
+from participants.utils import (
+    has_participated_in_require_complete_profile_challenge,
+)
 from rest_auth.serializers import PasswordResetSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import JwtToken, Profile
+
+LOCKED_PROFILE_FIELDS = [
+    "first_name",
+    "last_name",
+    "address_street",
+    "address_city",
+    "address_state",
+    "address_country",
+    "university",
+]
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -41,6 +54,24 @@ class ProfileSerializer(UserDetailsSerializer):
     linkedin_url = serializers.URLField(
         source="profile.linkedin_url", allow_blank=True
     )
+    # Student profile fields
+    address_street = serializers.CharField(
+        source="profile.address_street", allow_blank=True, required=False
+    )
+    address_city = serializers.CharField(
+        source="profile.address_city", allow_blank=True, required=False
+    )
+    address_state = serializers.CharField(
+        source="profile.address_state", allow_blank=True, required=False
+    )
+    address_country = serializers.CharField(
+        source="profile.address_country", allow_blank=True, required=False
+    )
+    university = serializers.CharField(
+        source="profile.university", allow_blank=True, required=False
+    )
+    is_profile_complete = serializers.SerializerMethodField()
+    is_profile_fields_locked = serializers.SerializerMethodField()
 
     class Meta(UserDetailsSerializer.Meta):
         fields = (
@@ -53,14 +84,114 @@ class ProfileSerializer(UserDetailsSerializer):
             "github_url",
             "google_scholar_url",
             "linkedin_url",
+            "address_street",
+            "address_city",
+            "address_state",
+            "address_country",
+            "university",
+            "is_profile_complete",
+            "is_profile_fields_locked",
         )
+
+    def get_is_profile_fields_locked(self, obj):
+        """True if user has participated in a challenge requiring complete profile."""
+        return self._is_profile_fields_locked()
+
+    def get_is_profile_complete(self, obj):
+        """Returns whether the user's profile is complete."""
+        if hasattr(obj, "profile"):
+            return obj.profile.is_complete
+        return False
+
+    def _is_profile_fields_locked(self):
+        """Check if the user being updated has locked profile fields.
+        Caches the result to avoid redundant DB queries within a single
+        request (called from validate, update, and get_is_profile_fields_locked).
+        """
+        if not hasattr(self, "_cached_is_profile_fields_locked"):
+            if self.instance and hasattr(self.instance, "pk"):
+                self._cached_is_profile_fields_locked = (
+                    has_participated_in_require_complete_profile_challenge(
+                        self.instance
+                    )
+                )
+            else:
+                self._cached_is_profile_fields_locked = False
+        return self._cached_is_profile_fields_locked
+
+    def validate(self, attrs):
+        """
+        Validate that required profile fields cannot be blank.
+        Participants must have complete profile (first_name, last_name,
+        address_street, address_city, address_state, address_country, university).
+        If user has participated in a require_complete_profile challenge,
+        these fields cannot be edited.
+        """
+        errors = {}
+
+        # Reject edits to locked fields (participated in
+        # require_complete_profile).
+        if self._is_profile_fields_locked():
+            profile_data = attrs.get("profile", {})
+            for field in LOCKED_PROFILE_FIELDS:
+                if field in ["first_name", "last_name"]:
+                    new_value = attrs.get(field)
+                    current = (
+                        getattr(self.instance, field, None)
+                        if self.instance
+                        else None
+                    )
+                else:
+                    new_value = profile_data.get(field)
+                    current = None
+                    if self.instance and hasattr(self.instance, "profile"):
+                        current = getattr(self.instance.profile, field, None)
+                if new_value is not None:
+                    new_str = str(new_value).strip() if new_value else ""
+                    current_str = str(current).strip() if current else ""
+                    if new_str != current_str:
+                        errors[field] = [
+                            "This field cannot be edited while participating "
+                            "in an active challenge that requires complete "
+                            "profile. It will become editable after the "
+                            "challenge ends."
+                        ]
+            if errors:
+                raise ValidationError(errors)
+
+        # Required user fields (only when not locked)
+        if not self._is_profile_fields_locked():
+            for field in ["first_name", "last_name"]:
+                value = attrs.get(field)
+                if value is not None and (not value or not str(value).strip()):
+                    errors[field] = ["This field cannot be blank."]
+
+            # Required profile fields
+            profile_data = attrs.get("profile", {})
+            for field in [
+                "address_street",
+                "address_city",
+                "address_state",
+                "address_country",
+                "university",
+            ]:
+                value = profile_data.get(field)
+                if value is not None and (not value or not str(value).strip()):
+                    errors[field] = ["This field cannot be blank."]
+
+        if errors:
+            raise ValidationError(errors)
+        return attrs
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
-        affiliation = profile_data.get("affiliation")
-        github_url = profile_data.get("github_url")
-        google_scholar_url = profile_data.get("google_scholar_url")
-        linkedin_url = profile_data.get("linkedin_url")
+        fields_locked = self._is_profile_fields_locked()
+
+        # Remove locked fields from validated_data so they keep existing values
+        if fields_locked:
+            for field in LOCKED_PROFILE_FIELDS:
+                validated_data.pop(field, None)
+                profile_data.pop(field, None)
 
         instance = super(ProfileSerializer, self).update(
             instance, validated_data
@@ -68,10 +199,29 @@ class ProfileSerializer(UserDetailsSerializer):
 
         profile = instance.profile
         if profile_data:
-            profile.affiliation = affiliation
-            profile.github_url = github_url
-            profile.google_scholar_url = google_scholar_url
-            profile.linkedin_url = linkedin_url
+            profile.affiliation = profile_data.get(
+                "affiliation", profile.affiliation
+            )
+            profile.github_url = profile_data.get(
+                "github_url", profile.github_url
+            )
+            profile.google_scholar_url = profile_data.get(
+                "google_scholar_url", profile.google_scholar_url
+            )
+            profile.linkedin_url = profile_data.get(
+                "linkedin_url", profile.linkedin_url
+            )
+            if not fields_locked:
+                if profile_data.get("address_street") is not None:
+                    profile.address_street = profile_data["address_street"]
+                if profile_data.get("address_city") is not None:
+                    profile.address_city = profile_data["address_city"]
+                if profile_data.get("address_state") is not None:
+                    profile.address_state = profile_data["address_state"]
+                if profile_data.get("address_country") is not None:
+                    profile.address_country = profile_data["address_country"]
+                if profile_data.get("university") is not None:
+                    profile.university = profile_data["university"]
             profile.save()
         return instance
 
@@ -88,6 +238,11 @@ class UserProfileSerializer(UserDetailsSerializer):
             "github_url",
             "google_scholar_url",
             "linkedin_url",
+            "address_street",
+            "address_city",
+            "address_state",
+            "address_country",
+            "university",
         )
 
 

@@ -84,6 +84,11 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
+    require_complete_profile = models.BooleanField(
+        default=False,
+        verbose_name="Require Complete Profile",
+        help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
+    )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
         blank=True,
@@ -240,6 +245,12 @@ class Challenge(TimeStampedModel):
         max_length=200, blank=True, null=True, default=""
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
+    is_frozen = models.BooleanField(
+        default=False,
+        verbose_name="Is Frozen",
+        db_index=True,
+        help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -518,6 +529,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
     show_execution_time = models.BooleanField(default=False)
+    show_scores_on_leaderboard = models.BooleanField(default=True)
     # Allow ordering leaderboard by all metrics
     is_multi_metric_leaderboard = models.BooleanField(default=True)
 
@@ -588,6 +600,12 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "leaderboard_data"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase_split", "is_disabled", "-created_at"],
+                name="ld_chphase_isdisc_created_idx",
+            ),
+        ]
 
 
 class ChallengeConfiguration(TimeStampedModel):

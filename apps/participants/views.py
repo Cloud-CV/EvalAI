@@ -9,6 +9,8 @@ from challenges.utils import (
     is_user_in_blocked_email_domains,
 )
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
+from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -65,9 +67,18 @@ def participant_team_list(request):
         participant_teams_id = Participant.objects.filter(
             user_id=request.user
         ).values_list("team_id", flat=True)
-        participant_teams = ParticipantTeam.objects.filter(
-            id__in=participant_teams_id
-        ).order_by("-id")
+        participant_teams = (
+            ParticipantTeam.objects.filter(id__in=participant_teams_id)
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .order_by("-id")
+        )
         filtered_teams = ParticipantTeamsFilter(
             request.GET, queryset=participant_teams
         )
@@ -245,8 +256,11 @@ def invite_participant_to_team(request, pk):
                     participant_email
                 ) in participant_team.get_all_participants_email():
                     if participant_email in challenge.banned_email_ids:
-                        message = "You cannot invite as you're a part of {} team and it has been banned "
-                        "from this challenge. Please contact the challenge host."
+                        message = (
+                            "You cannot invite as you're a part of {} team and it "
+                            "has been banned from this challenge. Please contact "
+                            "the challenge host."
+                        )
                         response_data = {
                             "error": message.format(participant_team.team_name)
                         }
@@ -257,8 +271,10 @@ def invite_participant_to_team(request, pk):
 
                 # Check if invited user is banned
                 if email in challenge.banned_email_ids:
-                    message = "You cannot invite as the invited user has been banned "
-                    "from this challenge. Please contact the challenge host."
+                    message = (
+                        "You cannot invite as the invited user has been banned "
+                        "from this challenge. Please contact the challenge host."
+                    )
                     response_data = {"error": message}
                     return Response(
                         response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -285,6 +301,36 @@ def invite_participant_to_team(request, pk):
                     domains = "{}{}{}".format(domains, "/", domain)
                 domains = domains[1:]
                 response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
+
+    # If team is in any active challenge that requires complete profile,
+    # the invited user must have a complete profile (prevents bypassing
+    # the check by inviting incomplete users after the team has joined).
+    if len(team_participated_challenges) > 0:
+        from challenges.models import Challenge
+
+        active_require_profile = Challenge.objects.filter(
+            pk__in=team_participated_challenges,
+            require_complete_profile=True,
+            end_date__gt=timezone.now(),
+        ).exists()
+        profile = getattr(user, "profile", None)
+        profile_is_complete = bool(
+            profile and getattr(profile, "is_complete", False)
+        )
+        if active_require_profile:
+            if not profile_is_complete:
+                response_data = {
+                    "error": (
+                        "This team has participated in a challenge that "
+                        "requires a complete profile. The invited user must "
+                        "complete their profile (full name, street address, "
+                        "city, state, country, university) before being "
+                        "added to the team."
+                    )
+                }
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
@@ -357,30 +403,59 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(
         user=request.user
-    ).prefetch_related("team")
+    ).select_related("team", "team__created_by")
 
     is_challenge_host = is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     )
 
     challenge_participated_teams = []
+    participant_teams = [p.team for p in participant_objs]
+    if not participant_teams:
+        serializer = ChallengeParticipantTeamListSerializer(
+            ChallengeParticipantTeamList(challenge_participated_teams)
+        )
+        response_data = serializer.data
+        response_data["is_challenge_host"] = is_challenge_host
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    participant_team_ids = [t.id for t in participant_teams]
+    # Batch fetch: single query for all challenges across all participant teams
+    # to avoid N+1 (COUNT + SELECT per participant team)
+    all_challenges = (
+        Challenge.objects.filter(participant_teams__in=participant_teams)
+        .select_related("creator", "creator__created_by")
+        .prefetch_related(
+            Prefetch(
+                "participant_teams",
+                queryset=ParticipantTeam.objects.filter(
+                    id__in=participant_team_ids
+                ),
+            )
+        )
+        .order_by("title")
+    )
+
+    # Build mapping: participant_team_id -> [challenges]
+    team_to_challenges = {tid: [] for tid in participant_team_ids}
+    for challenge in all_challenges:
+        for team in challenge.participant_teams.all():
+            if team.id in team_to_challenges:
+                team_to_challenges[team.id].append(challenge)
+
     for participant_obj in participant_objs:
         participant_team = participant_obj.team
-
-        challenges = Challenge.objects.filter(
-            participant_teams=participant_team
-        )
-
-        if challenges.count():
+        challenges = team_to_challenges.get(participant_team.id, [])
+        if challenges:
             for challenge in challenges:
                 challenge_participated_teams.append(
                     ChallengeParticipantTeam(challenge, participant_team)
                 )
         else:
-            challenge = None
             challenge_participated_teams.append(
-                ChallengeParticipantTeam(challenge, participant_team)
+                ChallengeParticipantTeam(None, participant_team)
             )
+
     serializer = ChallengeParticipantTeamListSerializer(
         ChallengeParticipantTeamList(challenge_participated_teams)
     )

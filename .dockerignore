@@ -1,7 +1,170 @@
-bower_components
-env
-elasticmq-server-0.14.2.jar
-examples
-media
-node_modules
-static
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+README.md
+CODE_OF_CONDUCT.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+.tox/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# Bower
+bower_components/
+.bower-cache/
+
+# Frontend builds
+frontend/dist/
+frontend_v2/dist/
+frontend_v2/build/
+
+# Docker
+docker-compose*.yml
+.dockerignore
+Dockerfile*
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (keep docker/env files, exclude local)
+.env
+.env.local
+*.env.local
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Build artifacts
+*.egg
+*.egg-info/
+wheels/
+*.whl
+pip-wheel-metadata/
+
+# Coverage and testing
+.coverage.*
+.coverage
+.tox/
+.nox/
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+site/
+
+# Frontend build artifacts
+frontend/.sass-cache/
+frontend/.angular/
+frontend_v2/.next/
+frontend_v2/.turbo/
+
+# Docker files themselves (unless needed in context)
+docker-compose*.override.yml
+.dockerignore
+
+# Scripts that might be large
+scripts/**/*.pyc
+scripts/**/__pycache__/
+
+# Large data files (if any)
+*.csv
+*.tsv
+*.json.gz
+*.parquet
+
+# Editor backups
+.*.swp
+.*.swo
+*~
+.#*
+
+# Local configuration
+local_settings.py
+settings_local.py
+*.local.py
+
+# Media and user-uploaded files (should never be in Docker images)
+media/
+challenge_data/
+staticfiles/
+static/
+
+# SSL certificates (if any)
+# Note: ssl/ is needed for production builds (copied from S3 in push.sh before building)
+# Commented out to allow SSL files in production builds
+# ssl/
+
+# Monitoring data
+monitoring/prometheus/prometheus_db/*
+!monitoring/prometheus/prometheus_db/.gitkeep
+monitoring/grafana/grafana_db/grafana.db
+monitoring/alertmanager/data/*
+!monitoring/alertmanager/data/.gitkeep

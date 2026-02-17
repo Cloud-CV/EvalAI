@@ -156,6 +156,9 @@ MEDIA_URL = "/media/"
 
 SITE_ID = 1
 
+# Maximum number of leaderboard rows to load per query (prevents slow queries)
+MAX_LEADERBOARD_QUERY_LIMIT = 10000
+
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": (
         "rest_framework.pagination.LimitOffsetPagination"
@@ -211,6 +214,26 @@ AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+
+# Celery Configuration - Base settings (can be overridden per environment)
+# Task execution settings
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit
+CELERY_TASK_REJECT_ON_WORKER_LOST = True  # Re-queue tasks if worker dies
+
+# Worker settings (defaults - override in prod/staging)
+CELERYD_PREFETCH_MULTIPLIER = 1  # Each worker reserves only 1 task at a time
+CELERY_ACKS_LATE = True  # Acknowledge tasks after completion (safer with SQS)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    200  # Recycle workers to prevent memory leaks
+)
+
+# SQS-specific settings
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "region": AWS_REGION,
+    "visibility_timeout": 3600,  # 60 minutes
+    "polling_interval": 1,  # Check for new messages every second
+}
 
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
@@ -288,6 +311,12 @@ CACHES = {
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
+
+# Maximum number of GET/POST parameters for forms
+# https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-number-fields
+# Increased from default of 1000 to handle Challenge admin forms with many
+# participant teams in ManyToMany relationships
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100_000
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
