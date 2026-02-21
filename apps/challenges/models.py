@@ -32,6 +32,7 @@ class Challenge(TimeStampedModel):
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
+        self._original_end_date = self.end_date
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -324,6 +325,47 @@ def update_sqs_retention_period_for_challenge(
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def handle_end_date_change_for_challenge(sender, instance, created, **kwargs):
+    """
+    When a challenge's end_date changes, update or recreate the EventBridge
+    cleanup schedule and, if needed, recreate the full worker infrastructure.
+    """
+    field_name = "end_date"
+    import challenges.aws_utils as aws
+
+    if not created and is_model_field_changed(instance, field_name):
+        challenge = instance
+        new_end_date = challenge.end_date
+        challenge._original_end_date = new_end_date
+
+        # Skip if not a Fargate-managed challenge
+        if (
+            challenge.is_docker_based
+            or challenge.uses_ec2_worker
+            or challenge.remote_evaluation
+        ):
+            return
+
+        # Skip if the challenge was never approved and has no workers
+        # (workers may exist from host testing before approval)
+        if not challenge.approved_by_admin and challenge.workers is None:
+            return
+
+        if new_end_date and new_end_date > timezone.now():
+            if challenge.workers is None:
+                # Resources were cleaned up (Lambda already fired).
+                # Recreate everything: service + auto-scaling + schedule.
+                aws.start_workers([challenge])
+            else:
+                # Resources still exist; just reschedule the cleanup.
+                aws.update_challenge_cleanup_schedule(challenge)
+        else:
+            # New end_date is in the past; trigger cleanup if resources exist.
+            if challenge.workers is not None:
+                aws.delete_workers([challenge])
 
 
 class DatasetSplit(TimeStampedModel):

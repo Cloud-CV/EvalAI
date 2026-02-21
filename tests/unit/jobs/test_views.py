@@ -2602,8 +2602,11 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(PresignedURLSubmissionTest, self).setUp()
 
+    @mock.patch("jobs.views.ensure_workers_for_host_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_get_submission_presigned_url(self, mock_get_aws_creds):
+    def test_get_submission_presigned_url(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",
             kwargs={"challenge_phase_pk": self.challenge_phase.pk},
@@ -2637,14 +2640,18 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
                 "file_name": "media/submissions/dummy.txt",
             },
         )
+        mock_ensure_workers.assert_called_once()
         self.assertEqual(
             len(response.data["presigned_urls"]),
             len(expected["presigned_urls"]),
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @mock.patch("jobs.views.ensure_workers_for_host_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_finish_submission_file_upload(self, mock_get_aws_creds):
+    def test_finish_submission_file_upload(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
         # Create a submission using multipart upload
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",

@@ -314,6 +314,11 @@ urlpatterns = [
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/update_evaluation_module_error/$",
+        views.update_evaluation_module_error,
+        name="update_evaluation_module_error",
+    ),
 ]
 
 app_name = "challenges"
