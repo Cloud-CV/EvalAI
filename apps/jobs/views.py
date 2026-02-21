@@ -13,6 +13,7 @@ from base.utils import (
     is_user_a_staff,
     paginated_queryset,
 )
+from challenges.aws_utils import ensure_workers_for_host_submission
 from challenges.models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -224,7 +225,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         # check if user is a challenge host or a participant
-        if not is_user_a_host_of_challenge(request.user, challenge_id):
+        is_host = is_user_a_host_of_challenge(request.user, challenge_id)
+        if not is_host:
             # check if challenge phase is public and accepting solutions
             if not challenge_phase.is_public:
                 response_data = {
@@ -244,6 +246,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     return Response(
                         response_data, status=status.HTTP_403_FORBIDDEN
                     )
+        else:
+            # Ensure the worker stack exists for host submissions
+            ensure_workers_for_host_submission(challenge)
 
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id
@@ -2739,7 +2744,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is a challenge host or a participant
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
+    if not is_host:
         # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
@@ -2765,6 +2771,9 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+    else:
+        # Ensure the worker stack exists for host submissions
+        ensure_workers_for_host_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
@@ -3034,7 +3043,8 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
+    if not is_host:
         if not challenge_phase.is_public:
             response_data = {
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
@@ -3057,6 +3067,9 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+    else:
+        # Ensure the worker stack exists for host submissions
+        ensure_workers_for_host_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
