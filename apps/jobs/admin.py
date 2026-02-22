@@ -1,6 +1,7 @@
 import logging
 
 from base.admin import ImportExportTimeStampedAdmin
+from challenges.aws_utils import ensure_workers_for_host_submission
 from django.contrib import admin
 
 from .admin_filters import (
@@ -67,7 +68,12 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
 
     def submit_job_to_worker(self, request, queryset):
+        challenges_checked = set()
         for submission in queryset:
+            challenge = submission.challenge_phase.challenge
+            if challenge.pk not in challenges_checked:
+                ensure_workers_for_host_submission(challenge)
+                challenges_checked.add(challenge.pk)
             message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
 
