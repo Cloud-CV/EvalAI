@@ -505,7 +505,12 @@ service_definition = """
             "enable": True,
             "rollback": False
         }}
-    }}
+    }},
+    "tags": [
+        {{"key": "challenge_pk", "value": "{challenge_pk}"}},
+        {{"key": "managed_by", "value": "evalai"}}
+    ],
+    "propagateTags": "SERVICE"
 }}
 """
 

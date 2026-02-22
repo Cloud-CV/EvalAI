@@ -7520,6 +7520,113 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
+class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse_lazy(
+            "challenges:update_evaluation_module_error",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.auth_token = "test-lambda-secret-token"
+
+    @override_settings()
+    def test_missing_lambda_auth_token_env(self):
+        """Should return 500 if LAMBDA_AUTH_TOKEN env is not set."""
+        # Ensure the env var is not set
+        with mock.patch.dict(os.environ, {}, clear=True):
+            response = self.client.patch(
+                self.url,
+                {"evaluation_module_error": "some error"},
+                format="json",
+            )
+        self.assertEqual(
+            response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    def test_missing_authorization_header(self):
+        """Should return 401 if no Authorization header is provided."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            # Use a raw client without forced authentication
+            client = APIClient()
+            response = client.patch(
+                self.url,
+                {"evaluation_module_error": "some error"},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_invalid_auth_token(self):
+        """Should return 403 if the auth token is wrong."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION="Bearer wrong-token")
+            response = client.patch(
+                self.url,
+                {"evaluation_module_error": "some error"},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_missing_evaluation_module_error_field(self):
+        """Should return 400 if evaluation_module_error is not in request body."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_challenge_not_found(self):
+        """Should return 404 if the challenge does not exist."""
+        url = reverse_lazy(
+            "challenges:update_evaluation_module_error",
+            kwargs={"challenge_pk": 99999},
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                url,
+                {"evaluation_module_error": "some error"},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_successful_update(self):
+        """Should update evaluation_module_error and return 200."""
+        error_msg = (
+            "Worker stopped: OutOfMemoryError. "
+            "Current memory: 2048 MB. "
+            "Increase worker memory via Scale Resources and restart the worker."
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {"evaluation_module_error": error_msg},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify the challenge was updated
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.evaluation_module_error, error_msg)
+
+
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
     """Tests for the get_challenge_submission_metrics_by_pk endpoint."""
 

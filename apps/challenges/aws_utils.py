@@ -46,6 +46,12 @@ aws_keys = {
     ),
 }
 
+CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get(
+    "CHALLENGE_CLEANUP_LAMBDA_ARN", ""
+)
+EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
+    "EVENTBRIDGE_SCHEDULER_ROLE_ARN", ""
+)
 
 COMMON_SETTINGS_DICT = {
     "EXECUTION_ROLE_ARN": os.environ.get(
@@ -136,6 +142,394 @@ def get_log_group_name(challenge_pk):
         f"challenge-pk-{challenge_pk}-{settings.ENVIRONMENT}-workers"
     )
     return log_group_name
+
+
+def setup_auto_scaling_for_service(challenge):
+    """
+    Registers the ECS service as a scalable target with Application Auto Scaling
+    and creates CloudWatch alarms that scale the service based on SQS queue depth.
+
+    Scale-up: when ApproximateNumberOfMessagesVisible > 0 for 1 minute.
+    Scale-down: when ApproximateNumberOfMessagesVisible = 0 for 2 minutes.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose service to configure.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping auto-scaling setup for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    queue_name = challenge.queue
+    service_name = f"{queue_name}_service"
+    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
+    resource_id = f"service/{cluster}/{service_name}"
+
+    autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
+
+    try:
+        # Register the ECS service as a scalable target (min=0, max=1)
+        autoscaling_client.register_scalable_target(
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            MinCapacity=0,
+            MaxCapacity=1,
+        )
+
+        # Create scale-up policy
+        scale_up_response = autoscaling_client.put_scaling_policy(
+            PolicyName=f"{service_name}_scale_up",
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            PolicyType="StepScaling",
+            StepScalingPolicyConfiguration={
+                "AdjustmentType": "ExactCapacity",
+                "StepAdjustments": [
+                    {
+                        "MetricIntervalLowerBound": 0,
+                        "ScalingAdjustment": 1,
+                    }
+                ],
+                "Cooldown": 60,
+            },
+        )
+        scale_up_policy_arn = scale_up_response["PolicyARN"]
+
+        # Create scale-down policy
+        scale_down_response = autoscaling_client.put_scaling_policy(
+            PolicyName=f"{service_name}_scale_down",
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            PolicyType="StepScaling",
+            StepScalingPolicyConfiguration={
+                "AdjustmentType": "ExactCapacity",
+                "StepAdjustments": [
+                    {
+                        "MetricIntervalUpperBound": 0,
+                        "ScalingAdjustment": 0,
+                    }
+                ],
+                "Cooldown": 120,
+            },
+        )
+        scale_down_policy_arn = scale_down_response["PolicyARN"]
+
+        # Create CloudWatch alarms linked to the scaling policies
+        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+
+        # Scale-up alarm: queue depth > 0 for 1 minute
+        cloudwatch_client.put_metric_alarm(
+            AlarmName=f"{service_name}_scale_up",
+            Namespace="AWS/SQS",
+            MetricName="ApproximateNumberOfMessagesVisible",
+            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
+            Statistic="Sum",
+            Period=60,
+            EvaluationPeriods=1,
+            Threshold=0,
+            ComparisonOperator="GreaterThanThreshold",
+            AlarmActions=[scale_up_policy_arn],
+        )
+
+        # Scale-down alarm: queue depth = 0 for 2 minutes
+        cloudwatch_client.put_metric_alarm(
+            AlarmName=f"{service_name}_scale_down",
+            Namespace="AWS/SQS",
+            MetricName="ApproximateNumberOfMessagesVisible",
+            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
+            Statistic="Sum",
+            Period=120,
+            EvaluationPeriods=1,
+            Threshold=0,
+            ComparisonOperator="LessThanOrEqualToThreshold",
+            AlarmActions=[scale_down_policy_arn],
+        )
+
+        logger.info(
+            "Auto-scaling configured for challenge %s (service: %s)",
+            challenge.pk,
+            service_name,
+        )
+    except ClientError as e:
+        logger.exception(
+            "Failed to setup auto-scaling for challenge %s: %s",
+            challenge.pk,
+            e,
+        )
+
+
+def cleanup_auto_scaling_for_service(challenge):
+    """
+    Removes auto-scaling configuration and CloudWatch alarms for a challenge.
+
+    Called during service deletion or challenge cleanup. Handles cases where
+    resources have already been removed gracefully.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to clean up.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping auto-scaling cleanup for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    queue_name = challenge.queue
+    service_name = f"{queue_name}_service"
+    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
+    resource_id = f"service/{cluster}/{service_name}"
+
+    # Deregister scalable target (also removes scaling policies)
+    try:
+        autoscaling_client = get_boto3_client(
+            "application-autoscaling", aws_keys
+        )
+        autoscaling_client.deregister_scalable_target(
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+        )
+    except ClientError:
+        pass  # Already deregistered or never registered
+
+    # Delete CloudWatch alarms
+    try:
+        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+        cloudwatch_client.delete_alarms(
+            AlarmNames=[
+                f"{service_name}_scale_up",
+                f"{service_name}_scale_down",
+            ]
+        )
+    except ClientError:
+        pass  # Already deleted or never created
+
+    # Delete EventBridge cleanup schedule
+    delete_challenge_cleanup_schedule(challenge)
+
+    logger.info(
+        "Auto-scaling cleaned up for challenge %s (service: %s)",
+        challenge.pk,
+        service_name,
+    )
+
+
+def schedule_challenge_cleanup(challenge):
+    """
+    Creates a one-time EventBridge Scheduler schedule that fires at the
+    challenge's end_date to trigger a Lambda that cleans up all AWS resources
+    (ECS service, auto-scaling, CloudWatch alarms).
+
+    The schedule auto-deletes after firing (ActionAfterCompletion=DELETE).
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to schedule cleanup for.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge cleanup schedule for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
+            "Skipping EventBridge schedule for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    # EventBridge Scheduler uses the 'at()' expression for one-time schedules
+    schedule_expression = "at({})".format(
+        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.create_schedule(
+            Name=schedule_name,
+            ScheduleExpression=schedule_expression,
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+                "Input": json.dumps(
+                    {
+                        "challenge_pk": challenge.pk,
+                        "queue_name": challenge.queue,
+                    }
+                ),
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info(
+            "Scheduled cleanup for challenge %s at %s",
+            challenge.pk,
+            challenge.end_date,
+        )
+    except ClientError as e:
+        logger.exception(
+            "Failed to schedule cleanup for challenge %s: %s",
+            challenge.pk,
+            e,
+        )
+
+
+def update_challenge_cleanup_schedule(challenge):
+    """
+    Updates the EventBridge Scheduler schedule for a challenge when its
+    end_date changes. If the schedule doesn't exist (already fired and
+    auto-deleted), creates a new one instead.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose schedule to update.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge schedule update for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
+            "Skipping EventBridge schedule update for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    schedule_expression = "at({})".format(
+        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.update_schedule(
+            Name=schedule_name,
+            ScheduleExpression=schedule_expression,
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+                "Input": json.dumps(
+                    {
+                        "challenge_pk": challenge.pk,
+                        "queue_name": challenge.queue,
+                    }
+                ),
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info(
+            "Updated cleanup schedule for challenge %s to %s",
+            challenge.pk,
+            challenge.end_date,
+        )
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ResourceNotFoundException":
+            # Schedule was already fired and auto-deleted; create a new one
+            schedule_challenge_cleanup(challenge)
+        else:
+            logger.exception(
+                "Failed to update cleanup schedule for challenge %s: %s",
+                challenge.pk,
+                e,
+            )
+
+
+def delete_challenge_cleanup_schedule(challenge):
+    """
+    Deletes the EventBridge Scheduler schedule for a challenge.
+    Handles the case where the schedule has already been deleted gracefully.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose schedule to delete.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge schedule deletion for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.delete_schedule(Name=schedule_name)
+    except ClientError:
+        pass  # Schedule already deleted or never created
+
+
+def ensure_workers_for_host_submission(challenge):
+    """
+    Ensures the worker stack (ECS service, auto-scaling, EventBridge cleanup)
+    exists for a challenge when a host makes a submission. If the stack has
+    never been created (challenge.workers is None), this triggers full stack
+    creation via start_workers.
+
+    This allows challenge hosts to test their evaluation pipeline before
+    requesting admin approval.
+
+    Called from submission endpoints when the submitter is a challenge host.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to ensure workers for.
+    """
+    if settings.DEBUG or settings.TEST:
+        logger.info(
+            "Skipping ensure_workers_for_host_submission for challenge %s "
+            "in development/test environment.",
+            challenge.pk,
+        )
+        return
+
+    # Only applies to Fargate-managed challenges
+    if (
+        challenge.is_docker_based
+        or challenge.uses_ec2_worker
+        or challenge.remote_evaluation
+    ):
+        return
+
+    # Stack already exists; auto-scaling will handle scale-up
+    if challenge.workers is not None:
+        return
+
+    logger.info(
+        "Host submission detected for challenge %s with no workers. "
+        "Creating worker stack.",
+        challenge.pk,
+    )
+    response = start_workers([challenge])
+    count, failures = response["count"], response["failures"]
+    if count:
+        logger.info(
+            "Worker stack created successfully for challenge %s.",
+            challenge.pk,
+        )
+    else:
+        logger.error(
+            "Failed to create worker stack for challenge %s: %s",
+            challenge.pk,
+            failures[0]["message"] if failures else "Unknown error",
+        )
 
 
 def client_token_generator(challenge_pk):
@@ -351,6 +745,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             service_name=service_name,
             task_def_arn=task_def_arn,
             client_token=client_token,
+            challenge_pk=str(challenge.pk),
             **VPC_DICT,
         )
         definition = eval(definition)
@@ -359,6 +754,9 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
                 challenge.workers = 1
                 challenge.save()
+                # Set up auto-scaling and schedule cleanup
+                setup_auto_scaling_for_service(challenge)
+                schedule_challenge_cleanup(challenge)
             return response
         except ClientError as e:
             logger.exception(e)
@@ -438,6 +836,9 @@ def delete_service_by_challenge_pk(challenge):
     )
     kwargs = eval(kwargs)
     try:
+        # Clean up auto-scaling and EventBridge schedule before deleting
+        cleanup_auto_scaling_for_service(challenge)
+
         if challenge.workers != 0:
             response = update_service_by_challenge_pk(
                 client, challenge, 0, False
@@ -949,6 +1350,10 @@ def start_workers(queryset):
                     }
                 )
                 continue
+            # Clear any OOM or evaluation module error on successful start
+            if challenge.evaluation_module_error:
+                challenge.evaluation_module_error = None
+                challenge.save()
             count += 1
         else:
             response = "Please select challenge with inactive workers only."
@@ -1264,6 +1669,10 @@ def restart_workers(queryset):
                     }
                 )
                 continue
+            # Clear any OOM or evaluation module error on successful restart
+            if challenge.evaluation_module_error:
+                challenge.evaluation_module_error = None
+                challenge.save()
             count += 1
         else:
             response = "Please select challenges with active workers only."
