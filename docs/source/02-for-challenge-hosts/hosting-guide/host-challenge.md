@@ -101,7 +101,7 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
-If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
+If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@eval.ai](mailto:team@eval.ai) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 ## Host a remote evaluation challenge
 
@@ -144,7 +144,7 @@ Please refer to <a href="../evaluation/remote-evaluation.html#writing-remote-eva
    python main.py
    ```
 
-If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
+If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@eval.ai](mailto:team@eval.ai) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 [evalai-starters]: https://github.com/Cloud-CV/EvalAI-Starters
 [evalai-cli]: https://cli.eval.ai/
