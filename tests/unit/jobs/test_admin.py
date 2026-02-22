@@ -1,6 +1,7 @@
 import os
 import shutil
 from datetime import timedelta
+from unittest.mock import patch
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
@@ -190,3 +191,109 @@ class SubmissionAdminTest(BaseAPITestClass):
         result = self.app_admin.get_challenge_name_and_id(self.submission)
         expected = f"{self.challenge.title} - {self.challenge.id}"
         self.assertEqual(result, expected)
+
+    @patch("jobs.admin.publish_submission_message")
+    @patch("jobs.admin.handle_submission_rerun")
+    @patch("jobs.admin.ensure_workers_for_host_submission")
+    def test_submit_job_calls_ensure_workers(
+        self, mock_ensure_workers, mock_rerun, mock_publish
+    ):
+        """ensure_workers_for_host_submission should be called for
+        each unique challenge when re-running submissions."""
+        mock_rerun.return_value = {"challenge_pk": self.challenge.pk}
+        queryset = Submission.objects.filter(pk=self.submission.pk)
+
+        self.app_admin.submit_job_to_worker(request, queryset)
+
+        mock_ensure_workers.assert_called_once_with(self.challenge)
+        mock_rerun.assert_called_once()
+        mock_publish.assert_called_once()
+
+    @patch("jobs.admin.publish_submission_message")
+    @patch("jobs.admin.handle_submission_rerun")
+    @patch("jobs.admin.ensure_workers_for_host_submission")
+    def test_submit_job_calls_ensure_workers_once_per_challenge(
+        self, mock_ensure_workers, mock_rerun, mock_publish
+    ):
+        """ensure_workers_for_host_submission should only be called once
+        per challenge even when re-running multiple submissions."""
+        second_submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="finished",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Second Method",
+            method_description="Second Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+        mock_rerun.return_value = {"challenge_pk": self.challenge.pk}
+        queryset = Submission.objects.filter(
+            pk__in=[self.submission.pk, second_submission.pk]
+        )
+
+        self.app_admin.submit_job_to_worker(request, queryset)
+
+        mock_ensure_workers.assert_called_once_with(self.challenge)
+        self.assertEqual(mock_rerun.call_count, 2)
+        self.assertEqual(mock_publish.call_count, 2)
+
+    @patch("jobs.admin.publish_submission_message")
+    @patch("jobs.admin.handle_submission_rerun")
+    @patch("jobs.admin.ensure_workers_for_host_submission")
+    def test_submit_job_calls_ensure_workers_per_distinct_challenge(
+        self, mock_ensure_workers, mock_rerun, mock_publish
+    ):
+        """ensure_workers_for_host_submission should be called once per
+        distinct challenge when submissions span multiple challenges."""
+        second_challenge = Challenge.objects.create(
+            title="Second Challenge",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+        )
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            second_phase = ChallengePhase.objects.create(
+                name="Second Phase",
+                description="Description",
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=second_challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_file2.txt",
+                    b"Dummy content",
+                    content_type="text/plain",
+                ),
+            )
+        second_submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=second_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="finished",
+            input_file=second_phase.test_annotation,
+            method_name="Other Method",
+            method_description="Other Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+        mock_rerun.return_value = {"challenge_pk": self.challenge.pk}
+        queryset = Submission.objects.filter(
+            pk__in=[self.submission.pk, second_submission.pk]
+        )
+
+        self.app_admin.submit_job_to_worker(request, queryset)
+
+        self.assertEqual(mock_ensure_workers.call_count, 2)
+        self.assertEqual(mock_rerun.call_count, 2)
+        self.assertEqual(mock_publish.call_count, 2)
