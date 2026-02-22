@@ -55,6 +55,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Prefetch
 from django.http import HttpResponse
@@ -5441,7 +5442,35 @@ def update_evaluation_module_error(request, challenge_pk):
         )
 
     challenge.evaluation_module_error = error_message
+
+    # Update optional worker config fields from the OOM auto-retry Lambda
+    worker_memory = request.data.get("worker_memory")
+    worker_cpu_cores = request.data.get("worker_cpu_cores")
+    task_def_arn = request.data.get("task_def_arn")
+
+    if worker_memory is not None:
+        challenge.worker_memory = int(worker_memory)
+    if worker_cpu_cores is not None:
+        challenge.worker_cpu_cores = int(worker_cpu_cores)
+    if task_def_arn is not None:
+        challenge.task_def_arn = task_def_arn
+
     challenge.save()
+
+    # Send email notification to the EvalAI team
+    if request.data.get("send_email"):
+        try:
+            send_mail(
+                subject=f"[EvalAI] Worker OOM - Challenge {challenge_pk}: {challenge.title}",
+                message=error_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send OOM email for challenge %s", challenge_pk
+            )
 
     return Response(
         {

@@ -7607,6 +7607,99 @@ class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
         self.challenge.refresh_from_db()
         self.assertEqual(self.challenge.evaluation_module_error, error_msg)
 
+    def test_updates_worker_config_fields(self):
+        """Should update worker_memory, worker_cpu_cores, and task_def_arn."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {
+                    "evaluation_module_error": "OOM auto-retry: 2048 -> 3072 MB",
+                    "worker_memory": 3072,
+                    "worker_cpu_cores": 512,
+                    "task_def_arn": "arn:aws:ecs:us-east-1:123:task-def/worker:2",
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.worker_memory, 3072)
+        self.assertEqual(self.challenge.worker_cpu_cores, 512)
+        self.assertEqual(
+            self.challenge.task_def_arn,
+            "arn:aws:ecs:us-east-1:123:task-def/worker:2",
+        )
+
+    def test_partial_worker_config_update(self):
+        """Should only update fields that are present in the request."""
+        original_cpu = self.challenge.worker_cpu_cores
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {
+                    "evaluation_module_error": "OOM auto-retry",
+                    "worker_memory": 4096,
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.worker_memory, 4096)
+        self.assertEqual(self.challenge.worker_cpu_cores, original_cpu)
+
+    @mock.patch("challenges.views.send_mail")
+    def test_sends_email_when_requested(self, mock_send_mail):
+        """Should send email to CLOUDCV_TEAM_EMAIL when send_email is True."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {
+                    "evaluation_module_error": "Worker OOM: auto-increased to 3072 MB",
+                    "send_email": True,
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_send_mail.assert_called_once()
+        call_kwargs = mock_send_mail.call_args
+        self.assertIn(
+            "OOM",
+            (
+                call_kwargs[1]["subject"]
+                if "subject" in call_kwargs[1]
+                else call_kwargs[0][0]
+            ),
+        )
+
+    @mock.patch("challenges.views.send_mail")
+    def test_does_not_send_email_by_default(self, mock_send_mail):
+        """Should not send email when send_email is not in the request."""
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+            response = client.patch(
+                self.url,
+                {"evaluation_module_error": "some error"},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_send_mail.assert_not_called()
+
 
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
     """Tests for the get_challenge_submission_metrics_by_pk endpoint."""
