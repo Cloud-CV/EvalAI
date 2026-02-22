@@ -112,7 +112,7 @@ class TestChallengeStartNotifier(BaseTestClass):
         for email in host_emails:
             calls.append(
                 mock.call(
-                    sender=settings.CLOUDCV_TEAM_EMAIL,
+                    sender=settings.EVALAI_TEAM_EMAIL,
                     recipient=email,
                     template_id=template_id,
                     template_data=template_data,
@@ -144,8 +144,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Call the function
         mock_settings.configure_mock(
-            ADMIN_EMAIL="admin@cloudcv.org",
-            CLOUDCV_TEAM_EMAIL="team@cloudcv.org",
+            EVALAI_TEAM_EMAIL="team@eval.ai",
             SENDGRID_SETTINGS={
                 "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
             },
@@ -154,8 +153,8 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Assert send_email was called with correct arguments
         mock_send_email.assert_called_once_with(
-            sender="team@cloudcv.org",
-            recipient="admin@cloudcv.org",
+            sender="team@eval.ai",
+            recipient="team@eval.ai",
             template_id="template-id",
             template_data={"CHALLENGE_NAME": "Test Challenge"},
         )
@@ -192,7 +191,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         mock_settings.DEBUG = False
         mock_settings.EVALAI_API_SERVER = "http://testserver"
-        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CHALLENGE_APPROVAL_EMAIL": "template-id"}
         }
@@ -200,7 +199,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
         construct_and_send_worker_start_mail(mock_challenge)
 
         mock_send_email.assert_called_once_with(
-            sender="team@cloudcv.org",
+            sender="team@eval.ai",
             recipient="host@test.com",
             template_id="template-id",
             template_data={
@@ -221,8 +220,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
         mock_challenge.image.url = "http://testserver/media/test_image.png"
 
         mock_settings.DEBUG = False
-        mock_settings.ADMIN_EMAIL = "admin@cloudcv.org"
-        mock_settings.CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
         }
@@ -230,8 +228,8 @@ class TestUnittestChallengeNotification(BaseTestClass):
         construct_and_send_eks_cluster_creation_mail(mock_challenge)
 
         mock_send_email.assert_called_once_with(
-            sender="team@cloudcv.org",
-            recipient="admin@cloudcv.org",
+            sender="team@eval.ai",
+            recipient="team@eval.ai",
             template_id="template-id",
             template_data={
                 "CHALLENGE_NAME": "Test Challenge",

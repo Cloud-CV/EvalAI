@@ -3203,7 +3203,7 @@ def invite_users_to_challenge(request, challenge_pk):
             else:
                 invalid_emails.append(email)
 
-        sender_email = settings.CLOUDCV_TEAM_EMAIL
+        sender_email = settings.EVALAI_TEAM_EMAIL
         hostname = get_url_from_hostname(settings.HOSTNAME)
         url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
         template_data = {"title": challenge.title, "url": url}

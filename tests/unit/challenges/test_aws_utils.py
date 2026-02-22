@@ -2601,7 +2601,7 @@ class TestRestartWorkersSignalCallback(TestCase):
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
         }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
         mock_settings.DEBUG = False
 
         mock_challenge = MagicMock()
@@ -2645,7 +2645,7 @@ class TestRestartWorkersSignalCallback(TestCase):
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
         }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
         mock_settings.DEBUG = False
 
         mock_image = MagicMock()
@@ -2685,7 +2685,7 @@ class TestRestartWorkersSignalCallback(TestCase):
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
         }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
+        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
         mock_settings.DEBUG = False
 
         mock_challenge = MagicMock()

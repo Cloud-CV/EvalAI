@@ -57,13 +57,13 @@ def notify_users_about_challenge(request):
             subject = request.POST.get("subject")
             body_html = request.POST.get("body")
 
-            sender = settings.CLOUDCV_TEAM_EMAIL
+            sender = settings.EVALAI_TEAM_EMAIL
 
             email = EmailMessage(
                 subject,
                 body_html,
                 sender,
-                [settings.CLOUDCV_TEAM_EMAIL],
+                [settings.EVALAI_TEAM_EMAIL],
                 bcc=users,
             )
             email.content_subtype = "html"

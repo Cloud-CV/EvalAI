@@ -62,7 +62,7 @@ MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
 DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
-DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
+DEFAULT_FROM_EMAIL = "team@eval.ai"
 EMAIL_BACKEND = "django_ses.SESBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
@@ -82,7 +82,8 @@ CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_URL"),
     integrations=[DjangoIntegration()],
-    # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+    # Set traces_sample_rate to 1.0 to capture 100% of transactions for
+    # performance monitoring.
     traces_sample_rate=1.0,
     # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
     profiles_sample_rate=1.0,

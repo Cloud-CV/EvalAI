@@ -106,7 +106,7 @@ def decode_data(data):
 
 
 def send_email(
-    sender=settings.CLOUDCV_TEAM_EMAIL,
+    sender=settings.EVALAI_TEAM_EMAIL,
     recipient=None,
     template_id=None,
     template_data=None,

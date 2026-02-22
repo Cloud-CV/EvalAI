@@ -30,7 +30,7 @@ def construct_and_send_worker_start_mail(challenge):
         emails = challenge.creator.get_all_challenge_host_email()
         for email in emails:
             send_email(
-                sender=settings.CLOUDCV_TEAM_EMAIL,
+                sender=settings.EVALAI_TEAM_EMAIL,
                 recipient=email,
                 template_id=template_id,
                 template_data=template_data,
@@ -50,8 +50,8 @@ def construct_and_send_eks_cluster_creation_mail(challenge):
     )
 
     send_email(
-        sender=settings.CLOUDCV_TEAM_EMAIL,
-        recipient=settings.ADMIN_EMAIL,
+        sender=settings.EVALAI_TEAM_EMAIL,
+        recipient=settings.EVALAI_TEAM_EMAIL,
         template_id=template_id,
         template_data=template_data,
     )
