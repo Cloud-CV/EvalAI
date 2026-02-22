@@ -5463,8 +5463,8 @@ def update_evaluation_module_error(request, challenge_pk):
             send_mail(
                 subject=f"[EvalAI] Worker OOM - Challenge {challenge_pk}: {challenge.title}",
                 message=error_message,
-                from_email=settings.CLOUDCV_TEAM_EMAIL,
-                recipient_list=[settings.CLOUDCV_TEAM_EMAIL],
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
                 fail_silently=True,
             )
         except Exception:
