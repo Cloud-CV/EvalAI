@@ -1318,7 +1318,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 emails = challenge.creator.get_all_challenge_host_email()
                 for email in emails:
                     send_email(
-                        sender=settings.EVALAI_TEAM_EMAIL,
+                        sender=settings.DEFAULT_FROM_EMAIL,
                         recipient=email,
                         template_id=template_id,
                         template_data=template_data,

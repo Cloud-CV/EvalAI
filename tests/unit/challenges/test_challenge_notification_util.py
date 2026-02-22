@@ -112,7 +112,7 @@ class TestChallengeStartNotifier(BaseTestClass):
         for email in host_emails:
             calls.append(
                 mock.call(
-                    sender=settings.EVALAI_TEAM_EMAIL,
+                    sender=settings.DEFAULT_FROM_EMAIL,
                     recipient=email,
                     template_id=template_id,
                     template_data=template_data,
@@ -144,7 +144,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Call the function
         mock_settings.configure_mock(
-            EVALAI_TEAM_EMAIL="team@eval.ai",
+            DEFAULT_FROM_EMAIL="team@eval.ai",
             SENDGRID_SETTINGS={
                 "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
             },
@@ -191,7 +191,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         mock_settings.DEBUG = False
         mock_settings.EVALAI_API_SERVER = "http://testserver"
-        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
+        mock_settings.DEFAULT_FROM_EMAIL = "team@eval.ai"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CHALLENGE_APPROVAL_EMAIL": "template-id"}
         }
@@ -220,7 +220,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
         mock_challenge.image.url = "http://testserver/media/test_image.png"
 
         mock_settings.DEBUG = False
-        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
+        mock_settings.DEFAULT_FROM_EMAIL = "team@eval.ai"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
         }

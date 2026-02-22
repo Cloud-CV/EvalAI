@@ -483,7 +483,7 @@ def send_emails(emails, template_id, template_data):
     """
     for email in emails:
         send_email(
-            sender=settings.EVALAI_TEAM_EMAIL,
+            sender=settings.DEFAULT_FROM_EMAIL,
             recipient=email,
             template_id=template_id,
             template_data=template_data,
@@ -532,7 +532,7 @@ def send_subscription_plans_email(challenge):
             "host_team_name": challenge.creator.team_name,
             "host_name": challenge.creator.team_name,
             "support_email": getattr(
-                settings, "EVALAI_TEAM_EMAIL", "team@eval.ai"
+                settings, "DEFAULT_FROM_EMAIL", "team@eval.ai"
             ),
         }
 
@@ -557,7 +557,7 @@ def send_subscription_plans_email(challenge):
                     subject=subject,
                     body="Please view this email in HTML format.",  # Plain text fallback
                     from_email=getattr(
-                        settings, "EVALAI_TEAM_EMAIL", "team@eval.ai"
+                        settings, "DEFAULT_FROM_EMAIL", "team@eval.ai"
                     ),
                     to=[email],
                 )

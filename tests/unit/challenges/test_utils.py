@@ -424,7 +424,7 @@ class SendEmailsTests(unittest.TestCase):
     def test_send_emails_to_multiple_recipients(
         self, mock_settings, mock_send_email
     ):
-        mock_settings.EVALAI_TEAM_EMAIL = "team@eval.ai"
+        mock_settings.DEFAULT_FROM_EMAIL = "team@eval.ai"
         emails = ["user1@example.com", "user2@example.com"]
         template_id = "template-id"
         template_data = {"key": "value"}

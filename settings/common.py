@@ -324,8 +324,8 @@ REST_AUTH_SERIALIZERS = {
     "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
 }
 
-# For inviting users to participant and host teams.
-EVALAI_TEAM_EMAIL = "team@eval.ai"
+# Default email for sending emails and inviting users to teams.
+DEFAULT_FROM_EMAIL = "team@eval.ai"
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
