@@ -377,6 +377,8 @@ def get_aws_credentials_for_submission(challenge, participant_team):
     repository, _created = get_or_create_ecr_repository(
         ecr_repository_name, aws_keys
     )
+    if repository is None:
+        raise ValueError("Failed to create or retrieve ECR repository")
     name = str(uuid.uuid4())[:32]
     docker_repository_uri = repository["repositoryUri"]
     federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
