@@ -321,28 +321,34 @@
                                 vm.eachPhase = details[i];
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
                                 vm.countDownTimer = function () {
-                                    vm.remainingTime = vm.eachPhase.limits.remaining_time;
-                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
-                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
-                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
-                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
-                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
-                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
-                                    if (vm.remainingSeconds < 10) {
-                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
-                                    }
-                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
-                                        "days": vm.days,
-                                        "hours": vm.hours,
-                                        "minutes": vm.minutes,
-                                        "seconds": vm.remainingSeconds
-                                    };
-                                    if (vm.remainingTime === 0) {
-                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
-                                    } else {
-                                        vm.remainingSeconds--;
-                                    }
-                                };
+    // Check if time has run out
+    if (vm.eachPhase.limits.remaining_time <= 0) {
+        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+        return;
+    }
+    
+    // Calculate time components from remaining_time
+    var totalSeconds = vm.eachPhase.limits.remaining_time;
+    vm.days = Math.floor(totalSeconds / 86400);
+    vm.hoursLeft = totalSeconds % 86400;
+    vm.hours = Math.floor(vm.hoursLeft / 3600);
+    vm.minutesLeft = vm.hoursLeft % 3600;
+    vm.minutes = Math.floor(vm.minutesLeft / 60);
+    vm.seconds = totalSeconds % 60;
+    
+    // Format seconds with leading zero if needed
+    var formattedSeconds = vm.seconds < 10 ? "0" + vm.seconds : vm.seconds;
+    
+    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
+        "days": vm.days,
+        "hours": vm.hours,
+        "minutes": vm.minutes,
+        "seconds": formattedSeconds
+    };
+    
+    // Decrement the source value (remaining_time)
+    vm.eachPhase.limits.remaining_time--;
+};
                                 setInterval(function () {
                                     $rootScope.$apply(vm.countDownTimer);
                                 }, 1000);
