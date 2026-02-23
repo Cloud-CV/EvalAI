@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
+    _file_content_changed,
     challenge_approval_callback,
     cleanup_auto_scaling_for_service,
     create_ec2_instance,
@@ -2829,6 +2830,73 @@ class TestRestartWorkersSignalCallback(TestCase):
         )
 
         mock_send_email.assert_not_called()
+
+    @patch("challenges.aws_utils.send_email")
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.restart_workers")
+    @patch("challenges.aws_utils._file_content_changed")
+    def test_restart_workers_signal_callback_identical_content_no_email(
+        self,
+        mock_content_changed,
+        mock_restart_workers,
+        mock_settings,
+        mock_send_email,
+    ):
+        mock_settings.DEBUG = False
+        mock_content_changed.return_value = False
+
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.id = 1
+
+        restart_workers_signal_callback(
+            sender=None,
+            instance=mock_challenge,
+            field_name="evaluation_script",
+        )
+
+        mock_restart_workers.assert_not_called()
+        mock_send_email.assert_not_called()
+
+
+class TestFileContentChanged(TestCase):
+    def _make_file_field(self, content):
+        from io import BytesIO
+
+        f = BytesIO(content)
+        return f
+
+    def test_identical_content_returns_false(self):
+        old = self._make_file_field(b"same content")
+        new = self._make_file_field(b"same content")
+        self.assertFalse(_file_content_changed(old, new))
+
+    def test_different_content_returns_true(self):
+        old = self._make_file_field(b"old content")
+        new = self._make_file_field(b"new content")
+        self.assertTrue(_file_content_changed(old, new))
+
+    def test_one_empty_one_present_returns_true(self):
+        new = self._make_file_field(b"content")
+        self.assertTrue(_file_content_changed(None, new))
+        self.assertTrue(_file_content_changed("", new))
+
+    def test_present_to_empty_returns_true(self):
+        old = self._make_file_field(b"content")
+        self.assertTrue(_file_content_changed(old, None))
+        self.assertTrue(_file_content_changed(old, ""))
+
+    def test_both_empty_returns_false(self):
+        self.assertFalse(_file_content_changed(None, None))
+        self.assertFalse(_file_content_changed("", ""))
+
+    def test_exception_falls_back_to_true(self):
+        old = MagicMock()
+        old.__bool__ = lambda self: True
+        old.seek.side_effect = IOError("storage unavailable")
+        new = MagicMock()
+        new.__bool__ = lambda self: True
+        self.assertTrue(_file_content_changed(old, new))
 
 
 class TestGetLogsFromCloudwatch(TestCase):

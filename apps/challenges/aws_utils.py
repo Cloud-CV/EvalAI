@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import os
@@ -1656,6 +1657,28 @@ def restart_workers(queryset):
     return {"count": count, "failures": failures}
 
 
+def _file_content_changed(old_field, new_field):
+    """Compare two Django FileField values by content hash, not path.
+
+    Returns True if the file content actually changed, False if identical.
+    Handles cases where one or both fields are empty/missing.
+    """
+    if bool(old_field) != bool(new_field):
+        return True
+    if not old_field and not new_field:
+        return False
+    try:
+        old_field.seek(0)
+        old_hash = hashlib.md5(old_field.read()).hexdigest()
+        old_field.seek(0)
+        new_field.seek(0)
+        new_hash = hashlib.md5(new_field.read()).hexdigest()
+        new_field.seek(0)
+        return old_hash != new_hash
+    except Exception:
+        return True
+
+
 def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     """
     Called when either evaluation_script or test_annotation_script for challenge
@@ -1672,7 +1695,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     elif field_name == "test_annotation":
         instance._original_test_annotation = curr
 
-    if prev != curr:
+    if _file_content_changed(prev, curr):
         challenge = None
         if field_name == "test_annotation":
             challenge = instance.challenge
