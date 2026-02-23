@@ -1545,6 +1545,298 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         return e.response
 
 
+@app.task
+def delete_eks_infra(challenge):
+
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+    from .serializers import ChallengeEvaluationClusterSerializer
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    iam = get_boto3_client("iam", challenge_aws_keys)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+
+        eks_arn_role = challenge_evaluation_cluster.eks_arn_role
+        node_group_arn_role = challenge_evaluation_cluster.node_group_arn_role
+    except Exception as e:
+        logger.exception(e)
+        return
+
+    for role_arn in [eks_arn_role, node_group_arn_role]:
+
+        role_name = role_arn.split("/")[-1]
+
+        try:
+            attached_policies = iam.list_attached_role_policies(
+                RoleName=role_name
+            )
+            for policy in attached_policies["AttachedPolicies"]:
+                iam.detach_role_policy(
+                    RoleName=role_name, PolicyArn=policy["PolicyArn"]
+                )
+        except Exception as e:
+            logger.exception(e)
+            return
+
+        try:
+            iam.delete_role(RoleName=role_name)
+        except Exception as e:
+            logger.exception(e)
+            return
+
+    try:
+        iam.delete_policy(
+            PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn
+        )
+    except Exception as e:
+        logger.exception(e)
+        return
+
+    try:
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "eks_arn_role": "",
+                "node_group_arn_role": "",
+                "ecr_all_access_policy_arn": "",
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+        delete_efs_resources.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
+
+
+@app.task
+def delete_efs_resources(challenge):
+    import time
+
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge, get_boto3_client
+    from .serializers import ChallengeEvaluationClusterSerializer
+
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    efs = get_boto3_client("efs", challenge_aws_keys)
+    ec2 = get_boto3_client("ec2", challenge_aws_keys)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+        efs_id = challenge_evaluation_cluster.efs_id
+        mount_target_ids = challenge_evaluation_cluster.efs_mount_target_ids
+
+        for mount_target_id in mount_target_ids:
+            efs.delete_mount_target(MountTargetId=mount_target_id)
+
+        while True:
+            existing_mounts = efs.describe_mount_targets(FileSystemId=efs_id)
+            if not existing_mounts["MountTargets"]:
+                break
+            else:
+                time.sleep(5)
+                logger.info(
+                    f"Waiting for mount targets to be deleted for EFS {efs_id}"
+                )
+
+        # Optionally delete the security group if no longer needed
+        if challenge_evaluation_cluster.efs_security_group_id:
+            ec2.delete_security_group(
+                GroupId=challenge_evaluation_cluster.efs_security_group_id
+            )
+
+        efs.delete_file_system(FileSystemId=efs_id)
+
+    except Exception as e:
+        logger.exception(e)
+        return
+
+    try:
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "efs_id": "",
+                "efs_security_group_id": "",
+                "efs_mount_target_ids": [],
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+        delete_eks_resources.delay(challenge)
+
+    except Exception as e:
+        logger.exception(e)
+
+
+@app.task
+def delete_eks_resources(challenge):
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+    from .serializers import ChallengeEvaluationClusterSerializer
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    eks = get_boto3_client("eks", challenge_aws_keys)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+
+        cluster_name = challenge_evaluation_cluster.name
+
+        node_groups = eks.list_nodegroups(clusterName=cluster_name)[
+            "nodegroups"
+        ]
+        for nodegroup in node_groups:
+
+            eks.delete_nodegroup(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+            eks.get_waiter("nodegroup_deleted").wait(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+    except Exception as e:
+        logger.exception(e)
+        return
+
+    try:
+        eks.delete_cluster(name=cluster_name)
+        eks.get_waiter("cluster_deleted").wait(name=cluster_name)
+    except Exception as e:
+        logger.exception(e)
+        return
+
+    try:
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "name": "",
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+        delete_vpc_resources.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
+
+
+@app.task
+def delete_vpc_resources(challenge):
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+    from .serializers import ChallengeEvaluationClusterSerializer
+
+    try:
+        for obj in serializers.deserialize("json", challenge):
+            challenge_obj = obj.object
+
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+
+        vpc_id = challenge_evaluation_cluster.vpc_id
+        internet_gateway_id = challenge_evaluation_cluster.internet_gateway_id
+        route_table_id = challenge_evaluation_cluster.route_table_id
+        security_group_id = challenge_evaluation_cluster.security_group_id
+        subnet_1_id = challenge_evaluation_cluster.subnet_1_id
+        subnet_2_id = challenge_evaluation_cluster.subnet_2_id
+
+    except Exception as e:
+        logger.error(f"Challenge or Cluster not found: {e}")
+        return
+
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    ec2 = get_boto3_client("ec2", challenge_aws_keys)
+
+    try:
+        addresses = ec2.describe_addresses(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )
+        for address in addresses["Addresses"]:
+            if "AssociationId" in address:
+                ec2.disassociate_address(
+                    AssociationId=address["AssociationId"]
+                )
+            ec2.release_address(AllocationId=address["AllocationId"])
+
+        if internet_gateway_id != "":
+            ec2.detach_internet_gateway(
+                InternetGatewayId=internet_gateway_id, VpcId=vpc_id
+            )
+            ec2.delete_internet_gateway(InternetGatewayId=internet_gateway_id)
+
+        nat_gateways = ec2.describe_nat_gateways(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )
+        for nat_gateway in nat_gateways["NatGateways"]:
+            ec2.delete_nat_gateway(NatGatewayId=nat_gateway["NatGatewayId"])
+
+        subnets = [subnet_1_id, subnet_2_id]
+        for subnet_id in subnets:
+            instances = ec2.describe_instances(
+                Filters=[{"Name": "subnet-id", "Values": [subnet_id]}]
+            )
+            for reservation in instances["Reservations"]:
+                for instance in reservation["Instances"]:
+                    ec2.terminate_instances(
+                        InstanceIds=[instance["InstanceId"]]
+                    )
+
+        if security_group_id != "":
+            ec2.delete_security_group(GroupId=security_group_id)
+
+        for subnet_id in subnets:
+            ec2.delete_subnet(SubnetId=subnet_id)
+
+        if route_table_id != "":
+            ec2.delete_route_table(RouteTableId=route_table_id)
+
+        if vpc_id != "":
+            ec2.delete_vpc(VpcId=vpc_id)
+
+    except ClientError as e:
+        logger.exception(f"Failed to delete AWS resources: {e}")
+        return
+
+    try:
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "vpc_id": "",
+                "internet_gateway_id": "",
+                "route_table_id": "",
+                "security_group_id": "",
+                "subnet_1_id": "",
+                "subnet_2_id": "",
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+    except Exception as e:
+        logger.exception(e)
+
+
 def delete_workers(queryset):
     """
     The function called by the admin action method to delete all the selected workers.

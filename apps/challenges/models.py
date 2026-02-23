@@ -307,6 +307,11 @@ def create_eks_cluster_or_ec2_for_challenge(
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
+
+    if (created and instance.approved_by_admin is False and instance.is_docker_based is True and instance.remote_evaluation is False):
+        serialized_obj = serializers.serialize("json", [instance])
+        aws.delete_eks_infra.delay(serialized_obj)
+
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
