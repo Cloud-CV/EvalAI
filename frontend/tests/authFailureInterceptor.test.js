@@ -55,6 +55,7 @@ describe('Unit tests for authFailureInterceptor', function () {
                     done();
                 }
             );
+            $rootScope.$apply();
         });
 
         it('on non-401 does not call resetStorage, go, or notify', function () {
@@ -87,6 +88,7 @@ describe('Unit tests for authFailureInterceptor', function () {
                     done();
                 }
             );
+            $rootScope.$apply();
         });
     });
 });
