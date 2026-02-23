@@ -2830,6 +2830,19 @@
                         utilities.hideLoader();
                         $mdDialog.hide();
                         var error = response.data;
+                        var errorMessage;
+                        if (error.test_annotation) {
+                            errorMessage = error.test_annotation[0];
+                            $rootScope.notify("error", errorMessage);
+                        }
+                        else if (error.description) {
+                            errorMessage = error.description[0];
+                            $rootScope.notify("error",'Description: ' + errorMessage);
+                        }
+                        // Default error handling
+                        else {
+                            $rootScope.notify("error", "An error occurred. Please make sure file is not empty and description is not empty.");
+                        }
                         $rootScope.notify("error", error);
                     }
                 };
