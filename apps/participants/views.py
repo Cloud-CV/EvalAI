@@ -27,10 +27,9 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from apps.accounts.authentication import ExpiringTokenAuthentication
 
 from .filters import ParticipantTeamsFilter
 from .models import Participant, ParticipantTeam

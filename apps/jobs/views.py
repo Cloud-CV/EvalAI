@@ -59,10 +59,9 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from apps.accounts.authentication import ExpiringTokenAuthentication
 
 from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
