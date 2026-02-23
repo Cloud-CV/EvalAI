@@ -1186,8 +1186,23 @@ def update_submission(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    challenge_phase_pk = request.data.get("challenge_phase")
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": f"Challenge Phase with id {challenge_phase_pk} does not exist."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if challenge_phase.challenge.pk != int(challenge_pk):
+        response_data = {
+            "error": "The provided challenge_phase does not belong to the specified challenge."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == "PUT":
-        challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
         stdout_content = request.data.get("stdout", "").encode("utf-8")
