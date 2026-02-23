@@ -144,7 +144,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Call the function
         mock_settings.configure_mock(
-            DEFAULT_FROM_EMAIL="team@eval.ai",
+            DEFAULT_FROM_EMAIL="EvalAI Team <team@eval.ai>",
             SENDGRID_SETTINGS={
                 "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
             },
@@ -153,8 +153,8 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Assert send_email was called with correct arguments
         mock_send_email.assert_called_once_with(
-            sender="team@eval.ai",
-            recipient="team@eval.ai",
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="EvalAI Team <team@eval.ai>",
             template_id="template-id",
             template_data={"CHALLENGE_NAME": "Test Challenge"},
         )
@@ -191,7 +191,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         mock_settings.DEBUG = False
         mock_settings.EVALAI_API_SERVER = "http://testserver"
-        mock_settings.DEFAULT_FROM_EMAIL = "team@eval.ai"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CHALLENGE_APPROVAL_EMAIL": "template-id"}
         }
@@ -199,7 +199,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
         construct_and_send_worker_start_mail(mock_challenge)
 
         mock_send_email.assert_called_once_with(
-            sender="team@eval.ai",
+            sender="EvalAI Team <team@eval.ai>",
             recipient="host@test.com",
             template_id="template-id",
             template_data={
@@ -220,7 +220,7 @@ class TestUnittestChallengeNotification(BaseTestClass):
         mock_challenge.image.url = "http://testserver/media/test_image.png"
 
         mock_settings.DEBUG = False
-        mock_settings.DEFAULT_FROM_EMAIL = "team@eval.ai"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
         }
@@ -228,8 +228,8 @@ class TestUnittestChallengeNotification(BaseTestClass):
         construct_and_send_eks_cluster_creation_mail(mock_challenge)
 
         mock_send_email.assert_called_once_with(
-            sender="team@eval.ai",
-            recipient="team@eval.ai",
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="EvalAI Team <team@eval.ai>",
             template_id="template-id",
             template_data={
                 "CHALLENGE_NAME": "Test Challenge",

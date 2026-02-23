@@ -324,8 +324,11 @@ REST_AUTH_SERIALIZERS = {
     "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
 }
 
-# Default email for sending emails and inviting users to teams.
-DEFAULT_FROM_EMAIL = "team@eval.ai"
+# Default email for sending emails..
+# Format "Display Name <address>" so inboxes show "EvalAI Team" as sender.
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "EvalAI Team <team@eval.ai>"
+)
 
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
@@ -368,11 +371,24 @@ HOSTNAME = os.environ.get("HOSTNAME")
 
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
-        "CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420",
-        "CHALLENGE_APPROVAL_EMAIL": "d-45e0adc0597b4b60bd7c384aa903c488",
-        "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd",
-        "CLUSTER_CREATION_TEMPLATE": "d-6de90fd760df4a41bb9bff1872eaab82",
-        "WORKER_START_EMAIL": "d-debd127cab2345e789538131501ff416",
+        "CHALLENGE_INVITATION": os.environ.get(
+            "SENDGRID_CHALLENGE_INVITATION_TEMPLATE_ID"
+        ),
+        "CHALLENGE_APPROVAL_EMAIL": os.environ.get(
+            "SENDGRID_CHALLENGE_APPROVAL_TEMPLATE_ID"
+        ),
+        "WORKER_RESTART_EMAIL": os.environ.get(
+            "SENDGRID_WORKER_RESTART_TEMPLATE_ID"
+        ),
+        "CLUSTER_CREATION_TEMPLATE": os.environ.get(
+            "SENDGRID_CLUSTER_CREATION_TEMPLATE_ID"
+        ),
+        "WORKER_START_EMAIL": os.environ.get(
+            "SENDGRID_WORKER_START_TEMPLATE_ID"
+        ),
+        "SUBSCRIPTION_PLANS_EMAIL": os.environ.get(
+            "SENDGRID_SUBSCRIPTION_PLANS_TEMPLATE_ID"
+        ),
     }
 }
 
