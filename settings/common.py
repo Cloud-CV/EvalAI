@@ -170,7 +170,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication",
+        "apps.accounts.authentication.ExpiringTokenAuthentication",
     ],
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DEFAULT_THROTTLE_CLASSES": (

@@ -31,8 +31,29 @@ angular
 			return config;
 		};
 	}])
-	.config(['$httpProvider',function ($httpProvider) {
+	.factory('authFailureInterceptor', [
+		'$injector',
+		'$q',
+		function($injector, $q) {
+			return {
+				responseError: function(response) {
+					if (response.status === 401) {
+						var $state = $injector.get('$state');
+						var $rootScope = $injector.get('$rootScope');
+						var utilities = $injector.get('utilities');
+						utilities.resetStorage();
+						$rootScope.isAuth = false;
+						$state.go('auth.login');
+						$rootScope.notify('error', 'Timeout, Please login again to continue!');
+					}
+					return $q.reject(response);
+				}
+			};
+		}
+	])
+	.config(['$httpProvider', function($httpProvider) {
 		$httpProvider.interceptors.push('preventTemplateCache');
+		$httpProvider.interceptors.push('authFailureInterceptor');
 	}])
 	.config(['$compileProvider', function($compileProvider) {
 		$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
