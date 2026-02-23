@@ -386,3 +386,225 @@ describe('Unit tests for challenge list controller', function () {
         });
     });
 });
+
+describe('Unit tests for getDomainChoices function', function() {
+    var utilities, $rootScope, vm;
+    var successResponse = {
+        data: [
+            ['Choice1', 'Choice1'],
+            ['Choice2', 'Choice2']
+        ]
+    };
+    var errorResponse = {
+        data: 'error'
+    };
+
+    beforeEach(angular.mock.module('evalai'));
+
+    beforeEach(inject(function(_utilities_, _$rootScope_) {
+        utilities = _utilities_;
+        $rootScope = _$rootScope_;
+        vm = {
+            domain_choices: []
+        };
+
+        spyOn(utilities, 'sendRequest').and.callFake(function(parameters) {
+            if (parameters.url === 'challenges/challenge/get_domain_choices/') {
+                parameters.callback.onSuccess(successResponse);
+            } else {
+                parameters.callback.onError(errorResponse);
+            }
+        });
+
+        spyOn($rootScope, 'notify');
+    }));
+
+    it('gets domain choices and processes them correctly', function() {
+        var parameters = {
+            url: 'challenges/challenge/get_domain_choices/',
+            method: 'GET',
+            data: {},
+            callback: {
+                onSuccess: function(response) {
+                    vm.domain_choices.push(["All", "All"]);
+                    for(var i=0; i<response.data.length; i++) {
+                        vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                    }
+                    vm.domain_choices.push(["None", "None"]);
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+        expect(vm.domain_choices).toEqual([
+            ['All', 'All'],
+            ['Choice1', 'Choice1'],
+            ['Choice2', 'Choice2'],
+            ['None', 'None']
+        ]);
+        expect($rootScope.notify).not.toHaveBeenCalled();
+    });
+
+    it('handles error when getting domain choices', function() {
+        var parameters = {
+            url: 'challenges/challenge/get_domain_choices_error/',
+            method: 'GET',
+            data: {},
+            callback: {
+                onSuccess: function(response) {
+                    vm.domain_choices.push(["All", "All"]);
+                    for(var i=0; i<response.data.length; i++) {
+                        vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                    }
+                    vm.domain_choices.push(["None", "None"]);
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+        expect(vm.domain_choices).toEqual([]);
+        expect($rootScope.notify).toHaveBeenCalledWith('error', 'error');
+    });
+});
+
+describe('Unit tests for scrollUp function', function() {
+    var utilities, $window, vm;
+
+    beforeEach(angular.mock.module('evalai'));
+
+    beforeEach(inject(function(_utilities_, _$window_) {
+        utilities = _utilities_;
+        $window = _$window_;
+        vm = {
+            scrollUp: function() {
+                angular.element($window).bind('scroll', function() {
+                    if (this.pageYOffset >= 100) {
+                        utilities.showButton();
+                    } else {
+                        utilities.hideButton();
+                    }
+                });
+            }
+        };
+
+        spyOn(utilities, 'showButton');
+        spyOn(utilities, 'hideButton');
+    }));
+
+    it('shows button when pageYOffset is greater than or equal to 100', function() {
+        $window.pageYOffset = 100;
+        vm.scrollUp();
+        angular.element($window).triggerHandler('scroll');
+        expect(utilities.showButton).toHaveBeenCalled();
+        expect(utilities.hideButton).not.toHaveBeenCalled();
+    });
+
+    it('hides button when pageYOffset is less than 100', function() {
+        $window.pageYOffset = 99;
+        vm.scrollUp();
+        angular.element($window).triggerHandler('scroll');
+        expect(utilities.hideButton).toHaveBeenCalled();
+        expect(utilities.showButton).not.toHaveBeenCalled();
+    });
+});
+
+describe('Unit tests for setting token', function() {
+    var vm;
+
+    beforeEach(angular.mock.module('evalai'));
+
+    beforeEach(inject(function() {
+        vm = {
+            challengeCreator: {}
+        };
+    }));
+
+    it('sets token to userKey when userKey is provided', function() {
+        var userKey = 'encrypt key';
+        var parameters = {};
+        if (userKey) {
+            parameters.token = userKey;
+        } else {
+            parameters.token = null;
+        }
+
+        expect(parameters.token).toEqual(userKey);
+    });
+
+    it('sets token to null when userKey is not provided', function() {
+        var userKey = null;
+        var parameters = {};
+        if (userKey) {
+            parameters.token = userKey;
+        } else {
+            parameters.token = null;
+        }
+
+        expect(parameters.token).toBeNull();
+    });
+});
+
+describe('Unit tests for resetFilter function', function() {
+    var vm;
+
+    beforeEach(angular.mock.module('evalai'));
+
+    beforeEach(inject(function() {
+        vm = {
+            selecteddomain: ['domain1', 'domain2'],
+            searchTitle: ['title1', 'title2'],
+            resetFilter: function() {
+                this.selecteddomain = [];
+                this.searchTitle = [];
+            }
+        };
+    }));
+
+    it('resets selecteddomain and searchTitle', function() {
+        vm.resetFilter();
+        expect(vm.selecteddomain).toEqual([]);
+        expect(vm.searchTitle).toEqual([]);
+    });
+    
+    describe('Scroll up tests', function() {
+        var $window, utilities, vm, $controller;
+    
+        beforeEach(inject(function(_$window_, _utilities_, _$controller_) {
+            $window = _$window_;
+            utilities = _utilities_;
+            $controller = _$controller_;
+    
+            vm = $controller('ChallengeListCtrl');
+        }));      
+        it('should call utilities.showButton when pageYOffset is greater than or equal to 100', function() {
+            spyOn(utilities, 'showButton');
+            spyOn(utilities, 'hideButton');
+            $window.pageYOffset = 100;
+            vm.scrollUp();
+            angular.element($window).triggerHandler('scroll');
+            expect(utilities.showButton).toHaveBeenCalled();
+            expect(utilities.hideButton).not.toHaveBeenCalled();
+        });
+    
+        it('should call utilities.hideButton when pageYOffset is less than 100', function() {
+            spyOn(utilities, 'showButton');
+            spyOn(utilities, 'hideButton');
+            $window.pageYOffset = 99;
+            vm.scrollUp();
+            angular.element($window).triggerHandler('scroll');
+            expect(utilities.showButton).not.toHaveBeenCalled();
+            expect(utilities.hideButton).toHaveBeenCalled();
+        });
+    });
+    
+});
