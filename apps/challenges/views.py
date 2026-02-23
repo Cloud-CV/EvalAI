@@ -55,6 +55,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Prefetch
 from django.http import HttpResponse
@@ -3202,7 +3203,7 @@ def invite_users_to_challenge(request, challenge_pk):
             else:
                 invalid_emails.append(email)
 
-        sender_email = settings.CLOUDCV_TEAM_EMAIL
+        sender_email = settings.DEFAULT_FROM_EMAIL
         hostname = get_url_from_hostname(settings.HOSTNAME)
         url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
         template_data = {"title": challenge.title, "url": url}
@@ -5386,3 +5387,93 @@ def modify_leaderboard_data(request):
         # Serialize and return the updated data
         response_data = {"message": "Leaderboard data updated successfully!"}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes(())
+@authentication_classes(())
+def update_evaluation_module_error(request, challenge_pk):
+    """
+    Internal API endpoint for Lambda functions to update evaluation_module_error
+    on a challenge. Authenticated via a shared secret token passed in the
+    Authorization header (Bearer <token>).
+
+    Used by the OOM handler Lambda to notify challenge hosts when a worker
+    is killed due to OutOfMemoryError.
+    """
+    # Authenticate via shared secret token
+    expected_token = os.environ.get("LAMBDA_AUTH_TOKEN")
+    if not expected_token:
+        return Response(
+            {"error": "Server misconfiguration: LAMBDA_AUTH_TOKEN not set."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if not auth_header.startswith("Bearer "):
+        return Response(
+            {"error": "Missing or invalid Authorization header."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    token = auth_header[len("Bearer ") :]
+    if token != expected_token:
+        return Response(
+            {"error": "Invalid auth token."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Validate request body
+    error_message = request.data.get("evaluation_module_error")
+    if error_message is None:
+        return Response(
+            {"error": "evaluation_module_error field is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": f"Challenge with pk {challenge_pk} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    challenge.evaluation_module_error = error_message
+
+    # Update optional worker config fields from the OOM auto-retry Lambda
+    worker_memory = request.data.get("worker_memory")
+    worker_cpu_cores = request.data.get("worker_cpu_cores")
+    task_def_arn = request.data.get("task_def_arn")
+
+    if worker_memory is not None:
+        challenge.worker_memory = int(worker_memory)
+    if worker_cpu_cores is not None:
+        challenge.worker_cpu_cores = int(worker_cpu_cores)
+    if task_def_arn is not None:
+        challenge.task_def_arn = task_def_arn
+
+    challenge.save()
+
+    # Send email notification to the EvalAI team
+    if request.data.get("send_email"):
+        try:
+            send_mail(
+                subject=f"[EvalAI] Worker OOM - Challenge {challenge_pk}: {challenge.title}",
+                message=error_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send OOM email for challenge %s", challenge_pk
+            )
+
+    return Response(
+        {
+            "message": f"evaluation_module_error updated for challenge {challenge_pk}."
+        },
+        status=status.HTTP_200_OK,
+    )
