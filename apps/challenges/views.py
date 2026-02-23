@@ -4480,6 +4480,36 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         }
                         send_slack_notification(message=message)
 
+                    template_data = get_challenge_template_data(zip_config.challenge)
+                    if (
+                        not challenge.is_docker_based
+                        and not challenge.remote_evaluation
+                        and not challenge.workers
+                    ):
+                        try:
+                            response = start_workers([zip_config.challenge])
+                            count, failures = response["count"], response["failures"]
+                            logging.info(
+                                "Total worker start count is {} and failures are: {}".format(
+                                    count, failures
+                                )
+                            )
+                            if count:
+                                logging.info(
+                                    "{} workers started successfully".format(count)
+                                )
+                                if challenge.inform_hosts:
+                                    template_id = settings.SENDGRID_SETTINGS.get(
+                                        "TEMPLATES"
+                                    ).get("WORKER_START_EMAIL")
+                                    send_emails(emails, template_id, template_data)
+                        except Exception:
+                            logger.exception(
+                                "Failed to start workers for challenge {}".format(
+                                    zip_config.challenge.pk
+                                )
+                            )
+
                     response_data = {
                         "Success": (
                             "Challenge {} has been created successfully and "
