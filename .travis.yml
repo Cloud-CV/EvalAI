@@ -63,6 +63,7 @@ jobs:
           ' || travis_terminate 1;
 
         # Backend Tests - using set -e to fail fast on any error
+        - docker-compose build django || travis_terminate 1;
         - |
           docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
             set -e
