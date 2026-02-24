@@ -5116,8 +5116,14 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                 "Failed to send subscription plans email for challenge {}: "
                 "{}".format(challenge_pk, str(e))
             )
-        challenge.is_approval_requested = True
-        challenge.save(update_fields=["is_approval_requested"])
+        serializer = ChallengeSerializer(
+            challenge,
+            data={"is_approval_requested": True},
+            context={"request": request},
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
 
     if not settings.DEBUG:
         try:
