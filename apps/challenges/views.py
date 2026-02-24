@@ -454,9 +454,22 @@ def participant_team_detail_for_challenge(request, challenge_pk):
             approved = True
         else:
             approved = False
+
+        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        submissions = Submission.objects.filter(
+            challenge_phase__in=challenge_phases,
+            participant_team=participant_team_pk,
+        )
+
+        if submissions.exists():
+            submissionExists = True
+        else:
+            submissionExists = False
+
         response_data = {
             "approved": approved,
             "participant_team": serializer.data,
+            "hasSubmissions": submissionExists,
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
