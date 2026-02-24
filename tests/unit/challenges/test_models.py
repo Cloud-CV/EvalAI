@@ -122,6 +122,17 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.save()
         self.assertEqual(False, self.challenge.is_active)
 
+    def test_is_approval_requested_defaults_to_false(self):
+        """New challenges have is_approval_requested=False by default."""
+        self.assertFalse(self.challenge.is_approval_requested)
+
+    def test_is_approval_requested_can_be_set_to_true(self):
+        """is_approval_requested can be set to True after approval request."""
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_approval_requested)
+
     def test_get_evaluation_script_path(self):
         self.assertEqual(
             self.challenge.evaluation_script.url,
