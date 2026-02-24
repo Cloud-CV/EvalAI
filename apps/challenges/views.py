@@ -922,11 +922,6 @@ def get_all_challenges(
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
-    is_paused = request.data.get("is_submission_paused")
-    if is_paused is None:
-        response_data = {"error": "is_submission_paused field is required"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])

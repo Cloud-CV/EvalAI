@@ -213,6 +213,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
 
@@ -640,6 +641,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(
@@ -751,6 +753,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -886,6 +889,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(
@@ -969,6 +973,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "github_repository": self.challenge.github_repository,
             "github_branch": self.challenge.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(
@@ -2047,6 +2052,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2138,6 +2144,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2229,6 +2236,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2320,6 +2328,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge4.github_repository,
                 "github_branch": self.challenge4.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             },
             {
                 "id": self.challenge3.pk,
@@ -2392,6 +2401,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             },
             {
                 "id": self.challenge2.pk,
@@ -2464,6 +2474,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2641,6 +2652,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "github_repository": self.challenge3.github_repository,
                 "github_branch": self.challenge3.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2889,6 +2901,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "github_repository": self.challenge3.github_repository,
             "github_branch": self.challenge3.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
 
         response = self.client.get(self.url, {})
@@ -2994,6 +3007,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "github_repository": self.challenge4.github_repository,
             "github_branch": self.challenge4.github_branch,
             "is_frozen": False,
+            "is_submission_paused": False,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -3160,6 +3174,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
 
@@ -3249,6 +3264,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
 
@@ -3338,6 +3354,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
 
@@ -3425,6 +3442,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "github_repository": self.challenge.github_repository,
                 "github_branch": self.challenge.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             },
             {
                 "id": self.challenge2.pk,
@@ -3497,6 +3515,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "github_repository": self.challenge2.github_repository,
                 "github_branch": self.challenge2.github_branch,
                 "is_frozen": False,
+                "is_submission_paused": False,
             },
         ]
 
@@ -3762,6 +3781,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -3791,6 +3811,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
         ]
 
@@ -3831,6 +3852,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_submission_paused": self.challenge_phase.is_submission_paused,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -3881,6 +3903,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -3910,6 +3933,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,  # noqa: C0301
                 "is_submission_public": self.private_challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.private_challenge_phase.disable_logs,
+                "is_submission_paused": self.private_challenge_phase.is_submission_paused,
             },
         ]
 
@@ -4279,6 +4303,7 @@ class GetParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -4318,6 +4343,7 @@ class GetParticularChallengePhase(
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -4381,6 +4407,7 @@ class GetParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -4485,6 +4512,7 @@ class UpdateParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -6295,6 +6323,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -6368,6 +6397,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.private_challenge_phase.disable_logs,
+                "is_submission_paused": self.private_challenge_phase.is_submission_paused,
             },
             {
                 "id": self.challenge_phase.id,
@@ -6401,6 +6431,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
         ]
         response = self.client.get(self.url, {})
