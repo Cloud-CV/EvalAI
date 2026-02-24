@@ -189,6 +189,12 @@ def send_email(
         )
         msg.attach_alternative(rendered_html, "text/html")
         msg.send()
+        logger.info(
+            "Email sent successfully via %s to=%s, subject=%r",
+            settings.EMAIL_BACKEND,
+            recipient,
+            rendered_subject,
+        )
     except Exception:
         sentry_sdk.capture_exception()
         logger.exception(

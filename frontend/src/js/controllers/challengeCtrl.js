@@ -55,6 +55,7 @@
         vm.currentDate = null;
         vm.isPublished = false;
         vm.approved_by_admin = false;
+        vm.is_approval_requested = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
@@ -207,13 +208,14 @@
             parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
             parameters.method = 'GET';
             parameters.data = {};
-        
+
             parameters.callback = {
                 onSuccess: function(response) {
                     var result = response.data;
                     if (result.error) {
                         $rootScope.notify("error", result.error);
                     } else {
+                        vm.is_approval_requested = true;
                         $rootScope.notify("success", "Request sent successfully.");
                     }
                 },
@@ -226,7 +228,7 @@
                     }
                 }
             };
-        
+
             utilities.sendRequest(parameters);
         };
         
@@ -384,6 +386,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.is_approval_requested = details.is_approval_requested;
                 vm.isFrozen = details.is_frozen;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;

@@ -181,6 +181,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": False,
+                "is_approval_requested": False,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -607,6 +608,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": False,
+            "is_approval_requested": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -715,6 +717,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": False,
+            "is_approval_requested": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -848,6 +851,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": False,
+            "is_approval_requested": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -930,6 +934,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": False,
+            "is_approval_requested": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
             "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -1698,6 +1703,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
@@ -1788,6 +1794,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -1878,6 +1885,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
@@ -1968,6 +1976,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
@@ -2039,6 +2048,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
@@ -2110,6 +2120,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -2286,6 +2297,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
@@ -2533,6 +2545,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": self.challenge3.approved_by_admin,
+            "is_approval_requested": self.challenge3.is_approval_requested,
             "forum_url": self.challenge3.forum_url,
             "is_docker_based": self.challenge3.is_docker_based,
             "is_static_dataset_code_upload": self.challenge3.is_static_dataset_code_upload,  # noqa: C0301
@@ -2637,6 +2650,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "blocked_email_domains": [],
             "banned_email_ids": [],
             "approved_by_admin": self.challenge4.approved_by_admin,
+            "is_approval_requested": self.challenge4.is_approval_requested,
             "forum_url": self.challenge4.forum_url,
             "is_docker_based": self.challenge4.is_docker_based,
             "is_static_dataset_code_upload": self.challenge4.is_static_dataset_code_upload,  # noqa: C0301
@@ -2802,6 +2816,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -2890,6 +2905,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -2978,6 +2994,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -3064,6 +3081,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge.is_static_dataset_code_upload,  # noqa: C0301
@@ -3135,6 +3153,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": True,
+                "is_approval_requested": False,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge2.is_static_dataset_code_upload,  # noqa: C0301
@@ -6822,6 +6841,67 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
             "do not have finished submissions", response.data["error"]
         )
 
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_sent_only_once(
+        self, mock_send_email
+    ):
+        """Test that subscription email is only sent on the first approval request"""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        # First request — email should be sent
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_send_email.assert_called_once_with(self.challenge)
+
+        # Verify is_approval_requested is set
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_approval_requested)
+
+        mock_send_email.reset_mock()
+
+        # Second request — email should NOT be sent
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_send_email.assert_not_called()
+
+    @responses.activate
+    @mock.patch("challenges.views.send_subscription_plans_email")
+    def test_request_challenge_approval_email_not_sent_when_already_requested(
+        self, mock_send_email
+    ):
+        """When is_approval_requested is already True, subscription email is not sent."""
+        responses.add(
+            responses.POST,
+            settings.APPROVAL_WEBHOOK_URL,
+            body=b"ok",
+            status=200,
+            content_type="text/plain",
+        )
+
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_send_email.assert_not_called()
+
 
 class CreateOrUpdateGithubChallengeTest(
     APITestCase
@@ -7656,9 +7736,8 @@ class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
         self.assertEqual(self.challenge.worker_memory, 4096)
         self.assertEqual(self.challenge.worker_cpu_cores, original_cpu)
 
-    @mock.patch("challenges.views.send_mail")
-    def test_sends_email_when_requested(self, mock_send_mail):
-        """Should send email to CLOUDCV_TEAM_EMAIL when send_email is True."""
+    def test_send_email_field_ignored(self):
+        """Email sending removed — send_email field in payload is ignored."""
         with mock.patch.dict(
             os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
         ):
@@ -7673,32 +7752,6 @@ class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
                 format="json",
             )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        mock_send_mail.assert_called_once()
-        call_kwargs = mock_send_mail.call_args
-        self.assertIn(
-            "OOM",
-            (
-                call_kwargs[1]["subject"]
-                if "subject" in call_kwargs[1]
-                else call_kwargs[0][0]
-            ),
-        )
-
-    @mock.patch("challenges.views.send_mail")
-    def test_does_not_send_email_by_default(self, mock_send_mail):
-        """Should not send email when send_email is not in the request."""
-        with mock.patch.dict(
-            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
-        ):
-            client = APIClient()
-            client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
-            response = client.patch(
-                self.url,
-                {"evaluation_module_error": "some error"},
-                format="json",
-            )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        mock_send_mail.assert_not_called()
 
 
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):

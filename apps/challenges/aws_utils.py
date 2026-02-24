@@ -9,7 +9,7 @@ from http import HTTPStatus
 
 import yaml
 from accounts.models import JwtToken
-from base.utils import get_boto3_client, send_email
+from base.utils import get_boto3_client
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
@@ -1717,44 +1717,12 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 f"Error: {failures[0]['message']}"
             )
         else:
-            challenge_url = "{}/web/challenges/challenge-page/{}".format(
-                settings.EVALAI_API_SERVER, challenge.id
+            logger.info(
+                "Workers restarted successfully for challenge %s "
+                "after %s change.",
+                challenge.id,
+                field_name,
             )
-            challenge_manage_url = (
-                "{}/web/challenges/challenge-page/{}/manage".format(
-                    settings.EVALAI_API_SERVER, challenge.id
-                )
-            )
-
-            if field_name == "test_annotation":
-                file_updated = "Test Annotation"
-            elif field_name == "evaluation_script":
-                file_updated = "Evaluation script"
-
-            template_data = {
-                "CHALLENGE_NAME": challenge.title,
-                "CHALLENGE_MANAGE_URL": challenge_manage_url,
-                "CHALLENGE_URL": challenge_url,
-                "FILE_UPDATED": file_updated,
-            }
-
-            if challenge.image:
-                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
-
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-                "WORKER_RESTART_EMAIL"
-            )
-
-            # Send email notification only when inform_hosts is true
-            if challenge.inform_hosts:
-                emails = challenge.creator.get_all_challenge_host_email()
-                for email in emails:
-                    send_email(
-                        sender=settings.DEFAULT_FROM_EMAIL,
-                        recipient=email,
-                        template_id=template_id,
-                        template_data=template_data,
-                    )
 
 
 def get_logs_from_cloudwatch(
