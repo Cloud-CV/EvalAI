@@ -243,6 +243,81 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_challenge_submission_when_challenge_submissions_are_paused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_challenge_submission_when_phase_submissions_are_paused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+
+        expected = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_challenge_submission_when_phase_submissions_unpaused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+        self.challenge_phase.is_submission_paused = False
+        self.challenge_phase.save()
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        # Should not be rejected with 406 for paused submissions
+        self.assertNotEqual(
+            response.status_code, status.HTTP_406_NOT_ACCEPTABLE
+        )
+
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",

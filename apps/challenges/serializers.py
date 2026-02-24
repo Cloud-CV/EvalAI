@@ -99,6 +99,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "github_repository",
             "github_branch",
             "is_frozen",
+            "is_submission_paused",
         )
 
 
@@ -140,6 +141,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_email_ids",
             "is_submission_public",
             "disable_logs",
+            "is_submission_paused",
         )
 
 
@@ -446,6 +448,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "disable_logs",
+            "is_submission_paused",
         )
 
 

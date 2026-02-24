@@ -255,6 +255,12 @@ class Challenge(TimeStampedModel):
         db_index=True,
         help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
     )
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for all phases of this challenge. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -458,6 +464,12 @@ class ChallengePhase(TimeStampedModel):
         default=None, blank=True, null=True
     )
     disable_logs = models.BooleanField(default=False)
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for this phase. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"

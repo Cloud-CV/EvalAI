@@ -214,10 +214,26 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        if challenge.is_submission_paused:
+            response_data = {
+                "error": "Submissions are currently paused for this challenge. Please try again later."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         # check if challenge phase is active
         if not challenge_phase.is_active:
             response_data = {
                 "error": "Sorry, cannot accept submissions since challenge phase is not active"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if challenge_phase.is_submission_paused:
+            response_data = {
+                "error": "Submissions are currently paused for this challenge phase. Please try again later."
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
