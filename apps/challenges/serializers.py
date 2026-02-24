@@ -69,6 +69,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "banned_email_ids",
             "require_complete_profile",
             "approved_by_admin",
+            "is_approval_requested",
             "forum_url",
             "is_docker_based",
             "is_static_dataset_code_upload",

@@ -11,12 +11,14 @@ from challenges.serializers import (
     ChallengeConfigSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
+    ChallengeSerializer,
     PWCChallengeLeaderboardSerializer,
     UserInvitationSerializer,
 )
 from challenges.utils import add_sponsors_to_challenge
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import RequestFactory
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
@@ -67,6 +69,32 @@ class BaseTestCase(APITestCase):
         )
 
         self.client.force_authenticate(user=self.user)
+
+
+class ChallengeSerializerTest(BaseTestCase):
+    """Tests for ChallengeSerializer, including is_approval_requested field."""
+
+    def test_is_approval_requested_in_serialized_data_default_false(self):
+        """ChallengeSerializer output includes is_approval_requested and defaults to False."""
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("is_approval_requested", serializer.data)
+        self.assertFalse(serializer.data["is_approval_requested"])
+
+    def test_is_approval_requested_in_serialized_data_true_when_set(self):
+        """ChallengeSerializer output reflects is_approval_requested=True when set."""
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("is_approval_requested", serializer.data)
+        self.assertTrue(serializer.data["is_approval_requested"])
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):

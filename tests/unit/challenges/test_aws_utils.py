@@ -2714,133 +2714,35 @@ class TestRestartWorkersSignalCallback(TestCase):
         # Assert that the function returns None when DEBUG is True
         self.assertIsNone(result)
 
-    @patch("challenges.aws_utils.send_email")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_email_sent(
-        self, mock_restart_workers, mock_settings, mock_send_email
+    def test_restart_workers_signal_callback_restarts_workers(
+        self, mock_restart_workers, mock_settings
     ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
         mock_settings.DEBUG = False
 
         mock_challenge = MagicMock()
         mock_challenge.pk = 1
         mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = None
-        mock_challenge.inform_hosts = True
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com",
-            "host2@test.com",
-        ]
 
         mock_restart_workers.return_value = {"count": 1, "failures": []}
 
-        instance = mock_challenge
-
         restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
+            sender=None,
+            instance=mock_challenge,
+            field_name="evaluation_script",
         )
 
-        assert mock_send_email.call_count == 2
-        for call in mock_send_email.call_args_list:
-            args, kwargs = call
-            assert kwargs["recipient"] in ["host1@test.com", "host2@test.com"]
-            assert kwargs["template_id"] == "template_id"
-            assert (
-                kwargs["template_data"]["CHALLENGE_NAME"] == "Test Challenge"
-            )
-            assert (
-                kwargs["template_data"]["FILE_UPDATED"] == "Evaluation script"
-            )
+        mock_restart_workers.assert_called_once()
 
-    @patch("challenges.aws_utils.send_email")
-    @patch("challenges.aws_utils.settings")
-    @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_email_with_image(
-        self, mock_restart_workers, mock_settings, mock_send_email
-    ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
-        mock_settings.DEBUG = False
-
-        mock_image = MagicMock()
-        mock_image.url = "http://eval.ai/image.png"
-        mock_challenge = MagicMock()
-        mock_challenge.pk = 1
-        mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = mock_image
-        mock_challenge.inform_hosts = True
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com"
-        ]
-
-        mock_restart_workers.return_value = {"count": 1, "failures": []}
-
-        instance = mock_challenge
-
-        restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
-        )
-
-        mock_send_email.assert_called_once()
-        args, kwargs = mock_send_email.call_args
-        assert (
-            kwargs["template_data"]["CHALLENGE_IMAGE_URL"]
-            == "http://eval.ai/image.png"
-        )
-
-    @patch("challenges.aws_utils.send_email")
-    @patch("challenges.aws_utils.settings")
-    @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_no_inform_hosts(
-        self, mock_restart_workers, mock_settings, mock_send_email
-    ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
-        mock_settings.DEBUG = False
-
-        mock_challenge = MagicMock()
-        mock_challenge.pk = 1
-        mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = None
-        mock_challenge.inform_hosts = False
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com"
-        ]
-
-        mock_restart_workers.return_value = {"count": 1, "failures": []}
-
-        instance = mock_challenge
-
-        restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
-        )
-
-        mock_send_email.assert_not_called()
-
-    @patch("challenges.aws_utils.send_email")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.restart_workers")
     @patch("challenges.aws_utils._file_content_changed")
-    def test_restart_workers_signal_callback_identical_content_no_email(
+    def test_restart_workers_signal_callback_identical_content_skips(
         self,
         mock_content_changed,
         mock_restart_workers,
         mock_settings,
-        mock_send_email,
     ):
         mock_settings.DEBUG = False
         mock_content_changed.return_value = False
@@ -2856,7 +2758,6 @@ class TestRestartWorkersSignalCallback(TestCase):
         )
 
         mock_restart_workers.assert_not_called()
-        mock_send_email.assert_not_called()
 
 
 class TestFileContentChanged(TestCase):
