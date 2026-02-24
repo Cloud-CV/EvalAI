@@ -1565,6 +1565,318 @@ class DisableChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
+class PauseChallengeSubmissionsTest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+
+        self.user1 = User.objects.create(
+            username="otheruser", password="other_secret_password"
+        )
+
+        self.challenge_host_team1 = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team", created_by=self.user1
+        )
+
+        self.challenge2 = Challenge.objects.create(
+            title="Other Test Challenge",
+            short_description="Short description for other test challenge",
+            description="Description for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",
+            submission_guidelines="Submission guidelines for other test challenge",
+            creator=self.challenge_host_team1,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_submissions",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+    def test_pause_challenge_submissions(self):
+        self.assertFalse(self.challenge.is_submission_paused)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], True)
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_submission_paused)
+
+    def test_unpause_challenge_submissions(self):
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+        response = self.client.post(
+            self.url, {"is_submission_paused": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], False)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.is_submission_paused)
+
+    def test_pause_already_paused_challenge(self):
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], True)
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_submission_paused)
+
+    def test_unpause_already_unpaused_challenge(self):
+        self.assertFalse(self.challenge.is_submission_paused)
+        response = self.client.post(
+            self.url, {"is_submission_paused": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], False)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.is_submission_paused)
+
+    def test_pause_challenge_submissions_missing_field(self):
+        response = self.client.post(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {"error": "is_submission_paused field is required"}
+        self.assertEqual(response.data, expected)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.is_submission_paused)
+
+    def test_pause_challenge_submissions_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_submissions",
+            kwargs={"challenge_pk": self.challenge.pk + 999},
+        )
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_pause_challenge_submissions_no_permission(self):
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_submissions",
+            kwargs={"challenge_pk": self.challenge2.pk},
+        )
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge2.refresh_from_db()
+        self.assertFalse(self.challenge2.is_submission_paused)
+
+    def test_pause_challenge_submissions_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.is_submission_paused)
+
+    def test_pause_challenge_submissions_by_participant_user(self):
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge.refresh_from_db()
+        self.assertFalse(self.challenge.is_submission_paused)
+
+
+class PauseChallengePhaseSubmissionsTest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Test Challenge Phase",
+            description="Description for test challenge phase",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+            codename="Phase Code Name",
+        )
+
+        self.challenge_phase2 = ChallengePhase.objects.create(
+            name="Test Challenge Phase 2",
+            description="Description for test challenge phase 2",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+            codename="Phase Code Name 2",
+        )
+
+        self.user1 = User.objects.create(
+            username="otheruser2", password="other_secret_password"
+        )
+
+        self.challenge_host_team1 = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team 2",
+            created_by=self.user1,
+        )
+
+        self.challenge2 = Challenge.objects.create(
+            title="Other Test Challenge 2",
+            short_description="Short description for other test challenge",
+            description="Description for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",
+            submission_guidelines="Submission guidelines for other test challenge",
+            creator=self.challenge_host_team1,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.challenge_phase_other = ChallengePhase.objects.create(
+            name="Other Challenge Phase",
+            description="Description",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge2,
+            codename="other_phase",
+        )
+
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_phase_submissions",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+
+    def test_pause_challenge_phase_submissions(self):
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], True)
+        self.challenge_phase.refresh_from_db()
+        self.assertTrue(self.challenge_phase.is_submission_paused)
+
+    def test_unpause_challenge_phase_submissions(self):
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+        response = self.client.post(
+            self.url, {"is_submission_paused": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], False)
+        self.challenge_phase.refresh_from_db()
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+
+    def test_pause_already_paused_phase(self):
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], True)
+        self.challenge_phase.refresh_from_db()
+        self.assertTrue(self.challenge_phase.is_submission_paused)
+
+    def test_unpause_already_unpaused_phase(self):
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+        response = self.client.post(
+            self.url, {"is_submission_paused": False}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_submission_paused"], False)
+        self.challenge_phase.refresh_from_db()
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+
+    def test_pause_one_phase_does_not_affect_other(self):
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge_phase.refresh_from_db()
+        self.challenge_phase2.refresh_from_db()
+        self.assertTrue(self.challenge_phase.is_submission_paused)
+        self.assertFalse(self.challenge_phase2.is_submission_paused)
+
+    def test_pause_challenge_phase_submissions_missing_field(self):
+        response = self.client.post(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {"error": "is_submission_paused field is required"}
+        self.assertEqual(response.data, expected)
+        self.challenge_phase.refresh_from_db()
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+
+    def test_pause_challenge_phase_submissions_phase_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_phase_submissions",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk + 999,
+            },
+        )
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_pause_challenge_phase_submissions_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_phase_submissions",
+            kwargs={
+                "challenge_pk": self.challenge.pk + 999,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_pause_challenge_phase_submissions_non_host_user(self):
+        self.url = reverse_lazy(
+            "challenges:pause_challenge_phase_submissions",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "challenge_phase_pk": self.challenge_phase_other.pk,
+            },
+        )
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge_phase_other.refresh_from_db()
+        self.assertFalse(self.challenge_phase_other.is_submission_paused)
+
+    def test_pause_challenge_phase_submissions_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.challenge_phase.refresh_from_db()
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+
+    def test_pause_challenge_phase_submissions_by_participant_user(self):
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.post(
+            self.url, {"is_submission_paused": True}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge_phase.refresh_from_db()
+        self.assertFalse(self.challenge_phase.is_submission_paused)
+
+
 class GetAllChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_all_challenges")
 

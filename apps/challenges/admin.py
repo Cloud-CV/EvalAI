@@ -52,6 +52,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "published",
         "approved_by_admin",
         "is_frozen",
+        "is_submission_paused",
         "remote_evaluation",
         "created_at",
         "workers",
@@ -62,6 +63,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         ChallengeFilter,
         "published",
         "is_frozen",
+        "is_submission_paused",
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
@@ -86,6 +88,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "delete_selected_workers",
         "freeze_selected_challenges",
         "unfreeze_selected_challenges",
+        "pause_selected_challenge_submissions",
+        "unpause_selected_challenge_submissions",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -234,6 +238,28 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     unfreeze_selected_challenges.short_description = (
         "Unfreeze selected challenges (allow hosts to change start/end dates)."
+    )
+
+    def pause_selected_challenge_submissions(self, request, queryset):
+        updated = queryset.update(is_submission_paused=True)
+        messages.success(
+            request,
+            "{} challenge(s) submissions paused.".format(updated),
+        )
+
+    pause_selected_challenge_submissions.short_description = (
+        "Pause submissions for selected challenges."
+    )
+
+    def unpause_selected_challenge_submissions(self, request, queryset):
+        updated = queryset.update(is_submission_paused=False)
+        messages.success(
+            request,
+            "{} challenge(s) submissions unpaused.".format(updated),
+        )
+
+    unpause_selected_challenge_submissions.short_description = (
+        "Unpause submissions for selected challenges."
     )
 
 

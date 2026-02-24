@@ -792,6 +792,80 @@ def disable_challenge(request, challenge_pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def pause_challenge_submissions(request, challenge_pk):
+    """Toggle submission pause for an entire challenge."""
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(
+        user=request.user, challenge_pk=challenge_pk
+    ):
+        response_data = {
+            "error": "You're not authorized to perform this operation"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if "is_submission_paused" not in request.data:
+        response_data = {"error": "is_submission_paused field is required"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = ChallengeSerializer(
+        challenge,
+        data=request.data,
+        partial=True,
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"is_submission_paused": serializer.instance.is_submission_paused},
+            status=status.HTTP_200_OK,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def pause_challenge_phase_submissions(
+    request, challenge_pk, challenge_phase_pk
+):
+    """Toggle submission pause for a specific challenge phase."""
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    if not is_user_a_host_of_challenge(
+        user=request.user, challenge_pk=challenge_pk
+    ):
+        response_data = {
+            "error": "You're not authorized to perform this operation"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if "is_submission_paused" not in request.data:
+        response_data = {"error": "is_submission_paused field is required"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = ChallengePhaseSerializer(
+        challenge_phase,
+        data=request.data,
+        partial=True,
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"is_submission_paused": serializer.instance.is_submission_paused},
+            status=status.HTTP_200_OK,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def get_all_challenges(
@@ -847,6 +921,11 @@ def get_all_challenges(
     )
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
+    is_paused = request.data.get("is_submission_paused")
+    if is_paused is None:
+        response_data = {"error": "is_submission_paused field is required"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
