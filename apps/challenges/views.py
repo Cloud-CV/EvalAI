@@ -23,7 +23,6 @@ from base.utils import (
     get_url_from_hostname,
     is_user_a_staff,
     paginated_queryset,
-    send_email,
     send_slack_notification,
 )
 from challenges.challenge_config_utils import (
@@ -55,7 +54,6 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Prefetch
 from django.http import HttpResponse
@@ -160,7 +158,6 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     get_submissions_csv_filename,
-    send_emails,
     send_subscription_plans_email,
 )
 
@@ -2039,7 +2036,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 }
                 send_slack_notification(message=message)
 
-            template_data = get_challenge_template_data(zip_config.challenge)
+            get_challenge_template_data(zip_config.challenge)
             if (
                 not challenge.is_docker_based
                 and challenge.inform_hosts
@@ -2056,10 +2053,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         logging.info(
                             "{} workers started successfully".format(count)
                         )
-                        template_id = settings.SENDGRID_SETTINGS.get(
-                            "TEMPLATES"
-                        ).get("WORKER_START_EMAIL")
-                        send_emails(emails, template_id, template_data)
                 except Exception:
                     logger.exception(
                         "Failed to start workers for challenge {}".format(
@@ -3203,18 +3196,8 @@ def invite_users_to_challenge(request, challenge_pk):
             else:
                 invalid_emails.append(email)
 
-        sender_email = settings.DEFAULT_FROM_EMAIL
         hostname = get_url_from_hostname(settings.HOSTNAME)
-        url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
-        template_data = {"title": challenge.title, "url": url}
-        if challenge.image:
-            template_data["image"] = challenge.image.url
-        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-            "CHALLENGE_INVITATION"
-        )
-
-        if email not in invalid_emails:
-            send_email(sender_email, email, template_id, template_data)
+        "{}/accept-invitation/{}/".format(hostname, invitation_key)
 
     if valid_emails:
         serializer = UserInvitationSerializer(data=valid_emails, many=True)
@@ -5119,20 +5102,22 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
-    # Send subscription plans email to challenge hosts
-    try:
-        send_subscription_plans_email(challenge)
-        logger.info(
-            "Subscription plans email sent successfully for challenge {}".format(
-                challenge_pk
+    # Send subscription plans email only once per challenge
+    if not challenge.is_approval_requested:
+        try:
+            send_subscription_plans_email(challenge)
+            logger.info(
+                "Subscription plans email sent successfully for challenge {}".format(
+                    challenge_pk
+                )
             )
-        )
-    except Exception as e:
-        logger.error(
-            "Failed to send subscription plans email for challenge {}: "
-            "{}".format(challenge_pk, str(e))
-        )
-        # Continue with the approval process even if email fails
+        except Exception as e:
+            logger.error(
+                "Failed to send subscription plans email for challenge {}: "
+                "{}".format(challenge_pk, str(e))
+            )
+        challenge.is_approval_requested = True
+        challenge.save(update_fields=["is_approval_requested"])
 
     if not settings.DEBUG:
         try:
@@ -5455,21 +5440,6 @@ def update_evaluation_module_error(request, challenge_pk):
         challenge.task_def_arn = task_def_arn
 
     challenge.save()
-
-    # Send email notification to the EvalAI team
-    if request.data.get("send_email"):
-        try:
-            send_mail(
-                subject=f"[EvalAI] Worker OOM - Challenge {challenge_pk}: {challenge.title}",
-                message=error_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.DEFAULT_FROM_EMAIL],
-                fail_silently=True,
-            )
-        except Exception:
-            logger.exception(
-                "Failed to send OOM email for challenge %s", challenge_pk
-            )
 
     return Response(
         {

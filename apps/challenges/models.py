@@ -101,6 +101,13 @@ class Challenge(TimeStampedModel):
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
     )
+    is_approval_requested = models.BooleanField(
+        default=False,
+        verbose_name="Is Approval Requested",
+        db_index=True,
+        help_text="Set to True once a challenge host submits an approval request. "
+        "Prevents duplicate subscription plan emails from being sent.",
+    )
     uses_ec2_worker = models.BooleanField(
         default=False, verbose_name="Uses EC2 worker instance", db_index=True
     )

@@ -18,9 +18,10 @@
                 </div>
                 <br>
                 <span ng-if="challenge.isChallengeHost && !challenge.approved_by_admin" class="fs-16 w-300">
-                    <button class="waves-effect waves-dark ev-btn-approval btn  fs-10 w-300" ng-click="challenge.sendApprovalRequest()">
-                    
-                        <strong class="fs-10">Send Approval Request</strong>
+                    <button class="waves-effect waves-dark ev-btn-approval btn fs-10 w-300"
+                            ng-click="challenge.sendApprovalRequest()"
+                            ng-disabled="challenge.is_approval_requested">
+                        <strong class="fs-10">{{challenge.is_approval_requested ? 'Approval Request Sent' : 'Send Approval Request'}}</strong>
                     </button>
                 </span>
             </div>
