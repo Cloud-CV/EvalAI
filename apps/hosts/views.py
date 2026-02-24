@@ -82,7 +82,6 @@ def challenge_host_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
-
         if request.method == "PATCH":
             serializer = ChallengeHostTeamSerializer(
                 challenge_host_team,
@@ -92,7 +91,7 @@ def challenge_host_team_detail(request, pk):
             )
         else:
             serializer = ChallengeHostTeamSerializer(
-                challenge_host_team,
+                instance=challenge_host_team,
                 data=request.data,
                 context={"request": request},
             )
@@ -111,7 +110,6 @@ def challenge_host_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_list(request, challenge_host_team_pk):
-
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
             pk=challenge_host_team_pk
@@ -214,7 +212,6 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_challenge_host_team(request):
-
     serializer = ChallengeHostTeamSerializer(
         data=request.data, context={"request": request}
     )
@@ -262,7 +259,6 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_host_to_team(request, pk):
-
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
     except ChallengeHostTeam.DoesNotExist:

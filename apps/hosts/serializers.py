@@ -5,7 +5,6 @@ from .models import ChallengeHost, ChallengeHostTeam
 
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
-
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
     )
@@ -16,6 +15,17 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
         if context:
             request = context.get("request")
             kwargs["data"]["created_by"] = request.user.username
+        for field in self.fields:
+            # iterate over the serializer fields
+            if field == "team_name":
+                # set the custom error message, only team name need validation
+                self.fields[field].error_messages[
+                    "required"
+                ] = "Team Name is invalid"
+            if field == "team_url":
+                self.fields[field].error_messages[
+                    "required"
+                ] = "Team URL is invalid"
 
     class Meta:
         model = ChallengeHostTeam
@@ -23,7 +33,6 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
 
 class ChallengeHostSerializer(serializers.ModelSerializer):
-
     status = serializers.ChoiceField(choices=ChallengeHost.STATUS_OPTIONS)
     permissions = serializers.ChoiceField(
         choices=ChallengeHost.PERMISSION_OPTIONS
@@ -47,7 +56,6 @@ class ChallengeHostSerializer(serializers.ModelSerializer):
 
 
 class InviteHostToTeamSerializer(serializers.Serializer):
-
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
@@ -77,7 +85,6 @@ class InviteHostToTeamSerializer(serializers.Serializer):
 
 
 class HostTeamDetailSerializer(serializers.ModelSerializer):
-
     members = serializers.SerializerMethodField()
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
