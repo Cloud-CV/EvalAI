@@ -534,6 +534,168 @@ class TestSendEmail(unittest.TestCase):
         mock_logger.exception.assert_called_once()
 
 
+class TestSendEmailRateLimit(unittest.TestCase):
+
+    def _mock_sendgrid_template_response(self):
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": True,
+                        "html_content": "<p>Hi</p>",
+                        "subject": "Subj",
+                    }
+                ]
+            }
+        )
+        return mock_response
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_email_sent_when_under_rate_limit(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 0
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 1, timeout=60
+        )
+        mock_msg.send.assert_called_once()
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_email_blocked_when_rate_limit_exceeded(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 10
+
+        with patch.object(
+            settings,
+            "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE",
+            10,
+        ):
+            send_email(
+                sender="sender@example.com",
+                recipient="recipient@example.com",
+                template_id="tid",
+                template_data={},
+            )
+
+        mock_email_cls.assert_not_called()
+        mock_logger.warning.assert_called_once()
+        mock_sentry.capture_message.assert_called_once()
+        self.assertIn(
+            "recipient@example.com",
+            mock_sentry.capture_message.call_args[0][0],
+        )
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_rate_limit_counter_increments(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 5
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 6, timeout=60
+        )
+        mock_msg.send.assert_called_once()
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_rate_limit_allows_after_cache_expiry(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        """Simulate cache expiry (returns 0) so emails flow again."""
+        mock_cache.get.return_value = 0
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        with patch.object(
+            settings,
+            "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE",
+            10,
+        ):
+            send_email(
+                sender="sender@example.com",
+                recipient="recipient@example.com",
+                template_id="tid",
+                template_data={},
+            )
+
+        mock_msg.send.assert_called_once()
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 1, timeout=60
+        )
+
+
 class TestFetchSendgridTemplate(unittest.TestCase):
     @patch("base.utils.sendgrid.SendGridAPIClient")
     def test_fetch_returns_active_version(self, mock_sendgrid_client):
