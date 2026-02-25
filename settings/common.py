@@ -331,6 +331,11 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL", "EvalAI Team <team@eval.ai>"
 )
 
+# Max emails per recipient per minute (application-level rate limit).
+EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE = int(
+    os.environ.get("EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10)
+)
+
 # Expiry time of a presigned url for uploading files to AWS, in seconds.
 PRESIGNED_URL_EXPIRY_TIME = 3600
 
