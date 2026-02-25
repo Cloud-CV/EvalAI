@@ -13,6 +13,7 @@ import requests
 import sendgrid
 import sentry_sdk
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives
 from django.utils.deconstruct import deconstructible
 from pybars import Compiler
@@ -161,6 +162,25 @@ def send_email(
         )
         sentry_sdk.capture_exception(error)
         return
+
+    max_per_minute = getattr(
+        settings, "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10
+    )
+    cache_key = f"email_rate:{recipient}"
+    current = cache.get(cache_key, 0)
+    if current >= max_per_minute:
+        logger.warning(
+            "Email rate limit exceeded for recipient=%s (limit=%d/min)",
+            recipient,
+            max_per_minute,
+        )
+        sentry_sdk.capture_message(
+            f"Email rate limit exceeded for {recipient}",
+            level="warning",
+        )
+        return
+    cache.set(cache_key, current + 1, timeout=60)
+
     try:
         api_key = os.environ.get("SENDGRID_API_KEY")
         if not api_key:
