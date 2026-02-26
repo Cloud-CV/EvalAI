@@ -1,4 +1,5 @@
 from allauth.account.utils import send_email_confirmation
+from base.utils import get_user_by_email
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
@@ -40,7 +41,7 @@ def disable_user(request):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_auth_token(request):
     try:
-        user = User.objects.get(email=request.user.email)
+        user = get_user_by_email(request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
@@ -91,7 +92,7 @@ def resend_email_confirmation(request):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def refresh_auth_token(request):
     try:
-        user = User.objects.get(email=request.user.email)
+        user = get_user_by_email(request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)

@@ -21,6 +21,7 @@ from base.utils import (
     get_queue_name,
     get_slug,
     get_url_from_hostname,
+    get_user_by_email,
     is_user_a_staff,
     paginated_queryset,
     send_slack_notification,
@@ -2062,7 +2063,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
                 participant_host_team.save()
                 for email in emails:
-                    user = User.objects.get(email=email)
+                    user = get_user_by_email(email)
                     host = Participant(
                         user=user,
                         status=Participant.ACCEPTED,
@@ -3258,10 +3259,10 @@ def invite_users_to_challenge(request, challenge_pk):
             }
             serializer = UserInvitationSerializer(data=data, partial=True)
             if serializer.is_valid():
-                user, created = User.objects.get_or_create(
-                    username=email, email=email
-                )
-                if created:
+                try:
+                    user = get_user_by_email(email)
+                except User.DoesNotExist:
+                    user = User.objects.create(username=email, email=email)
                     EmailAddress.objects.create(
                         user=user, email=email, primary=True, verified=True
                     )
@@ -4507,7 +4508,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         participant_host_team.save()
                         for email in emails:
-                            user = User.objects.get(email=email)
+                            user = get_user_by_email(email)
                             host = Participant(
                                 user=user,
                                 status=Participant.ACCEPTED,

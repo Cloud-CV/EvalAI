@@ -154,7 +154,7 @@ class TestUserIsStaff(BaseAPITestClass):
     def test_if_user_is_staff(self):
         self.user = User.objects.create(
             username="someuser1",
-            email="user@test.com",
+            email="staffuser@test.com",
             password="secret_password",
             is_staff=True,
         )
@@ -163,7 +163,7 @@ class TestUserIsStaff(BaseAPITestClass):
     def test_if_user_is_not_staff(self):
         self.user = User.objects.create(
             username="someuser2",
-            email="user@test.com",
+            email="nonstaffuser@test.com",
             password="secret_password",
             is_staff=False,
         )
