@@ -1,6 +1,6 @@
 import logging
 
-from accounts.models import JwtToken, Profile
+from accounts.models import JwtToken
 from allauth.account.models import EmailAddress
 from challenges.models import (
     ChallengeConfiguration,
@@ -29,7 +29,6 @@ FK_MODELS = [
 ]
 
 ONE_TO_ONE_MODELS = [
-    Profile,
     JwtToken,
 ]
 
@@ -101,19 +100,17 @@ class Command(BaseCommand):
     def _pick_canonical(self, users):
         """Choose which user to keep from a group sharing the same email.
 
-        Prefers the account that has submissions. If multiple accounts have
-        submissions, or none do, falls back to the newest (latest date_joined).
+        Prefers the account with the most submissions.  When counts are tied
+        (including zero-zero), falls back to the newest (latest date_joined).
         Returns (canonical, list_of_duplicates).
         """
-        users_with_subs = [
-            u
-            for u in users
-            if Submission.objects.filter(created_by=u).exists()
-        ]
-        if len(users_with_subs) == 1:
-            canonical = users_with_subs[0]
-        else:
-            canonical = users[-1]  # newest by date_joined (list is sorted asc)
+        canonical = max(
+            users,
+            key=lambda u: (
+                Submission.objects.filter(created_by=u).count(),
+                u.date_joined,
+            ),
+        )
         duplicates = [u for u in users if u.pk != canonical.pk]
         return canonical, duplicates
 

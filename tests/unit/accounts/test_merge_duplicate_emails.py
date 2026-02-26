@@ -97,7 +97,7 @@ class MergeDuplicateEmailsCommandTest(TestCase):
         self.assertFalse(self.user_old.is_active)
         self.assertEqual(self.user_old.email, "dupe+duplicate@example.com")
 
-        self.assertFalse(Profile.objects.filter(user=self.user_old).exists())
+        self.assertTrue(Profile.objects.filter(user=self.user_old).exists())
         ea = EmailAddress.objects.filter(user=self.user_old)
         self.assertTrue(ea.exists())
         self.assertEqual(ea.first().email, "dupe+duplicate@example.com")
@@ -152,3 +152,53 @@ class MergeDuplicateEmailsCommandTest(TestCase):
 
         self.user_old.refresh_from_db()
         self.assertFalse(self.user_old.is_active)
+
+    def test_keeps_account_with_most_submissions(self):
+        """When both accounts have submissions, the one with more wins."""
+        now = timezone.now()
+        challenge = Challenge.objects.create(
+            title="SubChallenge",
+            short_description="s",
+            description="d",
+            terms_and_conditions="t",
+            submission_guidelines="g",
+            creator=self.host_team,
+            domain="CV",
+            list_tags=["Test"],
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=30),
+        )
+        phase = ChallengePhase.objects.create(
+            name="Phase1",
+            challenge=challenge,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=30),
+        )
+        # Old user has more submissions
+        for _ in range(5):
+            Submission.objects.create(
+                created_by=self.user_old,
+                participant_team=self.participant_team,
+                challenge_phase=phase,
+                status="submitted",
+            )
+        Submission.objects.create(
+            created_by=self.user_new,
+            participant_team=self.participant_team,
+            challenge_phase=phase,
+            status="submitted",
+        )
+
+        out = StringIO()
+        call_command("merge_duplicate_emails", "--commit", stdout=out)
+
+        self.user_old.refresh_from_db()
+        self.assertTrue(self.user_old.is_active)
+
+        self.user_new.refresh_from_db()
+        self.assertFalse(self.user_new.is_active)
+        self.assertEqual(self.user_new.email, "dupe+duplicate@example.com")
