@@ -43,8 +43,10 @@ angular
 						var utilities = $injector.get('utilities');
 						utilities.resetStorage();
 						$rootScope.isAuth = false;
-						$state.go('auth.login');
-						$rootScope.notify('error', 'Timeout, Please login again to continue!');
+						if ($state.current && $state.current.authenticate) {
+							$state.go('auth.login');
+							$rootScope.notify('error', 'Timeout, Please login again to continue!');
+						}
 					}
 					return $q.reject(response);
 				}
