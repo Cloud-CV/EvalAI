@@ -721,8 +721,6 @@ class TestSendEmailBounceGuard(DjangoTestCase):
     """Tests for the email_bounced suppression guard in send_email()."""
 
     def setUp(self):
-        pass
-
         self.user = User.objects.create(
             username="bouncetest",
             email="bounced@example.com",
