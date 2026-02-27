@@ -89,3 +89,6 @@ monitoring/alertmanager/data/*
 .continue/
 .codeium/
 .tabnine/
+
+# Lambda Functions Zip Files
+scripts/lambda/*.zip
