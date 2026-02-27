@@ -42,7 +42,11 @@ class EvalAIAccountAdapter(DefaultAccountAdapter):
                 )
                 return
         except User.DoesNotExist:
-            pass
+            logger.debug(
+                "No User found with email %s when checking for bounced "
+                "profile; sending via default allauth adapter.",
+                email,
+            )
         super().send_mail(template_prefix, email, context)
 
     def confirm_email(self, request, email_address):
