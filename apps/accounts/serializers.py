@@ -1,3 +1,4 @@
+from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
@@ -72,6 +73,9 @@ class ProfileSerializer(UserDetailsSerializer):
     )
     is_profile_complete = serializers.SerializerMethodField()
     is_profile_fields_locked = serializers.SerializerMethodField()
+    email_bounced = serializers.BooleanField(
+        source="profile.email_bounced", read_only=True
+    )
 
     class Meta(UserDetailsSerializer.Meta):
         fields = (
@@ -91,6 +95,7 @@ class ProfileSerializer(UserDetailsSerializer):
             "university",
             "is_profile_complete",
             "is_profile_fields_locked",
+            "email_bounced",
         )
 
     def get_is_profile_fields_locked(self, obj):
@@ -258,6 +263,76 @@ class JwtTokenSerializer(serializers.ModelSerializer):
             "refresh_token",
             "access_token",
         )
+
+
+class EmailBounceSerializer(serializers.ModelSerializer):
+    """Serializer for updating the email_bounced flag on a Profile."""
+
+    class Meta:
+        model = Profile
+        fields = ("email_bounced", "email_bounced_at")
+
+    def clear_bounce(self):
+        """Reset bounce fields after the user confirms a new email."""
+        self.instance.email_bounced = False
+        self.instance.email_bounced_at = None
+        self.instance.save(update_fields=["email_bounced", "email_bounced_at"])
+        return self.instance
+
+
+class UserDeactivateSerializer(serializers.ModelSerializer):
+    """Serializer for setting is_active=False on a User."""
+
+    class Meta:
+        model = get_user_model()
+        fields = ("is_active",)
+
+    def deactivate(self):
+        self.instance.is_active = False
+        self.instance.save(update_fields=["is_active"])
+        return self.instance
+
+
+class UpdateEmailSerializer(serializers.Serializer):
+    """Validates a new email for the update_email endpoint."""
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if not value:
+            raise ValidationError("Email is required.")
+
+        user = self.context.get("user")
+        if user and user.email.lower() == value:
+            raise ValidationError(
+                "This is already your current email address."
+            )
+
+        if (
+            get_user_model()
+            .objects.filter(email__iexact=value)
+            .exclude(pk=user.pk)
+            .exists()
+        ):
+            raise ValidationError("This email address is already in use.")
+
+        from .adapter import EvalAIAccountAdapter
+
+        adapter = EvalAIAccountAdapter()
+        adapter.clean_email(value)
+
+        return value
+
+    def create(self, validated_data):
+        user = self.context["user"]
+        new_email = validated_data["email"]
+
+        EmailAddress.objects.filter(user=user, verified=False).delete()
+        email_address = EmailAddress.objects.create(
+            user=user, email=new_email, primary=False, verified=False
+        )
+        return email_address
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):

@@ -5,6 +5,20 @@
         <a href="mailto:team@eval.ai" style="color: inherit; text-decoration: underline;">team@eval.ai</a>. 🚨
     </div>
 </div>
+<div ng-if="isAuth && emailBounced" style="
+    background-color: #f8d7da;
+    color: #721c24;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 2px solid #f5c6cb;
+    padding: 12px 16px;
+    font-family: Arial, sans-serif;
+    z-index: 999;
+">
+    Your email address is no longer reachable. Please
+    <a ui-sref="web.profile" style="color: #721c24; text-decoration: underline;">update your email</a>
+    to continue receiving notifications. If you do not verify a new email within 24 hours, your account will be deactivated automatically.
+</div>
 <div class="main-header padding-lr-header">
     <nav>
         <div class="nav-wrapper">

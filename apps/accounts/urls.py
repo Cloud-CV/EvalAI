@@ -15,6 +15,11 @@ urlpatterns = [
         views.resend_email_confirmation,
         name="resend_email_confirmation",
     ),
+    url(
+        r"^user/update_email/$",
+        views.update_email,
+        name="update_email",
+    ),
 ]
 
 app_name = "accounts"
