@@ -5,8 +5,6 @@ from allauth.account.adapter import DefaultAccountAdapter
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-from .serializers import EmailBounceSerializer
-
 logger = logging.getLogger(__name__)
 
 
@@ -53,6 +51,12 @@ class EvalAIAccountAdapter(DefaultAccountAdapter):
         super().confirm_email(request, email_address)
         user = email_address.user
         if hasattr(user, "profile") and user.profile.email_bounced:
+            # Lazy import: allauth loads this adapter via the full
+            # "apps.accounts.adapter" path.  A top-level import of
+            # .serializers would re-import models under that path and
+            # conflict with the already-registered "accounts.models".
+            from .serializers import EmailBounceSerializer
+
             serializer = EmailBounceSerializer(user.profile)
             serializer.clear_bounce()
             logger.info(
