@@ -1,6 +1,8 @@
 from datetime import timedelta
 from io import StringIO
+from unittest.mock import patch
 
+from accounts.models import JwtToken
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
@@ -81,7 +83,12 @@ class MergeDuplicateEmailsCommandTest(TransactionTestCase):
 
     def tearDown(self):
         User.objects.filter(
-            username__in=("original_user", "dupe@example.com")
+            username__in=(
+                "original_user",
+                "dupe@example.com",
+                "empty1",
+                "empty2",
+            )
         ).delete()
         _add_email_unique_constraint()
 
@@ -231,3 +238,66 @@ class MergeDuplicateEmailsCommandTest(TransactionTestCase):
         self.assertFalse(self.user_new.is_active)
         expected_email = f"dupe+duplicate-{self.user_new.id}@example.com"
         self.assertEqual(self.user_new.email, expected_email)
+
+    def test_merge_deletes_jwt_token_from_duplicate(self):
+        """Duplicate user with JwtToken gets it deleted during merge."""
+        JwtToken.objects.create(
+            user=self.user_old,
+            access_token="fake",
+            refresh_token="fake",
+        )
+        err = StringIO()
+        out = StringIO()
+        call_command(
+            "merge_duplicate_emails", "--commit", stdout=out, stderr=err
+        )
+        self.assertFalse(JwtToken.objects.filter(user=self.user_old).exists())
+
+    def test_merge_deletes_auth_token_from_duplicate(self):
+        """Duplicate user with DRF auth Token gets it deleted during merge."""
+        from rest_framework.authtoken.models import Token
+
+        Token.objects.create(
+            user=self.user_old,
+            key="x" * 40,
+        )
+        out = StringIO()
+        call_command("merge_duplicate_emails", "--commit", stdout=out)
+        self.assertFalse(Token.objects.filter(user=self.user_old).exists())
+
+    def test_merge_handles_empty_email(self):
+        """Users with empty email get duplicate-N@deactivated.local."""
+        u1 = User.objects.create_user(
+            username="empty1", email="", password="x"
+        )
+        u2 = User.objects.create_user(
+            username="empty2", email="", password="x"
+        )
+        out = StringIO()
+        call_command("merge_duplicate_emails", "--commit", stdout=out)
+        kept = u2 if u2.date_joined > u1.date_joined else u1
+        dup = u1 if kept == u2 else u2
+        dup.refresh_from_db()
+        self.assertEqual(
+            dup.email,
+            f"duplicate-{dup.id}@deactivated.local",
+        )
+        User.objects.filter(username__in=("empty1", "empty2")).delete()
+
+    def test_merge_reports_error_when_do_merge_fails(self):
+        """When _do_merge raises, command logs and writes to stderr."""
+        err = StringIO()
+        out = StringIO()
+        with patch(
+            "accounts.management.commands.merge_duplicate_emails.Command._do_merge",
+            side_effect=RuntimeError("forced"),
+        ):
+            call_command(
+                "merge_duplicate_emails",
+                "--commit",
+                stdout=out,
+                stderr=err,
+            )
+        self.assertIn("ERROR merging user", err.getvalue())
+        self.user_old.refresh_from_db()
+        self.assertTrue(self.user_old.is_active)
