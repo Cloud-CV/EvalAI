@@ -178,7 +178,11 @@ class Command(BaseCommand):
         try:
             from rest_framework.authtoken.models import Token
         except ImportError:
-            # Django REST Framework authtoken app is optional.
+            logger.debug(
+                "rest_framework.authtoken is not installed; skipping auth token "
+                "cleanup for duplicate user %s",
+                duplicate.id,
+            )
             Token = None
 
         if Token is not None:
@@ -192,10 +196,11 @@ class Command(BaseCommand):
                     )
                     if action == "Reassigning":
                         tokens.delete()
-            except Exception:
-                logger.exception(
-                    "Error while processing auth tokens for duplicate user %s",
+            except Exception as exc:
+                logger.warning(
+                    "Failed to clean up auth tokens for duplicate user %s: %s",
                     duplicate.id,
+                    exc,
                 )
 
         deactivate_label = (
