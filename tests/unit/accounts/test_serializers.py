@@ -94,6 +94,7 @@ class TestProfileSerializer(TestCase):
             "university",
             "is_profile_complete",
             "is_profile_fields_locked",
+            "email_bounced",
         ]
         self.assertEqual(set(serializer.data.keys()), set(expected_fields))
 

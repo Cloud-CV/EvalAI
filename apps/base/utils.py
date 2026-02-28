@@ -163,6 +163,18 @@ def send_email(
         sentry_sdk.capture_exception(error)
         return
 
+    from accounts.models import Profile
+
+    if Profile.objects.filter(
+        user__email__iexact=recipient, email_bounced=True
+    ).exists():
+        logger.info(
+            "Suppressed email to bounced address %s (template=%s).",
+            recipient,
+            template_id,
+        )
+        return
+
     max_per_minute = getattr(
         settings, "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10
     )

@@ -52,6 +52,8 @@ class Profile(TimeStampedModel):
     address_state = models.CharField(max_length=100, null=True, blank=True)
     address_country = models.CharField(max_length=100, null=True, blank=True)
     university = models.CharField(max_length=512, null=True, blank=True)
+    email_bounced = models.BooleanField(default=False)
+    email_bounced_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return "{}".format(self.user)

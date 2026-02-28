@@ -237,6 +237,14 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     "polling_interval": 1,  # Check for new messages every second
 }
 
+# Celery Beat schedule — periodic tasks
+CELERY_BEAT_SCHEDULE = {
+    "deactivate-stale-bounced-accounts": {
+        "task": "accounts.tasks.deactivate_stale_bounced_accounts",
+        "schedule": datetime.timedelta(hours=1),
+    },
+}
+
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 
