@@ -72,3 +72,13 @@ class TestEvalAIAccountAdapterSendMail(TestCase):
             "account/email/email_confirmation", "bounced@test.com", {}
         )
         mock_super_send.assert_called_once()
+
+    @patch.object(EvalAIAccountAdapter.__bases__[0], "send_mail")
+    def test_send_mail_no_user_falls_through_to_default(self, mock_super_send):
+        """When no User exists for the email, fall through to default sending."""
+        self.adapter.send_mail(
+            "account/email/email_confirmation",
+            "nobody@example.com",
+            {},
+        )
+        mock_super_send.assert_called_once()

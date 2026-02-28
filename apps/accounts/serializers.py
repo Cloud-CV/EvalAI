@@ -296,7 +296,7 @@ class UserDeactivateSerializer(serializers.ModelSerializer):
 class UpdateEmailSerializer(serializers.Serializer):
     """Validates a new email for the update_email endpoint."""
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(allow_blank=True)
 
     def validate_email(self, value):
         value = value.strip().lower()

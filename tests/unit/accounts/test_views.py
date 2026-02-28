@@ -158,6 +158,29 @@ class UpdateEmailTest(BaseAPITestClass):
         self.assertIn("already your current", response.data["error"])
         mock_send_conf.assert_not_called()
 
+    def test_update_email_empty_fails(self):
+        response = self.client.post(self.url, {"email": ""}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Email is required", response.data["error"])
+
+    @patch("accounts.views.send_email_confirmation")
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_update_email_already_used_by_other_user(
+        self, mock_resolve, mock_send_conf
+    ):
+        mock_resolve.return_value = [MagicMock()]
+        User.objects.create(
+            username="otheruser",
+            email="other@valid-domain.com",
+            password="password",
+        )
+        response = self.client.post(
+            self.url, {"email": "other@valid-domain.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already in use", response.data["error"])
+        mock_send_conf.assert_not_called()
+
     @patch("accounts.adapter.dns.resolver.resolve")
     def test_email_bounced_flag_cleared_on_confirmation(self, mock_resolve):
         mock_resolve.return_value = [MagicMock()]
