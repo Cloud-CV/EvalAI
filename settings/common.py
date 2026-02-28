@@ -187,6 +187,7 @@ REST_FRAMEWORK = {
 }
 
 # ALLAUTH SETTINGS
+ACCOUNT_ADAPTER = "apps.accounts.adapter.EvalAIAccountAdapter"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -235,6 +236,14 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     "region": AWS_REGION,
     "visibility_timeout": 3600,  # 60 minutes
     "polling_interval": 1,  # Check for new messages every second
+}
+
+# Celery Beat schedule — periodic tasks
+CELERY_BEAT_SCHEDULE = {
+    "deactivate-stale-bounced-accounts": {
+        "task": "accounts.tasks.deactivate_stale_bounced_accounts",
+        "schedule": datetime.timedelta(hours=1),
+    },
 }
 
 # CORS Settings

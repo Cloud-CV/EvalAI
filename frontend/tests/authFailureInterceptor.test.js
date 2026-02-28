@@ -28,12 +28,29 @@ describe('Unit tests for authFailureInterceptor', function () {
     });
 
     describe('responseError', function () {
-        it('on 401 calls resetStorage, sets isAuth false, redirects to auth.login, shows toast', function () {
+        it('on 401 always clears auth state regardless of current route', function () {
             spyOn(utilities, 'resetStorage');
             spyOn($state, 'go');
             spyOn($rootScope, 'notify');
 
             $rootScope.isAuth = true;
+            $state.current = { name: 'web.challenge-main.challenge-list', authenticate: undefined };
+
+            var response = { status: 401, data: { detail: 'Invalid token' } };
+            var rejected = authFailureInterceptor.responseError(response);
+            rejected.catch(angular.noop);
+
+            expect(utilities.resetStorage).toHaveBeenCalled();
+            expect($rootScope.isAuth).toBe(false);
+        });
+
+        it('on 401 redirects to auth.login when current route requires authentication', function () {
+            spyOn(utilities, 'resetStorage');
+            spyOn($state, 'go');
+            spyOn($rootScope, 'notify');
+
+            $rootScope.isAuth = true;
+            $state.current = { name: 'web.dashboard', authenticate: true };
 
             var response = { status: 401, data: { detail: 'Invalid token' } };
             var rejected = authFailureInterceptor.responseError(response);
@@ -43,6 +60,42 @@ describe('Unit tests for authFailureInterceptor', function () {
             expect($rootScope.isAuth).toBe(false);
             expect($state.go).toHaveBeenCalledWith('auth.login');
             expect($rootScope.notify).toHaveBeenCalledWith('error', 'Timeout, Please login again to continue!');
+        });
+
+        it('on 401 does NOT redirect when current route is public', function () {
+            spyOn(utilities, 'resetStorage');
+            spyOn($state, 'go');
+            spyOn($rootScope, 'notify');
+
+            $rootScope.isAuth = true;
+            $state.current = { name: 'web.challenge-main.challenge-list', authenticate: undefined };
+
+            var response = { status: 401, data: { detail: 'Invalid token' } };
+            var rejected = authFailureInterceptor.responseError(response);
+            rejected.catch(angular.noop);
+
+            expect(utilities.resetStorage).toHaveBeenCalled();
+            expect($rootScope.isAuth).toBe(false);
+            expect($state.go).not.toHaveBeenCalled();
+            expect($rootScope.notify).not.toHaveBeenCalled();
+        });
+
+        it('on 401 does NOT redirect when $state.current has authenticate set to false', function () {
+            spyOn(utilities, 'resetStorage');
+            spyOn($state, 'go');
+            spyOn($rootScope, 'notify');
+
+            $rootScope.isAuth = true;
+            $state.current = { name: 'home', authenticate: false };
+
+            var response = { status: 401 };
+            var rejected = authFailureInterceptor.responseError(response);
+            rejected.catch(angular.noop);
+
+            expect(utilities.resetStorage).toHaveBeenCalled();
+            expect($rootScope.isAuth).toBe(false);
+            expect($state.go).not.toHaveBeenCalled();
+            expect($rootScope.notify).not.toHaveBeenCalled();
         });
 
         it('on 401 returns a rejected promise with the response', function () {

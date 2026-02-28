@@ -19,7 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .authentication import ExpiringTokenAuthentication
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
-from .serializers import JwtTokenSerializer
+from .serializers import JwtTokenSerializer, UpdateEmailSerializer
 from .throttles import ResendEmailThrottle
 
 
@@ -127,3 +127,39 @@ def refresh_auth_token(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_email(request):
+    """
+    Allows an authenticated user to change their email address.
+    Validates MX records, creates a new unverified EmailAddress, and
+    sends a confirmation email. The old address stays until the new
+    one is confirmed (handled by allauth).
+    """
+    serializer = UpdateEmailSerializer(
+        data=request.data, context={"user": request.user}
+    )
+    if not serializer.is_valid():
+        errors = serializer.errors
+        first_error = next(iter(errors.values()))[0]
+        return Response(
+            {"error": str(first_error)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer.save()
+    new_email = serializer.validated_data["email"]
+    send_email_confirmation(request._request, request.user, email=new_email)
+
+    return Response(
+        {
+            "message": "A confirmation email has been sent to {}.".format(
+                new_email
+            )
+        },
+        status=status.HTTP_200_OK,
+    )
