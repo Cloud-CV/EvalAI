@@ -66,6 +66,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "job_name",
             "submission_metadata",
             "is_verified_by_host",
+            "is_cli",
         )
 
     # Cache for challenge_hosts_pk to avoid repeated queries within same
@@ -169,6 +170,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "publication_url",
             "project_url",
             "is_verified_by_host",
+            "is_cli",
         )
 
     def get_participant_team(self, obj):
