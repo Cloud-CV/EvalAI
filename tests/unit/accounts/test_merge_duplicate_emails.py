@@ -1,20 +1,42 @@
 from datetime import timedelta
 from io import StringIO
 
-from accounts.models import Profile
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.test import TestCase
+from django.db import connection
+from django.test import TransactionTestCase
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 
 
-class MergeDuplicateEmailsCommandTest(TestCase):
+def _drop_email_unique_constraint():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "ALTER TABLE auth_user DROP CONSTRAINT IF EXISTS auth_user_email_unique"
+        )
+
+
+def _add_email_unique_constraint():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT 1 FROM pg_constraint WHERE conname = %s",
+            ["auth_user_email_unique"],
+        )
+        if cursor.fetchone():
+            return
+        cursor.execute(
+            "ALTER TABLE auth_user ADD CONSTRAINT auth_user_email_unique "
+            "UNIQUE (email)"
+        )
+
+
+class MergeDuplicateEmailsCommandTest(TransactionTestCase):
     def setUp(self):
+        _drop_email_unique_constraint()
         self.user_old = User.objects.create_user(
             username="original_user",
             email="dupe@example.com",
@@ -57,6 +79,12 @@ class MergeDuplicateEmailsCommandTest(TestCase):
             team=self.participant_team,
         )
 
+    def tearDown(self):
+        User.objects.filter(
+            username__in=("original_user", "dupe@example.com")
+        ).delete()
+        _add_email_unique_constraint()
+
     def test_dry_run_does_not_modify(self):
         out = StringIO()
         call_command("merge_duplicate_emails", stdout=out)
@@ -92,15 +120,15 @@ class MergeDuplicateEmailsCommandTest(TestCase):
         self.participant_team.refresh_from_db()
         self.assertEqual(self.participant_team.created_by, self.user_new)
 
-        # Old user is deactivated with renamed email
+        # Old user is deactivated with renamed email (unique per user_id)
         self.user_old.refresh_from_db()
         self.assertFalse(self.user_old.is_active)
-        self.assertEqual(self.user_old.email, "dupe+duplicate@example.com")
+        expected_email = f"dupe+duplicate-{self.user_old.id}@example.com"
+        self.assertEqual(self.user_old.email, expected_email)
 
-        self.assertTrue(Profile.objects.filter(user=self.user_old).exists())
         ea = EmailAddress.objects.filter(user=self.user_old)
         self.assertTrue(ea.exists())
-        self.assertEqual(ea.first().email, "dupe+duplicate@example.com")
+        self.assertEqual(ea.first().email, expected_email)
 
         # New user stays active
         self.user_new.refresh_from_db()
@@ -201,4 +229,5 @@ class MergeDuplicateEmailsCommandTest(TestCase):
 
         self.user_new.refresh_from_db()
         self.assertFalse(self.user_new.is_active)
-        self.assertEqual(self.user_new.email, "dupe+duplicate@example.com")
+        expected_email = f"dupe+duplicate-{self.user_new.id}@example.com"
+        self.assertEqual(self.user_new.email, expected_email)

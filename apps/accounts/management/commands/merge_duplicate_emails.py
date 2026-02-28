@@ -36,8 +36,8 @@ ONE_TO_ONE_MODELS = [
 class Command(BaseCommand):
     help = (
         "Find users sharing the same email address, reassign all related "
-        "objects to the account with submissions (falling back to oldest), "
-        "and deactivate duplicates. "
+        "objects to the account with the most submissions (falling back to "
+        "newest), and deactivate duplicates. "
         "Dry-run by default; pass --commit to apply."
     )
 
@@ -156,7 +156,9 @@ class Command(BaseCommand):
             except model.DoesNotExist:
                 pass
 
-        tagged_email = self._make_duplicate_email(duplicate.email)
+        tagged_email = self._make_duplicate_email(
+            duplicate.email, duplicate.id
+        )
         rename_label = (
             "Renaming" if action == "Reassigning" else "Would rename"
         )
@@ -201,9 +203,15 @@ class Command(BaseCommand):
             duplicate.save(update_fields=["email", "is_active"])
 
     @staticmethod
-    def _make_duplicate_email(email):
-        """Turn 'user@example.com' into 'user+duplicate@example.com'."""
+    def _make_duplicate_email(email, user_id):
+        """Turn 'user@example.com' into 'user+duplicate-{id}@example.com'.
+
+        Appends user_id so each deactivated user gets a unique email,
+        avoiding collisions when multiple duplicates share the same address
+        (or when the original email is empty).
+        """
+        email = (email or "").strip()
         local, at, domain = email.rpartition("@")
-        if not at:
-            return f"{email}+duplicate"
-        return f"{local}+duplicate@{domain}"
+        if not at or not domain:
+            return f"duplicate-{user_id}@deactivated.local"
+        return f"{local}+duplicate-{user_id}@{domain}"
