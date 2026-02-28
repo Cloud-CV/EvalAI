@@ -145,16 +145,15 @@ class Command(BaseCommand):
                     qs.update(**{field_name: canonical})
 
         for model in ONE_TO_ONE_MODELS:
-            try:
-                obj = model.objects.get(user=duplicate)
-                self.stdout.write(
-                    f"    {action.replace('Reassigning', 'Deleting').replace('Would reassign', 'Would delete')} "
-                    f"{model.__name__} for user {duplicate.id}"
-                )
-                if action == "Reassigning":
-                    obj.delete()
-            except model.DoesNotExist:
-                pass
+            obj = model.objects.filter(user=duplicate).first()
+            if not obj:
+                continue
+            self.stdout.write(
+                f"    {action.replace('Reassigning', 'Deleting').replace('Would reassign', 'Would delete')} "
+                f"{model.__name__} for user {duplicate.id}"
+            )
+            if action == "Reassigning":
+                obj.delete()
 
         tagged_email = self._make_duplicate_email(
             duplicate.email, duplicate.id
@@ -178,18 +177,26 @@ class Command(BaseCommand):
 
         try:
             from rest_framework.authtoken.models import Token
+        except ImportError:
+            # Django REST Framework authtoken app is optional.
+            Token = None
 
-            tokens = Token.objects.filter(user=duplicate)
-            t_count = tokens.count()
-            if t_count:
-                self.stdout.write(
-                    f"    {action.replace('Reassigning', 'Deleting').replace('Would reassign', 'Would delete')} "
-                    f"{t_count} auth Token(s) for user {duplicate.id}"
+        if Token is not None:
+            try:
+                tokens = Token.objects.filter(user=duplicate)
+                t_count = tokens.count()
+                if t_count:
+                    self.stdout.write(
+                        f"    {action.replace('Reassigning', 'Deleting').replace('Would reassign', 'Would delete')} "
+                        f"{t_count} auth Token(s) for user {duplicate.id}"
+                    )
+                    if action == "Reassigning":
+                        tokens.delete()
+            except Exception:
+                logger.exception(
+                    "Error while processing auth tokens for duplicate user %s",
+                    duplicate.id,
                 )
-                if action == "Reassigning":
-                    tokens.delete()
-        except Exception:
-            pass
 
         deactivate_label = (
             "Deactivating" if action == "Reassigning" else "Would deactivate"
