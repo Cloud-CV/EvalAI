@@ -25,6 +25,7 @@ from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase as DjangoTestCase
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -334,6 +335,16 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
 
 class TestSendEmail(unittest.TestCase):
 
+    def setUp(self):
+        self._profile_patcher = patch(
+            "accounts.models.Profile.objects.filter",
+            return_value=MagicMock(exists=MagicMock(return_value=False)),
+        )
+        self._profile_patcher.start()
+
+    def tearDown(self):
+        self._profile_patcher.stop()
+
     def _mock_sendgrid_template_response(
         self,
         html_content="<h1>Hello {{NAME}}</h1>",
@@ -536,6 +547,16 @@ class TestSendEmail(unittest.TestCase):
 
 class TestSendEmailRateLimit(unittest.TestCase):
 
+    def setUp(self):
+        self._profile_patcher = patch(
+            "accounts.models.Profile.objects.filter",
+            return_value=MagicMock(exists=MagicMock(return_value=False)),
+        )
+        self._profile_patcher.start()
+
+    def tearDown(self):
+        self._profile_patcher.stop()
+
     def _mock_sendgrid_template_response(self):
         mock_response = MagicMock()
         mock_response.body = json.dumps(
@@ -694,6 +715,76 @@ class TestSendEmailRateLimit(unittest.TestCase):
         mock_cache.set.assert_called_once_with(
             "email_rate:recipient@example.com", 1, timeout=60
         )
+
+
+class TestSendEmailBounceGuard(DjangoTestCase):
+    """Tests for the email_bounced suppression guard in send_email()."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="bouncetest",
+            email="bounced@example.com",
+            password="password",
+        )
+
+    def _mock_sendgrid_template_response(self):
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": True,
+                        "html_content": "<h1>Hi</h1>",
+                        "subject": "Test",
+                    }
+                ]
+            }
+        )
+        return mock_response
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.logger")
+    def test_send_email_skips_bounced_user(
+        self, mock_logger, mock_get_env, mock_sendgrid_client, mock_email_cls
+    ):
+        self.user.profile.email_bounced = True
+        self.user.profile.save()
+
+        send_email(
+            sender="sender@example.com",
+            recipient="bounced@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_email_cls.assert_not_called()
+        mock_logger.info.assert_called()
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    def test_send_email_sends_to_non_bounced_user(
+        self, mock_get_env, mock_sendgrid_client, mock_email_cls
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="bounced@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_msg.send.assert_called_once()
 
 
 class TestFetchSendgridTemplate(unittest.TestCase):

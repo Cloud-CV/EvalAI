@@ -51,6 +51,7 @@
                         var details = response.data;
                         if (status == 200) {
                             vm.user.name = details.username;
+                            $rootScope.emailBounced = details.email_bounced || false;
                         }
                     },
                     onError: function(response) {
