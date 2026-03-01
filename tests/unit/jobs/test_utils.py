@@ -32,6 +32,9 @@ class TestUtils(unittest.TestCase):
     @patch("requests.get")
     def test_get_file_from_url(self, mock_get):
         mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.headers = {}
+        mock_response.raise_for_status = MagicMock()
         mock_response.iter_content = lambda chunk_size: [b"test data"]
         mock_get.return_value = mock_response
 
