@@ -20,6 +20,7 @@ from base.utils import (
     mock_if_non_prod_aws,
     send_email,
     send_slack_notification,
+    get_slug,
 )
 from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
@@ -885,3 +886,10 @@ class TestDataEncoding(unittest.TestCase):
     def test_decode_data_empty_list(self):
         data = []
         self.assertEqual(decode_data(data), [])
+class TestGetSlug(unittest.TestCase):
+    def test_get_slug_basic(self):
+        self.assertEqual(get_slug("Hello World"),"hello-world")
+    def test_get_slug_special_character(self):
+        self.assertEqual(get_slug("hello@world!!"),"hello-world-")
+    def test_get_slug_len_check(self):
+        self.assertEqual(len(get_slug("a"*500)),180)
