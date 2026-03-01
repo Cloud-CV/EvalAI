@@ -46,6 +46,38 @@ class TestEvalAIAccountAdapterMXValidation(TestCase):
         self.assertEqual(result, "user@weird-error.com")
 
 
+class TestEvalAIAccountAdapterDuplicateEmail(TestCase):
+    def setUp(self):
+        self.adapter = EvalAIAccountAdapter()
+        self.existing_user = User.objects.create(
+            username="existing",
+            email="taken@example.com",
+            password="password",
+        )
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_clean_email_rejects_duplicate(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("taken@example.com")
+        self.assertIn("already registered", str(ctx.exception))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_clean_email_rejects_duplicate_case_insensitive(
+        self, mock_resolve
+    ):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("TAKEN@Example.COM")
+        self.assertIn("already registered", str(ctx.exception))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_clean_email_allows_new_address(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        result = self.adapter.clean_email("fresh@example.com")
+        self.assertEqual(result, "fresh@example.com")
+
+
 class TestEvalAIAccountAdapterSendMail(TestCase):
     def setUp(self):
         self.adapter = EvalAIAccountAdapter()

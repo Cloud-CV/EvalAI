@@ -1,7 +1,11 @@
+import logging
+
 from allauth.account.utils import send_email_confirmation
 from base.utils import get_user_by_email
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.db import IntegrityError
+from rest_auth.registration.views import RegisterView
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -21,6 +25,38 @@ from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer, UpdateEmailSerializer
 from .throttles import ResendEmailThrottle
+
+logger = logging.getLogger(__name__)
+
+
+class SafeRegisterView(RegisterView):
+    """Registration view that converts duplicate-email IntegrityErrors into
+    a 400 response instead of letting them bubble up as 500 errors.
+
+    The adapter's clean_email() catches most duplicates at validation time,
+    but a race condition (two concurrent requests with the same email) can
+    slip past the check. This view acts as a safety net for that case.
+    """
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as exc:
+            if "auth_user_email_unique" in str(exc):
+                logger.warning(
+                    "Duplicate-email IntegrityError caught during "
+                    "registration for email=%s",
+                    request.data.get("email", "<unknown>"),
+                )
+                return Response(
+                    {
+                        "email": [
+                            "A user is already registered with this email address."
+                        ]
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            raise
 
 
 @api_view(["POST"])

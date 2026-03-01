@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
+from accounts.views import SafeRegisterView
 from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls import include, url
@@ -50,6 +51,11 @@ urlpatterns = [
         r"^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$",
         ConfirmEmailView.as_view(),
         name="account_confirm_email",
+    ),
+    url(
+        r"^api/auth/registration/$",
+        SafeRegisterView.as_view(),
+        name="rest_register",
     ),
     url(r"^api/auth/registration/", include("rest_auth.registration.urls")),
     url(
