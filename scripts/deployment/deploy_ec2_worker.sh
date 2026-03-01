@@ -14,9 +14,9 @@ cd EvalAI
 echo "Step 3/10: Installing awscli"
 sudo apt install awscli -y
 
-# Step 4: Installing docker-compose
-echo "Step 4/10: Installing docker-compose"
-sudo apt install docker-compose -y
+# Step 4: Installing Docker Compose plugin (v2)
+echo "Step 4/10: Installing Docker Compose plugin (v2)"
+sudo apt install docker-compose-plugin -y
 sudo groupadd docker
 
 # Step 5: Adding user to docker group
@@ -44,7 +44,7 @@ if [ "${CUSTOM_WORKER_IMAGE}" = "" ];
 then
     # Step 8: Pulling worker Docker image
     echo "Step 8/10: Pulling worker Docker image"
-    docker-compose -f docker-compose-${ENVIRONMENT}.yml pull worker
+    docker compose -f docker-compose-${ENVIRONMENT}.yml pull worker
 else
     # if using custom image from worker_image_url
     echo "Step 8/10: Pulling worker Docker image"
@@ -57,7 +57,7 @@ echo "Step 9/10: Running worker Docker container"
 if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
     # If using default image from Step 8
-    docker-compose -f docker-compose-${ENVIRONMENT}.yml run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d worker
+    docker compose -f docker-compose-${ENVIRONMENT}.yml run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d worker
 else
     # If using custom image from worker_image_url
     docker run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d ${CUSTOM_WORKER_IMAGE}
