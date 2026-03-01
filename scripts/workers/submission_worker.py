@@ -529,6 +529,48 @@ def run_submission(
                     challenge_phase.codename,
                     submission_metadata=submission_serializer.data,
                 )
+            # Handle successful remote evaluation
+            submission.status = Submission.FINISHED
+            submission.completed_at = timezone.now()
+            submission.save()
+            
+            # Save submission output if available
+            if submission_output:
+                output = {}
+                output["result"] = submission_output.get("result", "")
+                submission.output = output
+                
+                # Save submission_result_file
+                submission_result = submission_output.get("submission_result", "")
+                submission_result = json.dumps(submission_result)
+                submission.submission_result_file.save(
+                    "submission_result.json", ContentFile(submission_result)
+                )
+                
+                # Save submission_metadata_file
+                submission_metadata = submission_output.get(
+                    "submission_metadata", ""
+                )
+                submission.submission_metadata_file.save(
+                    "submission_metadata.json",
+                    ContentFile(json.dumps(submission_metadata)),
+                )
+                submission.save()
+            
+            if not challenge_phase.disable_logs:
+                with open(stdout_file, "r") as stdout_f:
+                    stdout_content = stdout_f.read()
+                    submission.stdout_file.save(
+                        "stdout.txt", ContentFile(stdout_content)
+                    )
+                with open(stderr_file, "r") as stderr_f:
+                    stderr_content = stderr_f.read()
+                    submission.stderr_file.save(
+                        "stderr.txt", ContentFile(stderr_content)
+                    )
+            
+            # Delete the complete temp run directory
+            shutil.rmtree(temp_run_dir)
             return
         except Exception:
             stderr.write(traceback.format_exc())
