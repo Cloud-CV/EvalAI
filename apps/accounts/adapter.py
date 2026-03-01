@@ -18,6 +18,12 @@ class EvalAIAccountAdapter(DefaultAccountAdapter):
 
     def clean_email(self, email):
         email = super().clean_email(email)
+
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError(
+                "A user is already registered with this email address."
+            )
+
         domain = email.rsplit("@", 1)[-1]
 
         if not self._domain_has_mx_records(domain):
