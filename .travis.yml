@@ -52,15 +52,17 @@ jobs:
             gulp dev
             echo "=== Running frontend tests ==="
             mkdir -p coverage/frontend
-            timeout 300 karma start --single-run --reporters=brief,junit,coverage || echo "Karma exited (may have timed out after tests completed)"
+            karma_result=0
+            timeout 300 karma start --single-run --reporters=brief,junit,coverage || karma_result=$?
             pkill -f chrome 2>/dev/null || true
             pkill -f chromium 2>/dev/null || true
             sleep 3
-            if [ -f coverage/frontend/lcov.info ] || find coverage/frontend -name "lcov.info" -type f 2>/dev/null | grep -q .; then
+            if [ $karma_result -eq 0 ]; then
               echo "=== Frontend tests passed ==="
+            elif [ $karma_result -eq 124 ] && ( [ -f coverage/frontend/lcov.info ] || find coverage/frontend -name "lcov.info" -type f 2>/dev/null | grep -q . ); then
+              echo "=== Frontend tests passed (karma timed out after completion) ==="
             else
-              echo "=== Frontend tests failed - no coverage output ==="
-              ls -la coverage/frontend/ 2>/dev/null || true
+              echo "=== Frontend tests failed ==="
               exit 1
             fi
             echo "=== Building frontend (staging) ==="
