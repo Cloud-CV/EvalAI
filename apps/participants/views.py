@@ -1,5 +1,5 @@
 from accounts.permissions import HasVerifiedEmail
-from base.utils import team_paginated_queryset
+from base.utils import get_user_by_email, team_paginated_queryset
 from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
@@ -208,7 +208,7 @@ def invite_participant_to_team(request, pk):
 
     email = request.data.get("email")
     try:
-        user = User.objects.get(email=email)
+        user = get_user_by_email(email)
     except User.DoesNotExist:
         response_data = {
             "error": "User does not exist with this email address!"

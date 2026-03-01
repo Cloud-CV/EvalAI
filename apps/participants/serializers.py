@@ -1,4 +1,5 @@
 from accounts.serializers import UserProfileSerializer
+from base.utils import get_user_by_email
 from challenges.serializers import ChallengeSerializer
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -46,7 +47,7 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
                 "A participant cannot invite himself"
             )
         try:
-            User.objects.get(email=value)
+            get_user_by_email(value)
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
         return value
@@ -54,7 +55,7 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
     def save(self):
         email = self.validated_data.get("email")
         return Participant.objects.get_or_create(
-            user=User.objects.get(email=email),
+            user=get_user_by_email(email),
             status=Participant.ACCEPTED,
             team=self.participant_team,
         )

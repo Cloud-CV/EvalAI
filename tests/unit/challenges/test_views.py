@@ -1123,7 +1123,7 @@ class MapChallengeAndParticipantTeam(
         # user invited to the participant team
         self.user4 = User.objects.create(
             username="someuser4",
-            email="user@test.com",
+            email="user4@test.com",
             password="some_secret_password",
         )
 
@@ -5523,13 +5523,14 @@ class GetAllSubmissionsTest(
 
         self.user8 = User.objects.create(  # pylint: disable=attribute-defined-outside-init
             username="admin_test",
+            email="admin_test@example.com",
             password="admin@123",
             is_staff=True,
         )
 
         EmailAddress.objects.create(
             user=self.user8,
-            email="user8@test.com",
+            email="admin_test@example.com",
             primary=True,
             verified=True,
         )

@@ -1,5 +1,9 @@
 from accounts.permissions import HasVerifiedEmail
-from base.utils import get_model_object, team_paginated_queryset
+from base.utils import (
+    get_model_object,
+    get_user_by_email,
+    team_paginated_queryset,
+)
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -271,7 +275,7 @@ def invite_host_to_team(request, pk):
 
     email = request.data.get("email")
     try:
-        user = User.objects.get(email=email)
+        user = get_user_by_email(email)
     except User.DoesNotExist:
         response_data = {
             "error": "User does not exist with this email address!"

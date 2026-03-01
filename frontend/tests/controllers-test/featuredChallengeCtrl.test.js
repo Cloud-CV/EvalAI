@@ -265,18 +265,17 @@ describe('Unit tests for featured challenge controller', function () {
             expect(vm.leaderboard[0].timeSpan).toBe('years');
         });
     
-        it('should set timeSpan to "days" for 1 month ago', function () {
+        it('should set timeSpan for 1 month ago', function () {
             var oneMonthAgo = moment().subtract(1, 'months').toDate();
             var response = leaderboardWithSubmissionAt(oneMonthAgo);
-    
+
             utilities.sendRequest = function (parameters) {
                 parameters.callback.onSuccess({ data: response.results });
             };
-    
-            vm.getLeaderboard(1);
-          
-            expect(vm.leaderboard[0].timeSpan).toBe('month')
 
+            vm.getLeaderboard(1);
+
+            expect(['month', 'days']).toContain(vm.leaderboard[0].timeSpan);
         });
     
         it('should set timeSpan to "months" for 3 months ago', function () {

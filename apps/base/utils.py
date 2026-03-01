@@ -13,6 +13,7 @@ import requests
 import sendgrid
 import sentry_sdk
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives
 from django.utils.deconstruct import deconstructible
@@ -23,6 +24,18 @@ from rest_framework.pagination import PageNumberPagination
 from settings.common import SQS_RETENTION_PERIOD
 
 logger = logging.getLogger(__name__)
+
+
+def get_user_by_email(email):
+    """Return a single User for the given email, or raise User.DoesNotExist.
+
+    If duplicate-email users still exist (pre-merge), the oldest account
+    (earliest date_joined) is returned deterministically.
+    """
+    user = User.objects.filter(email=email).order_by("date_joined").first()
+    if user is None:
+        raise User.DoesNotExist("User matching query does not exist.")
+    return user
 
 
 class StandardResultSetPagination(PageNumberPagination):

@@ -33,6 +33,8 @@ describe('Unit tests for challenge controller', function () {
         $mdDialog = _$mdDialog_;
         moment = _moment_;
 
+        utilities.storeData('userKey', 'encrypted key');
+
         $scope = $rootScope.$new();
         createController = function () {
             return $controller('ChallengeCtrl', { $scope: $scope });
