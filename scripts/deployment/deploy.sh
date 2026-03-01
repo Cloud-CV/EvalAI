@@ -59,9 +59,9 @@ case $opt in
 					echo "Removing all existing Docker images..."
 					docker rmi -f $(docker images -q) 2>/dev/null || true
 					echo "All containers and images removed. Pulling new images..."
-					docker-compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
+					docker compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
 					echo "Deploying new containers..."
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
+					docker compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
 				ENDSSH2
 			ENDSSH
             ;;
@@ -89,9 +89,9 @@ case $opt in
 					echo "Removing all existing Docker images..."
 					docker rmi -f $(docker images -q) 2>/dev/null || true
 					echo "All containers and images removed. Pulling new images..."
-					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
 					echo "Deploying new containers..."
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
             ;;
@@ -101,27 +101,27 @@ case $opt in
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
             echo "Pulling docker images from ECR..."
-            docker-compose -f docker-compose-${env}.yml pull
+            docker compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
             ;;
         deploy-django)
             echo "Deploying django docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d django
+            docker compose -f docker-compose-${env}.yml up -d django
             echo "Completed deploy operation."
             ;;
         deploy-nodejs)
             echo "Deploying nodejs docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d nodejs
+            docker compose -f docker-compose-${env}.yml up -d nodejs
             echo "Completed deploy operation."
             ;;
         deploy-nodejs-v2)
             echo "Deploying new frontend docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d nodejs_v2
+            docker compose -f docker-compose-${env}.yml up -d nodejs_v2
             echo "Completed deploy operation."
             ;;
         deploy-celery)
             echo "Deploying celery docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d celery
+            docker compose -f docker-compose-${env}.yml up -d celery
             echo "Completed deploy operation."
             ;;
         deploy-worker)
@@ -142,7 +142,7 @@ case $opt in
             queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
             queue=$(echo $queue_name | tr -d '"')
             echo "Deploying worker for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
+            docker compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
             echo "Deployed worker docker container for queue: " $queue
             ;;
         deploy-worker-py3-8)
@@ -163,7 +163,7 @@ case $opt in
             queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
             queue=$(echo $queue_name | tr -d '"')
             echo "Deploying worker_py3.8 for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker_py3.8
+            docker compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker_py3.8
             echo "Deployed worker_py3.8 docker container for queue: " $queue
             ;;
         deploy-remote-worker)
@@ -178,7 +178,7 @@ case $opt in
                exit 0
             fi
             echo "Deploying worker for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run --name=remote_worker_${queue} -e QUEUE_NAME=$queue -e AUTH_TOKEN=$token -d worker
+            docker compose -f docker-compose-${env}.yml run --name=remote_worker_${queue} -e QUEUE_NAME=$queue -e AUTH_TOKEN=$token -d worker
             echo "Deployed worker docker container for queue: " $queue
             ;;
         deploy-workers)
@@ -196,44 +196,44 @@ case $opt in
             do
                 queue=$(echo $queue_name | tr -d '"')
                 echo "Deploying worker for queue: " $queue
-                docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -d worker
+                docker compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -d worker
                 echo "Deployed worker docker container for queue: " $queue
              done
             ;;
         deploy-prometheus)
             echo "Deploying prometheus docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d prometheus
+            docker compose -f docker-compose-${env}.yml up -d prometheus
             echo "Completed deploy operation."
             ;;
         deploy-grafana)
             echo "Deploying grafana docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d grafana
+            docker compose -f docker-compose-${env}.yml up -d grafana
             echo "Completed deploy operation."
             ;;
         deploy-statsd)
             echo "Deploying statsd docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
+            docker compose -f docker-compose-${env}.yml up -d statsd-exporter
             echo "Completed deploy operation."
             ;;
         deploy-node-exporter)
             echo "Deploying node_exporter docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d node_exporter
+            docker compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
         deploy-alert-manager)
             echo "Deploying alertmanager docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d alert-manager
+            docker compose -f docker-compose-${env}.yml up -d alert-manager
             echo "Completed deploy operation."
             ;;
         scale)
             service=${3}
             instances=${4}
             echo "Scaling the containers..."
-            docker-compose -f docker-compose-${env}.yml scale ${service}=${instances}
+            docker compose -f docker-compose-${env}.yml up -d --scale ${service}=${instances} ${service}
             ;;
         clean)
             {
-                docker-compose -f docker-compose-${env}.yml rm -s -v -f
+                docker compose -f docker-compose-${env}.yml rm -s -v -f
             } || {
                 echo "Delete operation skipped since no container or image found!"
             }

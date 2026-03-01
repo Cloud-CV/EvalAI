@@ -20,6 +20,12 @@ env:
 
 before_install:
   - sudo rm -f /etc/boto.cfg
+  - docker --version
+  - |
+    if ! docker compose version; then
+      echo "Docker Compose v2 plugin is missing"
+      exit 1
+    fi
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - pip install --upgrade pip
@@ -40,11 +46,11 @@ jobs:
       script:
         # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
-        - docker-compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
+        - docker compose --profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9 --profile statsd build || travis_terminate 1;
 
         # Frontend Tests - using set -e to fail fast on any error
         - |
-          docker-compose run nodejs bash -c '
+          docker compose run nodejs bash -c '
             set -e
             echo "=== Installing dependencies ==="
             npm install
@@ -87,7 +93,7 @@ jobs:
 
         # Backend Tests - using set -e to fail fast on any error
         - |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
             set -e
             echo "=== Flushing database ==="
             python manage.py flush --noinput
@@ -98,7 +104,7 @@ jobs:
 
         # Check Code Quality - using set -e to fail fast on any error
         - |
-          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
             set -e
             echo "=== Installing code quality tools ==="
             pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0
