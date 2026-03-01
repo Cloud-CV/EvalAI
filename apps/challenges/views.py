@@ -1290,6 +1290,47 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Creates a challenge using a zip file.
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+    print(f"\n[DEBUG] Request User: {request.user} (ID: {request.user.id})")
+    print(f"[DEBUG] Target Team: {challenge_host_team} (ID: {challenge_host_team.id})")
+    
+    # Check what actually exists in the DB
+    exists = ChallengeHost.objects.filter(user=request.user, team_name=challenge_host_team).exists()
+    print(f"[DEBUG] Does Membership Exist? {exists}")
+    
+    if exists:
+        m = ChallengeHost.objects.get(user=request.user, team_name=challenge_host_team)
+        print(f"[DEBUG] Found Membership! Status: {m.status}, Permissions: {m.permissions}")
+    else:
+        # Print ALL members of this team to see who is actually there
+        all_members = ChallengeHost.objects.filter(team_name=challenge_host_team)
+        print(f"[DEBUG] ACTUAL Team Members: {[m.user.username for m in all_members]}")
+
+    try:
+        membership = ChallengeHost.objects.get(
+            user=request.user,
+            team_name=challenge_host_team,  # Note: The field name is 'team_name' in the model
+        )
+    except ChallengeHost.DoesNotExist:
+        return Response(
+            {"error": "You are not a member of this host team"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # 1. Check if they accepted the invite
+    if membership.status != ChallengeHost.ACCEPTED:
+        return Response(
+            {"error": "You must accept the team invitation first."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # 2. Check if they have ADMIN or WRITE permissions
+    ALLOWED_PERMISSIONS = [ChallengeHost.ADMIN, ChallengeHost.WRITE]
+    if membership.permissions not in ALLOWED_PERMISSIONS:
+        return Response(
+            {"error": "You do not have permission to create challenges."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    
 
     if request.data.get("is_challenge_template"):
         is_challenge_template = True
