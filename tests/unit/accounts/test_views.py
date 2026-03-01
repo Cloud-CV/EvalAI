@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from accounts.models import JwtToken
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.urls import reverse_lazy
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -228,3 +229,95 @@ class RefreshAuthTokenTest(BaseAPITestClass):
         with self.assertRaises(TokenError) as context:
             RefreshToken(token.refresh_token)
         self.assertTrue("Token is blacklisted" in str(context.exception))
+
+
+class SafeRegisterViewTest(APITestCase):
+
+    url = reverse_lazy("rest_register")
+
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.existing_user = User.objects.create_user(
+            username="existinguser",
+            email="taken@example.com",
+            password="strongpass1",
+        )
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_duplicate_email_returns_400(self, mock_resolve):
+        """Adapter-level validation rejects duplicate email with 400."""
+        mock_resolve.return_value = [MagicMock()]
+        response = self.client.post(
+            self.url,
+            {
+                "username": "newuser",
+                "email": "taken@example.com",
+                "password1": "Str0ngP@ss!",
+                "password2": "Str0ngP@ss!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+        self.assertIn("already registered", str(response.data["email"]))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_duplicate_email_case_insensitive(self, mock_resolve):
+        """Duplicate check is case-insensitive."""
+        mock_resolve.return_value = [MagicMock()]
+        response = self.client.post(
+            self.url,
+            {
+                "username": "newuser2",
+                "email": "TAKEN@Example.COM",
+                "password1": "Str0ngP@ss!",
+                "password2": "Str0ngP@ss!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+
+    def test_integrity_error_safety_net(self):
+        """IntegrityError on auth_user_email_unique is caught and returns 400."""
+        with patch(
+            "rest_auth.registration.views.RegisterView.create"
+        ) as mock_parent_create:
+            mock_parent_create.side_effect = IntegrityError(
+                "duplicate key value violates unique constraint "
+                '"auth_user_email_unique" '
+                "DETAIL: Key (email)=(race@example.com) already exists."
+            )
+            response = self.client.post(
+                self.url,
+                {
+                    "username": "raceuser",
+                    "email": "race@example.com",
+                    "password1": "Str0ngP@ss!",
+                    "password2": "Str0ngP@ss!",
+                },
+                format="json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("email", response.data)
+            self.assertIn("already registered", str(response.data["email"]))
+
+    def test_integrity_error_non_email_reraised(self):
+        """IntegrityError not related to email unique constraint is re-raised."""
+        with patch(
+            "rest_auth.registration.views.RegisterView.create"
+        ) as mock_parent_create:
+            mock_parent_create.side_effect = IntegrityError(
+                "some other constraint violation"
+            )
+            with self.assertRaises(IntegrityError):
+                self.client.post(
+                    self.url,
+                    {
+                        "username": "otheruser",
+                        "email": "other@example.com",
+                        "password1": "Str0ngP@ss!",
+                        "password2": "Str0ngP@ss!",
+                    },
+                    format="json",
+                )
