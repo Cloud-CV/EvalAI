@@ -79,7 +79,7 @@ minify and compress custom css files
 */
 function css() {
     return gulp.src('frontend/src/css/main.scss')
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass({ silenceDeprecations: ['legacy-js-api', 'import'] }).on('error', sass.logError))
         .pipe(sourcemaps.init())
         .pipe(postcss([autoprefixer()]))
         .pipe(gulp_if(production, cleanCSS()))
