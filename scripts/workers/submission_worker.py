@@ -414,7 +414,13 @@ def load_challenge(challenge):
 
 def extract_submission_data(submission_id):
     """
-    * Expects submission id and extracts input file for it.
+    Expects submission id and extracts input file for it.
+
+    Returns:
+        Submission object if successful, None if the submission should be skipped.
+
+    Raises:
+        Exception if there's an error that should mark the submission as failed.
     """
 
     try:
@@ -431,6 +437,7 @@ def extract_submission_data(submission_id):
         # for message corresponding to which submission entry
         # does not exist
         return None
+
     # Ignore submissions with status cancelled
     if submission.status == Submission.CANCELLED:
         logger.info(
@@ -440,30 +447,63 @@ def extract_submission_data(submission_id):
         )
         return None
 
-    if submission.challenge_phase.challenge.is_static_dataset_code_upload:
-        input_file = submission.submission_input_file
-    else:
-        input_file = submission.input_file
-    submission_input_file = input_file.url
-    submission_input_file = return_file_url_per_environment(
-        submission_input_file
-    )
+    # Check if submission is already completed (finished or failed)
+    # to avoid reprocessing
+    if submission.status in [Submission.FINISHED, Submission.FAILED]:
+        logger.info(
+            "{} Submission {} is already in final state: {}".format(
+                SUBMISSION_LOGS_PREFIX, submission_id, submission.status
+            )
+        )
+        return None
 
-    submission_data_directory = SUBMISSION_DATA_DIR.format(
-        submission_id=submission.id
-    )
-    submission_input_file_name = os.path.basename(input_file.name)
-    submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
-        submission_id=submission.id, input_file=submission_input_file_name
-    )
-    # create submission directory
-    create_dir_as_python_package(submission_data_directory)
+    try:
+        if submission.challenge_phase.challenge.is_static_dataset_code_upload:
+            input_file = submission.submission_input_file
+        else:
+            input_file = submission.input_file
 
-    download_and_extract_file(
-        submission_input_file, submission_input_file_path
-    )
+        if not input_file:
+            raise ValueError(
+                "Submission {} does not have an input file".format(submission_id)
+            )
 
-    return submission
+        submission_input_file = input_file.url
+        submission_input_file = return_file_url_per_environment(
+            submission_input_file
+        )
+
+        submission_data_directory = SUBMISSION_DATA_DIR.format(
+            submission_id=submission.id
+        )
+        submission_input_file_name = os.path.basename(input_file.name)
+        submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
+            submission_id=submission.id, input_file=submission_input_file_name
+        )
+        # create submission directory
+        create_dir_as_python_package(submission_data_directory)
+
+        download_and_extract_file(
+            submission_input_file, submission_input_file_path
+        )
+
+        return submission
+
+    except Exception as e:
+        logger.exception(
+            "{} Error extracting submission data for submission {}: {}".format(
+                SUBMISSION_LOGS_PREFIX, submission_id, e
+            )
+        )
+        # Mark submission as failed
+        submission.status = Submission.FAILED
+        submission.completed_at = timezone.now()
+        submission.output = (
+            "Failed to extract submission data: {}. "
+            "Please ensure your submission file is valid and try again.".format(str(e))
+        )
+        submission.save()
+        return None
 
 
 def run_submission(
@@ -788,6 +828,14 @@ def process_add_challenge_message(message):
 
 
 def process_submission_callback(body):
+    """
+    Callback function to process submission messages from the queue.
+
+    This function parses the message body and delegates to process_submission_message.
+    If an exception occurs during processing, it attempts to mark the submission as
+    failed to prevent it from being stuck in an intermediate state.
+    """
+    submission_pk = None
     try:
         logger.info(
             "{} [x] Received submission message {}".format(
@@ -796,6 +844,7 @@ def process_submission_callback(body):
         )
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
+        submission_pk = body.get("submission_pk")
         process_submission_message(body)
     except Exception as e:
         logger.exception(
@@ -803,6 +852,42 @@ def process_submission_callback(body):
                 SUBMISSION_LOGS_PREFIX, e
             )
         )
+        # Attempt to mark the submission as failed to prevent it from being stuck
+        if submission_pk:
+            try:
+                submission = Submission.objects.get(id=submission_pk)
+                # Only update if still in an intermediate state
+                if submission.status in [
+                    Submission.SUBMITTED,
+                    Submission.RUNNING,
+                    Submission.SUBMITTING,
+                    Submission.RESUMING,
+                    Submission.QUEUED,
+                ]:
+                    submission.status = Submission.FAILED
+                    submission.completed_at = timezone.now()
+                    submission.output = (
+                        "Submission processing failed due to an unexpected error. "
+                        "Please try resubmitting or contact the challenge hosts."
+                    )
+                    submission.save()
+                    logger.info(
+                        "{} Marked submission {} as failed due to processing error".format(
+                            SUBMISSION_LOGS_PREFIX, submission_pk
+                        )
+                    )
+            except Submission.DoesNotExist:
+                logger.warning(
+                    "{} Could not find submission {} to mark as failed".format(
+                        SUBMISSION_LOGS_PREFIX, submission_pk
+                    )
+                )
+            except Exception as mark_failed_error:
+                logger.exception(
+                    "{} Failed to mark submission {} as failed: {}".format(
+                        SUBMISSION_LOGS_PREFIX, submission_pk, mark_failed_error
+                    )
+                )
 
 
 def get_or_create_sqs_queue(queue_name, challenge=None):

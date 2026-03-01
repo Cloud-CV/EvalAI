@@ -643,3 +643,114 @@ def reorder_submissions_comparator_to_key(comparator):
             return comparator(self.obj, other.obj) != 0
 
     return ComparatorToLambdaKey
+
+
+def get_stale_submissions(timeout_hours=24, challenge_id=None):
+    """
+    Get submissions that have been stuck in intermediate states for too long.
+
+    A submission is considered stale if it has been in one of the intermediate
+    states (submitted, running, submitting, resuming, queued) for longer than
+    the specified timeout period.
+
+    Arguments:
+        timeout_hours {int} -- Number of hours after which a submission is
+                               considered stale (default: 24)
+        challenge_id {int} -- Optional challenge ID to filter submissions
+
+    Returns:
+        QuerySet -- QuerySet of stale Submission objects
+    """
+    cutoff_time = timezone.now() - datetime.timedelta(hours=timeout_hours)
+
+    stale_states = [
+        Submission.SUBMITTED,
+        Submission.RUNNING,
+        Submission.SUBMITTING,
+        Submission.RESUMING,
+        Submission.QUEUED,
+    ]
+
+    queryset = Submission.objects.filter(
+        status__in=stale_states,
+        submitted_at__lt=cutoff_time,
+    )
+
+    if challenge_id:
+        queryset = queryset.filter(challenge_phase__challenge_id=challenge_id)
+
+    return queryset.select_related(
+        "challenge_phase",
+        "challenge_phase__challenge",
+        "participant_team",
+    ).order_by("-submitted_at")
+
+
+def requeue_submission(submission):
+    """
+    Requeue a stale submission by resetting its status and republishing
+    the message to the queue.
+
+    Arguments:
+        submission {Submission} -- The submission to requeue
+
+    Returns:
+        bool -- True if successful, False otherwise
+    """
+    from .sender import publish_submission_message
+
+    try:
+        # Reset submission status
+        submission.status = Submission.SUBMITTED
+        submission.started_at = None
+        submission.save()
+
+        # Publish message to queue
+        message = {
+            "challenge_pk": submission.challenge_phase.challenge.pk,
+            "phase_pk": submission.challenge_phase.pk,
+            "submission_pk": submission.pk,
+        }
+        publish_submission_message(message)
+
+        logger.info(
+            f"Requeued submission {submission.id} for challenge "
+            f"{submission.challenge_phase.challenge.title}"
+        )
+        return True
+    except Exception as e:
+        logger.exception(f"Failed to requeue submission {submission.id}: {e}")
+        return False
+
+
+def fail_stale_submission(submission, reason=None):
+    """
+    Mark a stale submission as failed.
+
+    Arguments:
+        submission {Submission} -- The submission to mark as failed
+        reason {str} -- Optional reason for the failure
+
+    Returns:
+        bool -- True if successful, False otherwise
+    """
+    try:
+        previous_status = submission.status
+        submission.status = Submission.FAILED
+        submission.completed_at = timezone.now()
+        submission.output = reason or (
+            f"Submission failed due to timeout. The submission was stuck in "
+            f"'{previous_status}' status for too long. Please try resubmitting."
+        )
+        submission.save()
+
+        logger.info(
+            f"Marked submission {submission.id} as failed (was stuck in "
+            f"'{previous_status}' status)"
+        )
+        return True
+    except Exception as e:
+        logger.exception(
+            f"Failed to mark submission {submission.id} as failed: {e}"
+        )
+        return False

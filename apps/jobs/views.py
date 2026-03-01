@@ -76,14 +76,17 @@ from .serializers import (
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
     calculate_distinct_sorted_leaderboard_data,
+    fail_stale_submission,
     get_leaderboard_data_model,
     get_remaining_submission_for_a_phase,
+    get_stale_submissions,
     get_submission_model,
     handle_submission_rerun,
     handle_submission_resume,
     is_url_valid,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
+    requeue_submission,
 )
 
 logger = logging.getLogger(__name__)
@@ -3215,3 +3218,123 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+@api_view(["GET", "POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_stale_submissions(request, challenge_pk):
+    """
+    API endpoint to get stale submissions for a challenge and optionally requeue them.
+
+    GET: Returns a list of submissions that have been stuck in intermediate states
+         (submitted, running, submitting, resuming, queued) for longer than the
+         specified timeout.
+
+    POST: Requeue specified stale submissions.
+
+    Query Parameters (GET):
+        - timeout_hours: Number of hours after which a submission is considered stale
+                        (default: 24)
+
+    Request Body (POST):
+        - submission_ids: List of submission IDs to requeue
+        - action: "requeue" or "fail" (default: "requeue")
+    """
+    # Check if user is challenge host
+    challenge = get_challenge_model(challenge_pk)
+    if not is_user_a_staff_or_host(request.user, challenge_pk):
+        response_data = {
+            "error": "Only challenge hosts or admins can access stale submissions"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        timeout_hours = int(request.query_params.get("timeout_hours", 24))
+
+        stale_submissions = get_stale_submissions(
+            timeout_hours=timeout_hours,
+            challenge_id=challenge_pk
+        )
+
+        # Group by status
+        status_counts = {}
+        submission_list = []
+
+        for sub in stale_submissions:
+            if sub.status not in status_counts:
+                status_counts[sub.status] = 0
+            status_counts[sub.status] += 1
+
+            hours_stale = (
+                timezone.now() - sub.submitted_at
+            ).total_seconds() / 3600
+
+            submission_list.append({
+                "id": sub.id,
+                "status": sub.status,
+                "phase_name": sub.challenge_phase.name,
+                "team_name": sub.participant_team.team_name,
+                "submitted_at": sub.submitted_at.isoformat(),
+                "hours_stale": round(hours_stale, 1),
+            })
+
+        response_data = {
+            "total_count": stale_submissions.count(),
+            "status_breakdown": status_counts,
+            "submissions": submission_list,
+            "timeout_hours": timeout_hours,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method == "POST":
+        submission_ids = request.data.get("submission_ids", [])
+        action = request.data.get("action", "requeue")
+
+        if not submission_ids:
+            response_data = {"error": "No submission IDs provided"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if action not in ["requeue", "fail"]:
+            response_data = {"error": "Invalid action. Must be 'requeue' or 'fail'"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get submissions that belong to this challenge
+        submissions = Submission.objects.filter(
+            id__in=submission_ids,
+            challenge_phase__challenge_id=challenge_pk,
+        )
+
+        results = {
+            "successful": [],
+            "failed": [],
+        }
+
+        for submission in submissions:
+            try:
+                if action == "requeue":
+                    success = requeue_submission(submission)
+                else:
+                    success = fail_stale_submission(submission)
+
+                if success:
+                    results["successful"].append(submission.id)
+                else:
+                    results["failed"].append({
+                        "id": submission.id,
+                        "error": "Operation failed"
+                    })
+            except Exception as e:
+                results["failed"].append({
+                    "id": submission.id,
+                    "error": str(e)
+                })
+
+        response_data = {
+            "action": action,
+            "results": results,
+            "total_processed": len(results["successful"]) + len(results["failed"]),
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
