@@ -48,6 +48,11 @@ case $opt in
 					export AWS_DEFAULT_REGION=us-east-1
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+					echo "Cleaning server: pruning Docker resources and system cache..."
+					docker volume prune -f 2>/dev/null || true
+					docker image prune -f 2>/dev/null || true
+					sudo apt-get clean 2>/dev/null || true
+					sudo journalctl --vacuum-time=7d 2>/dev/null || true
 					echo "Stopping and removing all existing Docker containers..."
 					docker stop $(docker ps -aq) 2>/dev/null || true
 					docker rm -f $(docker ps -aq) 2>/dev/null || true
@@ -73,6 +78,11 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
+					echo "Cleaning server: pruning Docker resources and system cache..."
+					docker volume prune -f 2>/dev/null || true
+					docker image prune -f 2>/dev/null || true
+					sudo apt-get clean 2>/dev/null || true
+					sudo journalctl --vacuum-time=7d 2>/dev/null || true
 					echo "Stopping and removing all existing Docker containers..."
 					docker stop $(docker ps -aq) 2>/dev/null || true
 					docker rm -f $(docker ps -aq) 2>/dev/null || true
