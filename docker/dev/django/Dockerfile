@@ -7,8 +7,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies only
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     libpq-dev \
     libcurl4-openssl-dev \
@@ -20,7 +20,8 @@ RUN apt-get update && \
     libfreetype6-dev \
     liblcms2-dev \
     libwebp-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/*
 
 WORKDIR /code
 
@@ -45,6 +46,8 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --fix-missing \
 # git: for running git commit from container (pre-commit in Linux env, avoids macOS/ARM issues)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

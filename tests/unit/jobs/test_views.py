@@ -5,6 +5,7 @@ import shutil
 from datetime import timedelta
 
 import boto3
+import botocore
 import mock
 import requests
 from allauth.account.models import EmailAddress
@@ -606,6 +607,142 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch(
+        "jobs.views.publish_submission_message",
+        side_effect=Exception("SQS connection error"),
+    )
+    def test_challenge_submission_cleans_up_on_publish_failure(
+        self, mock_publish
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        submission_count_before = Submission.objects.count()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        self.assertIn("error", response.data)
+        # Orphaned submission must be deleted
+        self.assertEqual(Submission.objects.count(), submission_count_before)
+
+    @mock.patch(
+        "jobs.views.publish_submission_message",
+        side_effect=botocore.exceptions.EndpointConnectionError(
+            endpoint_url="https://sqs.us-east-1.amazonaws.com"
+        ),
+    )
+    def test_challenge_submission_handles_sqs_endpoint_failure(
+        self, mock_publish
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        submission_count_before = Submission.objects.count()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        self.assertEqual(Submission.objects.count(), submission_count_before)
+
+    @mock.patch(
+        "jobs.views.publish_submission_message",
+        side_effect=Exception("SQS send failed"),
+    )
+    def test_challenge_submission_preserves_quota_on_publish_failure(
+        self, mock_publish
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        # First attempt fails due to SQS
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+        # Participant's quota should not be consumed — retry must still be allowed
+        mock_publish.side_effect = None
+        mock_publish.return_value = None
+        retry_input = SimpleUploadedFile(
+            "retry_input.txt", b"file_content", content_type="text/plain"
+        )
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": retry_input},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("jobs.views.publish_submission_message")
+    def test_challenge_submission_returns_201_when_publish_succeeds(
+        self, mock_publish
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        submission_count_before = Submission.objects.count()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            Submission.objects.count(), submission_count_before + 1
+        )
+        mock_publish.assert_called_once()
 
     def test_challenge_submission_when_file_url_is_none(self):
         self.url = reverse_lazy(
