@@ -52,9 +52,8 @@ jobs:
             gulp dev
             echo "=== Running frontend tests ==="
             mkdir -p coverage/frontend
-            karma start --single-run --reporters=junit,coverage
+            timeout 300 karma start --single-run --reporters=junit,coverage || { echo "=== Karma timed out or failed, cleaning up ===" ; pkill -f chrome 2>/dev/null || true ; pkill -f chromium 2>/dev/null || true ; exit 1 ; }
             echo "=== Frontend tests passed ==="
-            # Cleanup browser processes (ignore errors if not found)
             pkill -f chrome 2>/dev/null || true
             pkill -f chromium 2>/dev/null || true
             echo "=== Building frontend (staging) ==="
