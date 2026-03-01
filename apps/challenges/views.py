@@ -241,6 +241,14 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
+        if not (
+            request.user.id == challenge.creator.created_by.id
+            or is_user_a_host_of_challenge(request.user, challenge.id)
+        ):
+            response_data = {
+                "error": "You are not authorized to make this request"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         serializer = ChallengeSerializer(
             challenge, context={"request": request}
         )
@@ -5086,6 +5094,14 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
+        if not (
+            request.user.id == challenge.creator.created_by.id
+            or is_user_a_host_of_challenge(request.user, challenge.id)
+        ):
+            response_data = {
+                "error": "You are not authorized to make this request"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         serializer = ChallengePhaseCreateSerializer(
             challenge_phase, context={"request": request}
         )
