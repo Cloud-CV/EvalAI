@@ -48,6 +48,7 @@ jobs:
             set -e
             echo "=== Installing dependencies ==="
             npm install
+            export SASS_SILENCE_DEPRECATIONS=legacy-js-api,import
             echo "=== Building frontend (dev) ==="
             gulp dev
             echo "=== Running frontend tests ==="
@@ -57,10 +58,24 @@ jobs:
             pkill -f chrome 2>/dev/null || true
             pkill -f chromium 2>/dev/null || true
             sleep 3
-            if [ $karma_result -eq 0 ]; then
+            junit_status=2
+            junit_file=$(find coverage/frontend -name "TEST-frontend.xml" -type f 2>/dev/null | head -n 1 || true)
+            if [ -n "$junit_file" ]; then
+              if grep -Eq "failures=\"0\"" "$junit_file" && grep -Eq "errors=\"0\"" "$junit_file"; then
+                junit_status=0
+              else
+                junit_status=1
+              fi
+            fi
+            if [ $junit_status -eq 0 ]; then
               echo "=== Frontend tests passed ==="
-            elif [ $karma_result -eq 124 ] && ( [ -f coverage/frontend/lcov.info ] || find coverage/frontend -name "lcov.info" -type f 2>/dev/null | grep -q . ); then
+            elif [ $junit_status -eq 1 ]; then
+              echo "=== Frontend tests failed ==="
+              exit 1
+            elif [ $karma_result -eq 124 ] && [ -f coverage/frontend/lcov.info ]; then
               echo "=== Frontend tests passed (karma timed out after completion) ==="
+            elif [ $karma_result -eq 0 ]; then
+              echo "=== Frontend tests passed ==="
             else
               echo "=== Frontend tests failed ==="
               exit 1
