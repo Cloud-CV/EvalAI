@@ -1,8 +1,11 @@
 import datetime
+import ipaddress
 import logging
 import os
+import socket
 import tempfile
 import urllib.request
+from urllib.parse import urlparse
 
 import requests
 from base.utils import get_model_object, suppress_autotime
@@ -158,37 +161,145 @@ def get_remaining_submission_for_a_phase(
         return response_data, status.HTTP_200_OK
 
 
+def is_safe_url(url):
+    """
+    Validate URL to prevent SSRF attacks by checking for:
+    - Valid HTTP/HTTPS scheme only
+    - No access to private/internal IP ranges
+    - No access to loopback addresses
+    - No access to link-local addresses
+    
+    :param url: URL string to validate
+    :return: Tuple of (is_valid: bool, error_message: str or None)
+    """
+    try:
+        # Parse the URL
+        parsed_url = urlparse(url)
+        
+        # Only allow HTTP and HTTPS schemes
+        if parsed_url.scheme not in ('http', 'https'):
+            return False, f"Invalid URL scheme '{parsed_url.scheme}'. Only HTTP and HTTPS are allowed."
+        
+        # Get the hostname
+        hostname = parsed_url.hostname
+        if not hostname:
+            return False, "URL must contain a valid hostname."
+        
+        # Resolve hostname to IP addresses
+        try:
+            # Get all IP addresses for the hostname
+            addr_info = socket.getaddrinfo(hostname, None)
+            ip_addresses = [info[4][0] for info in addr_info]
+        except socket.gaierror as e:
+            return False, f"Cannot resolve hostname '{hostname}': {str(e)}"
+        
+        # Check each resolved IP address
+        for ip_str in ip_addresses:
+            try:
+                ip_obj = ipaddress.ip_address(ip_str)
+                
+                # Block loopback addresses FIRST (127.0.0.0/8, ::1)
+                # Note: is_private also returns True for loopback, so check this first
+                if ip_obj.is_loopback:
+                    return False, f"Access to loopback addresses is not allowed: {ip_str}"
+                
+                # Block link-local addresses (169.254.0.0/16, fe80::/10)
+                # Note: is_private also returns True for link-local, so check before is_private
+                if ip_obj.is_link_local:
+                    return False, f"Access to link-local addresses is not allowed: {ip_str}"
+                
+                # Block private IP ranges (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+                if ip_obj.is_private:
+                    return False, f"Access to private IP addresses is not allowed: {ip_str}"
+                
+                # Block multicast addresses
+                if ip_obj.is_multicast:
+                    return False, f"Access to multicast addresses is not allowed: {ip_str}"
+                
+                # Block reserved addresses
+                if ip_obj.is_reserved:
+                    return False, f"Access to reserved IP addresses is not allowed: {ip_str}"
+                
+                # Block unspecified addresses (0.0.0.0, ::)
+                if ip_obj.is_unspecified:
+                    return False, f"Access to unspecified addresses is not allowed: {ip_str}"
+                
+            except ValueError as e:
+                return False, f"Invalid IP address '{ip_str}': {str(e)}"
+        
+        # All checks passed
+        return True, None
+        
+    except Exception as e:
+        logger.error(f"Error validating URL safety: {str(e)}")
+        return False, f"URL validation error: {str(e)}"
+
+
 def is_url_valid(url):
     """
-    Checks that a given URL is reachable.
+    Checks that a given URL is reachable and safe (prevents SSRF attacks).
     :param url: A URL
     :return type: bool
     """
+    # First check if URL is safe (SSRF protection)
+    is_safe, error_message = is_safe_url(url)
+    if not is_safe:
+        logger.warning(f"Unsafe URL rejected: {url}. Reason: {error_message}")
+        return False
+    
+    # Then check if URL is reachable
     request = urllib.request.Request(url)
     request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
+        urllib.request.urlopen(request, timeout=10)
         return True
     except urllib.request.HTTPError:
+        return False
+    except Exception as e:
+        logger.error(f"Error checking URL reachability: {str(e)}")
         return False
 
 
 def get_file_from_url(url):
-    """Get file object from a url"""
-
+    """
+    Get file object from a URL with SSRF protection.
+    
+    :param url: URL string to download file from
+    :return: Dictionary with file name and temp directory path
+    :raises: ValueError if URL is unsafe or RuntimeError on download failure
+    """
+    # Validate URL safety before downloading
+    is_safe, error_message = is_safe_url(url)
+    if not is_safe:
+        logger.error(f"Attempted to download from unsafe URL: {url}. Reason: {error_message}")
+        raise ValueError(f"URL validation failed: {error_message}")
+    
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name = url.split("/")[-1]
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     headers = {"user-agent": "Wget/1.16 (linux-gnu)"}
-    response = requests.get(url, stream=True, headers=headers)
-    with open(file_path, "wb") as f:
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                f.write(chunk)
-    file_obj["name"] = file_name
-    file_obj["temp_dir_path"] = BASE_TEMP_DIR
-    return file_obj
+    
+    try:
+        response = requests.get(url, stream=True, headers=headers, timeout=30)
+        response.raise_for_status()  # Raise exception for bad status codes
+        
+        with open(file_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+        
+        file_obj["name"] = file_name
+        file_obj["temp_dir_path"] = BASE_TEMP_DIR
+        return file_obj
+        
+    except requests.RequestException as e:
+        logger.error(f"Failed to download file from {url}: {str(e)}")
+        # Clean up temp directory if download fails
+        if os.path.exists(BASE_TEMP_DIR):
+            import shutil
+            shutil.rmtree(BASE_TEMP_DIR, ignore_errors=True)
+        raise RuntimeError(f"File download failed: {str(e)}")
 
 
 def handle_submission_rerun(submission, updated_status):
