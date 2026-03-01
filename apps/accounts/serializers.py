@@ -1,5 +1,5 @@
-from base.utils import get_user_by_email
 from allauth.account.models import EmailAddress
+from base.utils import get_user_by_email
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from participants.utils import (
