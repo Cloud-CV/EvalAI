@@ -1285,6 +1285,32 @@ def update_sqs_retention_period(challenge):
         }
 
 
+def update_sqs_visibility_timeout(challenge):
+    """
+    Update the SQS visibility timeout for a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the SQS visibility timeout is to be updated.
+
+    Returns:
+        dict: A dictionary containing the status and message of the operation.
+    """
+    sqs_visibility_timeout = str(challenge.sqs_visibility_timeout)
+    try:
+        sqs = get_boto3_client("sqs", aws_keys)
+        queue_url = sqs.get_queue_url(QueueName=challenge.queue)["QueueUrl"]
+        response = sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={"VisibilityTimeout": sqs_visibility_timeout},
+        )
+        return {"message": response}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": str(e),
+        }
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -2315,3 +2341,16 @@ def update_sqs_retention_period_task(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     return update_sqs_retention_period(challenge_obj)
+
+
+@app.task
+def update_sqs_visibility_timeout_task(challenge):
+    """
+    Updates sqs visibility timeout for a challenge when the attribute is changed.
+
+    Args:
+        challenge: {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    return update_sqs_visibility_timeout(challenge_obj)

@@ -34,7 +34,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 from scripts import seed
-from settings.common import SQS_RETENTION_PERIOD
+from settings.common import SQS_RETENTION_PERIOD, SQS_VISIBILITY_TIMEOUT
 
 
 class BaseAPITestClass(APITestCase):
@@ -328,7 +328,10 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
 
         mock_sqs.create_queue.assert_called_with(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            Attributes={
+                "MessageRetentionPeriod": SQS_RETENTION_PERIOD,
+                "VisibilityTimeout": SQS_VISIBILITY_TIMEOUT,
+            },
         )
         mock_logger.exception.assert_not_called()
 
