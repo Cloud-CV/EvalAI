@@ -918,7 +918,7 @@ def main():
     queue = get_or_create_sqs_queue(queue_name, challenge)
     int(challenge.remote_evaluation)
     while True:
-        for message in queue.receive_messages():
+        for message in queue.receive_messages(WaitTimeSeconds=20):
             if json.loads(message.body).get(
                 "is_static_dataset_code_upload_submission"
             ):
@@ -974,7 +974,7 @@ def main():
                     message.delete()
         if killer.kill_now:
             break
-        time.sleep(0.1)
+        time.sleep(60)
 
 
 if __name__ == "__main__":
