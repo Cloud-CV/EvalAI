@@ -161,10 +161,3 @@ static/
 # Note: ssl/ is needed for production builds (copied from S3 in push.sh before building)
 # Commented out to allow SSL files in production builds
 # ssl/
-
-# Monitoring data
-monitoring/prometheus/prometheus_db/*
-!monitoring/prometheus/prometheus_db/.gitkeep
-monitoring/grafana/grafana_db/grafana.db
-monitoring/alertmanager/data/*
-!monitoring/alertmanager/data/.gitkeep

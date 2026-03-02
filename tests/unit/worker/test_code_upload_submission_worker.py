@@ -238,7 +238,8 @@ class TestConfigFunctions(unittest.TestCase):
         # Call the function
         result = create_script_config_map(config_map_name)
 
-        # Assert create_config_map_object was called with the correct parameters
+        # Assert create_config_map_object was called with the correct
+        # parameters
         MockCreateConfigMapObject.assert_called_once_with(
             config_map_name, expected_file_paths
         )
@@ -269,12 +270,12 @@ class TestConfigFunctions(unittest.TestCase):
         # Assert the result matches the expected curl command
         self.assertEqual(result, expected_curl_request)
 
-    @patch(
-        "scripts.workers.code_upload_submission_worker.client.V1Job"
-    )  # Replace 'scripts.workers.code_upload_submission_worker' with the actual module name
-    @patch(
-        "scripts.workers.code_upload_submission_worker.client.V1ObjectMeta"
-    )  # Replace 'scripts.workers.code_upload_submission_worker' with the actual module name
+    # Replace 'scripts.workers.code_upload_submission_worker' with the actual
+    # module name
+    @patch("scripts.workers.code_upload_submission_worker.client.V1Job")
+    # Replace 'scripts.workers.code_upload_submission_worker' with the actual
+    # module name
+    @patch("scripts.workers.code_upload_submission_worker.client.V1ObjectMeta")
     def test_get_job_object(self, MockV1ObjectMeta, MockV1Job):
         # Arrange
         submission_pk = 123
@@ -300,9 +301,9 @@ class TestConfigFunctions(unittest.TestCase):
         )
         self.assertEqual(result, MockV1Job.return_value)
 
-    @patch(
-        "scripts.workers.code_upload_submission_worker.client.V1Container"
-    )  # Replace 'scripts.workers.code_upload_submission_worker' with the actual module name
+    # Replace 'scripts.workers.code_upload_submission_worker' with the actual
+    # module name
+    @patch("scripts.workers.code_upload_submission_worker.client.V1Container")
     @patch(
         "scripts.workers.code_upload_submission_worker.get_submission_meta_update_curl"
     )
@@ -1159,7 +1160,8 @@ class TestConfigFunctions(unittest.TestCase):
         main()
 
         # Assertions
-        mock_evalai_instance.get_challenge_by_queue_name.assert_called()  # Updated to allow multiple calls
+        # Updated to allow multiple calls
+        mock_evalai_instance.get_challenge_by_queue_name.assert_called()
         assert (
             mock_evalai_instance.get_challenge_by_queue_name.call_count == 2
         )  # Verifies the number of calls
@@ -1304,13 +1306,10 @@ class TestCleanupSubmissionException(unittest.TestCase):
 
 
 class TestCleanupSubmissionDeleteJobException(unittest.TestCase):
-    @patch(
-        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
-    )
     @patch("scripts.workers.code_upload_submission_worker.logger")
     @patch("scripts.workers.code_upload_submission_worker.delete_job")
     def test_cleanup_submission_delete_job_exception(
-        self, MockDeleteJob, MockLogger, MockIncrementStatsd
+        self, MockDeleteJob, MockLogger
     ):
         mock_api_instance = MagicMock()
         mock_evalai = MagicMock()
@@ -1346,7 +1345,6 @@ class TestCleanupSubmissionDeleteJobException(unittest.TestCase):
         mock_evalai.delete_message_from_sqs_queue.assert_called_once_with(
             "abc"
         )
-        MockIncrementStatsd.assert_called_once_with(queue_name, is_remote)
 
 
 class TestUpdateFailedJobsAndSendLogsDisableLogs(unittest.TestCase):
@@ -1639,9 +1637,6 @@ class TestMainQueuedSubmission(unittest.TestCase):
 
 
 class TestMainJobDeleteBlock(unittest.TestCase):
-    @patch(
-        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
-    )
     @patch("scripts.workers.code_upload_submission_worker.logger")
     @patch("scripts.workers.code_upload_submission_worker.delete_job")
     @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
@@ -1660,7 +1655,6 @@ class TestMainJobDeleteBlock(unittest.TestCase):
         mock_killer,
         mock_delete_job,
         MockLogger,
-        mock_increment_statsd,
     ):
         mock_evalai_instance = mock_evalai.return_value
         mock_evalai_instance.get_challenge_by_queue_name.return_value = {
@@ -1703,11 +1697,7 @@ class TestMainJobDeleteBlock(unittest.TestCase):
         mock_evalai_instance.delete_message_from_sqs_queue.assert_called_once_with(
             "abc"
         )
-        mock_increment_statsd.assert_called_once()
 
-    @patch(
-        "scripts.workers.code_upload_submission_worker.increment_and_push_metrics_to_statsd"
-    )
     @patch("scripts.workers.code_upload_submission_worker.logger")
     @patch("scripts.workers.code_upload_submission_worker.delete_job")
     @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
@@ -1726,7 +1716,6 @@ class TestMainJobDeleteBlock(unittest.TestCase):
         mock_killer,
         mock_delete_job,
         MockLogger,
-        mock_increment_statsd,
     ):
         mock_evalai_instance = mock_evalai.return_value
         mock_evalai_instance.get_challenge_by_queue_name.return_value = {
@@ -1771,4 +1760,3 @@ class TestMainJobDeleteBlock(unittest.TestCase):
         mock_evalai_instance.delete_message_from_sqs_queue.assert_called_with(
             "abc"
         )
-        mock_increment_statsd.assert_called()

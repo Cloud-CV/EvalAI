@@ -39,7 +39,6 @@ def test_publish_submission_message_challenge_does_not_exist(
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
-@patch("jobs.sender.increment_statsd_counter")
 @patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.send_slack_notification")
 @patch("jobs.sender.Challenge.objects.get")
@@ -47,7 +46,6 @@ def test_publish_submission_message_success(
     mock_challenge_get,
     mock_send_slack_notification,
     mock_get_submission_model,
-    mock_increment_statsd_counter,
     mock_get_or_create_sqs_queue,
     message,
 ):
@@ -238,9 +236,8 @@ def test_get_or_create_sqs_queue_debug_or_test(
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
         aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     )
-    assert (
-        queue_name != "evalai_submission_queue"
-    )  # 'queue_name' is not modified in the test, so assert the original value was passed correctly
+    # 'queue_name' is not modified in the test, so assert the original value was passed correctly
+    assert queue_name != "evalai_submission_queue"
     assert queue  # Ensure queue was returned
 
 

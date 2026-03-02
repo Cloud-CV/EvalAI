@@ -26,10 +26,8 @@ JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
     INSTANCE=${PRODUCTION_INSTANCE}
-    MONITORING_INSTANCE=${PRODUCTION_MONITORING_INSTANCE}
 elif [[ ${env} == "staging" ]]; then
     INSTANCE=${STAGING_INSTANCE}
-    MONITORING_INSTANCE=${STAGING_MONITORING_INSTANCE}
 else
     echo "Skipping deployment since commit not on staging or production branch."
     exit 0
@@ -59,39 +57,9 @@ case $opt in
 					echo "Removing all existing Docker images..."
 					docker rmi -f $(docker images -q) 2>/dev/null || true
 					echo "All containers and images removed. Pulling new images..."
-					docker compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
+					docker compose -f docker-compose-${env}.yml pull django nodejs celery memcached
 					echo "Deploying new containers..."
-					docker compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
-				ENDSSH2
-			ENDSSH
-            ;;
-        deploy-monitoring)
-            chmod 400 scripts/deployment/evalai.pem
-            ssh-add scripts/deployment/evalai.pem
-			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
-				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
-					source venv/bin/activate
-                    			cd ~/Projects/EvalAI
-					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-					export COMMIT_ID=${COMMIT_ID}
-					export AWS_DEFAULT_REGION=us-east-1
-					eval $(aws ecr get-login --no-include-email)
-					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
-					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
-					echo "Cleaning server: pruning Docker resources and system cache..."
-					docker volume prune -f 2>/dev/null || true
-					docker image prune -f 2>/dev/null || true
-					sudo apt-get clean 2>/dev/null || true
-					sudo journalctl --vacuum-time=7d 2>/dev/null || true
-					echo "Stopping and removing all existing Docker containers..."
-					docker stop $(docker ps -aq) 2>/dev/null || true
-					docker rm -f $(docker ps -aq) 2>/dev/null || true
-					echo "Removing all existing Docker images..."
-					docker rmi -f $(docker images -q) 2>/dev/null || true
-					echo "All containers and images removed. Pulling new images..."
-					docker compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
-					echo "Deploying new containers..."
-					docker compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery memcached
 				ENDSSH2
 			ENDSSH
             ;;
@@ -200,31 +168,6 @@ case $opt in
                 echo "Deployed worker docker container for queue: " $queue
              done
             ;;
-        deploy-prometheus)
-            echo "Deploying prometheus docker container..."
-            docker compose -f docker-compose-${env}.yml up -d prometheus
-            echo "Completed deploy operation."
-            ;;
-        deploy-grafana)
-            echo "Deploying grafana docker container..."
-            docker compose -f docker-compose-${env}.yml up -d grafana
-            echo "Completed deploy operation."
-            ;;
-        deploy-statsd)
-            echo "Deploying statsd docker container..."
-            docker compose -f docker-compose-${env}.yml up -d statsd-exporter
-            echo "Completed deploy operation."
-            ;;
-        deploy-node-exporter)
-            echo "Deploying node_exporter docker container..."
-            docker compose -f docker-compose-${env}.yml up -d node_exporter
-            echo "Completed deploy operation."
-            ;;
-        deploy-alert-manager)
-            echo "Deploying alertmanager docker container..."
-            docker compose -f docker-compose-${env}.yml up -d alert-manager
-            echo "Completed deploy operation."
-            ;;
         scale)
             service=${3}
             instances=${4}
@@ -246,8 +189,6 @@ case $opt in
         echo
         echo "    auto_deploy : Deploy staging or production branch to staging or production server respectively."
         echo "        Eg. ./scripts/deployment/deploy.sh auto_deploy"
-        echo "    deploy-monitoring : Deploy monitoring containers of staging or production branch to staging or production monitoring server respectively."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-monitoring"
         echo "    pull : Pull docker images from ECR."
         echo "        Eg. ./scripts/deployment/deploy.sh pull production"
         echo "    deploy-django : Deploy django containers in the respective environment."
@@ -266,16 +207,6 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-remote-worker production <auth_token> <queue_name>"   
         echo "    deploy-workers : Deploy worker containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy production <superuser_auth_token>"
-        echo "    deploy-prometheus : Deploy prometheus container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-prometheus production"
-        echo "    deploy-grafana : Deploy grafana container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
-        echo "    deploy-statsd : Deploy statsd container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
-        echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
-        echo "    deploy-alert-manager : Deploy alertmanager container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alert-manager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
