@@ -44,6 +44,13 @@ describe('Unit tests for challenge host team controller', function () {
             expect(vm.isExistLoader).toBeFalsy();
             expect(vm.loaderTitle).toEqual('');
         });
+
+        it('should initialize loaderContainer correctly', function () {
+            spyOn(angular, 'element').and.returnValue('mocked-element');
+            vm = createController();
+            expect(angular.element).toHaveBeenCalledWith('.exist-team-card');
+            expect(vm.loaderContainer).toEqual('mocked-element');
+        });
     });
 
     describe('Validate helper functions', function () {
@@ -62,6 +69,16 @@ describe('Unit tests for challenge host team controller', function () {
             expect(vm.isExistLoader).toEqual(false);
             expect(vm.loaderTitle).toEqual(message);
         });
+
+        it('should test activateCollapsible function', function () {
+            spyOn(angular, 'element').and.returnValue({
+                collapsible: jasmine.createSpy('collapsible')
+            });
+            vm = createController();
+            vm.activateCollapsible();
+            expect(angular.element).toHaveBeenCalledWith('.collapsible');
+            expect(angular.element('.collapsible').collapsible).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for global backend calls', function () {
@@ -70,22 +87,27 @@ describe('Unit tests for challenge host team controller', function () {
             {
                 next: null,
                 previous: null,
+                count: 0
             },
             {
                 next: null,
                 previous: null,
+                count: 5
             },
             {
                 next: 'page=5',
                 previous: null,
+                count: 50
             },
             {
                 next: null,
                 previous: 'page=3',
+                count: 30
             },
             {
                 next: 'page=4',
                 previous: 'page=2',
+                count: 40
             }
         ];
 
@@ -93,6 +115,9 @@ describe('Unit tests for challenge host team controller', function () {
             spyOn(utilities, 'deleteData');
             spyOn(utilities, 'storeData');
             spyOn(utilities, 'hideLoader');
+            spyOn(angular, 'element').and.returnValue({
+                collapsible: jasmine.createSpy('collapsible')
+            });
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -109,15 +134,21 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         hostTeamList.forEach(response => {
-            it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
-            `hosts/challenge_host_team/`', function () {
-                ;
+            it('when pagination next is ' + response.next + ' and previous is ' + response.previous + ' and count is ' + response.count + ' `hosts/challenge_host_team/`', function () {
                 success = true;
                 successResponse = response;
                 vm = createController();
                 expect(vm.existTeam).toEqual(successResponse);
-                expect(vm.showPagination).toBeTruthy();
-                expect(vm.paginationMsg).toEqual('');
+                
+                if (vm.existTeam.count === 0) {
+                    expect(vm.showPagination).toBeFalsy();
+                    expect(vm.paginationMsg).toEqual("No team exists for now. Start by creating a new team!");
+                } else {
+                    expect(vm.showPagination).toBeTruthy();
+                    expect(vm.paginationMsg).toEqual('');
+                    expect(angular.element('.collapsible').collapsible).toHaveBeenCalled();
+                }
+                
                 expect(utilities.deleteData).toHaveBeenCalledWith('emailError');
 
                 if (vm.existTeam.next == null) {
@@ -154,27 +185,126 @@ describe('Unit tests for challenge host team controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('to load data with pagination `load` function', function () {
+        it('to load data with pagination `load` function with valid URL', function () {
             success = true;
             successResponse = {
+                next: 'page=4',
+                previous: 'page=2',
+                count: 30
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var mockResponse = {
+                data: successResponse
+            };
+            
+            spyOn($http, 'get').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                deferred.resolve(mockResponse);
+                return deferred.promise;
+            });
+            
+            var url = 'participants/participant_team/page=2';
+            vm.load(url);
+            expect(vm.isExistLoader).toBeTruthy();
+            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
+            
+            var headers = {
+                'Authorization': "Token " + utilities.getData('userKey')
+            };
+            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
+            
+            // Trigger the promise resolution
+            $scope.$apply();
+            
+            expect(vm.existTeam).toEqual(successResponse);
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
 
+        it('to load data with pagination `load` function with null URL', function () {
+            success = true;
+            successResponse = {
                 next: 'page=4',
                 previous: 'page=2',
             };
             vm = createController();
             spyOn(vm, 'startLoader');
-            spyOn($http, 'get').and.callFake(function () {
-                var deferred = $injector.get('$q').defer();
-                return deferred.promise;
-            });
-            var url = 'participants/participant_team/page=2';
-            vm.load(url);
+            spyOn(vm, 'stopLoader');
+            spyOn($http, 'get');
+            
+            vm.load(null);
             expect(vm.isExistLoader).toBeTruthy();
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
-            var headers = {
-                'Authorization': "Token " + utilities.getData('userKey')
+            expect($http.get).not.toHaveBeenCalled();
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
+
+        it('should handle pagination when next is null and calculate currentPage from count', function () {
+            success = true;
+            successResponse = {
+                next: null,
+                previous: 'page=2',
+                count: 25
             };
-            expect($http.get).toHaveBeenCalledWith(url, { headers: headers });
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var mockResponse = {
+                data: successResponse
+            };
+            
+            spyOn($http, 'get').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                deferred.resolve(mockResponse);
+                return deferred.promise;
+            });
+            
+            var url = 'participants/participant_team/page=3';
+            vm.load(url);
+            
+            // Trigger the promise resolution
+            $scope.$apply();
+            
+            expect(vm.existTeam).toEqual(successResponse);
+            expect(vm.isNext).toEqual('disabled');
+            expect(vm.currentPage).toEqual(vm.existTeam.count / 10);
+            expect(vm.isPrev).toEqual('');
+        });
+
+        it('should handle pagination when next is not null and calculate currentPage correctly', function () {
+            success = true;
+            successResponse = {
+                next: 'page=5',
+                previous: 'page=3',
+                count: 45
+            };
+            vm = createController();
+            spyOn(vm, 'startLoader');
+            spyOn(vm, 'stopLoader');
+            
+            var mockResponse = {
+                data: successResponse
+            };
+            
+            spyOn($http, 'get').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                deferred.resolve(mockResponse);
+                return deferred.promise;
+            });
+            
+            var url = 'participants/participant_team/page=4';
+            vm.load(url);
+            
+            // Trigger the promise resolution
+            $scope.$apply();
+            
+            expect(vm.existTeam).toEqual(successResponse);
+            expect(vm.isNext).toEqual('');
+            expect(vm.currentPage).toEqual(parseInt(vm.existTeam.next.split('page=')[1] - 1));
+            expect(vm.isPrev).toEqual('');
         });
     });
 
@@ -306,6 +436,34 @@ describe('Unit tests for challenge host team controller', function () {
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
             expect($mdDialog.hide).toHaveBeenCalled();
         });
+
+        it('should handle error in retrieving updated list after successful update', function () {
+            var callCount = 0;
+            utilities.sendRequest = function (parameters) {
+                callCount++;
+                if (callCount === 1) {
+                    // First call (update) succeeds
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    // Second call (get updated list) fails
+                    parameters.callback.onError({
+                        data: { error: 'Failed to retrieve updated list' }
+                    });
+                }
+            };
+
+            var updateChallengeHostTeamDataForm = true;
+            vm.team.TeamName = "Team Name";
+            vm.team.TeamURL = "https://team.url";
+            vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
+            
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Host team updated!");
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", 'Failed to retrieve updated list');
+        });
     });
 
     describe('Unit tests for createNewTeam function `hosts/create_challenge_host_team`', function () {
@@ -314,22 +472,27 @@ describe('Unit tests for challenge host team controller', function () {
             {
                 next: null,
                 previous: null,
+                count: 1
             },
             {
                 next: null,
                 previous: null,
+                count: 5
             },
             {
                 next: 'page=5',
                 previous: null,
+                count: 50
             },
             {
                 next: null,
                 previous: 'page=3',
+                count: 30
             },
             {
                 next: 'page=4',
                 previous: 'page=2',
+                count: 40
             }
         ];
         var errorResponse = {
@@ -359,7 +522,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         hostTeamList.forEach(response => {
-            it('create new host team when pagination next is ' + response.next + 'and previous is ' + response.previous, function () {
+            it('create new host team when pagination next is ' + response.next + ' and previous is ' + response.previous + ' and count is ' + response.count, function () {
                 success = true;
                 successResponse = response;
 
@@ -405,6 +568,28 @@ describe('Unit tests for challenge host team controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
         });
+
+        it('should handle error in retrieving updated list after successful team creation', function () {
+            var callCount = 0;
+            utilities.sendRequest = function (parameters) {
+                callCount++;
+                if (callCount === 1) {
+                    // First call (create team) succeeds
+                    parameters.callback.onSuccess({
+                        data: { id: 123, team_name: 'New Team' },
+                        status: 200
+                    });
+                } else {
+                    // Second call (get updated list) fails
+                    parameters.callback.onError({
+                        data: { error: 'Failed to retrieve teams' }
+                    });
+                }
+            };
+
+            vm.createNewTeam();
+            expect(vm.stopLoader).toHaveBeenCalled();
+        });
     });
 
     describe('Unit tests for confirmDelete function', function () {
@@ -418,6 +603,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('open dialog to confirm delete', function () {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
                 .textContent('Note: This action will remove you from the team.')
@@ -426,12 +612,14 @@ describe('Unit tests for challenge host team controller', function () {
                 .ok('Yes')
                 .cancel("No");
             vm.confirmDelete(ev, hostTeamId);
+            expect(ev.stopPropagation).toHaveBeenCalled();
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
 
         it('should remove self from host team successfully and update team list', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
 
             $mdDialog.show.and.returnValue(Promise.resolve());
 
@@ -469,6 +657,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('should show error notification if remove self from host team fails', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             $mdDialog.show.and.returnValue(Promise.resolve());
             spyOn(vm, 'startLoader').and.callThrough();
             spyOn(vm, 'stopLoader').and.callThrough();
@@ -490,6 +679,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('should do nothing if dialog is cancelled', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             $mdDialog.show.and.returnValue(Promise.reject());
             spyOn(vm, 'startLoader');
             spyOn(utilities, 'sendRequest');
@@ -497,6 +687,43 @@ describe('Unit tests for challenge host team controller', function () {
             setTimeout(function () {
                 expect(vm.startLoader).not.toHaveBeenCalled();
                 expect(utilities.sendRequest).not.toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+
+        it('should handle successful removal with teams remaining', function (done) {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
+
+            $mdDialog.show.and.returnValue(Promise.resolve());
+
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.method === 'DELETE') {
+                    params.callback.onSuccess();
+                } else if (params.method === 'GET') {
+                    params.callback.onSuccess({
+                        status: 200,
+                        data: {
+                            next: 'page=3',
+                            previous: 'page=1',
+                            count: 15
+                        }
+                    });
+                }
+            });
+            spyOn(vm, 'startLoader').and.callThrough();
+            spyOn(vm, 'stopLoader').and.callThrough();
+            spyOn($rootScope, 'notify');
+            
+            vm.confirmDelete(ev, hostTeamId);
+            setTimeout(function () {
+                expect(vm.existTeam.count).toBe(15);
+                expect(vm.showPagination).toBe(true);
+                expect(vm.paginationMsg).toBe("");
+                expect(vm.isNext).toBe('');
+                expect(vm.isPrev).toBe('');
+                expect(vm.currentPage).toBe(parseInt(vm.existTeam.next.split('page=')[1] - 1));
                 done();
             }, 0);
         });
@@ -513,6 +740,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('open dialog to invite others', function () {
             var hostId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
                 .textContent('Enter the email address of the person')
@@ -522,12 +750,14 @@ describe('Unit tests for challenge host team controller', function () {
                 .ok('Add')
                 .cancel('Cancel');
             vm.inviteOthers(ev, hostId);
+            expect(ev.stopPropagation).toHaveBeenCalled();
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
 
         it('should successfully invite user when dialog is confirmed', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             var email = 'test@example.com';
             
             $mdDialog.show.and.returnValue(Promise.resolve(email));
@@ -556,6 +786,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('should show error notification when invitation fails', function (done) {
             var hostTeamId = 1;
             var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
             var email = 'test@example.com';
             var errorMessage = 'User not found';
             
@@ -585,6 +816,22 @@ describe('Unit tests for challenge host team controller', function () {
                 done();
             }, 0);
         });
+
+        it('should do nothing if dialog is cancelled', function (done) {
+            var hostTeamId = 1;
+            var ev = new Event('$click');
+            spyOn(ev, 'stopPropagation');
+            
+            $mdDialog.show.and.returnValue(Promise.reject());
+            spyOn(utilities, 'sendRequest');
+            
+            vm.inviteOthers(ev, hostTeamId);
+            
+            setTimeout(function () {
+                expect(utilities.sendRequest).not.toHaveBeenCalled();
+                done();
+            }, 0);
+        });
     });
 
     describe('Unit tests for storeChallengeHostTeamId function', function () {
@@ -597,6 +844,13 @@ describe('Unit tests for challenge host team controller', function () {
             vm.challengeHostTeamId = 1;
             vm.storeChallengeHostTeamId();
             expect(utilities.storeData).toHaveBeenCalledWith('challengeHostTeamId', vm.challengeHostTeamId);
+            expect($state.go).toHaveBeenCalledWith('web.challenge-create');
+        });
+
+        it('store challenge host team ID with different value', function () {
+            vm.challengeHostTeamId = 999;
+            vm.storeChallengeHostTeamId();
+            expect(utilities.storeData).toHaveBeenCalledWith('challengeHostTeamId', 999);
             expect($state.go).toHaveBeenCalledWith('web.challenge-create');
         });
     });
