@@ -1,15 +1,16 @@
 from __future__ import unicode_literals
 
+from django.db import models  # isort: skip
+from django.db.models import signals  # isort: skip
+from django.db.models.signals import pre_save  # isort: skip
+from django.dispatch import receiver  # isort: skip
+from django.contrib.auth.models import User  # isort: skip
+from django.contrib.postgres.fields import ArrayField, JSONField  # isort: skip
+from django.core import serializers  # isort: skip
+from django.utils import timezone  # isort: skip
+
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
-from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.core import serializers
-from django.db import models
-from django.db.models import signals
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from django.utils import timezone
 from hosts.models import ChallengeHost
 from participants.models import ParticipantTeam
 
@@ -17,7 +18,7 @@ from participants.models import ParticipantTeam
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
     title = get_slug(instance.title)
-    instance.slug = "{}-{}".format(title, instance.pk)
+    instance.slug = f"{title}-{instance.pk}"
 
 
 def get_default_eval_metric():
@@ -28,7 +29,7 @@ class Challenge(TimeStampedModel):
     """Model representing a hosted Challenge"""
 
     def __init__(self, *args, **kwargs):
-        super(Challenge, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
@@ -269,7 +270,7 @@ class Challenge(TimeStampedModel):
 
     def __str__(self):
         """Returns the title of Challenge"""
-        return self.title
+        return str(self.title)
 
     def get_image_url(self):
         """Returns the url of logo of Challenge"""
@@ -334,7 +335,7 @@ def update_sqs_retention_period_for_challenge(
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_sqs_retention_period_task.delay(serialized_obj)
         # Update challenge
-        curr = getattr(instance, "{}".format(field_name))
+        curr = getattr(instance, field_name)
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
@@ -389,7 +390,7 @@ class DatasetSplit(TimeStampedModel):
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         app_label = "challenges"
@@ -400,7 +401,7 @@ class ChallengePhase(TimeStampedModel):
     """Model representing a Challenge Phase"""
 
     def __init__(self, *args, **kwargs):
-        super(ChallengePhase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation
 
     name = models.CharField(max_length=100, db_index=True)
@@ -478,7 +479,7 @@ class ChallengePhase(TimeStampedModel):
 
     def __str__(self):
         """Returns the name of Phase"""
-        return self.name
+        return str(self.name)
 
     def get_start_date(self):
         """Returns the start date of Phase"""
@@ -496,21 +497,15 @@ class ChallengePhase(TimeStampedModel):
         return False
 
     def save(self, *args, **kwargs):
-
         # If the max_submissions_per_day is less than the
         # max_concurrent_submissions_allowed.
-        if (
-            self.max_submissions_per_day
-            < self.max_concurrent_submissions_allowed
-        ):
-            self.max_concurrent_submissions_allowed = (
-                self.max_submissions_per_day
-            )
-
-        challenge_phase_instance = super(ChallengePhase, self).save(
-            *args, **kwargs
+        self.max_concurrent_submissions_allowed = min(
+            self.max_concurrent_submissions_allowed,
+            self.max_submissions_per_day,
         )
-        return challenge_phase_instance
+
+        super().save(*args, **kwargs)
+        return self
 
 
 def post_save_connect(field_name, sender):
@@ -588,8 +583,8 @@ class ChallengeTemplate(TimeStampedModel):
     Model to store challenge templates
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     title = models.CharField(max_length=500)
@@ -620,7 +615,7 @@ class ChallengeTemplate(TimeStampedModel):
 
     def __str__(self):
         """Returns the title of challenge template"""
-        return self.title
+        return str(self.title)
 
 
 class LeaderboardData(TimeStampedModel):
@@ -717,15 +712,15 @@ class UserInvitation(TimeStampedModel):
 
     def __str__(self):
         """Returns the email of the user"""
-        return self.email
+        return str(self.email)
 
 
 class ChallengeEvaluationCluster(TimeStampedModel):
     """Model to store the config for Kubernetes cluster for a challenge
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.OneToOneField(Challenge, on_delete=models.CASCADE)
@@ -771,12 +766,12 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
 class PWCChallengeLeaderboard(TimeStampedModel):
     """
-    Model to store the challenge mapping with area, task and dataset of papers with code (PWC)
-    (https://paperswithcode.com/)
+    Model to store the challenge mapping with area, task and dataset of
+    papers with code (PWC) (https://paperswithcode.com/)
 
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     phase_split = models.OneToOneField(
@@ -800,8 +795,8 @@ class ChallengeSponsor(TimeStampedModel):
     """
     Model to store challenge sponsors
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
@@ -820,8 +815,8 @@ class ChallengePrize(TimeStampedModel):
     """
     Model to store challenge prizes
     Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
+        TimeStampedModel {[model class]} -- An abstract base class model
+            that provides self-managed `created_at` and `modified_at` fields.
     """
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
@@ -834,4 +829,4 @@ class ChallengePrize(TimeStampedModel):
         db_table = "challenge_prize"
 
     def __str__(self):
-        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
+        return f"Prize: {self.challenge} Rank: {self.rank} Amt: {self.amount}"
