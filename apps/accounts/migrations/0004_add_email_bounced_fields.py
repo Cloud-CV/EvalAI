@@ -20,4 +20,16 @@ class Migration(migrations.Migration):
             name="email_bounced_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
+        migrations.RunSQL(
+            sql=(
+                "ALTER TABLE user_profile "
+                "ALTER COLUMN email_bounced "
+                "SET DEFAULT false;"
+            ),
+            reverse_sql=(
+                "ALTER TABLE user_profile "
+                "ALTER COLUMN email_bounced "
+                "DROP DEFAULT;"
+            ),
+        ),
     ]
