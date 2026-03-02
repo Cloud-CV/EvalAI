@@ -34,7 +34,7 @@ export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 export COMMIT_ID="latest"
 export AWS_DEFAULT_REGION=${AWS_REGION}
 export TRAVIS_BRANCH=${ENVIRONMENT}
-eval $(aws ecr get-login --no-include-email)
+aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
 # Step 7: Copying Docker environment file
 echo "Step 7/10: Copying Docker environment file"
