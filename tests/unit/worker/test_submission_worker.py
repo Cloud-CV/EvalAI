@@ -1088,6 +1088,9 @@ class MainFunctionTest(BaseAPITestClass):
                 mock_delete_old_temp_directories.assert_called()
                 mock_create_dir_as_python_package.assert_any_call(mock.ANY)
                 mock_get_or_create_sqs_queue.assert_called()
+                mock_queue.receive_messages.assert_called_with(
+                    WaitTimeSeconds=20
+                )
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
                 )
@@ -1157,6 +1160,9 @@ class MainFunctionTest(BaseAPITestClass):
                 mock_delete_old_temp_directories.assert_called()
                 mock_create_dir_as_python_package.assert_any_call(mock.ANY)
                 mock_get_or_create_sqs_queue.assert_called()
+                mock_queue.receive_messages.assert_called_with(
+                    WaitTimeSeconds=20
+                )
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
                 )
