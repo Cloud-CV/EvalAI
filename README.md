@@ -61,18 +61,6 @@ The steps are:
     docker-compose --profile worker up --build
     ```
 
-    If you need **statsd-exporter**, start it using:
-
-    ```
-    docker-compose --profile statsd up --build
-    ```
-
-    To start **both optional services**, use:
-
-    ```
-    docker-compose --profile worker --profile statsd up --build
-    ```
-
 4. That's it. Open web browser and hit the URL <a href="http://127.0.0.1:8888" target="_blank">http://127.0.0.1:8888</a>. Three users will be created by default which are listed below -
 
     **SUPERUSER-** username: `admin` password: `password`  
