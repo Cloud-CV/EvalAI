@@ -5,7 +5,7 @@ opt=${1}
 
 aws_login() {
     aws configure set default.region us-east-1
-    eval $(aws ecr get-login --no-include-email)
+    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 }
 
 if [ -z ${AWS_ACCOUNT_ID} ]; then
@@ -41,12 +41,11 @@ case $opt in
             ssh-add scripts/deployment/evalai.pem
 			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
 				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
-					source venv/bin/activate
 					cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
 					export AWS_DEFAULT_REGION=us-east-1
-					eval $(aws ecr get-login --no-include-email)
+					aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					echo "Cleaning server: pruning Docker resources and system cache..."
 					docker volume prune -f 2>/dev/null || true
@@ -70,12 +69,11 @@ case $opt in
             ssh-add scripts/deployment/evalai.pem
 			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
-					source venv/bin/activate
-                    			cd ~/Projects/EvalAI
+					cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
 					export AWS_DEFAULT_REGION=us-east-1
-					eval $(aws ecr get-login --no-include-email)
+					aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
 					echo "Cleaning server: pruning Docker resources and system cache..."
