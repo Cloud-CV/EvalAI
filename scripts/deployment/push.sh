@@ -5,7 +5,7 @@ export COMMIT_ID=$(git rev-parse HEAD)
 
 build_and_push() {
         aws configure set default.region us-east-1
-        eval $(aws ecr get-login --no-include-email)
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
         echo "Pulling ssl certificates and nginx configuration..."
         aws s3 cp s3://cloudcv-secrets/eval.ai/ssl/ ./ssl/ --recursive
         aws s3 cp s3://cloudcv-secrets/ssl/ ./ssl/ --recursive
