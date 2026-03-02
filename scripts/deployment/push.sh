@@ -8,8 +8,8 @@ build_and_push() {
         eval $(aws ecr get-login --no-include-email)
         echo "Pulling ssl certificates and nginx configuration..."
         aws s3 cp s3://cloudcv-secrets/eval.ai/ssl/ ./ssl/ --recursive
-        # Need ssl files related to *.cloudcv.org since we want to provide backward compatibility
         aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
+        aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/nginx_${TRAVIS_BRANCH}.conf ./docker/prod/nodejs/nginx_${TRAVIS_BRANCH}.conf
         echo "Pulled ssl certificates and nginx configuration successfully"
         DOCKER_BUILDKIT=1 docker compose -f docker-compose-$1.yml build \
             --build-arg COMMIT_ID=${COMMIT_ID} \
