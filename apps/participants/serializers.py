@@ -1,3 +1,4 @@
+from accounts.models import Profile
 from accounts.serializers import UserProfileSerializer
 from base.utils import get_user_by_email
 from challenges.serializers import ChallengeSerializer
@@ -94,9 +95,10 @@ class ParticipantSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def get_profile(self, obj):
-        # Use user.profile directly - with select_related this won't trigger extra queries
-        # Falls back to lazy loading if not prefetched
-        user_profile = obj.user.profile
+        try:
+            user_profile = obj.user.profile
+        except Profile.DoesNotExist:
+            user_profile = Profile.objects.create(user=obj.user)
         serializer = UserProfileSerializer(user_profile)
         return serializer.data
 

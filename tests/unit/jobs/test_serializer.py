@@ -2,6 +2,7 @@ from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pytest
+from accounts.models import Profile
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -62,6 +63,30 @@ def test_challenge_submission_management_serializer_get_participant_team_members
     serializer = ChallengeSubmissionManagementSerializer()
     affiliations = serializer.get_participant_team_members_affiliations(obj)
     assert affiliations == "Participant team does not exist"
+
+
+@pytest.mark.django_db
+def test_get_affiliations_creates_profile_when_missing():
+    """get_participant_team_members_affiliations should create a
+    Profile via get_or_create when the user has no profile."""
+    user = User.objects.create_user(
+        username="noprofile",
+        email="noprofile@test.com",
+        password="password",
+    )
+    Profile.objects.filter(user=user).delete()
+
+    team = ParticipantTeam.objects.create(
+        team_name="Affiliation Team", created_by=user
+    )
+    Participant.objects.create(user=user, team=team, status=Participant.SELF)
+    obj = MagicMock(participant_team=MagicMock(team_name="Affiliation Team"))
+    serializer = ChallengeSubmissionManagementSerializer()
+    affiliations = serializer.get_participant_team_members_affiliations(obj)
+
+    assert isinstance(affiliations, list)
+    assert len(affiliations) == 1
+    assert Profile.objects.filter(user=user).exists()
 
 
 def test_submission_serializer_delete_sets_ignore_submission():

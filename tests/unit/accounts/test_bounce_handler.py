@@ -1,4 +1,5 @@
 from accounts.bounce_handler import handle_bounce, handle_complaint
+from accounts.models import Profile
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -107,3 +108,30 @@ class TestHandleComplaint(BounceHandlerTestBase):
         )
         self.unverified_user.refresh_from_db()
         self.assertFalse(self.unverified_user.is_active)
+
+
+class TestBounceHandlerMissingProfile(BounceHandlerTestBase):
+    """Tests that bounce handling works when user has no Profile."""
+
+    def test_permanent_bounce_creates_profile_and_sets_flag(self):
+        """Bounce for a verified user without a profile should
+        create the profile and set email_bounced."""
+        Profile.objects.filter(user=self.verified_user).delete()
+        self.assertFalse(
+            Profile.objects.filter(user=self.verified_user).exists()
+        )
+
+        bounce_obj = self._make_bounce_obj("Permanent", ["verified@test.com"])
+        handle_bounce(
+            sender=None,
+            mail_obj={},
+            bounce_obj=bounce_obj,
+            raw_message={},
+        )
+
+        self.assertTrue(
+            Profile.objects.filter(user=self.verified_user).exists()
+        )
+        profile = Profile.objects.get(user=self.verified_user)
+        self.assertTrue(profile.email_bounced)
+        self.assertIsNotNone(profile.email_bounced_at)

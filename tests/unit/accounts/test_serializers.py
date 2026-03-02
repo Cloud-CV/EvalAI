@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from accounts.models import Profile
 from accounts.serializers import (
     CustomPasswordResetSerializer,
     ProfileSerializer,
@@ -307,3 +308,35 @@ class TestProfileSerializer(TestCase):
         )
         self.assertEqual(self.user.first_name, "Original")
         self.assertEqual(self.user.profile.address_city, "Original City")
+
+    def test_update_creates_profile_when_missing(self):
+        """update() should create a Profile via get_or_create
+        when the user has no profile (e.g. signal failure)."""
+        Profile.objects.filter(user=self.user).delete()
+        self.assertFalse(Profile.objects.filter(user=self.user).exists())
+
+        serializer = ProfileSerializer(
+            self.user,
+            data={
+                "first_name": "New",
+                "last_name": "User",
+                "affiliation": "New Affiliation",
+                "github_url": "",
+                "google_scholar_url": "",
+                "linkedin_url": "",
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        self.assertTrue(Profile.objects.filter(user=self.user).exists())
+        self.user.refresh_from_db()
+        profile = Profile.objects.get(user=self.user)
+        self.assertEqual(profile.affiliation, "New Affiliation")
+
+    def test_read_creates_no_profile_when_missing(self):
+        """Serializing a user with no profile should not crash
+        (is_profile_complete returns False)."""
+        Profile.objects.filter(user=self.user).delete()
+        serializer = ProfileSerializer(self.user)
+        self.assertFalse(serializer.data["is_profile_complete"])
