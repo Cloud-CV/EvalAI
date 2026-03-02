@@ -17,7 +17,7 @@ from participants.models import ParticipantTeam
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
     title = get_slug(instance.title)
-    instance.slug = "{}-{}".format(title, instance.pk)
+    instance.slug = f"{title}-{instance.pk}"
 
 
 def get_default_eval_metric():
@@ -28,7 +28,7 @@ class Challenge(TimeStampedModel):
     """Model representing a hosted Challenge"""
 
     def __init__(self, *args, **kwargs):
-        super(Challenge, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
@@ -269,7 +269,7 @@ class Challenge(TimeStampedModel):
 
     def __str__(self):
         """Returns the title of Challenge"""
-        return self.title
+        return str(self.title)
 
     def get_image_url(self):
         """Returns the url of logo of Challenge"""
@@ -334,7 +334,7 @@ def update_sqs_retention_period_for_challenge(
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_sqs_retention_period_task.delay(serialized_obj)
         # Update challenge
-        curr = getattr(instance, "{}".format(field_name))
+        curr = getattr(instance, field_name)
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
@@ -389,7 +389,7 @@ class DatasetSplit(TimeStampedModel):
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return self.name
+      return str(self.name)
 
     class Meta:
         app_label = "challenges"
@@ -400,7 +400,7 @@ class ChallengePhase(TimeStampedModel):
     """Model representing a Challenge Phase"""
 
     def __init__(self, *args, **kwargs):
-        super(ChallengePhase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation
 
     name = models.CharField(max_length=100, db_index=True)
@@ -478,7 +478,7 @@ class ChallengePhase(TimeStampedModel):
 
     def __str__(self):
         """Returns the name of Phase"""
-        return self.name
+        return str(self.name)
 
     def get_start_date(self):
         """Returns the start date of Phase"""
@@ -496,21 +496,15 @@ class ChallengePhase(TimeStampedModel):
         return False
 
     def save(self, *args, **kwargs):
-
         # If the max_submissions_per_day is less than the
         # max_concurrent_submissions_allowed.
-        if (
+        self.max_concurrent_submissions_allowed = min(
+            self.max_concurrent_submissions_allowed,
             self.max_submissions_per_day
-            < self.max_concurrent_submissions_allowed
-        ):
-            self.max_concurrent_submissions_allowed = (
-                self.max_submissions_per_day
-            )
-
-        challenge_phase_instance = super(ChallengePhase, self).save(
-            *args, **kwargs
         )
-        return challenge_phase_instance
+
+        super().save(*args, **kwargs)
+        return self               
 
 
 def post_save_connect(field_name, sender):
@@ -620,7 +614,7 @@ class ChallengeTemplate(TimeStampedModel):
 
     def __str__(self):
         """Returns the title of challenge template"""
-        return self.title
+        return str(self.title)
 
 
 class LeaderboardData(TimeStampedModel):
@@ -717,7 +711,7 @@ class UserInvitation(TimeStampedModel):
 
     def __str__(self):
         """Returns the email of the user"""
-        return self.email
+        return str(self.email)
 
 
 class ChallengeEvaluationCluster(TimeStampedModel):
