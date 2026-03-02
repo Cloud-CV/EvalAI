@@ -1028,14 +1028,10 @@ class MainFunctionTest(BaseAPITestClass):
     )
     @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
     @patch("scripts.workers.submission_worker.process_submission_callback")
-    @patch(
-        "scripts.workers.submission_worker.increment_and_push_metrics_to_statsd"
-    )
     @patch("scripts.workers.submission_worker.Submission")
     def test_main_debug_limit_concurrent(
         self,
         mock_Submission,
-        mock_increment_and_push_metrics_to_statsd,
         mock_process_submission_callback,
         mock_get_or_create_sqs_queue,
         mock_load_challenge_and_return_max_submissions,
@@ -1094,7 +1090,6 @@ class MainFunctionTest(BaseAPITestClass):
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
                 )
-                mock_increment_and_push_metrics_to_statsd.assert_called()
 
     @patch("scripts.workers.submission_worker.importlib.import_module")
     @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
@@ -1107,14 +1102,10 @@ class MainFunctionTest(BaseAPITestClass):
     )
     @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
     @patch("scripts.workers.submission_worker.process_submission_callback")
-    @patch(
-        "scripts.workers.submission_worker.increment_and_push_metrics_to_statsd"
-    )
     @patch("scripts.workers.submission_worker.Submission")
     def test_main_debug_no_limit_concurrent(
         self,
         mock_Submission,
-        mock_increment_and_push_metrics_to_statsd,
         mock_process_submission_callback,
         mock_get_or_create_sqs_queue,
         mock_load_challenge_and_return_max_submissions,
@@ -1166,7 +1157,6 @@ class MainFunctionTest(BaseAPITestClass):
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
                 )
-                mock_increment_and_push_metrics_to_statsd.assert_called()
 
 
 class DeleteOldTempDirectoriesTest(BaseAPITestClass):

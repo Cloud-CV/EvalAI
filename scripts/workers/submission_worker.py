@@ -46,8 +46,6 @@ from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
 
-from .statsd_utils import increment_and_push_metrics_to_statsd  # noqa:E402
-
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -918,7 +916,6 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name, challenge)
-    is_remote = int(challenge.remote_evaluation)
     while True:
         for message in queue.receive_messages(WaitTimeSeconds=20):
             if json.loads(message.body).get(
@@ -947,9 +944,6 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(
-                            queue_name, is_remote
-                        )
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -959,7 +953,6 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -978,7 +971,6 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
         if killer.kill_now:
             break
         time.sleep(60)
