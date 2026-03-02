@@ -29,7 +29,7 @@ class Contact(TimeStampedModel):
 class Subscribers(TimeStampedModel):
     """Model representing subbscribed user's email"""
 
-    email = models.EmailField(max_length=70)
+    email = models.EmailField(max_length=70, unique=True)
 
     def __str__(self):
         return "{}".format(self.email)
