@@ -100,7 +100,6 @@ def publish_submission_message(message):
         return
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
-    challenge.remote_evaluation
     queue = get_or_create_sqs_queue(queue_name, challenge)
     response = queue.send_message(MessageBody=json.dumps(message))
     # send slack notification

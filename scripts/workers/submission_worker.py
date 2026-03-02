@@ -916,7 +916,6 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name, challenge)
-    int(challenge.remote_evaluation)
     while True:
         for message in queue.receive_messages(WaitTimeSeconds=20):
             if json.loads(message.body).get(
