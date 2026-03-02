@@ -86,9 +86,14 @@ COMMON_SETTINGS_DICT = {
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
     "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
     "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
+    # WARNING: Passing database password through environment variables
+    # Consider using AWS Secrets Manager or Parameter Store instead
     "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
     "RDS_USERNAME": settings.DATABASES["default"]["USER"],
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
+    # WARNING: Passing SECRET_KEY to worker containers is a security risk
+    # TODO: Migrate to AWS Secrets Manager for production deployments
+    # See docs/SECURITY_SECRETS_MANAGEMENT.md for implementation guide
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
     "STATSD_ENDPOINT": os.environ.get("STATSD_ENDPOINT"),
