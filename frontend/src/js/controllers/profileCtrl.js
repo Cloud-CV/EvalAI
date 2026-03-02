@@ -53,23 +53,29 @@
                 var status = response.status;
                 var result = response.data;
                 if (status == 200) {
-                    for (var i in result) {
-                        if (result[i] === "" || result[i] === undefined || result[i] === null) {
-                            if (i === "linkedin_url" || i === "github_url" || i === "google_scholar_url") {
-                                result[i] = "";
-                            } else {
-                                result[i] = "";
-                            }
-                            vm.countLeft = vm.countLeft + 1;
+                    
+                    var profileFields = ['first_name', 'last_name', 'affiliation', 'github_url', 'google_scholar_url', 'linkedin_url'];
+                    
+                    // Reset counters to ensure stability
+                    vm.countLeft = 0;
+                    count = 0;
+
+                    // Iterate only over the specific profile fields
+                    profileFields.forEach(function(field) {
+                        count++; // Total fields is always fixed (e.g., 6)
+                        
+                        // Check if the field is empty/null/undefined
+                        if (!result[field] || result[field] === "") {
+                            result[field] = ""; // Ensure UI binds to empty string instead of null
+                            vm.countLeft++;
                         }
-                        count = count + 1;
-                    }
-                    vm.compPerc = parseInt((vm.countLeft / count) * 100);
+                    });
+
+                    vm.compPerc = parseInt(((count - vm.countLeft) / count) * 100);
 
                     vm.user = result;
                     vm.userdetails = angular.copy(result);
-                    vm.user.complete = 100 - vm.compPerc;
-
+                    vm.user.complete = vm.compPerc;
                 }
             },
             onError: function(response) {
