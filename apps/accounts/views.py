@@ -159,7 +159,13 @@ def refresh_auth_token(request):
     if token_serializer.is_valid():
         token_serializer.save()
         token = token_serializer.instance
-        response_data = {"token": "{}".format(token.refresh_token)}
+        outstanding_token = OutstandingToken.objects.filter(
+            user=user
+        ).order_by("-created_at")[0]
+        response_data = {
+            "token": "{}".format(token.refresh_token),
+            "expires_at": outstanding_token.expires_at,
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
