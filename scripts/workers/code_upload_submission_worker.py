@@ -11,7 +11,6 @@ from kubernetes import client
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
 
-from .statsd_utils import increment_and_push_metrics_to_statsd
 from .worker_utils import EvalAI_Interface
 
 
@@ -573,7 +572,6 @@ def cleanup_submission(
         message_receipt_handle = message.get("receipt_handle")
         if message_receipt_handle:
             evalai.delete_message_from_sqs_queue(message_receipt_handle)
-            increment_and_push_metrics_to_statsd(queue_name, is_remote)
     except Exception as e:
         logger.exception(
             "Exception while cleanup Submission {}:  {}".format(
@@ -794,9 +792,6 @@ def main():
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
-                        increment_and_push_metrics_to_statsd(
-                            QUEUE_NAME, is_remote
-                        )
                     except Exception as e:
                         logger.exception(
                             "Failed to delete submission job: {}".format(e)
@@ -805,9 +800,6 @@ def main():
                         # job delete
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
-                        )
-                        increment_and_push_metrics_to_statsd(
-                            QUEUE_NAME, is_remote
                         )
                 elif submission.get("status") == "queued":
                     job_name = submission.get("job_name")[-1]
