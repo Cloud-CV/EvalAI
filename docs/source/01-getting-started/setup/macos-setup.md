@@ -1,3 +1,5 @@
-# MacOS Setup
+# macOS Setup
 
-Guide to setup EvalAI on MacOS.
+This page will contain detailed instructions for setting up EvalAI on macOS.
+
+**Work in progress — contributions welcome!**
