@@ -1,3 +1,4 @@
+from accounts.models import Profile
 from challenges.models import ChallengePhase, LeaderboardData
 from django.contrib.auth.models import User
 from hosts.models import ChallengeHost
@@ -229,7 +230,10 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             team=participant_team
         ).values_list("user_id", flat=True)
         users = User.objects.filter(id__in=participant_ids)
-        return [user.profile.affiliation for user in users]
+        return [
+            Profile.objects.get_or_create(user=user)[0].affiliation
+            for user in users
+        ]
 
 
 class SubmissionCount(object):

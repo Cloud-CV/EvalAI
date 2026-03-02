@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django_ses.signals import bounce_received, complaint_received
 
+from .models import Profile
 from .serializers import EmailBounceSerializer, UserDeactivateSerializer
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,9 @@ def _handle_bad_email(email, reason):
         return
 
     if _is_email_verified(email):
+        profile, _ = Profile.objects.get_or_create(user=user)
         serializer = EmailBounceSerializer(
-            user.profile,
+            profile,
             data={
                 "email_bounced": True,
                 "email_bounced_at": timezone.now(),

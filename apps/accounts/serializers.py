@@ -204,7 +204,7 @@ class ProfileSerializer(UserDetailsSerializer):
             instance, validated_data
         )
 
-        profile = instance.profile
+        profile, _ = Profile.objects.get_or_create(user=instance)
         if profile_data:
             profile.affiliation = profile_data.get(
                 "affiliation", profile.affiliation

@@ -1,3 +1,4 @@
+from accounts.models import Profile
 from django.contrib.auth.models import User
 from django.db import connection
 from django.db.models import Prefetch
@@ -277,3 +278,21 @@ class TestParticipantSerializer(TestCase):
         self.assertEqual(data["last_name"], "User")
         self.assertEqual(data["email"], "testuser@test.com")
         self.assertEqual(data["status"], Participant.SELF)
+
+    def test_get_profile_creates_profile_when_missing(self):
+        """get_profile should create a Profile via get_or_create
+        when the user has no profile (e.g. signal failure)."""
+        Profile.objects.filter(user=self.user).delete()
+        self.assertFalse(Profile.objects.filter(user=self.user).exists())
+
+        # Re-fetch so Django's cached reverse FK is cleared
+        participant = Participant.objects.select_related("user").get(
+            pk=self.participant.pk
+        )
+
+        serializer = ParticipantSerializer(participant)
+        data = serializer.data
+
+        self.assertIn("profile", data)
+        self.assertIsInstance(data["profile"], dict)
+        self.assertTrue(Profile.objects.filter(user=self.user).exists())
