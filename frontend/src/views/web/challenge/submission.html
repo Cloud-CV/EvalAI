@@ -378,9 +378,8 @@
                                     <div class="row rm-gut">
                                         <div class="col s12 m12">
                                             <div class="align-left">
-                                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16"
-                                                    ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
-                                                    type="submit" value="Submit">Submit</button>
+                                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" ng-click="challenge.warningDialog($event)" ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
+                                                    type="button" value="Submit">Submit</button>
                                                 <br>
                                                 <br>
                                                 <span class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
