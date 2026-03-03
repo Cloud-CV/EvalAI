@@ -59,9 +59,10 @@ class TestCustomPasswordResetSerializer(TestCase):
             data={"email": self.active_user.email}
         )
         self.assertEqual(serializer.is_valid(), True)
-        expected_email_options = super(
-            CustomPasswordResetSerializer, serializer
-        ).get_email_options()
+        base_class = serializer.__class__.__mro__[1]
+        base_serializer = base_class(data={"email": self.active_user.email})
+        self.assertEqual(base_serializer.is_valid(), True)
+        expected_email_options = base_serializer.get_email_options()
         self.assertEqual(
             serializer.get_email_options(), expected_email_options
         )
@@ -127,9 +128,10 @@ class TestCustomPasswordResetSerializer(TestCase):
             data={"email": "ACTIVE@EXAMPLE.COM"}
         )
         self.assertEqual(serializer.is_valid(), True)
-        expected_email_options = super(
-            CustomPasswordResetSerializer, serializer
-        ).get_email_options()
+        base_class = serializer.__class__.__mro__[1]
+        base_serializer = base_class(data={"email": "ACTIVE@EXAMPLE.COM"})
+        self.assertEqual(base_serializer.is_valid(), True)
+        expected_email_options = base_serializer.get_email_options()
         self.assertEqual(
             serializer.get_email_options(), expected_email_options
         )

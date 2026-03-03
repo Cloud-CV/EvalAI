@@ -1,5 +1,7 @@
 from allauth.account.models import EmailAddress
+from base.utils import get_user_by_email
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
 )
@@ -341,14 +343,9 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
 
     def get_email_options(self):
-        email = self.data["email"].strip()
-        user = (
-            get_user_model()
-            .objects.filter(email__iexact=email)
-            .order_by("date_joined")
-            .first()
-        )
-        if user is None:
+        try:
+            user = get_user_by_email(self.data["email"])
+        except User.DoesNotExist:
             raise ValidationError(
                 {"details": "User with the given email does not exist."}
             )
@@ -366,7 +363,7 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             )
         if not EmailAddress.objects.filter(
             user=user,
-            email__iexact=email,
+            email__iexact=self.data["email"],
             verified=True,
         ).exists():
             raise ValidationError(
