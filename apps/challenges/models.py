@@ -689,6 +689,7 @@ class StarChallenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "starred_challenge"
+        unique_together = (("user", "challenge"),)
 
 
 class UserInvitation(TimeStampedModel):

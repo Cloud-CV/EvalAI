@@ -3050,6 +3050,21 @@ def get_sponsors_by_challenge(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+def _get_or_deduplicate_star(user_id, challenge):
+    """
+    Return a single StarChallenge for the given user+challenge, cleaning up
+    duplicates if any exist (caused by past race conditions).
+    Returns None if no record exists.
+    """
+    stars = StarChallenge.objects.filter(user=user_id, challenge=challenge)
+    if not stars.exists():
+        return None
+    starred_challenge = stars.first()
+    if stars.count() > 1:
+        stars.exclude(pk=starred_challenge.pk).delete()
+    return starred_challenge
+
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
@@ -3062,16 +3077,16 @@ def star_challenge(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
 
     if request.method == "POST":
-        try:
-            starred_challenge = StarChallenge.objects.get(
-                user=request.user.pk, challenge=challenge
-            )
+        starred_challenge = _get_or_deduplicate_star(
+            request.user.pk, challenge
+        )
+        if starred_challenge:
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        except StarChallenge.DoesNotExist:
+        else:
             serializer = StarChallengeSerializer(
                 data=request.data,
                 context={
@@ -3089,14 +3104,14 @@ def star_challenge(request, challenge_pk):
             )
 
     if request.method == "GET":
-        try:
-            starred_challenge = StarChallenge.objects.get(
-                user=request.user.pk, challenge=challenge
-            )
+        starred_challenge = _get_or_deduplicate_star(
+            request.user.pk, challenge
+        )
+        if starred_challenge:
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        except StarChallenge.DoesNotExist:
+        else:
             count = StarChallenge.objects.filter(
                 challenge=challenge, is_starred=True
             ).count()
