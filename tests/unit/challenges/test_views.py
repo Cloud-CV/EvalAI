@@ -6287,6 +6287,134 @@ class StarChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class StarChallengeDuplicateDeduplicationTest(BaseAPITestClass):
+    """Tests for the deduplication logic that resolves
+    StarChallenge.MultipleObjectsReturned errors caused by
+    duplicate rows from past race conditions."""
+
+    def setUp(self):
+        super().setUp()
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def _create_duplicate_stars(self, is_starred=True):
+        """Bypass the unique constraint to insert duplicate rows
+        directly via SQL, simulating legacy data from before the
+        unique_together constraint was added.
+
+        The constraint drop is safe because Django TestCase wraps
+        each test in a transaction that gets rolled back, and
+        PostgreSQL supports transactional DDL."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT conname FROM pg_constraint "
+                "WHERE conrelid = 'starred_challenge'::regclass "
+                "AND contype = 'u'"
+            )
+            row = cursor.fetchone()
+            if row:
+                cursor.execute(
+                    "ALTER TABLE starred_challenge "
+                    "DROP CONSTRAINT %s" % row[0]
+                )
+            for _ in range(2):
+                cursor.execute(
+                    "INSERT INTO starred_challenge "
+                    "(user_id, challenge_id, is_starred, "
+                    "created_at, modified_at) "
+                    "VALUES (%s, %s, %s, NOW(), NOW())",
+                    [self.user.pk, self.challenge.pk, is_starred],
+                )
+
+    def test_get_deduplicates_starred_challenge(self):
+        """GET should return 200 and clean up duplicate rows."""
+        StarChallenge.objects.all().delete()
+        self._create_duplicate_stars(is_starred=True)
+        self.assertEqual(
+            StarChallenge.objects.filter(
+                user=self.user, challenge=self.challenge
+            ).count(),
+            2,
+        )
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_starred"], True)
+        self.assertEqual(response.data["user"], self.user.pk)
+        self.assertEqual(response.data["challenge"], self.challenge.pk)
+
+        self.assertEqual(
+            StarChallenge.objects.filter(
+                user=self.user, challenge=self.challenge
+            ).count(),
+            1,
+        )
+
+    def test_post_toggle_deduplicates_starred_challenge(self):
+        """POST should toggle the star and clean up duplicate rows."""
+        StarChallenge.objects.all().delete()
+        self._create_duplicate_stars(is_starred=True)
+        self.assertEqual(
+            StarChallenge.objects.filter(
+                user=self.user, challenge=self.challenge
+            ).count(),
+            2,
+        )
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_starred"], False)
+
+        self.assertEqual(
+            StarChallenge.objects.filter(
+                user=self.user, challenge=self.challenge
+            ).count(),
+            1,
+        )
+
+    def test_unique_constraint_prevents_new_duplicates(self):
+        """The unique_together constraint should prevent creating
+        a second StarChallenge for the same user+challenge."""
+        from django.db import IntegrityError, transaction
+
+        StarChallenge.objects.create(
+            user=self.user, challenge=self.challenge, is_starred=True
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                StarChallenge.objects.create(
+                    user=self.user,
+                    challenge=self.challenge,
+                    is_starred=False,
+                )
+
+    def test_get_after_dedup_returns_consistent_count(self):
+        """After dedup on GET, the star count should be accurate."""
+        StarChallenge.objects.all().delete()
+        self._create_duplicate_stars(is_starred=True)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+
+    def test_post_toggle_after_dedup_then_get_is_consistent(self):
+        """POST to unstar, then GET should reflect the change."""
+        StarChallenge.objects.all().delete()
+        self._create_duplicate_stars(is_starred=True)
+
+        post_resp = self.client.post(self.url, {})
+        self.assertEqual(post_resp.status_code, status.HTTP_200_OK)
+        self.assertFalse(post_resp.data["is_starred"])
+
+        get_resp = self.client.get(self.url, {})
+        self.assertEqual(get_resp.status_code, status.HTTP_200_OK)
+        self.assertFalse(get_resp.data["is_starred"])
+        self.assertEqual(get_resp.data["count"], 0)
+
+
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
     def setUp(self):
         super().setUp()
