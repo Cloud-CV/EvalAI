@@ -3131,10 +3131,33 @@ def invite_users_to_challenge(request, challenge_pk):
         response_data = {"error": "Users email can't be blank"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # Parse emails safely using json.loads instead of dangerous eval()
     try:
-        users_email = eval(users_email)
-    except Exception:
-        response_data = {"error": "Invalid format for users email"}
+        # If users_email is already a list (from JSON request body), use it directly
+        if isinstance(users_email, list):
+            parsed_emails = users_email
+        # Otherwise, parse the JSON string
+        elif isinstance(users_email, str):
+            parsed_emails = json.loads(users_email)
+        else:
+            response_data = {"error": "Invalid email format. Expected a list of email addresses."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate that the result is a list
+        if not isinstance(parsed_emails, list):
+            response_data = {"error": "Invalid email format. Expected a list of email addresses."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate that all items in the list are strings
+        if not all(isinstance(email, str) for email in parsed_emails):
+            response_data = {"error": "All email addresses must be strings."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        users_email = parsed_emails
+        
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
+        logger.error(f"Error parsing email list: {str(e)}")
+        response_data = {"error": "Invalid JSON format for users email"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []

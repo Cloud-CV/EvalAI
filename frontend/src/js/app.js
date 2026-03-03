@@ -14,7 +14,8 @@ angular
 		'angularTrix',
 		'angularMoment',
 		'ngclipboard',
-		'moment-picker'
+		'moment-picker',
+		'ngMeta'
 	])
 	.service('preventTemplateCache', [function() {
 		var service = this;
@@ -36,4 +37,12 @@ angular
 	}])
 	.config(['$compileProvider', function($compileProvider) {
 		$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
+	}])
+	.config(['ngMetaProvider', function(ngMetaProvider) {
+		ngMetaProvider.useTitleSuffix(true);
+		ngMetaProvider.setDefaultTitle('EvalAI');
+		ngMetaProvider.setDefaultTitleSuffix(' | EvalAI');
+		ngMetaProvider.setDefaultTag('description', 'EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks.');
+		ngMetaProvider.setDefaultTag('image', 'https://eval.ai/dist/images/evalai-cover.png');
+		ngMetaProvider.setDefaultTag('url', 'https://eval.ai');
 	}]);
