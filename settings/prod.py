@@ -5,6 +5,19 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
+
+def _sentry_before_send(event, hint):
+    """Filter out OSError: write error (broken pipe) - harmless client disconnects."""
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc_type, exc_value = exc_info[0], exc_info[1]
+        if exc_type is OSError:
+            message = str(exc_value).lower()
+            if "write error" in message or "broken pipe" in message:
+                return None
+    return event
+
+
 DEBUG = False
 
 ALLOWED_HOSTS = ["eval.ai"]
@@ -77,6 +90,7 @@ CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_URL"),
     integrations=[DjangoIntegration()],
+    before_send=_sentry_before_send,
     # Set traces_sample_rate to 1.0 to capture 100% of transactions for
     # performance monitoring.
     traces_sample_rate=1.0,
