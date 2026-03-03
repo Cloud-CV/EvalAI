@@ -1,5 +1,10 @@
 from .prod import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
+# Sentry (including before_send write-error filter) is configured in prod.
+# Environment is set via ENVIRONMENT (e.g. docker_staging.env: ENVIRONMENT=staging).
+# uWSGI broken-pipe options are in docker/prod/django/uwsgi.ini (shared
+# with prod).
+
 ALLOWED_HOSTS = ["staging.eval.ai"]
 
 CORS_ORIGIN_ALLOW_ALL = False
