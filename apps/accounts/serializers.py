@@ -1,7 +1,5 @@
 from allauth.account.models import EmailAddress
-from base.utils import get_user_by_email
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
 )
@@ -343,17 +341,37 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
 
     def get_email_options(self):
-        try:
-            user = get_user_by_email(self.data["email"])
-            if not user.is_active:
-                raise ValidationError(
-                    {
-                        "details": "Account is not active. Please contact the administrator."
-                    }
-                )
-            else:
-                return super().get_email_options()
-        except User.DoesNotExist:
+        email = self.data["email"].strip()
+        user = (
+            get_user_model()
+            .objects.filter(email__iexact=email)
+            .order_by("date_joined")
+            .first()
+        )
+        if user is None:
             raise ValidationError(
                 {"details": "User with the given email does not exist."}
             )
+        if not user.is_active:
+            raise ValidationError(
+                {
+                    "details": "Account is not active. Please contact the administrator."
+                }
+            )
+        if hasattr(user, "profile") and user.profile.email_bounced:
+            raise ValidationError(
+                {
+                    "details": "This email address has bounced and cannot receive password reset emails."
+                }
+            )
+        if not EmailAddress.objects.filter(
+            user=user,
+            email__iexact=email,
+            verified=True,
+        ).exists():
+            raise ValidationError(
+                {
+                    "details": "Email address is not verified. Please verify your email before resetting password."
+                }
+            )
+        return super().get_email_options()

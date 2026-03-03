@@ -321,3 +321,114 @@ class SafeRegisterViewTest(APITestCase):
                     },
                     format="json",
                 )
+
+
+class PasswordResetViewTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.url = "/api/auth/password/reset/"
+
+        self.verified_user = User.objects.create_user(
+            username="verified_user",
+            email="verified@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.verified_user,
+            email=self.verified_user.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.unverified_user = User.objects.create_user(
+            username="unverified_user",
+            email="unverified@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.unverified_user,
+            email=self.unverified_user.email,
+            primary=True,
+            verified=False,
+        )
+
+        self.inactive_user = User.objects.create_user(
+            username="inactive_user",
+            email="inactive@example.com",
+            password="password",
+            is_active=False,
+        )
+        EmailAddress.objects.create(
+            user=self.inactive_user,
+            email=self.inactive_user.email,
+            primary=True,
+            verified=True,
+        )
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_verified_active_user_success(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.verified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_save.assert_called_once()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_verified_active_user_case_insensitive_email(
+        self, mock_save
+    ):
+        response = self.client.post(
+            self.url, {"email": "VERIFIED@EXAMPLE.COM"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_save.assert_called_once()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_unverified_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.unverified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "Email address is not verified. Please verify your email before resetting password.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_bounced_email_returns_400(self, mock_save):
+        self.verified_user.profile.email_bounced = True
+        self.verified_user.profile.save(update_fields=["email_bounced"])
+        response = self.client.post(
+            self.url, {"email": self.verified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "This email address has bounced and cannot receive password reset emails.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_inactive_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.inactive_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "Account is not active. Please contact the administrator.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_nonexistent_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": "nonexistent@example.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "User with the given email does not exist.",
+        )
+        mock_save.assert_not_called()
