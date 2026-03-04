@@ -32,7 +32,11 @@ def get_user_by_email(email):
     If duplicate-email users still exist (pre-merge), the oldest account
     (earliest date_joined) is returned deterministically.
     """
-    user = User.objects.filter(email=email).order_by("date_joined").first()
+    user = (
+        User.objects.filter(email__iexact=email)
+        .order_by("date_joined")
+        .first()
+    )
     if user is None:
         raise User.DoesNotExist("User matching query does not exist.")
     return user

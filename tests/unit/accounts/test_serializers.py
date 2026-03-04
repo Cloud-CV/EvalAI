@@ -5,6 +5,7 @@ from accounts.serializers import (
     CustomPasswordResetSerializer,
     ProfileSerializer,
 )
+from allauth.account.models import EmailAddress
 from challenges.models import Challenge
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -22,6 +23,11 @@ class TestCustomPasswordResetSerializer(TestCase):
             email="active@example.com",
             password="password",
         )
+        self.unverified_user = self.user_model.objects.create_user(
+            username="unverified_user",
+            email="unverified@example.com",
+            password="password",
+        )
         self.inactive_user = self.user_model.objects.create_user(
             username="inactive_user",
             email="inactive@example.com",
@@ -29,15 +35,34 @@ class TestCustomPasswordResetSerializer(TestCase):
         )
         self.inactive_user.is_active = False
         self.inactive_user.save()
+        EmailAddress.objects.create(
+            user=self.active_user,
+            email=self.active_user.email,
+            primary=True,
+            verified=True,
+        )
+        EmailAddress.objects.create(
+            user=self.unverified_user,
+            email=self.unverified_user.email,
+            primary=True,
+            verified=False,
+        )
+        EmailAddress.objects.create(
+            user=self.inactive_user,
+            email=self.inactive_user.email,
+            primary=True,
+            verified=True,
+        )
 
     def test_get_email_options_try_block(self):
         serializer = CustomPasswordResetSerializer(
             data={"email": self.active_user.email}
         )
         self.assertEqual(serializer.is_valid(), True)
-        expected_email_options = super(
-            CustomPasswordResetSerializer, serializer
-        ).get_email_options()
+        base_class = serializer.__class__.__mro__[1]
+        base_serializer = base_class(data={"email": self.active_user.email})
+        self.assertEqual(base_serializer.is_valid(), True)
+        expected_email_options = base_serializer.get_email_options()
         self.assertEqual(
             serializer.get_email_options(), expected_email_options
         )
@@ -66,6 +91,49 @@ class TestCustomPasswordResetSerializer(TestCase):
             {
                 "details": "Account is not active. Please contact the administrator."
             },
+        )
+
+    def test_get_email_options_unverified_user(self):
+        serializer = CustomPasswordResetSerializer(
+            data={"email": self.unverified_user.email}
+        )
+        serializer.is_valid()  # Ensure data is validated
+        with self.assertRaises(ValidationError) as e:
+            serializer.get_email_options()
+        self.assertEqual(
+            e.exception.detail,
+            {
+                "details": "Email address is not verified. Please verify your email before resetting password."
+            },
+        )
+
+    def test_get_email_options_bounced_email_user(self):
+        self.active_user.profile.email_bounced = True
+        self.active_user.profile.save(update_fields=["email_bounced"])
+        serializer = CustomPasswordResetSerializer(
+            data={"email": self.active_user.email}
+        )
+        serializer.is_valid()  # Ensure data is validated
+        with self.assertRaises(ValidationError) as e:
+            serializer.get_email_options()
+        self.assertEqual(
+            e.exception.detail,
+            {
+                "details": "This email address has bounced and cannot receive password reset emails."
+            },
+        )
+
+    def test_get_email_options_case_insensitive_email_lookup(self):
+        serializer = CustomPasswordResetSerializer(
+            data={"email": "ACTIVE@EXAMPLE.COM"}
+        )
+        self.assertEqual(serializer.is_valid(), True)
+        base_class = serializer.__class__.__mro__[1]
+        base_serializer = base_class(data={"email": "ACTIVE@EXAMPLE.COM"})
+        self.assertEqual(base_serializer.is_valid(), True)
+        expected_email_options = base_serializer.get_email_options()
+        self.assertEqual(
+            serializer.get_email_options(), expected_email_options
         )
 
 

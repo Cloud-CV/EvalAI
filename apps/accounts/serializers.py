@@ -345,15 +345,30 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     def get_email_options(self):
         try:
             user = get_user_by_email(self.data["email"])
-            if not user.is_active:
-                raise ValidationError(
-                    {
-                        "details": "Account is not active. Please contact the administrator."
-                    }
-                )
-            else:
-                return super().get_email_options()
         except User.DoesNotExist:
             raise ValidationError(
                 {"details": "User with the given email does not exist."}
             )
+        if not user.is_active:
+            raise ValidationError(
+                {
+                    "details": "Account is not active. Please contact the administrator."
+                }
+            )
+        if hasattr(user, "profile") and user.profile.email_bounced:
+            raise ValidationError(
+                {
+                    "details": "This email address has bounced and cannot receive password reset emails."
+                }
+            )
+        if not EmailAddress.objects.filter(
+            user=user,
+            email__iexact=self.data["email"],
+            verified=True,
+        ).exists():
+            raise ValidationError(
+                {
+                    "details": "Email address is not verified. Please verify your email before resetting password."
+                }
+            )
+        return super().get_email_options()

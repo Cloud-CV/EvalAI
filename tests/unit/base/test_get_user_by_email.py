@@ -33,6 +33,18 @@ class GetUserByEmailTest(TestCase):
         result = get_user_by_email("alice@example.com")
         self.assertEqual(result.pk, user.pk)
 
+    def test_returns_user_case_insensitive(self):
+        user = User.objects.create_user(
+            username="carol", email="carol@example.com", password="password"
+        )
+        for variant in (
+            "CAROL@EXAMPLE.COM",
+            "Carol@Example.Com",
+            "carol@EXAMPLE.com",
+        ):
+            result = get_user_by_email(variant)
+            self.assertEqual(result.pk, user.pk)
+
     def test_raises_for_nonexistent_email(self):
         with self.assertRaises(User.DoesNotExist):
             get_user_by_email("ghost@example.com")
@@ -45,8 +57,9 @@ class GetUserByEmailDuplicateTest(TransactionTestCase):
         _drop_email_unique_constraint()
 
     def tearDown(self):
-        # Remove duplicate users before re-adding unique constraint
-        User.objects.filter(username__in=("bob_old", "bob_new")).delete()
+        User.objects.filter(
+            username__in=("bob_old", "bob_new", "eve_lower", "eve_upper")
+        ).delete()
         _add_email_unique_constraint()
 
     def test_returns_oldest_when_duplicates_exist(self):
@@ -57,4 +70,14 @@ class GetUserByEmailDuplicateTest(TransactionTestCase):
             username="bob_new", email="bob@example.com", password="password"
         )
         result = get_user_by_email("bob@example.com")
+        self.assertEqual(result.pk, older.pk)
+
+    def test_returns_oldest_when_case_differing_duplicates_exist(self):
+        older = User.objects.create_user(
+            username="eve_lower", email="eve@example.com", password="password"
+        )
+        User.objects.create_user(
+            username="eve_upper", email="EVE@EXAMPLE.COM", password="password"
+        )
+        result = get_user_by_email("Eve@Example.com")
         self.assertEqual(result.pk, older.pk)
