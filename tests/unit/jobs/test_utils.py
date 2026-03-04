@@ -14,6 +14,7 @@ from jobs.utils import (
     is_url_valid,
     reorder_submissions_comparator_to_key,
 )
+from jobs.views import _compute_remaining_limits
 
 
 class TestUtils(unittest.TestCase):
@@ -198,7 +199,6 @@ class TestUtils(unittest.TestCase):
     ):
         """Test that passing a pre-fetched challenge_phase avoids N+1 queries."""
         mock_user = MagicMock()
-        # Create a pre-fetched challenge phase object
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 10
         mock_challenge_phase.max_submissions_per_month = 5
@@ -212,15 +212,12 @@ class TestUtils(unittest.TestCase):
         )
         mock_qs.filter.return_value = mock_qs
 
-        # Call with pre-fetched challenge_phase
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1, challenge_phase=mock_challenge_phase
         )
 
         self.assertEqual(status_code, 200)
-        # Verify get_challenge_phase_model was NOT called (N+1 fix)
         mock_get_challenge_phase_model.assert_not_called()
-        # Verify the response contains remaining submissions
         self.assertIn("remaining_submissions_count", response)
         self.assertEqual(response["remaining_submissions_count"], 10)
 
@@ -249,15 +246,81 @@ class TestUtils(unittest.TestCase):
         )
         mock_qs.filter.return_value = mock_qs
 
-        # Call WITHOUT pre-fetched challenge_phase (backward compatibility)
         response, status_code = get_remaining_submission_for_a_phase(
             mock_user, 1, 1
         )
 
         self.assertEqual(status_code, 200)
-        # Verify get_challenge_phase_model WAS called (backward compatibility)
         mock_get_challenge_phase_model.assert_called_once_with(1)
-        # Verify the response contains remaining submissions
+        self.assertIn("remaining_submissions_count", response)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_with_prefetched_participant_team_pk(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that passing participant_team_pk skips the DB lookup."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user,
+            1,
+            1,
+            challenge_phase=mock_challenge_phase,
+            participant_team_pk=456,
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_team_id.assert_not_called()
+        mock_get_challenge_phase_model.assert_not_called()
+        self.assertIn("remaining_submissions_count", response)
+        self.assertEqual(response["remaining_submissions_count"], 10)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_without_participant_team_pk_falls_back(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that omitting participant_team_pk still calls the lookup (backward compat)."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_team_id.return_value = 789
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1, challenge_phase=mock_challenge_phase
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_team_id.assert_called_once_with(mock_user, 1)
         self.assertIn("remaining_submissions_count", response)
 
     @patch("jobs.utils.LeaderboardData")
@@ -1198,6 +1261,72 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertTrue(key1 >= key2)
         self.assertTrue(key4 >= key1)
         self.assertFalse(key3 >= key1)
+
+
+class TestComputeRemainingLimits(unittest.TestCase):
+    """Tests for _compute_remaining_limits which powers the batched view."""
+
+    def _make_phase(self, max_total=100, max_month=50, max_day=10):
+        phase = MagicMock()
+        phase.max_submissions = max_total
+        phase.max_submissions_per_month = max_month
+        phase.max_submissions_per_day = max_day
+        return phase
+
+    def test_remaining_counts_when_under_all_limits(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=50, max_day=10)
+        result = _compute_remaining_limits(phase, 5, 3, 1, now)
+        self.assertEqual(result["remaining_submissions_count"], 95)
+        self.assertEqual(result["remaining_submissions_this_month_count"], 47)
+        self.assertEqual(result["remaining_submissions_today_count"], 9)
+
+    def test_max_total_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=10, max_month=50, max_day=5)
+        result = _compute_remaining_limits(phase, 10, 3, 1, now)
+        self.assertTrue(result["submission_limit_exceeded"])
+        self.assertIn("exhausted maximum submission limit", result["message"])
+
+    def test_monthly_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=10)
+        result = _compute_remaining_limits(phase, 5, 5, 1, now)
+        self.assertIn("this month's submission limit", result["message"])
+        self.assertIn("remaining_time", result)
+
+    def test_daily_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=50, max_day=3)
+        result = _compute_remaining_limits(phase, 5, 4, 3, now)
+        self.assertIn("today's submission limit", result["message"])
+        self.assertIn("remaining_time", result)
+
+    def test_both_monthly_and_daily_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=3)
+        result = _compute_remaining_limits(phase, 5, 5, 3, now)
+        self.assertIn("Both daily and monthly", result["message"])
+
+    def test_remaining_today_capped_by_month(self):
+        """remaining_submissions_today_count should never exceed monthly remaining."""
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=10)
+        result = _compute_remaining_limits(phase, 0, 3, 0, now)
+        self.assertEqual(result["remaining_submissions_this_month_count"], 2)
+        self.assertEqual(result["remaining_submissions_today_count"], 2)
 
 
 class Submission:

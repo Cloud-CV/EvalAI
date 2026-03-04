@@ -29,7 +29,11 @@ logger = logging.getLogger(__name__)
 
 
 def get_remaining_submission_for_a_phase(
-    user, challenge_phase_pk, challenge_pk, challenge_phase=None
+    user,
+    challenge_phase_pk,
+    challenge_pk,
+    challenge_phase=None,
+    participant_team_pk=None,
 ):
     """
     Returns the number of remaining submissions that a participant can
@@ -41,14 +45,15 @@ def get_remaining_submission_for_a_phase(
         challenge_phase_pk: Primary key of the challenge phase
         challenge_pk: Primary key of the challenge
         challenge_phase: Optional pre-fetched ChallengePhase object to avoid N+1 queries
+        participant_team_pk: Optional pre-fetched participant team PK to avoid
+            repeated lookups when called in a loop
     """
-    # Use pre-fetched challenge_phase if provided, otherwise fetch it (for
-    # backward compatibility)
     if challenge_phase is None:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-        user, challenge_pk
-    )
+    if participant_team_pk is None:
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            user, challenge_pk
+        )
 
     # Conditional check for the existence of participant team of the user.
     if not participant_team_pk:
