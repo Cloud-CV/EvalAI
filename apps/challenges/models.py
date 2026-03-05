@@ -209,6 +209,31 @@ class Challenge(TimeStampedModel):
     # Memory size of a Fargate worker for the challenge. Default value is 0.5
     # GB memory.
     worker_memory = models.IntegerField(null=True, blank=True, default=1024)
+    use_fargate_spot = models.BooleanField(
+        default=True,
+        verbose_name="Use Fargate Spot",
+        help_text="If True, use capacityProviderStrategy (Spot). If False, use launchType FARGATE.",
+    )
+    fargate_spot_weight = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name="Fargate Spot Weight",
+        help_text="Weight for FARGATE_SPOT in capacity provider strategy. 0 excludes Spot.",
+    )
+    fargate_spot_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Spot Base",
+        help_text="Minimum number of tasks placed on FARGATE_SPOT before weights apply.",
+    )
+    fargate_weight = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Weight",
+        help_text="Weight for FARGATE in capacity provider strategy. 0 = Spot only.",
+    )
+    fargate_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Base",
+        help_text="Minimum number of tasks placed on FARGATE before weights apply.",
+    )
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
     # VPC and subnet CIDRs for code upload challenge

@@ -100,6 +100,43 @@ VPC_DICT = {
 }
 
 
+def get_capacity_provider_strategy(challenge):
+    """
+    Build the ECS capacityProviderStrategy list from per-challenge fields.
+
+    Returns a list of dicts suitable for passing to client.create_service().
+    Only includes providers whose weight > 0.
+    Falls back to a single FARGATE_SPOT entry if both weights are 0.
+    """
+    strategy = []
+    spot_weight = getattr(challenge, "fargate_spot_weight", 0) or 0
+    spot_base = getattr(challenge, "fargate_spot_base", 0) or 0
+    fg_weight = getattr(challenge, "fargate_weight", 0) or 0
+    fg_base = getattr(challenge, "fargate_base", 0) or 0
+
+    if spot_weight > 0:
+        strategy.append(
+            {
+                "capacityProvider": "FARGATE_SPOT",
+                "weight": spot_weight,
+                "base": spot_base,
+            }
+        )
+    if fg_weight > 0:
+        strategy.append(
+            {
+                "capacityProvider": "FARGATE",
+                "weight": fg_weight,
+                "base": fg_base,
+            }
+        )
+    if not strategy:
+        strategy = [
+            {"capacityProvider": "FARGATE_SPOT", "weight": 1, "base": 0}
+        ]
+    return strategy
+
+
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
     Return the EKS cluster network and arn meta for a challenge
@@ -739,15 +776,51 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 return response
         task_def_arn = challenge.task_def_arn
-        definition = service_definition.format(
-            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-            service_name=service_name,
-            task_def_arn=task_def_arn,
-            client_token=client_token,
-            challenge_pk=str(challenge.pk),
-            **VPC_DICT,
-        )
-        definition = eval(definition)
+        if getattr(challenge, "use_fargate_spot", False):
+            definition = {
+                "cluster": COMMON_SETTINGS_DICT["CLUSTER"],
+                "serviceName": service_name,
+                "taskDefinition": task_def_arn,
+                "desiredCount": 1,
+                "clientToken": client_token,
+                "platformVersion": "LATEST",
+                "capacityProviderStrategy": get_capacity_provider_strategy(
+                    challenge
+                ),
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": [
+                            VPC_DICT["SUBNET_1"],
+                            VPC_DICT["SUBNET_2"],
+                        ],
+                        "securityGroups": [VPC_DICT["SUBNET_SECURITY_GROUP"]],
+                        "assignPublicIp": "ENABLED",
+                    }
+                },
+                "schedulingStrategy": "REPLICA",
+                "deploymentController": {"type": "ECS"},
+                "deploymentConfiguration": {
+                    "deploymentCircuitBreaker": {
+                        "enable": True,
+                        "rollback": False,
+                    }
+                },
+                "tags": [
+                    {"key": "challenge_pk", "value": str(challenge.pk)},
+                    {"key": "managed_by", "value": "evalai"},
+                ],
+                "propagateTags": "SERVICE",
+            }
+        else:
+            definition = service_definition.format(
+                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=service_name,
+                task_def_arn=task_def_arn,
+                client_token=client_token,
+                challenge_pk=str(challenge.pk),
+                **VPC_DICT,
+            )
+            definition = eval(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
