@@ -2,10 +2,10 @@ from unittest.mock import MagicMock, patch
 
 import dns.exception
 import dns.resolver
-from accounts.adapter import EvalAIAccountAdapter
+from accounts.adapter import DISPOSABLE_DOMAINS, EvalAIAccountAdapter
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 
 class TestEvalAIAccountAdapterMXValidation(TestCase):
@@ -76,6 +76,67 @@ class TestEvalAIAccountAdapterDuplicateEmail(TestCase):
         mock_resolve.return_value = [MagicMock()]
         result = self.adapter.clean_email("fresh@example.com")
         self.assertEqual(result, "fresh@example.com")
+
+
+class TestRoleBasedEmailRejection(TestCase):
+    def setUp(self):
+        self.adapter = EvalAIAccountAdapter()
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_rejects_noreply_address(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("noreply@example.com")
+        self.assertIn("Role-based email", str(ctx.exception))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_rejects_admin_address(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("admin@example.com")
+        self.assertIn("Role-based email", str(ctx.exception))
+
+
+class TestDomainTypoDetection(TestCase):
+    def setUp(self):
+        self.adapter = EvalAIAccountAdapter()
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_rejects_gmial_with_suggestion(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("alice@gmial.com")
+        msg = str(ctx.exception)
+        self.assertIn("Did you mean alice@gmail.com", msg)
+        self.assertIn("looks like a typo", msg)
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_rejects_typo_case_insensitive(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("user@GMIAL.COM")
+        self.assertIn("Did you mean", str(ctx.exception))
+
+
+class TestDisposableEmailRejection(TestCase):
+    def setUp(self):
+        self.adapter = EvalAIAccountAdapter()
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_rejects_known_disposable_domain(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        self.assertIn("mailinator.com", DISPOSABLE_DOMAINS)
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("user@mailinator.com")
+        self.assertIn("Disposable email", str(ctx.exception))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    @override_settings(BLOCKED_EMAIL_DOMAINS=["custom-blocked.com"])
+    def test_rejects_admin_blocked_domain(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        with self.assertRaises(ValidationError) as ctx:
+            self.adapter.clean_email("user@custom-blocked.com")
+        self.assertIn("Disposable email", str(ctx.exception))
 
 
 class TestEvalAIAccountAdapterSendMail(TestCase):
