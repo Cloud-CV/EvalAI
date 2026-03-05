@@ -148,6 +148,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
         mock_client.create_service.return_value = {
@@ -177,6 +178,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         mock_client.create_service.side_effect = ClientError(
             error_response={
