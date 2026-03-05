@@ -56,6 +56,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "remote_evaluation",
         "created_at",
         "workers",
+        "use_fargate_spot",
         "task_def_arn",
         "github_repository",
     )
@@ -68,6 +69,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "enable_forum",
         "anonymous_leaderboard",
         "remote_evaluation",
+        "use_fargate_spot",
         "start_date",
         "end_date",
     )

@@ -20,6 +20,7 @@ from challenges.aws_utils import (
     delete_workers,
     describe_ec2_instance,
     ensure_workers_for_host_submission,
+    get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
     get_logs_from_cloudwatch,
     register_task_def_by_challenge_pk,
@@ -147,6 +148,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
         mock_client.create_service.return_value = {
@@ -176,6 +178,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         mock_client.create_service.side_effect = ClientError(
             error_response={
@@ -4946,3 +4949,197 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         ensure_workers_for_host_submission(challenge)
 
         mock_start_workers.assert_called_once_with([challenge])
+
+
+class TestGetCapacityProviderStrategy:
+    def test_spot_only_defaults(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 1
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 1
+        assert result[0]["base"] == 0
+
+    def test_mixed_strategy(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 3
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 1
+        challenge.fargate_base = 1
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 2
+        spot = next(
+            p for p in result if p["capacityProvider"] == "FARGATE_SPOT"
+        )
+        fargate = next(p for p in result if p["capacityProvider"] == "FARGATE")
+        assert spot["weight"] == 3
+        assert spot["base"] == 0
+        assert fargate["weight"] == 1
+        assert fargate["base"] == 1
+
+    def test_fargate_only_via_weights(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 0
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 1
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE"
+
+    def test_fallback_when_both_weights_zero(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 0
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 1
+
+    def test_spot_with_base(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 2
+        challenge.fargate_spot_base = 3
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 2
+        assert result[0]["base"] == 3
+
+
+class TestCreateServiceFargateSpot:
+    def test_create_service_with_fargate_spot(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = True
+        mock_challenge.fargate_spot_weight = 1
+        mock_challenge.fargate_spot_base = 0
+        mock_challenge.fargate_weight = 0
+        mock_challenge.fargate_base = 0
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 1
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "capacityProviderStrategy" in call_kwargs
+        assert "launchType" not in call_kwargs
+        strategy = call_kwargs["capacityProviderStrategy"]
+        assert len(strategy) == 1
+        assert strategy[0]["capacityProvider"] == "FARGATE_SPOT"
+
+    def test_create_service_with_fargate_launch_type(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 1
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "launchType" in call_kwargs
+        assert call_kwargs["launchType"] == "FARGATE"
+        assert "capacityProviderStrategy" not in call_kwargs
+
+    def test_create_service_with_mixed_strategy(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = True
+        mock_challenge.fargate_spot_weight = 3
+        mock_challenge.fargate_spot_base = 0
+        mock_challenge.fargate_weight = 1
+        mock_challenge.fargate_base = 1
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "capacityProviderStrategy" in call_kwargs
+        assert "launchType" not in call_kwargs
+        strategy = call_kwargs["capacityProviderStrategy"]
+        assert len(strategy) == 2
+        spot = next(
+            p for p in strategy if p["capacityProvider"] == "FARGATE_SPOT"
+        )
+        fargate = next(
+            p for p in strategy if p["capacityProvider"] == "FARGATE"
+        )
+        assert spot["weight"] == 3
+        assert fargate["weight"] == 1
+        assert fargate["base"] == 1
