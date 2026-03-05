@@ -2,18 +2,79 @@ import logging
 
 import dns.resolver
 from allauth.account.adapter import DefaultAccountAdapter
+from disposable_email_domains import blocklist
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
+DISPOSABLE_DOMAINS = frozenset(blocklist)
+
+ROLE_BASED_LOCAL_PARTS = frozenset(
+    {
+        "abuse",
+        "admin",
+        "billing",
+        "compliance",
+        "devnull",
+        "ftp",
+        "hostmaster",
+        "info",
+        "mailer-daemon",
+        "marketing",
+        "no-reply",
+        "noc",
+        "noreply",
+        "postmaster",
+        "root",
+        "sales",
+        "security",
+        "support",
+        "webmaster",
+        "www",
+    }
+)
+
+DOMAIN_TYPO_MAP = {
+    "gamil.com": "gmail.com",
+    "gail.com": "gmail.com",
+    "gmal.com": "gmail.com",
+    "gmaill.com": "gmail.com",
+    "gmali.com": "gmail.com",
+    "gmial.com": "gmail.com",
+    "gmil.com": "gmail.com",
+    "gnail.com": "gmail.com",
+    "gogglemail.com": "googlemail.com",
+    "googlmail.com": "googlemail.com",
+    "hotamil.com": "hotmail.com",
+    "hotmai.com": "hotmail.com",
+    "hotmal.com": "hotmail.com",
+    "hotmial.com": "hotmail.com",
+    "hotmil.com": "hotmail.com",
+    "iclod.com": "icloud.com",
+    "iclould.com": "icloud.com",
+    "outloo.com": "outlook.com",
+    "outlok.com": "outlook.com",
+    "outlool.com": "outlook.com",
+    "outook.com": "outlook.com",
+    "protonmal.com": "protonmail.com",
+    "protonmaill.com": "protonmail.com",
+    "yaho.com": "yahoo.com",
+    "yahooo.com": "yahoo.com",
+    "yaho.co.in": "yahoo.co.in",
+    "yhaoo.com": "yahoo.com",
+    "yhoo.com": "yahoo.com",
+}
+
 
 class EvalAIAccountAdapter(DefaultAccountAdapter):
     """
     Custom allauth adapter that:
-    1. Validates email domains have valid MX records at registration time.
-    2. Suppresses outgoing allauth emails to addresses flagged as bounced.
-    3. Clears the email_bounced flag when a new email address is confirmed.
+    1. Rejects duplicate, role-based, disposable, and typo'd email addresses.
+    2. Validates email domains have valid MX records at registration time.
+    3. Suppresses outgoing allauth emails to addresses flagged as bounced.
+    4. Clears the email_bounced flag when a new email address is confirmed.
     """
 
     def clean_email(self, email):
@@ -24,7 +85,29 @@ class EvalAIAccountAdapter(DefaultAccountAdapter):
                 "A user is already registered with this email address."
             )
 
-        domain = email.rsplit("@", 1)[-1]
+        local_part, domain = email.rsplit("@", 1)
+        domain = domain.lower()
+
+        if local_part.lower() in ROLE_BASED_LOCAL_PARTS:
+            raise ValidationError(
+                "Role-based email addresses (e.g. noreply@, admin@) are "
+                "not accepted. Please use a personal email address."
+            )
+
+        extra_blocked = set(getattr(settings, "BLOCKED_EMAIL_DOMAINS", []))
+        if domain in DISPOSABLE_DOMAINS or domain in extra_blocked:
+            raise ValidationError(
+                "Disposable email addresses are not allowed. "
+                "Please use a permanent email address."
+            )
+
+        suggested = DOMAIN_TYPO_MAP.get(domain)
+        if suggested:
+            raise ValidationError(
+                "Did you mean {}@{}? The domain '{}' looks like a typo.".format(
+                    local_part, suggested, domain
+                )
+            )
 
         if not self._domain_has_mx_records(domain):
             raise ValidationError(

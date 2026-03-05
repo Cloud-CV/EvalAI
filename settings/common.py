@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import datetime
+import json
 import os
 import sys
 from datetime import timedelta
@@ -184,6 +185,13 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Additional email domains to block at registration (merged with the
+# disposable-email-domains package blocklist).  Accepts a JSON array in
+# the environment variable, e.g. BLOCKED_EMAIL_DOMAINS='["example.com"]'.
+BLOCKED_EMAIL_DOMAINS = json.loads(
+    os.environ.get("BLOCKED_EMAIL_DOMAINS", "[]")
+)
 
 # ALLAUTH SETTINGS
 ACCOUNT_ADAPTER = "apps.accounts.adapter.EvalAIAccountAdapter"
