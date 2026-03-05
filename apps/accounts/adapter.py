@@ -71,7 +71,7 @@ DOMAIN_TYPO_MAP = {
 class EvalAIAccountAdapter(DefaultAccountAdapter):
     """
     Custom allauth adapter that:
-    1. Rejects duplicate, role-based, disposable, and typo'd email addresses.
+    1. Rejects duplicate, role-based, typo'd, and disposable email addresses.
     2. Validates email domains have valid MX records at registration time.
     3. Suppresses outgoing allauth emails to addresses flagged as bounced.
     4. Clears the email_bounced flag when a new email address is confirmed.
@@ -94,19 +94,21 @@ class EvalAIAccountAdapter(DefaultAccountAdapter):
                 "not accepted. Please use a personal email address."
             )
 
-        extra_blocked = set(getattr(settings, "BLOCKED_EMAIL_DOMAINS", []))
-        if domain in DISPOSABLE_DOMAINS or domain in extra_blocked:
-            raise ValidationError(
-                "Disposable email addresses are not allowed. "
-                "Please use a permanent email address."
-            )
-
+        # Check typo before disposable so users get helpful suggestions
+        # (typo domains may also appear in the disposable blocklist)
         suggested = DOMAIN_TYPO_MAP.get(domain)
         if suggested:
             raise ValidationError(
                 "Did you mean {}@{}? The domain '{}' looks like a typo.".format(
                     local_part, suggested, domain
                 )
+            )
+
+        extra_blocked = set(getattr(settings, "BLOCKED_EMAIL_DOMAINS", []))
+        if domain in DISPOSABLE_DOMAINS or domain in extra_blocked:
+            raise ValidationError(
+                "Disposable email addresses are not allowed. "
+                "Please use a permanent email address."
             )
 
         if not self._domain_has_mx_records(domain):
