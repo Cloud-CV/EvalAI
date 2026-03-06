@@ -194,11 +194,11 @@ class SubmissionAdminTest(BaseAPITestClass):
 
     @patch("jobs.admin.publish_submission_message")
     @patch("jobs.admin.handle_submission_rerun")
-    @patch("jobs.admin.ensure_workers_for_host_submission")
+    @patch("jobs.admin.ensure_workers_for_submission")
     def test_submit_job_calls_ensure_workers(
         self, mock_ensure_workers, mock_rerun, mock_publish
     ):
-        """ensure_workers_for_host_submission should be called for
+        """ensure_workers_for_submission should be called for
         each unique challenge when re-running submissions."""
         mock_rerun.return_value = {"challenge_pk": self.challenge.pk}
         queryset = Submission.objects.filter(pk=self.submission.pk)
@@ -211,11 +211,11 @@ class SubmissionAdminTest(BaseAPITestClass):
 
     @patch("jobs.admin.publish_submission_message")
     @patch("jobs.admin.handle_submission_rerun")
-    @patch("jobs.admin.ensure_workers_for_host_submission")
+    @patch("jobs.admin.ensure_workers_for_submission")
     def test_submit_job_calls_ensure_workers_once_per_challenge(
         self, mock_ensure_workers, mock_rerun, mock_publish
     ):
-        """ensure_workers_for_host_submission should only be called once
+        """ensure_workers_for_submission should only be called once
         per challenge even when re-running multiple submissions."""
         second_submission = Submission.objects.create(
             participant_team=self.participant_team,
@@ -242,11 +242,11 @@ class SubmissionAdminTest(BaseAPITestClass):
 
     @patch("jobs.admin.publish_submission_message")
     @patch("jobs.admin.handle_submission_rerun")
-    @patch("jobs.admin.ensure_workers_for_host_submission")
+    @patch("jobs.admin.ensure_workers_for_submission")
     def test_submit_job_calls_ensure_workers_per_distinct_challenge(
         self, mock_ensure_workers, mock_rerun, mock_publish
     ):
-        """ensure_workers_for_host_submission should be called once per
+        """ensure_workers_for_submission should be called once per
         distinct challenge when submissions span multiple challenges."""
         second_challenge = Challenge.objects.create(
             title="Second Challenge",

@@ -13,7 +13,7 @@ from base.utils import (
     is_user_a_staff,
     paginated_queryset,
 )
-from challenges.aws_utils import ensure_workers_for_host_submission
+from challenges.aws_utils import ensure_workers_for_submission
 from challenges.models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -261,9 +261,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     return Response(
                         response_data, status=status.HTTP_403_FORBIDDEN
                     )
+            # Ensure worker stack exists for participant submissions
+            ensure_workers_for_submission(challenge)
         else:
             # Ensure the worker stack exists for host submissions
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
 
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id
@@ -2881,9 +2883,11 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+        # Ensure worker stack exists for participant submissions
+        ensure_workers_for_submission(challenge)
     else:
         # Ensure the worker stack exists for host submissions
-        ensure_workers_for_host_submission(challenge)
+        ensure_workers_for_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
@@ -3177,9 +3181,11 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+        # Ensure worker stack exists for participant submissions
+        ensure_workers_for_submission(challenge)
     else:
         # Ensure the worker stack exists for host submissions
-        ensure_workers_for_host_submission(challenge)
+        ensure_workers_for_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
