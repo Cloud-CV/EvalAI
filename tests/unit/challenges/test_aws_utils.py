@@ -19,7 +19,7 @@ from challenges.aws_utils import (
     delete_service_by_challenge_pk,
     delete_workers,
     describe_ec2_instance,
-    ensure_workers_for_host_submission,
+    ensure_workers_for_submission,
     get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
     get_logs_from_cloudwatch,
@@ -4798,7 +4798,7 @@ class TestHandleEndDateChange(TestCase):
             mock_start.assert_not_called()
 
 
-class TestEnsureWorkersForHostSubmission(TestCase):
+class TestEnsureWorkersForSubmission(TestCase):
     @patch("challenges.aws_utils.settings")
     def test_returns_early_in_debug_mode(self, mock_settings):
         """Should return early without calling start_workers in DEBUG mode."""
@@ -4807,7 +4807,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.pk = 1
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
@@ -4819,7 +4819,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.pk = 1
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
@@ -4834,7 +4834,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.remote_evaluation = False
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
@@ -4849,7 +4849,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.remote_evaluation = False
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
@@ -4866,7 +4866,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.remote_evaluation = True
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
@@ -4882,13 +4882,12 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.workers = 1  # Workers already exist
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
+            ensure_workers_for_submission(challenge)
             mock_start.assert_not_called()
 
     @patch("challenges.aws_utils.settings")
-    def test_returns_early_when_workers_stopped(self, mock_settings):
-        """Should be a no-op when workers are stopped (0) since
-        auto-scaling will handle scale-up."""
+    def test_starts_workers_when_workers_stopped(self, mock_settings):
+        """Should start workers when workers are stopped (0)."""
         mock_settings.DEBUG = False
         mock_settings.TEST = False
         challenge = MagicMock()
@@ -4899,8 +4898,9 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         challenge.workers = 0  # Workers exist but stopped
 
         with patch("challenges.aws_utils.start_workers") as mock_start:
-            ensure_workers_for_host_submission(challenge)
-            mock_start.assert_not_called()
+            mock_start.return_value = {"count": 1, "failures": []}
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_called_once_with([challenge])
 
     @patch("challenges.aws_utils.start_workers")
     @patch("challenges.aws_utils.settings")
@@ -4919,7 +4919,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
 
         mock_start_workers.return_value = {"count": 1, "failures": []}
 
-        ensure_workers_for_host_submission(challenge)
+        ensure_workers_for_submission(challenge)
 
         mock_start_workers.assert_called_once_with([challenge])
 
@@ -4946,7 +4946,7 @@ class TestEnsureWorkersForHostSubmission(TestCase):
         }
 
         # Should not raise, just log the error
-        ensure_workers_for_host_submission(challenge)
+        ensure_workers_for_submission(challenge)
 
         mock_start_workers.assert_called_once_with([challenge])
 

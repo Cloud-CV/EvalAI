@@ -563,6 +563,29 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    def test_challenge_submission_calls_ensure_workers_for_participant(
+        self, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mock_ensure_workers.assert_called_once_with(self.challenge)
+
     def test_challenge_submission_when_maximum_limit_exceeded(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
@@ -2677,7 +2700,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(PresignedURLSubmissionTest, self).setUp()
 
-    @mock.patch("jobs.views.ensure_workers_for_host_submission")
+    @mock.patch("jobs.views.ensure_workers_for_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_get_submission_presigned_url(
         self, mock_get_aws_creds, mock_ensure_workers
@@ -2722,7 +2745,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @mock.patch("jobs.views.ensure_workers_for_host_submission")
+    @mock.patch("jobs.views.ensure_workers_for_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_finish_submission_file_upload(
         self, mock_get_aws_creds, mock_ensure_workers

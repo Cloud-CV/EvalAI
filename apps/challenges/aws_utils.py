@@ -513,24 +513,22 @@ def delete_challenge_cleanup_schedule(challenge):
         pass  # Schedule already deleted or never created
 
 
-def ensure_workers_for_host_submission(challenge):
+def ensure_workers_for_submission(challenge):
     """
     Ensures the worker stack (ECS service, auto-scaling, EventBridge cleanup)
-    exists for a challenge when a host makes a submission. If the stack has
-    never been created (challenge.workers is None), this triggers full stack
-    creation via start_workers.
+    exists for a challenge when a submission is made (host or participant).
+    If no active workers exist (workers is None or workers == 0), this triggers
+    stack creation/start via start_workers.
 
-    This allows challenge hosts to test their evaluation pipeline before
-    requesting admin approval.
-
-    Called from submission endpoints when the submitter is a challenge host.
+    This allows both challenge hosts (pre-approval testing) and participants
+    (approved challenges) to recover from missing/stopped workers.
 
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge to ensure workers for.
     """
     if settings.DEBUG or settings.TEST:
         logger.info(
-            "Skipping ensure_workers_for_host_submission for challenge %s "
+            "Skipping ensure_workers_for_submission for challenge %s "
             "in development/test environment.",
             challenge.pk,
         )
@@ -544,12 +542,12 @@ def ensure_workers_for_host_submission(challenge):
     ):
         return
 
-    # Stack already exists; auto-scaling will handle scale-up
-    if challenge.workers is not None:
+    # Stack already has active workers
+    if challenge.workers not in (None, 0):
         return
 
     logger.info(
-        "Host submission detected for challenge %s with no workers. "
+        "Submission detected for challenge %s with no active workers. "
         "Creating worker stack.",
         challenge.pk,
     )
