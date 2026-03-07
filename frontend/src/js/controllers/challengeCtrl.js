@@ -98,6 +98,7 @@
 
         vm.subErrors = {};
         vm.currentHighlightedLeaderboardEntry = null;
+        vm.currentHighlightedSubmissionEntry = null;
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
@@ -275,7 +276,7 @@
             $interval.cancel(vm.logs_poller);
         };
 
-         // highlight the specific entry of the leaderboard
+        // highlight the specific entry of the leaderboard
         vm.highlightSpecificLeaderboardEntry = function (key) {
             key = '#' + key;
             // Remove highlight from previous clicked entry
@@ -287,6 +288,32 @@
             entry.setAttribute("class", "highlightLeaderboard");
             vm.currentHighlightedLeaderboardEntry = key;
             $scope.isHighlight = false;
+        };
+
+        // highlight the specific submission entry in My Submissions tab
+        vm.highlightSpecificSubmissionEntry = function (key) {
+            key = '#' + key;
+            // Remove highlight from previous clicked entry
+            if (vm.currentHighlightedSubmissionEntry != null) {
+                let prevEntry = angular.element(vm.currentHighlightedSubmissionEntry)[0];
+                prevEntry.setAttribute("class", "result-val fs-16 w-300");
+            }
+            let entry = angular.element(key)[0];
+            entry.setAttribute("class", "highlightSubmissionEntry");
+            vm.currentHighlightedSubmissionEntry = key;
+        };
+
+        // scroll to the selected submission entry after page has been rendered
+        vm.scrollToEntryAfterSubmissionsLoads = function () {
+            // get unique submission id from the url & if exists highlight the entry
+            $timeout(function() {
+                var elementId = $location.absUrl().split('?')[0].split('#')[1];
+                if (elementId && elementId.indexOf("submission-") !== -1) {
+                    $anchorScroll.yOffset = 90;
+                    $anchorScroll(elementId);
+                    vm.highlightSpecificSubmissionEntry(elementId.replace("submission-", ""));
+                }
+            }, 500);
         };
 
         // get names of the team that has participated in the current challenge
@@ -1335,6 +1362,9 @@
                     vm.submissionResult = details;
 
                     vm.start();
+
+                    // Scroll to and highlight the submission entry if specified in URL
+                    vm.scrollToEntryAfterSubmissionsLoads();
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
