@@ -13,7 +13,10 @@ from base.utils import (
     is_user_a_staff,
     paginated_queryset,
 )
-from challenges.aws_utils import ensure_workers_for_submission
+from challenges.aws_utils import (
+    ensure_workers_for_submission,
+    trigger_eks_node_autoscale,
+)
 from challenges.models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -436,6 +439,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             message["submission_pk"] = submission.id
             # publish message in the queue
             publish_submission_message(message)
+            trigger_eks_node_autoscale(
+                challenge_id,
+                trigger_source="submission_created",
+                submission_pk=submission.id,
+                submission_status=Submission.SUBMITTED,
+            )
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -1311,6 +1320,7 @@ def update_submission(request, challenge_pk):
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
+        previous_submission_status = submission.status
 
         public_results = []
         successful_submission = (
@@ -1462,6 +1472,13 @@ def update_submission(request, challenge_pk):
             "submission_metadata_file.json", ContentFile(str(metadata))
         )
         submission.save()
+        trigger_eks_node_autoscale(
+            challenge_pk,
+            trigger_source="submission_status_changed",
+            submission_pk=submission.id,
+            submission_status=submission_status,
+            previous_submission_status=previous_submission_status,
+        )
         response_data = {
             "success": "Submission result has been successfully updated"
         }
@@ -1494,6 +1511,12 @@ def update_submission(request, challenge_pk):
                 }
                 # publish message in the queue
                 publish_submission_message(message)
+                trigger_eks_node_autoscale(
+                    challenge_pk,
+                    trigger_source="submission_message_republished",
+                    submission_pk=submission.id,
+                    submission_status=submission.status,
+                )
                 response_data = serializer.data
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
@@ -1503,6 +1526,7 @@ def update_submission(request, challenge_pk):
         submission_status = request.data.get("submission_status", "").lower()
         job_name = request.data.get("job_name", "").lower()
         jobs = submission.job_name
+        previous_submission_status = submission.status
         if job_name:
             jobs.append(job_name)
         if submission_status not in [Submission.QUEUED, Submission.RUNNING]:
@@ -1519,6 +1543,13 @@ def update_submission(request, challenge_pk):
         )
         if serializer.is_valid():
             serializer.save()
+            trigger_eks_node_autoscale(
+                challenge_pk,
+                trigger_source="submission_status_changed",
+                submission_pk=submission.id,
+                submission_status=submission_status,
+                previous_submission_status=previous_submission_status,
+            )
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2146,6 +2177,12 @@ def re_run_submission(request, submission_pk):
 
     message = handle_submission_rerun(submission, Submission.CANCELLED)
     publish_submission_message(message)
+    trigger_eks_node_autoscale(
+        challenge.pk,
+        trigger_source="submission_created",
+        submission_pk=message.get("submission_pk"),
+        submission_status=Submission.SUBMITTED,
+    )
     response_data = {
         "success": "Submission is successfully submitted for re-running"
     }
@@ -2216,8 +2253,16 @@ def resume_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    previous_submission_status = submission.status
     message = handle_submission_resume(submission, Submission.RESUMING)
     publish_submission_message(message)
+    trigger_eks_node_autoscale(
+        challenge.pk,
+        trigger_source="submission_status_changed",
+        submission_pk=submission.pk,
+        submission_status=Submission.RESUMING,
+        previous_submission_status=previous_submission_status,
+    )
     response_data = {"success": "Submission is successfully resumed"}
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -3219,6 +3264,12 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     }
 
     publish_submission_message(submission_message)
+    trigger_eks_node_autoscale(
+        challenge.pk,
+        trigger_source="submission_created",
+        submission_pk=submission_pk,
+        submission_status=Submission.SUBMITTED,
+    )
     response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
 
