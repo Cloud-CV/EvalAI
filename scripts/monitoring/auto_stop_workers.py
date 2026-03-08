@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 import requests
@@ -84,6 +84,19 @@ def stop_workers_for_challenges(response):
                 challenge_id
             )
         )
+        payment_tier = challenge.get("payment_tier", "free")
+        end_date = parser.parse(challenge["end_date"])
+        if end_date.tzinfo is None:
+            end_date = pytz.UTC.localize(end_date)
+        
+        one_year_ago = datetime.now(pytz.UTC) - timedelta(days=365)
+
+        if payment_tier == "free" and end_date < one_year_ago:
+            print(f"Cleanup Triggered: Free Tier & >1yr old for Challenge {challenge['id']}")
+            # We wrap the challenge in a list because delete_workers expects a queryset/iterable
+            # We use a Mock object or similar here if delete_workers requires .pk access
+            delete_worker(challenge_id) 
+            return
         if not is_docker_based:
             # Delete workers for challenges uploaded in last 3 days that are
             # unapproved or inactive challenges
