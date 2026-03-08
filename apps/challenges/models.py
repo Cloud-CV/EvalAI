@@ -377,6 +377,21 @@ def handle_end_date_change_for_challenge(sender, instance, created, **kwargs):
     if not created and is_model_field_changed(instance, field_name):
         challenge = instance
         new_end_date = challenge.end_date
+
+        # For docker-based EKS challenges, trigger an autoscale check when
+        # end_date changes (for example, if moved into the past).
+        if (
+            challenge.is_docker_based
+            and not challenge.remote_evaluation
+            and not challenge.uses_ec2_worker
+        ):
+            aws.trigger_eks_node_autoscale(
+                challenge.pk,
+                trigger_source="challenge_end_date_changed",
+            )
+            challenge._original_end_date = new_end_date
+            return
+
         challenge._original_end_date = new_end_date
 
         # Skip if not a Fargate-managed challenge
