@@ -95,6 +95,17 @@ class ChallengeSerializerTest(BaseTestCase):
         )
         self.assertIn("is_approval_requested", serializer.data)
         self.assertTrue(serializer.data["is_approval_requested"])
+    def test_serializer_invalid_without_title(self):
+    """
+    Test that ChallengeSerializer fails validation when title is missing.
+    """
+    data = {
+        "description": "Test challenge without title"
+    }
+
+    serializer = ChallengeSerializer(data=data)
+
+    self.assertFalse(serializer.is_valid())
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
