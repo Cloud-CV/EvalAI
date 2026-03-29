@@ -39,11 +39,11 @@ Follow these steps to create, upload and mark a submission Baseline in EvalAI:
 
 ### Step 5: Mark the Submission as Baseline
 
-- Once the submission has passed the evaluation successfully, click the checkbox in the **Baseline** column next to the submission entry, .  
+- Once the submission has passed the evaluation successfully, click the checkbox in the **Baseline** column next to the submission entry.
 
 ### Step 6: Confirm Baseline Display
 
-- The baseline submission will now appear on the leaderboard with a "B" badge indicating a Basline submission.
+- The baseline submission will now appear on the leaderboard with a "B" badge indicating a Baseline submission.
 - Participants will see this baseline as a reference when viewing the leaderboard.
 
 ---
@@ -62,5 +62,3 @@ Follow these steps to create, upload and mark a submission Baseline in EvalAI:
 - Update baseline submissions periodically if better baseline models become available.
 - Communicate clearly to participants what the baseline represents in the challenge overview or description.
 
-
----

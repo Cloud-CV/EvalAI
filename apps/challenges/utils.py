@@ -14,8 +14,6 @@ from base.utils import (
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 from moto import mock_ecr, mock_sts
 from participants.models import ParticipantTeam
 
@@ -406,6 +404,35 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
     return False
 
 
+def get_participants_with_incomplete_profiles(participant_team):
+    """
+    Check if all team members have complete profiles.
+
+    Arguments:
+        participant_team {ParticipantTeam} -- The participant team to check
+
+    Returns:
+        list -- List of usernames of team members with incomplete profiles
+    """
+    from accounts.models import Profile
+    from participants.models import Participant
+
+    incomplete_profiles = []
+    participants = Participant.objects.filter(
+        team=participant_team
+    ).select_related("user", "user__profile")
+
+    for participant in participants:
+        try:
+            profile = participant.user.profile
+            if not profile.is_complete:
+                incomplete_profiles.append(participant.user.username)
+        except Profile.DoesNotExist:
+            incomplete_profiles.append(participant.user.username)
+
+    return incomplete_profiles
+
+
 def get_unique_alpha_numeric_key(length):
     """
     Returns unique alpha numeric key of length
@@ -454,7 +481,7 @@ def send_emails(emails, template_id, template_data):
     """
     for email in emails:
         send_email(
-            sender=settings.CLOUDCV_TEAM_EMAIL,
+            sender=settings.DEFAULT_FROM_EMAIL,
             recipient=email,
             template_id=template_id,
             template_data=template_data,
@@ -463,101 +490,42 @@ def send_emails(emails, template_id, template_data):
 
 def send_subscription_plans_email(challenge):
     """
-    Sends email with subscription plan details to challenge hosts when they request approval
+    Sends email with subscription plan details to challenge hosts
+    via SendGrid when they request approval.
+
     Arguments:
         challenge {Class Object} -- Challenge model object
     """
-    try:
-        # Get challenge host emails
-        challenge_host_emails = (
-            challenge.creator.get_all_challenge_host_email()
-        )
+    if settings.DEBUG:
+        return
 
-        if not challenge_host_emails:
-            logger.warning(
-                "No challenge host emails found for challenge {}".format(
-                    challenge.pk
-                )
-            )
-            return
+    challenge_url = "{}/web/challenges/challenge-page/{}".format(
+        settings.EVALAI_API_SERVER, challenge.pk
+    )
+    challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
+        settings.EVALAI_API_SERVER, challenge.pk
+    )
 
-        # Prepare template context
-        challenge_url = "{}/web/challenges/challenge-page/{}".format(
-            getattr(settings, "EVALAI_API_SERVER", "http://localhost:8000"),
-            challenge.pk,
-        )
-        challenge_manage_url = (
-            "{}/web/challenges/challenge-page/{}/manage".format(
-                getattr(
-                    settings, "EVALAI_API_SERVER", "http://localhost:8000"
-                ),
-                challenge.pk,
-            )
-        )
+    template_data = {
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_URL": challenge_url,
+        "CHALLENGE_MANAGE_URL": challenge_manage_url,
+        "HOST_TEAM_NAME": challenge.creator.team_name,
+    }
+    if challenge.image:
+        template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
 
-        context = {
-            "challenge_name": challenge.title,
-            "challenge_url": challenge_url,
-            "challenge_manage_url": challenge_manage_url,
-            "challenge_id": challenge.pk,
-            "host_team_name": challenge.creator.team_name,
-            "support_email": getattr(
-                settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
-            ),
-        }
+    template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+        "SUBSCRIPTION_PLANS_EMAIL"
+    )
 
-        # Add challenge image if available
-        if challenge.image:
-            context["challenge_image_url"] = challenge.image.url
-
-        # Render the HTML template
-        html_content = render_to_string(
-            "challenges/subscription_plans_email.html", context
-        )
-
-        # Create the email subject
-        subject = f"EvalAI Subscription Plans - Challenge: {challenge.title}"
-
-        # Send emails to all challenge hosts
-        emails_sent = 0
-        for email in challenge_host_emails:
-            try:
-                # Send subscription plans email to challenge host
-                email_message = EmailMultiAlternatives(
-                    subject=subject,
-                    body="Please view this email in HTML format.",  # Plain text fallback
-                    from_email=getattr(
-                        settings, "CLOUDCV_TEAM_EMAIL", "team@eval.ai"
-                    ),
-                    to=[email],
-                )
-                email_message.attach_alternative(html_content, "text/html")
-                email_message.send()
-
-                emails_sent += 1
-                logger.info(
-                    "Subscription plans email sent to {} for challenge {}".format(
-                        email, challenge.pk
-                    )
-                )
-            except Exception as e:
-                logger.error(
-                    "Failed to send subscription plans email to {} for challenge {}: {}".format(
-                        email, challenge.pk, str(e)
-                    )
-                )
-
-        logger.info(
-            "Sent subscription plans email to {}/{} hosts for challenge {}".format(
-                emails_sent, len(challenge_host_emails), challenge.pk
-            )
-        )
-
-    except Exception as e:
-        logger.error(
-            "Error sending subscription plans email for challenge {}: {}".format(
-                challenge.pk, str(e)
-            )
+    emails = challenge.creator.get_all_challenge_host_email()
+    for email in emails:
+        send_email(
+            sender=settings.DEFAULT_FROM_EMAIL,
+            recipient=email,
+            template_id=template_id,
+            template_data=template_data,
         )
 
 

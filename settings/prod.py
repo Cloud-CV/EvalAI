@@ -5,6 +5,19 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
+
+def _sentry_before_send(event, hint):
+    """Filter out OSError: write error (broken pipe) - harmless client disconnects."""
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc_type, exc_value = exc_info[0], exc_info[1]
+        if exc_type is OSError:
+            message = str(exc_value).lower()
+            if "write error" in message or "broken pipe" in message:
+                return None
+    return event
+
+
 DEBUG = False
 
 ALLOWED_HOSTS = ["eval.ai"]
@@ -31,12 +44,6 @@ DATABASES = {
     }
 }
 
-DATADOG_APP_NAME = "EvalAI"
-DATADOG_APP_KEY = os.environ.get("DATADOG_APP_KEY")
-DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
-
-MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
-
 INSTALLED_APPS += ("storages",)  # noqa
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
@@ -44,6 +51,8 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME")
 AWS_SES_REGION_ENDPOINT = os.environ.get("AWS_SES_REGION_ENDPOINT")
+AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET")
+AWS_SES_MESSAGE_TAGS = {"environment": "production"}
 
 # Amazon S3 Configurations
 AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
@@ -62,7 +71,6 @@ MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
 DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
-DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
 EMAIL_BACKEND = "django_ses.SESBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
@@ -82,7 +90,9 @@ CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_URL"),
     integrations=[DjangoIntegration()],
-    # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+    before_send=_sentry_before_send,
+    # Set traces_sample_rate to 1.0 to capture 100% of transactions for
+    # performance monitoring.
     traces_sample_rate=1.0,
     # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
     profiles_sample_rate=1.0,

@@ -1,4 +1,7 @@
 <section class="ev-md-container-ui">
+    <div ng-if="profile.userdetails.is_profile_fields_locked" class="wrn-msg text-highlight margin-bottom-20">
+        <i class="fa fa-info-circle"></i> Name, address, and university cannot be edited while participating in an active challenge that requires complete profile. They will become editable after the challenge ends.
+    </div>
     <div class="row">
         <div class="ev-md-container ev-card-panel ev-z-depth-5
             challenge-title-container">
@@ -22,7 +25,7 @@
                             <span class="text-light-black fs-12">First Name<br></span>
                             <span>{{profile.userdetails.first_name || "-"}}
                             </span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="first_name" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -31,7 +34,7 @@
                           <li>
                             <span class="text-light-black fs-12">Last Name<br></span>
                             <span>{{profile.userdetails.last_name || "-"}}</span>
-                            <span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
                                 <a id="last_name" class="pointer" ng-click="profile.editprofileDialog($event)">
                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                 </a>
@@ -47,25 +50,68 @@
                                 </a>
                             </span>
                         </li>
-                    </ul>
-                </div>
-                <div class="col s12 m5 l5 user-urls center">
-                    <ul>
                         <li>
-                            <span class="text-light-black fs-12">GitHub Url<br>
+                            <span class="text-light-black fs-12">University<br></span>
+                            <span>{{profile.userdetails.university || "-"}}</span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
+                                <a id="university" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
                             </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">GitHub Url<br></span>
                             <a href="{{profile.userdetails.github_url}}"
                                 target="_blank"
                                 class="text-highlight">{{profile.userdetails.github_url || '-'}}</a>
-                                <span>
-                                    <a id="github_url" class="pointer" ng-click="profile.editprofileDialog($event)">
-                                        <i class="fa fa-pencil" aria-hidden="true"></i>
-                                    </a>
-                                </span>
+                            <span>
+                                <a id="github_url" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col s12 m4 l4 center user-info">
+                    <ul>
+                        <li>
+                            <span class="text-light-black fs-12">Street Address<br></span>
+                            <span>{{profile.userdetails.address_street || "-"}}</span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
+                                <a id="address_street" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
                         </li>
                         <li>
-                            <span class="text-light-black fs-12">
-                                Google Scholar Url<br></span>
+                            <span class="text-light-black fs-12">City<br></span>
+                            <span>{{profile.userdetails.address_city || "-"}}</span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
+                                <a id="address_city" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">State<br></span>
+                            <span>{{profile.userdetails.address_state || "-"}}</span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
+                                <a id="address_state" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Country<br></span>
+                            <span>{{profile.userdetails.address_country || "-"}}</span>
+                            <span ng-if="!profile.userdetails.is_profile_fields_locked">
+                                <a id="address_country" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Google Scholar Url<br></span>
                             <a href="{{profile.userdetails.google_scholar_url}}"
                                 target="_blank" class="text-highlight">
                                 {{profile.userdetails.google_scholar_url || '-'}}

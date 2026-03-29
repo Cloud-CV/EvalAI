@@ -1,6 +1,9 @@
+from accounts.models import Profile
 from django.contrib.auth.models import User
+from django.db import connection
 from django.db.models import Prefetch
 from django.test import RequestFactory, TestCase
+from django.test.utils import CaptureQueriesContext
 from participants.models import Participant, ParticipantTeam
 from participants.serializers import (
     ChallengeParticipantSerializer,
@@ -11,22 +14,60 @@ from participants.serializers import (
 from rest_framework import serializers
 
 
-class DummyObj:
-    team_name = "nonexistent_team"
-
-
 class TestChallengeParticipantSerializer(TestCase):
-    def test_get_team_members_team_does_not_exist(self):
-        serializer = ChallengeParticipantSerializer()
-        obj = DummyObj()
-        result = serializer.get_team_members(obj)
-        self.assertEqual(result, "Participant team does not exist")
+    """Tests for ChallengeParticipantSerializer (expects ParticipantTeam with participants)."""
 
-    def test_get_team_members_email_ids_team_does_not_exist(self):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser",
+            email="test@example.com",
+        )
+        self.empty_team = ParticipantTeam.objects.create(
+            team_name="Empty Team",
+            created_by=self.user,
+        )
+
+    def test_get_team_members_empty_team(self):
+        """Team with no participants returns empty list."""
         serializer = ChallengeParticipantSerializer()
-        obj = DummyObj()
-        result = serializer.get_team_members_email_ids(obj)
-        self.assertEqual(result, "Participant team does not exist")
+        result = serializer.get_team_members(self.empty_team)
+        self.assertEqual(result, [])
+
+    def test_get_team_members_email_ids_empty_team(self):
+        """Team with no participants returns empty email list."""
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members_email_ids(self.empty_team)
+        self.assertEqual(result, [])
+
+    def test_get_team_members_with_participants(self):
+        """Team with participants returns usernames."""
+        participant_user = User.objects.create(
+            username="member1",
+            email="member1@example.com",
+        )
+        Participant.objects.create(
+            user=participant_user,
+            status=Participant.SELF,
+            team=self.empty_team,
+        )
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members(self.empty_team)
+        self.assertEqual(result, ["member1"])
+
+    def test_get_team_members_email_ids_with_participants(self):
+        """Team with participants returns emails."""
+        participant_user = User.objects.create(
+            username="member1",
+            email="member1@example.com",
+        )
+        Participant.objects.create(
+            user=participant_user,
+            status=Participant.SELF,
+            team=self.empty_team,
+        )
+        serializer = ChallengeParticipantSerializer()
+        result = serializer.get_team_members_email_ids(self.empty_team)
+        self.assertEqual(result, ["member1@example.com"])
 
 
 class TestInviteParticipantToTeamSerializer(TestCase):
@@ -126,6 +167,36 @@ class TestParticipantTeamDetailSerializer(TestCase):
         self.assertIn("user1", member_names)
         self.assertIn("user2", member_names)
 
+    def test_get_members_with_prefetch_avoids_n_plus_one_queries(self):
+        """
+        Verify ParticipantTeamDetailSerializer with prefetched data uses
+        no additional queries when serializing members (no N+1 on user/profile).
+        """
+        team_with_prefetch = (
+            ParticipantTeam.objects.select_related("created_by")
+            .prefetch_related(
+                Prefetch(
+                    "participants",
+                    queryset=Participant.objects.select_related(
+                        "user", "user__profile"
+                    ),
+                )
+            )
+            .get(pk=self.team.pk)
+        )
+
+        with CaptureQueriesContext(connection) as context:
+            serializer = ParticipantTeamDetailSerializer(team_with_prefetch)
+            _ = serializer.data
+
+        # With prefetch, serialization should use 0 extra queries (all data
+        # already loaded). Without prefetch, we'd have 2 per participant.
+        self.assertEqual(
+            len(context.captured_queries),
+            0,
+            "Serializer should not trigger queries when data is prefetched",
+        )
+
     def test_serializer_includes_all_expected_fields(self):
         """Test that the serializer includes all expected fields."""
         serializer = ParticipantTeamDetailSerializer(self.team)
@@ -207,3 +278,21 @@ class TestParticipantSerializer(TestCase):
         self.assertEqual(data["last_name"], "User")
         self.assertEqual(data["email"], "testuser@test.com")
         self.assertEqual(data["status"], Participant.SELF)
+
+    def test_get_profile_creates_profile_when_missing(self):
+        """get_profile should create a Profile via get_or_create
+        when the user has no profile (e.g. signal failure)."""
+        Profile.objects.filter(user=self.user).delete()
+        self.assertFalse(Profile.objects.filter(user=self.user).exists())
+
+        # Re-fetch so Django's cached reverse FK is cleared
+        participant = Participant.objects.select_related("user").get(
+            pk=self.participant.pk
+        )
+
+        serializer = ParticipantSerializer(participant)
+        data = serializer.data
+
+        self.assertIn("profile", data)
+        self.assertIsInstance(data["profile"], dict)
+        self.assertTrue(Profile.objects.filter(user=self.user).exists())

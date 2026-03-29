@@ -243,6 +243,81 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_challenge_submission_when_challenge_submissions_are_paused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_challenge_submission_when_phase_submissions_are_paused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+
+        expected = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_challenge_submission_when_phase_submissions_unpaused(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+        self.challenge_phase.is_submission_paused = False
+        self.challenge_phase.save()
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        # Should not be rejected with 406 for paused submissions
+        self.assertNotEqual(
+            response.status_code, status.HTTP_406_NOT_ACCEPTABLE
+        )
+
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
@@ -487,6 +562,29 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    def test_challenge_submission_calls_ensure_workers_for_participant(
+        self, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mock_ensure_workers.assert_called_once_with(self.challenge)
 
     def test_challenge_submission_when_maximum_limit_exceeded(self):
         self.url = reverse_lazy(
@@ -2284,6 +2382,28 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_get_leaderboard_hides_scores_when_show_scores_on_leaderboard_false(
+        self,
+    ):
+        """Test that leaderboard API does not return scores when flag is False."""
+        self.challenge_phase_split.show_scores_on_leaderboard = False
+        self.challenge_phase_split.save()
+
+        self.url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+        )
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data["results"]), 0)
+        for entry in response.data["results"]:
+            self.assertEqual(entry["result"], [])
+            self.assertIsNone(entry["error"])
+            self.assertNotIn("filtering_score", entry)
+            self.assertNotIn("filtering_error", entry)
+            self.assertIn("submission__participant_team__team_name", entry)
+
 
 class UpdateSubmissionTest(BaseAPITestClass):
     def setUp(self):
@@ -2580,8 +2700,11 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(PresignedURLSubmissionTest, self).setUp()
 
+    @mock.patch("jobs.views.ensure_workers_for_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_get_submission_presigned_url(self, mock_get_aws_creds):
+    def test_get_submission_presigned_url(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",
             kwargs={"challenge_phase_pk": self.challenge_phase.pk},
@@ -2615,14 +2738,18 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
                 "file_name": "media/submissions/dummy.txt",
             },
         )
+        mock_ensure_workers.assert_called_once()
         self.assertEqual(
             len(response.data["presigned_urls"]),
             len(expected["presigned_urls"]),
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @mock.patch("jobs.views.ensure_workers_for_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_finish_submission_file_upload(self, mock_get_aws_creds):
+    def test_finish_submission_file_upload(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
         # Create a submission using multipart upload
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",

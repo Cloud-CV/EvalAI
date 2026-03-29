@@ -122,6 +122,17 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.save()
         self.assertEqual(False, self.challenge.is_active)
 
+    def test_is_approval_requested_defaults_to_false(self):
+        """New challenges have is_approval_requested=False by default."""
+        self.assertFalse(self.challenge.is_approval_requested)
+
+    def test_is_approval_requested_can_be_set_to_true(self):
+        """is_approval_requested can be set to True after approval request."""
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_approval_requested)
+
     def test_get_evaluation_script_path(self):
         self.assertEqual(
             self.challenge.evaluation_script.url,
@@ -231,6 +242,17 @@ class ChallengePhaseSplitTestCase(BaseTestCase):
             string_to_compare, self.challenge_phase_split.__str__()
         )
 
+    def test_show_scores_on_leaderboard_default(self):
+        """Test that show_scores_on_leaderboard defaults to True."""
+        self.assertTrue(self.challenge_phase_split.show_scores_on_leaderboard)
+
+    def test_show_scores_on_leaderboard_can_be_false(self):
+        """Test that show_scores_on_leaderboard can be set to False."""
+        self.challenge_phase_split.show_scores_on_leaderboard = False
+        self.challenge_phase_split.save()
+        self.challenge_phase_split.refresh_from_db()
+        self.assertFalse(self.challenge_phase_split.show_scores_on_leaderboard)
+
 
 class LeaderboardDataTestCase(BaseTestCase):
     def setUp(self):
@@ -260,4 +282,27 @@ class LeaderboardDataTestCase(BaseTestCase):
         self.assertEqual(
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
+        )
+
+    def test_leaderboard_query_index_exists(self):
+        """
+        Verify LeaderboardData has the composite index for leaderboard query
+        optimization (EVALAI-HY8). The index supports filtering by
+        challenge_phase_split, is_disabled and ordering by created_at DESC.
+        """
+        index_names = [idx.name for idx in LeaderboardData._meta.indexes]
+        self.assertIn(
+            "ld_chphase_isdisc_created_idx",
+            index_names,
+            "LeaderboardData should have ld_chphase_isdisc_created_idx index",
+        )
+        index = next(
+            idx
+            for idx in LeaderboardData._meta.indexes
+            if idx.name == "ld_chphase_isdisc_created_idx"
+        )
+        self.assertEqual(
+            index.fields,
+            ["challenge_phase_split", "is_disabled", "-created_at"],
+            "Index should cover challenge_phase_split, is_disabled, created_at DESC",
         )

@@ -67,7 +67,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
             "approved_by_admin",
+            "is_approval_requested",
             "forum_url",
             "is_docker_based",
             "is_static_dataset_code_upload",
@@ -96,6 +98,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "sqs_retention_period",
             "github_repository",
             "github_branch",
+            "is_frozen",
+            "is_submission_paused",
         )
 
 
@@ -137,6 +141,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_email_ids",
             "is_submission_public",
             "disable_logs",
+            "is_submission_paused",
         )
 
 
@@ -189,6 +194,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
             "leaderboard_schema",
             "is_multi_metric_leaderboard",
         )
@@ -318,6 +324,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
             "forum_url",
             "remote_evaluation",
             "allow_resuming_submissions",
@@ -382,6 +389,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
         )
 
 
@@ -440,6 +448,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "disable_logs",
+            "is_submission_paused",
         )
 
 
