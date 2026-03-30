@@ -32,6 +32,7 @@ class Challenge(TimeStampedModel):
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
+        self._original_end_date = self.end_date
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -83,6 +84,11 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
+    require_complete_profile = models.BooleanField(
+        default=False,
+        verbose_name="Require Complete Profile",
+        help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
+    )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
         blank=True,
@@ -94,6 +100,13 @@ class Challenge(TimeStampedModel):
     )  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
+    )
+    is_approval_requested = models.BooleanField(
+        default=False,
+        verbose_name="Is Approval Requested",
+        db_index=True,
+        help_text="Set to True once a challenge host submits an approval request. "
+        "Prevents duplicate subscription plan emails from being sent.",
     )
     uses_ec2_worker = models.BooleanField(
         default=False, verbose_name="Uses EC2 worker instance", db_index=True
@@ -196,6 +209,31 @@ class Challenge(TimeStampedModel):
     # Memory size of a Fargate worker for the challenge. Default value is 0.5
     # GB memory.
     worker_memory = models.IntegerField(null=True, blank=True, default=1024)
+    use_fargate_spot = models.BooleanField(
+        default=True,
+        verbose_name="Use Fargate Spot",
+        help_text="If True, use capacityProviderStrategy (Spot). If False, use launchType FARGATE.",
+    )
+    fargate_spot_weight = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name="Fargate Spot Weight",
+        help_text="Weight for FARGATE_SPOT in capacity provider strategy. 0 excludes Spot.",
+    )
+    fargate_spot_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Spot Base",
+        help_text="Minimum number of tasks placed on FARGATE_SPOT before weights apply.",
+    )
+    fargate_weight = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Weight",
+        help_text="Weight for FARGATE in capacity provider strategy. 0 = Spot only.",
+    )
+    fargate_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Base",
+        help_text="Minimum number of tasks placed on FARGATE before weights apply.",
+    )
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
     # VPC and subnet CIDRs for code upload challenge
@@ -236,6 +274,18 @@ class Challenge(TimeStampedModel):
         max_length=200, blank=True, null=True, default=""
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
+    is_frozen = models.BooleanField(
+        default=False,
+        verbose_name="Is Frozen",
+        db_index=True,
+        help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
+    )
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for all phases of this challenge. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -313,6 +363,47 @@ def update_sqs_retention_period_for_challenge(
         challenge = instance
         challenge._original_sqs_retention_period = curr
         challenge.save()
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def handle_end_date_change_for_challenge(sender, instance, created, **kwargs):
+    """
+    When a challenge's end_date changes, update or recreate the EventBridge
+    cleanup schedule and, if needed, recreate the full worker infrastructure.
+    """
+    field_name = "end_date"
+    import challenges.aws_utils as aws
+
+    if not created and is_model_field_changed(instance, field_name):
+        challenge = instance
+        new_end_date = challenge.end_date
+        challenge._original_end_date = new_end_date
+
+        # Skip if not a Fargate-managed challenge
+        if (
+            challenge.is_docker_based
+            or challenge.uses_ec2_worker
+            or challenge.remote_evaluation
+        ):
+            return
+
+        # Skip if the challenge was never approved and has no workers
+        # (workers may exist from host testing before approval)
+        if not challenge.approved_by_admin and challenge.workers is None:
+            return
+
+        if new_end_date and new_end_date > timezone.now():
+            if challenge.workers is None:
+                # Resources were cleaned up (Lambda already fired).
+                # Recreate everything: service + auto-scaling + schedule.
+                aws.start_workers([challenge])
+            else:
+                # Resources still exist; just reschedule the cleanup.
+                aws.update_challenge_cleanup_schedule(challenge)
+        else:
+            # New end_date is in the past; trigger cleanup if resources exist.
+            if challenge.workers is not None:
+                aws.delete_workers([challenge])
 
 
 class DatasetSplit(TimeStampedModel):
@@ -398,6 +489,12 @@ class ChallengePhase(TimeStampedModel):
         default=None, blank=True, null=True
     )
     disable_logs = models.BooleanField(default=False)
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for this phase. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -497,6 +594,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
     show_execution_time = models.BooleanField(default=False)
+    show_scores_on_leaderboard = models.BooleanField(default=True)
     # Allow ordering leaderboard by all metrics
     is_multi_metric_leaderboard = models.BooleanField(default=True)
 
@@ -567,6 +665,12 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "leaderboard_data"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase_split", "is_disabled", "-created_at"],
+                name="ld_chphase_isdisc_created_idx",
+            ),
+        ]
 
 
 class ChallengeConfiguration(TimeStampedModel):
@@ -610,6 +714,7 @@ class StarChallenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "starred_challenge"
+        unique_together = (("user", "challenge"),)
 
 
 class UserInvitation(TimeStampedModel):

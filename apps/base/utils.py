@@ -5,20 +5,41 @@ import os
 import re
 import uuid
 from contextlib import contextmanager
+from email.utils import formataddr, parseaddr
 
 import boto3
 import botocore
 import requests
 import sendgrid
+import sentry_sdk
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.mail import EmailMultiAlternatives
 from django.utils.deconstruct import deconstructible
+from pybars import Compiler
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
-from sendgrid.helpers.mail import Email, Mail, Personalization
 
 from settings.common import SQS_RETENTION_PERIOD
 
 logger = logging.getLogger(__name__)
+
+
+def get_user_by_email(email):
+    """Return a single User for the given email, or raise User.DoesNotExist.
+
+    If duplicate-email users still exist (pre-merge), the oldest account
+    (earliest date_joined) is returned deterministically.
+    """
+    user = (
+        User.objects.filter(email__iexact=email)
+        .order_by("date_joined")
+        .first()
+    )
+    if user is None:
+        raise User.DoesNotExist("User matching query does not exist.")
+    return user
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -105,41 +126,130 @@ def decode_data(data):
     return decoded
 
 
+def _fetch_sendgrid_template(api_key, template_id):
+    """Fetch the active version's HTML and subject from a SendGrid dynamic template.
+
+    Arguments:
+        api_key {string} -- SendGrid API key
+        template_id {string} -- SendGrid dynamic template ID (e.g. d-xxxx)
+
+    Returns:
+        tuple -- (html_content, subject) with Handlebars placeholders
+    """
+    sg = sendgrid.SendGridAPIClient(api_key=api_key)
+    response = sg.client.templates._(template_id).get()
+    template = json.loads(response.body)
+    for version in template.get("versions", []):
+        if version.get("active"):
+            return version["html_content"], version.get("subject", "")
+    raise ValueError(
+        "No active version found for template {}".format(template_id)
+    )
+
+
+def _render_handlebars(template_str, data):
+    """Compile and render a Handlebars template string with the given data."""
+    compiler = Compiler()
+    template = compiler.compile(template_str)
+    return template(data)
+
+
 def send_email(
-    sender=settings.CLOUDCV_TEAM_EMAIL,
+    sender=settings.DEFAULT_FROM_EMAIL,
     recipient=None,
     template_id=None,
     template_data=None,
 ):
-    """Function to send email
+    """Fetch a SendGrid dynamic template, render it, and send via Django email backend (SES in prod).
 
     Keyword Arguments:
-        sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
+        sender {string} -- Email of sender (default: {settings.DEFAULT_FROM_EMAIL})
         recipient {string} -- Recipient email address
-        template_id {string} -- Sendgrid template id
-        template_data {dict} -- Dictionary to substitute values in
-            subject and email body
+        template_id {string} -- SendGrid dynamic template id
+        template_data {dict} -- Dictionary to substitute Handlebars
+            placeholders in subject and email body
     """
     if template_data is None:
         template_data = {}
-    try:
-        sg = sendgrid.SendGridAPIClient(
-            api_key=os.environ.get("SENDGRID_API_KEY")
+    if not recipient or not template_id:
+        error = ValueError(
+            "send_email called with missing recipient={!r} or template_id={!r}".format(
+                recipient, template_id
+            )
         )
-        sender = Email(sender)
-        mail = Mail()
-        mail.from_email = sender
-        mail.template_id = template_id
-        to_list = Personalization()
-        to_list.dynamic_template_data = template_data
-        to_email = Email(recipient)
-        to_list.add_to(to_email)
-        mail.add_personalization(to_list)
-        sg.client.mail.send.post(request_body=mail.get())
-    except Exception:  # pylint: disable=broad-exception-caught
+        sentry_sdk.capture_exception(error)
+        return
+
+    from accounts.models import Profile
+
+    if Profile.objects.filter(
+        user__email__iexact=recipient, email_bounced=True
+    ).exists():
+        logger.info(
+            "Suppressed email to bounced address %s (template=%s).",
+            recipient,
+            template_id,
+        )
+        return
+
+    max_per_minute = getattr(
+        settings, "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10
+    )
+    cache_key = f"email_rate:{recipient}"
+    current = cache.get(cache_key, 0)
+    if current >= max_per_minute:
         logger.warning(
-            "Cannot make sendgrid call. "
-            "Please check if SENDGRID_API_KEY is present."
+            "Email rate limit exceeded for recipient=%s (limit=%d/min)",
+            recipient,
+            max_per_minute,
+        )
+        sentry_sdk.capture_message(
+            f"Email rate limit exceeded for {recipient}",
+            level="warning",
+        )
+        return
+    cache.set(cache_key, current + 1, timeout=60)
+
+    try:
+        api_key = os.environ.get("SENDGRID_API_KEY")
+        if not api_key:
+            raise EnvironmentError("SENDGRID_API_KEY is not set")
+
+        html_content, subject_template = _fetch_sendgrid_template(
+            api_key, template_id
+        )
+        rendered_html = _render_handlebars(html_content, template_data)
+        rendered_subject = _render_handlebars(subject_template, template_data)
+
+        sender_name, sender_addr = parseaddr(str(sender))
+        if not sender_addr:
+            sender_addr = sender
+        from_header = (
+            formataddr((sender_name, sender_addr))
+            if sender_name
+            else sender_addr
+        )
+
+        msg = EmailMultiAlternatives(
+            subject=rendered_subject,
+            body="",
+            from_email=from_header,
+            to=[recipient],
+        )
+        msg.attach_alternative(rendered_html, "text/html")
+        msg.send()
+        logger.info(
+            "Email sent successfully via %s to=%s, subject=%r",
+            settings.EMAIL_BACKEND,
+            recipient,
+            rendered_subject,
+        )
+    except Exception:
+        sentry_sdk.capture_exception()
+        logger.exception(
+            "Email send failed for recipient=%s, template=%s",
+            recipient,
+            template_id,
         )
 
 

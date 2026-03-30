@@ -32,6 +32,7 @@
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
         vm.challengeCreator = {};
+        vm.tab = 1;
 
         vm.getAllResults = function(parameters, resultsArray, typ, countKey, isFirstPage){
             parameters.method = 'GET';

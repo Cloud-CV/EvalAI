@@ -1,5 +1,9 @@
 from accounts.permissions import HasVerifiedEmail
-from base.utils import get_model_object, team_paginated_queryset
+from base.utils import (
+    get_model_object,
+    get_user_by_email,
+    team_paginated_queryset,
+)
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -10,10 +14,9 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from apps.accounts.authentication import ExpiringTokenAuthentication
 
 from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
@@ -272,7 +275,7 @@ def invite_host_to_team(request, pk):
 
     email = request.data.get("email")
     try:
-        user = User.objects.get(email=email)
+        user = get_user_by_email(email)
     except User.DoesNotExist:
         response_data = {
             "error": "User does not exist with this email address!"

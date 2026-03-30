@@ -55,6 +55,7 @@
         vm.currentDate = null;
         vm.isPublished = false;
         vm.approved_by_admin = false;
+        vm.is_approval_requested = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
@@ -207,13 +208,14 @@
             parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
             parameters.method = 'GET';
             parameters.data = {};
-        
+
             parameters.callback = {
                 onSuccess: function(response) {
                     var result = response.data;
                     if (result.error) {
                         $rootScope.notify("error", result.error);
                     } else {
+                        vm.is_approval_requested = true;
                         $rootScope.notify("success", "Request sent successfully.");
                     }
                 },
@@ -226,7 +228,7 @@
                     }
                 }
             };
-        
+
             utilities.sendRequest(parameters);
         };
         
@@ -384,6 +386,8 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.is_approval_requested = details.is_approval_requested;
+                vm.isFrozen = details.is_frozen;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
@@ -1071,6 +1075,9 @@
                     vm.selectedPhaseSplit = response.data;
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
                         "Sort by best":"Sort by latest";
+                    if (vm.selectedPhaseSplit.show_scores_on_leaderboard === false) {
+                        vm.chosenMetrics = [];
+                    }
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1105,7 +1112,11 @@
 
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
-                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
+                        if (vm.selectedPhaseSplit && vm.selectedPhaseSplit.show_scores_on_leaderboard === false) {
+                            vm.chosenMetrics = [];
+                        } else {
+                            vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
+                        }
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -3108,7 +3119,9 @@
         };
 
         vm.openLeaderboardDropdown = function() {
-            if (vm.chosenMetrics == undefined) {
+            if (vm.chosenMetrics == undefined &&
+                (!vm.selectedPhaseSplit || vm.selectedPhaseSplit.show_scores_on_leaderboard !== false) &&
+                vm.leaderboard && vm.leaderboard[0]) {
                 var index = [];
                 for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
                     var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();

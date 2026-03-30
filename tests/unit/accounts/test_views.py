@@ -1,8 +1,10 @@
 import os
+from unittest.mock import MagicMock, patch
 
 from accounts.models import JwtToken
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.urls import reverse_lazy
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -105,6 +107,105 @@ class ResendEmailVerificationTestClass(APITestCase):
         )
 
 
+class UpdateEmailTest(BaseAPITestClass):
+
+    url = reverse_lazy("accounts:update_email")
+
+    @patch("accounts.views.send_email_confirmation")
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_update_email_success(self, mock_resolve, mock_send_conf):
+        mock_resolve.return_value = [MagicMock()]
+        response = self.client.post(
+            self.url, {"email": "new@valid-domain.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("confirmation email", response.data["message"])
+        self.assertTrue(
+            EmailAddress.objects.filter(
+                user=self.user, email="new@valid-domain.com", verified=False
+            ).exists()
+        )
+        mock_send_conf.assert_called_once()
+
+    @patch("accounts.views.send_email_confirmation")
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_update_email_invalid_mx(self, mock_resolve, mock_send_conf):
+        import dns.resolver as _dns_resolver
+
+        mock_resolve.side_effect = _dns_resolver.NXDOMAIN()
+        response = self.client.post(
+            self.url, {"email": "user@bad-domain.xyz"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+        mock_send_conf.assert_not_called()
+
+    def test_update_email_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(
+            self.url, {"email": "new@test.com"}, format="json"
+        )
+        self.assertIn(
+            response.status_code,
+            [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+        )
+
+    @patch("accounts.views.send_email_confirmation")
+    def test_update_email_same_as_current(self, mock_send_conf):
+        response = self.client.post(
+            self.url, {"email": "user@test.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already your current", response.data["error"])
+        mock_send_conf.assert_not_called()
+
+    def test_update_email_empty_fails(self):
+        response = self.client.post(self.url, {"email": ""}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Email is required", response.data["error"])
+
+    @patch("accounts.views.send_email_confirmation")
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_update_email_already_used_by_other_user(
+        self, mock_resolve, mock_send_conf
+    ):
+        mock_resolve.return_value = [MagicMock()]
+        User.objects.create(
+            username="otheruser",
+            email="other@valid-domain.com",
+            password="password",
+        )
+        response = self.client.post(
+            self.url, {"email": "other@valid-domain.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already in use", response.data["error"])
+        mock_send_conf.assert_not_called()
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_email_bounced_flag_cleared_on_confirmation(self, mock_resolve):
+        mock_resolve.return_value = [MagicMock()]
+        self.user.profile.email_bounced = True
+        self.user.profile.save()
+
+        from accounts.adapter import EvalAIAccountAdapter
+
+        adapter = EvalAIAccountAdapter()
+        new_email_obj = EmailAddress.objects.create(
+            user=self.user,
+            email="confirmed@test.com",
+            primary=False,
+            verified=False,
+        )
+        new_email_obj.verified = True
+        new_email_obj.save()
+        adapter.confirm_email(request=None, email_address=new_email_obj)
+
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.email_bounced)
+        self.assertIsNone(self.user.profile.email_bounced_at)
+
+
 class RefreshAuthTokenTest(BaseAPITestClass):
 
     url = reverse_lazy("accounts:refresh_auth_token")
@@ -128,3 +229,206 @@ class RefreshAuthTokenTest(BaseAPITestClass):
         with self.assertRaises(TokenError) as context:
             RefreshToken(token.refresh_token)
         self.assertTrue("Token is blacklisted" in str(context.exception))
+
+
+class SafeRegisterViewTest(APITestCase):
+
+    url = reverse_lazy("rest_register")
+
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.existing_user = User.objects.create_user(
+            username="existinguser",
+            email="taken@example.com",
+            password="strongpass1",
+        )
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_duplicate_email_returns_400(self, mock_resolve):
+        """Adapter-level validation rejects duplicate email with 400."""
+        mock_resolve.return_value = [MagicMock()]
+        response = self.client.post(
+            self.url,
+            {
+                "username": "newuser",
+                "email": "taken@example.com",
+                "password1": "Str0ngP@ss!",
+                "password2": "Str0ngP@ss!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+        self.assertIn("already registered", str(response.data["email"]))
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_duplicate_email_case_insensitive(self, mock_resolve):
+        """Duplicate check is case-insensitive."""
+        mock_resolve.return_value = [MagicMock()]
+        response = self.client.post(
+            self.url,
+            {
+                "username": "newuser2",
+                "email": "TAKEN@Example.COM",
+                "password1": "Str0ngP@ss!",
+                "password2": "Str0ngP@ss!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+
+    def test_integrity_error_safety_net(self):
+        """IntegrityError on auth_user_email_unique is caught and returns 400."""
+        with patch(
+            "rest_auth.registration.views.RegisterView.create"
+        ) as mock_parent_create:
+            mock_parent_create.side_effect = IntegrityError(
+                "duplicate key value violates unique constraint "
+                '"auth_user_email_unique" '
+                "DETAIL: Key (email)=(race@example.com) already exists."
+            )
+            response = self.client.post(
+                self.url,
+                {
+                    "username": "raceuser",
+                    "email": "race@example.com",
+                    "password1": "Str0ngP@ss!",
+                    "password2": "Str0ngP@ss!",
+                },
+                format="json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("email", response.data)
+            self.assertIn("already registered", str(response.data["email"]))
+
+    def test_integrity_error_non_email_reraised(self):
+        """IntegrityError not related to email unique constraint is re-raised."""
+        with patch(
+            "rest_auth.registration.views.RegisterView.create"
+        ) as mock_parent_create:
+            mock_parent_create.side_effect = IntegrityError(
+                "some other constraint violation"
+            )
+            with self.assertRaises(IntegrityError):
+                self.client.post(
+                    self.url,
+                    {
+                        "username": "otheruser",
+                        "email": "other@example.com",
+                        "password1": "Str0ngP@ss!",
+                        "password2": "Str0ngP@ss!",
+                    },
+                    format="json",
+                )
+
+
+class PasswordResetViewTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.url = "/api/auth/password/reset/"
+
+        self.verified_user = User.objects.create_user(
+            username="verified_user",
+            email="verified@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.verified_user,
+            email=self.verified_user.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.unverified_user = User.objects.create_user(
+            username="unverified_user",
+            email="unverified@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.unverified_user,
+            email=self.unverified_user.email,
+            primary=True,
+            verified=False,
+        )
+
+        self.inactive_user = User.objects.create_user(
+            username="inactive_user",
+            email="inactive@example.com",
+            password="password",
+            is_active=False,
+        )
+        EmailAddress.objects.create(
+            user=self.inactive_user,
+            email=self.inactive_user.email,
+            primary=True,
+            verified=True,
+        )
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_verified_active_user_success(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.verified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_save.assert_called_once()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_verified_active_user_case_insensitive_email(
+        self, mock_save
+    ):
+        response = self.client.post(
+            self.url, {"email": "VERIFIED@EXAMPLE.COM"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_save.assert_called_once()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_unverified_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.unverified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "Email address is not verified. Please verify your email before resetting password.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_bounced_email_returns_400(self, mock_save):
+        self.verified_user.profile.email_bounced = True
+        self.verified_user.profile.save(update_fields=["email_bounced"])
+        response = self.client.post(
+            self.url, {"email": self.verified_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "This email address has bounced and cannot receive password reset emails.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_inactive_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": self.inactive_user.email}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "Account is not active. Please contact the administrator.",
+        )
+        mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_nonexistent_user_returns_400(self, mock_save):
+        response = self.client.post(
+            self.url, {"email": "nonexistent@example.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data["details"],
+            "User with the given email does not exist.",
+        )
+        mock_save.assert_not_called()

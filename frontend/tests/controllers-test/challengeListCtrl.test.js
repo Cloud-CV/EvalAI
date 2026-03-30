@@ -19,13 +19,12 @@ describe('Unit tests for challenge list controller', function () {
 
     describe('Global variables', function () {
         it('has default values', function () {
-            spyOn(utilities, 'getData');
             spyOn(utilities, 'showLoader');
+            spyOn(utilities, 'hideButton');
 
             vm = createController();
-            expect(utilities.getData).toHaveBeenCalledWith('userKey');
-            expect(vm.userKey).toEqual(utilities.getData('userKey'));
             expect(utilities.showLoader).toHaveBeenCalled();
+            expect(utilities.hideButton).toHaveBeenCalled();
             expect(vm.currentList).toEqual([]);
             expect(vm.upcomingList).toEqual([]);
             expect(vm.pastList).toEqual([]);

@@ -6,16 +6,21 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from botocore.exceptions import ClientError
 from challenges.aws_utils import (
+    _file_content_changed,
     challenge_approval_callback,
+    cleanup_auto_scaling_for_service,
     create_ec2_instance,
     create_eks_cluster,
     create_eks_cluster_subnets,
     create_eks_nodegroup,
     create_service_by_challenge_pk,
+    delete_challenge_cleanup_schedule,
     delete_log_group,
     delete_service_by_challenge_pk,
     delete_workers,
     describe_ec2_instance,
+    ensure_workers_for_submission,
+    get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
     get_logs_from_cloudwatch,
     register_task_def_by_challenge_pk,
@@ -24,7 +29,9 @@ from challenges.aws_utils import (
     restart_workers_signal_callback,
     scale_resources,
     scale_workers,
+    schedule_challenge_cleanup,
     service_manager,
+    setup_auto_scaling_for_service,
     setup_ec2,
     setup_eks_cluster,
     start_ec2_instance,
@@ -32,6 +39,7 @@ from challenges.aws_utils import (
     stop_ec2_instance,
     stop_workers,
     terminate_ec2_instance,
+    update_challenge_cleanup_schedule,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
     update_sqs_retention_period_task,
@@ -140,6 +148,7 @@ class TestCreateServiceByChallengePk:
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
         mock_client.create_service.return_value = {
@@ -149,7 +158,11 @@ class TestCreateServiceByChallengePk:
         with patch(
             "challenges.aws_utils.register_task_def_by_challenge_pk",
             return_value={"ResponseMetadata": response_metadata},
-        ):
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ) as mock_auto_scaling, patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ) as mock_schedule:
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
             )
@@ -157,12 +170,15 @@ class TestCreateServiceByChallengePk:
         assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         mock_challenge.save.assert_called_once()
         assert mock_challenge.workers == 1
+        mock_auto_scaling.assert_called_once_with(mock_challenge)
+        mock_schedule.assert_called_once_with(mock_challenge)
 
     def test_create_service_client_error(
         self, mock_client, mock_challenge, client_token
     ):
         mock_challenge.workers = None
         mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False  # Uses launchType FARGATE path
 
         mock_client.create_service.side_effect = ClientError(
             error_response={
@@ -177,6 +193,10 @@ class TestCreateServiceByChallengePk:
             return_value={
                 "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
             },
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
         ):
             response = create_service_by_challenge_pk(
                 mock_client, mock_challenge, client_token
@@ -287,7 +307,10 @@ def test_update_service_force_new_deployment(
     assert mock_challenge.workers == num_of_tasks
 
 
-def test_delete_service_success_when_workers_zero(mock_challenge, mock_client):
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_success_when_workers_zero(
+    mock_cleanup, mock_challenge, mock_client
+):
     mock_challenge.workers = 0
     mock_challenge.task_def_arn = (
         "valid_task_def_arn"  # Ensure task_def_arn is set to a valid string
@@ -308,10 +331,12 @@ def test_delete_service_success_when_workers_zero(mock_challenge, mock_client):
     mock_client.deregister_task_definition.assert_called_once_with(
         taskDefinition="valid_task_def_arn"
     )
+    mock_cleanup.assert_called_once_with(mock_challenge)
 
 
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
 def test_delete_service_success_when_workers_not_zero(
-    mock_challenge, mock_client
+    mock_cleanup, mock_challenge, mock_client
 ):
     mock_challenge.workers = 3
     mock_challenge.task_def_arn = "valid_task_def_arn"
@@ -335,9 +360,11 @@ def test_delete_service_success_when_workers_not_zero(
     mock_client.deregister_task_definition.assert_called_once_with(
         taskDefinition="valid_task_def_arn"
     )
+    mock_cleanup.assert_called_once_with(mock_challenge)
 
 
-def test_update_service_failure(mock_challenge, mock_client):
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_update_service_failure(mock_cleanup, mock_challenge, mock_client):
     mock_challenge.workers = 3
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
@@ -359,7 +386,8 @@ def test_update_service_failure(mock_challenge, mock_client):
     mock_client.delete_service.assert_not_called()
 
 
-def test_delete_service_failure(mock_challenge, mock_client):
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_failure(mock_cleanup, mock_challenge, mock_client):
     mock_challenge.workers = 0
     response_metadata_error = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}
@@ -379,7 +407,10 @@ def test_delete_service_failure(mock_challenge, mock_client):
     mock_challenge.save.assert_not_called()
 
 
-def test_deregister_task_definition_failure(mock_challenge, mock_client):
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_deregister_task_definition_failure(
+    mock_cleanup, mock_challenge, mock_client
+):
     mock_challenge.workers = 0
     response_metadata_ok = {
         "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
@@ -408,7 +439,10 @@ def test_deregister_task_definition_failure(mock_challenge, mock_client):
     )
 
 
-def test_delete_service_client_error(mock_challenge, mock_client):
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_client_error(
+    mock_cleanup, mock_challenge, mock_client
+):
     mock_challenge.workers = 0
 
     with patch(
@@ -430,6 +464,147 @@ def test_delete_service_client_error(mock_challenge, mock_client):
     )
     mock_challenge.save.assert_not_called()
     mock_client.deregister_task_definition.assert_not_called()
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_service_not_found_returns_success(
+    mock_cleanup, mock_challenge, mock_client
+):
+    """Test that ServiceNotFoundException is treated as success since the
+    deletion goal is achieved (service doesn't exist)."""
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ServiceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeleteService",
+        )
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return success since the service doesn't exist
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # Challenge state should be cleaned up
+    assert mock_challenge.workers is None
+    assert mock_challenge.task_def_arn == ""
+    mock_challenge.save.assert_called()
+    # Should attempt to deregister task definition
+    mock_client.deregister_task_definition.assert_called_once_with(
+        taskDefinition="valid_task_def_arn"
+    )
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_service_not_found_with_deregister_failure(
+    mock_cleanup, mock_challenge, mock_client
+):
+    """Test that ServiceNotFoundException still succeeds even if deregister
+    task definition also fails."""
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ServiceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeleteService",
+        )
+        mock_client.deregister_task_definition.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "TaskDefinitionNotFound"},
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+            operation_name="DeregisterTaskDefinition",
+        )
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should still return success
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # Challenge state should be cleaned up
+    assert mock_challenge.workers is None
+    assert mock_challenge.task_def_arn == ""
+    mock_challenge.save.assert_called()
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_update_service_service_not_found_proceeds_to_delete(
+    mock_cleanup, mock_challenge, mock_client
+):
+    """Test that when update_service fails with ServiceNotFoundException,
+    the code proceeds to delete_service anyway."""
+    mock_challenge.workers = 3
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+    mock_challenge.pk = 123
+
+    response_metadata_ok = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+    }
+    response_service_not_found = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        "Error": {"Code": "ServiceNotFoundException"},
+    }
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            mock_client.delete_service.return_value = response_metadata_ok
+
+            response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return success since delete succeeded
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    # delete_service should have been called despite update failure
+    mock_client.delete_service.assert_called_once()
+    mock_challenge.save.assert_called()
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_update_service_other_error_does_not_proceed_to_delete(
+    mock_cleanup, mock_challenge, mock_client
+):
+    """Test that when update_service fails with a non-ServiceNotFoundException
+    error, the code does NOT proceed to delete_service."""
+    mock_challenge.workers = 3
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+
+    response_other_error = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        "Error": {"Code": "SomeOtherError"},
+    }
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_other_error,
+        ):
+            response = delete_service_by_challenge_pk(mock_challenge)
+
+    # Should return the error response
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.BAD_REQUEST
+    )
+    # delete_service should NOT have been called
+    mock_client.delete_service.assert_not_called()
 
 
 class TestServiceManager:
@@ -480,7 +655,8 @@ class TestServiceManager:
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
-        # Mock client_token_generator and create_service_by_challenge_pk to return a mock response
+        # Mock client_token_generator and create_service_by_challenge_pk to
+        # return a mock response
         with patch(
             "challenges.aws_utils.client_token_generator",
             return_value="mock_client_token",
@@ -497,6 +673,66 @@ class TestServiceManager:
                 mock_create.assert_called_once_with(
                     mock_client, mock_challenge, "mock_client_token"
                 )
+
+    def test_service_manager_service_not_found_stop_returns_success(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks=0
+        (stop), treat as success and sync challenge.workers to 0."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            response = service_manager(
+                mock_client, mock_challenge, num_of_tasks=0
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 0
+        mock_challenge.save.assert_called()
+
+    def test_service_manager_service_not_found_start_creates_service(
+        self, mock_client, mock_challenge
+    ):
+        """When update fails with ServiceNotFoundException and num_of_tasks>0
+        (start), create the service instead."""
+        mock_challenge.workers = 1
+        response_service_not_found = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {"Code": "ServiceNotFoundException"},
+        }
+        response_metadata_ok = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        with patch(
+            "challenges.aws_utils.update_service_by_challenge_pk",
+            return_value=response_service_not_found,
+        ):
+            with patch(
+                "challenges.aws_utils.client_token_generator",
+                return_value="mock_client_token",
+            ):
+                with patch(
+                    "challenges.aws_utils.create_service_by_challenge_pk",
+                    return_value=response_metadata_ok,
+                ) as mock_create:
+                    response = service_manager(
+                        mock_client, mock_challenge, num_of_tasks=1
+                    )
+
+        assert response == response_metadata_ok
+        assert mock_challenge.workers is None
+        mock_challenge.save.assert_called()
+        mock_create.assert_called_once_with(
+            mock_client, mock_challenge, "mock_client_token"
+        )
 
 
 class TestStopEc2Instance(unittest.TestCase):
@@ -1152,7 +1388,8 @@ class TestTerminateEC2Instance(unittest.TestCase):
             mock_ec2.terminate_instances.side_effect
         )
 
-        # Ensure the EC2 instance ID was not cleared and the challenge was not saved
+        # Ensure the EC2 instance ID was not cleared and the challenge was not
+        # saved
         self.assertNotEqual(challenge.ec2_instance_id, "")
         challenge.save.assert_not_called()
 
@@ -1423,6 +1660,63 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.assert_called_once_with(
             mock_client, challenge=challenge, num_of_tasks=1
         )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_start_workers_clears_evaluation_module_error(
+        self, mock_settings, mock_service_manager, mock_get_boto3_client
+    ):
+        # Setup mock ECS client
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        # Mock queryset with a challenge that has an OOM error
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 0
+        challenge.evaluation_module_error = (
+            "Worker stopped: OutOfMemoryError. Current memory: 2048 MB."
+        )
+        queryset = [challenge]
+
+        # Call the function
+        result = start_workers(queryset)
+
+        # Assert the error was cleared
+        self.assertIsNone(challenge.evaluation_module_error)
+        challenge.save.assert_called()
+        self.assertEqual(result, {"count": 1, "failures": []})
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_start_workers_no_clear_when_no_error(
+        self, mock_settings, mock_service_manager, mock_get_boto3_client
+    ):
+        # Setup mock ECS client
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        # Mock queryset with a challenge that has no error
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 0
+        challenge.evaluation_module_error = None
+        queryset = [challenge]
+
+        # Call the function
+        result = start_workers(queryset)
+
+        # save() should not be called for clearing error (it's None already)
+        challenge.save.assert_not_called()
+        self.assertEqual(result, {"count": 1, "failures": []})
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.service_manager")
@@ -2162,7 +2456,8 @@ class TestDeleteWorkers(TestCase):
         # Assertions
         self.assertEqual(result, {"count": 1, "failures": []})
 
-        # Ensure the delete_service_by_challenge_pk, get_log_group_name, and delete_log_group methods were called
+        # Ensure the delete_service_by_challenge_pk, get_log_group_name, and
+        # delete_log_group methods were called
         mock_delete_service_by_challenge_pk.assert_called_once_with(
             challenge=challenge_with_workers
         )
@@ -2186,7 +2481,8 @@ class TestDeleteWorkers(TestCase):
         challenge_with_workers = MagicMock(pk=1, workers=5)
         mock_queryset = [challenge_with_workers]
 
-        # Mock the delete_service_by_challenge_pk response to simulate a failure
+        # Mock the delete_service_by_challenge_pk response to simulate a
+        # failure
         mock_delete_service_by_challenge_pk.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
             "Error": "An error occurred",
@@ -2335,6 +2631,37 @@ class TestRestartWorkers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.service_manager")
     @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_restart_workers_clears_evaluation_module_error(
+        self, mock_settings, mock_service_manager, mock_get_boto3_client
+    ):
+        # Mock a challenge with active workers and an OOM error
+        challenge_with_workers = MagicMock(
+            pk=1,
+            workers=2,
+            is_docker_based=False,
+            is_static_dataset_code_upload=False,
+        )
+        challenge_with_workers.evaluation_module_error = (
+            "Worker stopped: OutOfMemoryError. Current memory: 2048 MB."
+        )
+        mock_queryset = [challenge_with_workers]
+
+        # Mock the service_manager response
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        # Call the function
+        result = restart_workers(mock_queryset)
+
+        # Assert the error was cleared
+        self.assertIsNone(challenge_with_workers.evaluation_module_error)
+        challenge_with_workers.save.assert_called()
+        self.assertEqual(result, {"count": 1, "failures": []})
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_restart_workers_failure(
         self, mock_settings, mock_service_manager, mock_get_boto3_client
     ):
@@ -2390,122 +2717,90 @@ class TestRestartWorkersSignalCallback(TestCase):
         # Assert that the function returns None when DEBUG is True
         self.assertIsNone(result)
 
-    @patch("challenges.aws_utils.send_email")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_email_sent(
-        self, mock_restart_workers, mock_settings, mock_send_email
+    def test_restart_workers_signal_callback_restarts_workers(
+        self, mock_restart_workers, mock_settings
     ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
         mock_settings.DEBUG = False
 
         mock_challenge = MagicMock()
         mock_challenge.pk = 1
         mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = None
-        mock_challenge.inform_hosts = True
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com",
-            "host2@test.com",
-        ]
 
         mock_restart_workers.return_value = {"count": 1, "failures": []}
 
-        instance = mock_challenge
-
         restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
+            sender=None,
+            instance=mock_challenge,
+            field_name="evaluation_script",
         )
 
-        assert mock_send_email.call_count == 2
-        for call in mock_send_email.call_args_list:
-            args, kwargs = call
-            assert kwargs["recipient"] in ["host1@test.com", "host2@test.com"]
-            assert kwargs["template_id"] == "template_id"
-            assert (
-                kwargs["template_data"]["CHALLENGE_NAME"] == "Test Challenge"
-            )
-            assert (
-                kwargs["template_data"]["FILE_UPDATED"] == "Evaluation script"
-            )
+        mock_restart_workers.assert_called_once()
 
-    @patch("challenges.aws_utils.send_email")
     @patch("challenges.aws_utils.settings")
     @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_email_with_image(
-        self, mock_restart_workers, mock_settings, mock_send_email
+    @patch("challenges.aws_utils._file_content_changed")
+    def test_restart_workers_signal_callback_identical_content_skips(
+        self,
+        mock_content_changed,
+        mock_restart_workers,
+        mock_settings,
     ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
         mock_settings.DEBUG = False
-
-        mock_image = MagicMock()
-        mock_image.url = "http://eval.ai/image.png"
-        mock_challenge = MagicMock()
-        mock_challenge.pk = 1
-        mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = mock_image
-        mock_challenge.inform_hosts = True
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com"
-        ]
-
-        mock_restart_workers.return_value = {"count": 1, "failures": []}
-
-        instance = mock_challenge
-
-        restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
-        )
-
-        mock_send_email.assert_called_once()
-        args, kwargs = mock_send_email.call_args
-        assert (
-            kwargs["template_data"]["CHALLENGE_IMAGE_URL"]
-            == "http://eval.ai/image.png"
-        )
-
-    @patch("challenges.aws_utils.send_email")
-    @patch("challenges.aws_utils.settings")
-    @patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_no_inform_hosts(
-        self, mock_restart_workers, mock_settings, mock_send_email
-    ):
-        mock_settings.EVALAI_API_SERVER = "http://eval.ai"
-        mock_settings.SENDGRID_SETTINGS = {
-            "TEMPLATES": {"WORKER_RESTART_EMAIL": "template_id"}
-        }
-        mock_settings.CLOUDCV_TEAM_EMAIL = "noreply@eval.ai"
-        mock_settings.DEBUG = False
+        mock_content_changed.return_value = False
 
         mock_challenge = MagicMock()
         mock_challenge.pk = 1
         mock_challenge.id = 1
-        mock_challenge.title = "Test Challenge"
-        mock_challenge.image = None
-        mock_challenge.inform_hosts = False
-        mock_challenge.creator.get_all_challenge_host_email.return_value = [
-            "host1@test.com"
-        ]
-
-        mock_restart_workers.return_value = {"count": 1, "failures": []}
-
-        instance = mock_challenge
 
         restart_workers_signal_callback(
-            sender=None, instance=instance, field_name="evaluation_script"
+            sender=None,
+            instance=mock_challenge,
+            field_name="evaluation_script",
         )
 
-        mock_send_email.assert_not_called()
+        mock_restart_workers.assert_not_called()
+
+
+class TestFileContentChanged(TestCase):
+    def _make_file_field(self, content):
+        from io import BytesIO
+
+        f = BytesIO(content)
+        return f
+
+    def test_identical_content_returns_false(self):
+        old = self._make_file_field(b"same content")
+        new = self._make_file_field(b"same content")
+        self.assertFalse(_file_content_changed(old, new))
+
+    def test_different_content_returns_true(self):
+        old = self._make_file_field(b"old content")
+        new = self._make_file_field(b"new content")
+        self.assertTrue(_file_content_changed(old, new))
+
+    def test_one_empty_one_present_returns_true(self):
+        new = self._make_file_field(b"content")
+        self.assertTrue(_file_content_changed(None, new))
+        self.assertTrue(_file_content_changed("", new))
+
+    def test_present_to_empty_returns_true(self):
+        old = self._make_file_field(b"content")
+        self.assertTrue(_file_content_changed(old, None))
+        self.assertTrue(_file_content_changed(old, ""))
+
+    def test_both_empty_returns_false(self):
+        self.assertFalse(_file_content_changed(None, None))
+        self.assertFalse(_file_content_changed("", ""))
+
+    def test_exception_falls_back_to_true(self):
+        old = MagicMock()
+        old.__bool__ = lambda self: True
+        old.seek.side_effect = IOError("storage unavailable")
+        new = MagicMock()
+        new.__bool__ = lambda self: True
+        self.assertTrue(_file_content_changed(old, new))
 
 
 class TestGetLogsFromCloudwatch(TestCase):
@@ -2694,7 +2989,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Assert that get_boto3_client was called with the correct arguments
         mock_get_boto3_client.assert_called_once_with("logs", aws_keys)
 
-        # Assert that delete_log_group was called on the client with the correct argument
+        # Assert that delete_log_group was called on the client with the
+        # correct argument
         mock_client.delete_log_group.assert_called_once_with(
             logGroupName="test-log-group"
         )
@@ -2731,7 +3027,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Assert that get_boto3_client was called with the correct arguments
         mock_get_boto3_client.assert_called_once_with("logs", aws_keys)
 
-        # Assert that delete_log_group was called on the client with the correct argument
+        # Assert that delete_log_group was called on the client with the
+        # correct argument
         mock_client.delete_log_group.assert_called_once_with(
             logGroupName="test-log-group"
         )
@@ -2739,7 +3036,8 @@ class TestGetLogsFromCloudwatch(TestCase):
         # Retrieve the actual arguments passed to logger.exception
         args, kwargs = mock_logger.exception.call_args
 
-        # Check if the first argument of logger.exception contains the correct message
+        # Check if the first argument of logger.exception contains the correct
+        # message
         self.assertTrue(
             "Delete failed" in str(args[0]),
             f"Expected 'Delete failed' in {args[0]}",
@@ -3192,7 +3490,8 @@ class TestSetupEC2(TestCase):
         self.challenge.save()
         # Call the function
         setup_ec2(self.serialized_challenge)
-        # Check if start_ec2_instance was called since the EC2 instance already exists
+        # Check if start_ec2_instance was called since the EC2 instance already
+        # exists
         mock_start_ec2.assert_called_once_with(self.challenge)
         mock_create_ec2.assert_not_called()
 
@@ -3211,7 +3510,8 @@ class TestSetupEC2(TestCase):
         self.challenge.save()
         # Call the function
         setup_ec2(self.serialized_challenge)
-        # Check if create_ec2_instance was called since the EC2 instance doesn't exist
+        # Check if create_ec2_instance was called since the EC2 instance
+        # doesn't exist
         mock_create_ec2.assert_called_once_with(self.challenge)
         mock_start_ec2.assert_not_called()
 
@@ -3925,3 +4225,921 @@ class TestChallengeApprovalCallback(TestCase):
         )
 
         mock_logger.error.assert_not_called()
+
+
+class TestSetupAutoScalingForService(unittest.TestCase):
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_success(self, mock_get_boto3_client):
+        mock_autoscaling = MagicMock()
+        mock_cloudwatch = MagicMock()
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+
+        mock_autoscaling.put_scaling_policy.side_effect = [
+            {"PolicyARN": "arn:aws:autoscaling:scale-up-policy"},
+            {"PolicyARN": "arn:aws:autoscaling:scale-down-policy"},
+        ]
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        setup_auto_scaling_for_service(challenge)
+
+        mock_autoscaling.register_scalable_target.assert_called_once()
+        assert mock_autoscaling.put_scaling_policy.call_count == 2
+        assert mock_cloudwatch.put_metric_alarm.call_count == 2
+
+        # Verify scale-up alarm uses the correct queue name
+        scale_up_call = mock_cloudwatch.put_metric_alarm.call_args_list[0]
+        assert scale_up_call[1]["AlarmName"] == "test_queue_service_scale_up"
+        assert scale_up_call[1]["Dimensions"] == [
+            {"Name": "QueueName", "Value": "test_queue"}
+        ]
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_client_error(self, mock_get_boto3_client):
+        mock_autoscaling = MagicMock()
+        mock_autoscaling.register_scalable_target.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ValidationException"},
+                "ResponseMetadata": {"HTTPStatusCode": 400},
+            },
+            operation_name="RegisterScalableTarget",
+        )
+        mock_get_boto3_client.return_value = mock_autoscaling
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        # Should not raise, just log
+        setup_auto_scaling_for_service(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_setup_auto_scaling_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        setup_auto_scaling_for_service(challenge)
+
+        # No boto3 calls should be made in DEBUG mode
+
+
+class TestCleanupAutoScalingForService(unittest.TestCase):
+    @patch("challenges.aws_utils.delete_challenge_cleanup_schedule")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_cleanup_auto_scaling_success(
+        self, mock_get_boto3_client, mock_delete_schedule
+    ):
+        mock_autoscaling = MagicMock()
+        mock_cloudwatch = MagicMock()
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        cleanup_auto_scaling_for_service(challenge)
+
+        mock_autoscaling.deregister_scalable_target.assert_called_once()
+        mock_cloudwatch.delete_alarms.assert_called_once_with(
+            AlarmNames=[
+                "test_queue_service_scale_up",
+                "test_queue_service_scale_down",
+            ]
+        )
+        mock_delete_schedule.assert_called_once_with(challenge)
+
+    @patch("challenges.aws_utils.delete_challenge_cleanup_schedule")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_cleanup_auto_scaling_handles_not_found(
+        self, mock_get_boto3_client, mock_delete_schedule
+    ):
+        """Cleanup should not raise even if resources don't exist."""
+        mock_autoscaling = MagicMock()
+        mock_autoscaling.deregister_scalable_target.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ObjectNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": 400},
+            },
+            operation_name="DeregisterScalableTarget",
+        )
+        mock_cloudwatch = MagicMock()
+        mock_cloudwatch.delete_alarms.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ResourceNotFound"},
+                "ResponseMetadata": {"HTTPStatusCode": 400},
+            },
+            operation_name="DeleteAlarms",
+        )
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        # Should not raise
+        cleanup_auto_scaling_for_service(challenge)
+        mock_delete_schedule.assert_called_once_with(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_cleanup_auto_scaling_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        cleanup_auto_scaling_for_service(challenge)
+
+
+class TestScheduleChallengeCleanup(unittest.TestCase):
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_cleanup_success(self, mock_get_boto3_client):
+        mock_scheduler = MagicMock()
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2026, 12, 31, 23, 59, 59)
+
+        schedule_challenge_cleanup(challenge)
+
+        mock_scheduler.create_schedule.assert_called_once()
+        call_kwargs = mock_scheduler.create_schedule.call_args[1]
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
+        assert call_kwargs["ScheduleExpression"] == "at(2026-12-31T23:59:59)"
+        assert call_kwargs["ActionAfterCompletion"] == "DELETE"
+        assert "challenge_pk" in call_kwargs["Target"]["Input"]
+
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_cleanup_skipped_without_lambda_arn(
+        self, mock_get_boto3_client
+    ):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        schedule_challenge_cleanup(challenge)
+
+        mock_get_boto3_client.assert_not_called()
+
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_cleanup_client_error(self, mock_get_boto3_client):
+        mock_scheduler = MagicMock()
+        mock_scheduler.create_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ServiceException"},
+                "ResponseMetadata": {"HTTPStatusCode": 500},
+            },
+            operation_name="CreateSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2026, 12, 31, 23, 59, 59)
+
+        # Should not raise, just log
+        schedule_challenge_cleanup(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_schedule_cleanup_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        schedule_challenge_cleanup(challenge)
+
+
+class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_update_schedule_success(self, mock_get_boto3_client):
+        mock_scheduler = MagicMock()
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2027, 6, 15, 12, 0, 0)
+
+        update_challenge_cleanup_schedule(challenge)
+
+        mock_scheduler.update_schedule.assert_called_once()
+        call_kwargs = mock_scheduler.update_schedule.call_args[1]
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
+        assert call_kwargs["ScheduleExpression"] == "at(2027-06-15T12:00:00)"
+
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.schedule_challenge_cleanup")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_update_schedule_not_found_creates_new(
+        self, mock_get_boto3_client, mock_schedule_cleanup
+    ):
+        """When the schedule doesn't exist (already fired and auto-deleted),
+        create a new one."""
+        mock_scheduler = MagicMock()
+        mock_scheduler.update_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ResourceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": 404},
+            },
+            operation_name="UpdateSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2027, 6, 15, 12, 0, 0)
+
+        update_challenge_cleanup_schedule(challenge)
+
+        mock_schedule_cleanup.assert_called_once_with(challenge)
+
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_update_schedule_skipped_without_lambda_arn(
+        self, mock_get_boto3_client
+    ):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        update_challenge_cleanup_schedule(challenge)
+
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_update_schedule_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        update_challenge_cleanup_schedule(challenge)
+
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_update_schedule_other_client_error_logs_exception(
+        self, mock_get_boto3_client
+    ):
+        """Non-ResourceNotFoundException errors should be logged, not re-raised."""
+        mock_scheduler = MagicMock()
+        mock_scheduler.update_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "InternalServerError"},
+                "ResponseMetadata": {"HTTPStatusCode": 500},
+            },
+            operation_name="UpdateSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        from datetime import datetime
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = datetime(2027, 6, 15, 12, 0, 0)
+
+        # Should not raise, just log the exception
+        update_challenge_cleanup_schedule(challenge)
+
+        mock_scheduler.update_schedule.assert_called_once()
+
+
+class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_delete_schedule_success(self, mock_get_boto3_client):
+        mock_scheduler = MagicMock()
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        delete_challenge_cleanup_schedule(challenge)
+
+        mock_scheduler.delete_schedule.assert_called_once_with(
+            Name="evalai-cleanup-challenge-staging-42"
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_delete_schedule_not_found(self, mock_get_boto3_client):
+        """Deleting a non-existent schedule should not raise."""
+        mock_scheduler = MagicMock()
+        mock_scheduler.delete_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ResourceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": 404},
+            },
+            operation_name="DeleteSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        # Should not raise
+        delete_challenge_cleanup_schedule(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_delete_schedule_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        delete_challenge_cleanup_schedule(challenge)
+
+
+class TestHandleEndDateChange(TestCase):
+    @patch("challenges.aws_utils.start_workers")
+    def test_end_date_extended_after_cleanup_recreates_workers(
+        self, mock_start_workers
+    ):
+        """When end_date is extended after resources were cleaned up,
+        recreate everything."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = True
+        challenge.workers = None  # Resources were cleaned up
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=30)
+
+        mock_start_workers.return_value = {"count": 1, "failures": []}
+
+        handle_end_date_change_for_challenge(
+            sender=None, instance=challenge, created=False
+        )
+
+        mock_start_workers.assert_called_once_with([challenge])
+
+    @patch("challenges.aws_utils.update_challenge_cleanup_schedule")
+    def test_end_date_extended_with_active_workers_reschedules(
+        self, mock_update_schedule
+    ):
+        """When end_date is extended and workers are still active,
+        just reschedule the cleanup."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = True
+        challenge.workers = 1  # Workers still active
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
+
+        handle_end_date_change_for_challenge(
+            sender=None, instance=challenge, created=False
+        )
+
+        mock_update_schedule.assert_called_once_with(challenge)
+
+    @patch("challenges.aws_utils.delete_workers")
+    def test_end_date_set_to_past_triggers_cleanup(self, mock_delete_workers):
+        """When end_date is changed to the past, trigger cleanup."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = True
+        challenge.workers = 1
+        challenge._original_end_date = timezone.now() + timedelta(days=30)
+        challenge.end_date = timezone.now() - timedelta(days=1)
+
+        mock_delete_workers.return_value = {"count": 1, "failures": []}
+
+        handle_end_date_change_for_challenge(
+            sender=None, instance=challenge, created=False
+        )
+
+        mock_delete_workers.assert_called_once_with([challenge])
+
+    def test_end_date_change_skipped_for_docker_based(self):
+        """Docker-based challenges should be skipped."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = True
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = True
+        challenge.workers = 1
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
+
+        # Should not call any AWS functions
+        with patch(
+            "challenges.aws_utils.update_challenge_cleanup_schedule"
+        ) as mock_update:
+            handle_end_date_change_for_challenge(
+                sender=None, instance=challenge, created=False
+            )
+            mock_update.assert_not_called()
+
+    def test_end_date_change_skipped_for_unapproved_challenge_without_workers(
+        self,
+    ):
+        """Unapproved challenges with no workers should be skipped."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = False
+        challenge.workers = None
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            handle_end_date_change_for_challenge(
+                sender=None, instance=challenge, created=False
+            )
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.update_challenge_cleanup_schedule")
+    def test_end_date_change_proceeds_for_unapproved_challenge_with_workers(
+        self, mock_update_schedule
+    ):
+        """Unapproved challenges with active workers (set up by host
+        testing) should still update the EventBridge schedule."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = False
+        challenge.workers = 1  # Workers created via host submission
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
+
+        handle_end_date_change_for_challenge(
+            sender=None, instance=challenge, created=False
+        )
+
+        mock_update_schedule.assert_called_once_with(challenge)
+
+    def test_end_date_change_skipped_on_create(self):
+        """New challenge creation should not trigger end_date handler."""
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge._original_end_date = timezone.now() - timedelta(days=1)
+        challenge.end_date = timezone.now() + timedelta(days=60)
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            handle_end_date_change_for_challenge(
+                sender=None, instance=challenge, created=True
+            )
+            mock_start.assert_not_called()
+
+
+class TestEnsureWorkersForSubmission(TestCase):
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_in_debug_mode(self, mock_settings):
+        """Should return early without calling start_workers in DEBUG mode."""
+        mock_settings.DEBUG = True
+        challenge = MagicMock()
+        challenge.pk = 1
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_in_test_mode(self, mock_settings):
+        """Should return early without calling start_workers in TEST mode."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = True
+        challenge = MagicMock()
+        challenge.pk = 1
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_for_docker_based_challenge(self, mock_settings):
+        """Should skip docker-based challenges."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = True
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_for_ec2_challenge(self, mock_settings):
+        """Should skip EC2-based challenges."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = True
+        challenge.remote_evaluation = False
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_for_remote_evaluation_challenge(
+        self, mock_settings
+    ):
+        """Should skip remote evaluation challenges."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = True
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_returns_early_when_workers_already_exist(self, mock_settings):
+        """Should be a no-op when workers are already set up."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = 1  # Workers already exist
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    def test_starts_workers_when_workers_stopped(self, mock_settings):
+        """Should start workers when workers are stopped (0)."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = 0  # Workers exist but stopped
+
+        with patch("challenges.aws_utils.start_workers") as mock_start:
+            mock_start.return_value = {"count": 1, "failures": []}
+            ensure_workers_for_submission(challenge)
+            mock_start.assert_called_once_with([challenge])
+
+    @patch("challenges.aws_utils.start_workers")
+    @patch("challenges.aws_utils.settings")
+    def test_creates_workers_when_none_exist(
+        self, mock_settings, mock_start_workers
+    ):
+        """Should call start_workers when workers is None (stack never created)."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = None
+
+        mock_start_workers.return_value = {"count": 1, "failures": []}
+
+        ensure_workers_for_submission(challenge)
+
+        mock_start_workers.assert_called_once_with([challenge])
+
+    @patch("challenges.aws_utils.start_workers")
+    @patch("challenges.aws_utils.settings")
+    def test_logs_error_when_worker_creation_fails(
+        self, mock_settings, mock_start_workers
+    ):
+        """Should log error when start_workers fails."""
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.workers = None
+
+        mock_start_workers.return_value = {
+            "count": 0,
+            "failures": [
+                {"message": "Service creation failed", "challenge_pk": 1}
+            ],
+        }
+
+        # Should not raise, just log the error
+        ensure_workers_for_submission(challenge)
+
+        mock_start_workers.assert_called_once_with([challenge])
+
+
+class TestGetCapacityProviderStrategy:
+    def test_spot_only_defaults(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 1
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 1
+        assert result[0]["base"] == 0
+
+    def test_mixed_strategy(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 3
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 1
+        challenge.fargate_base = 1
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 2
+        spot = next(
+            p for p in result if p["capacityProvider"] == "FARGATE_SPOT"
+        )
+        fargate = next(p for p in result if p["capacityProvider"] == "FARGATE")
+        assert spot["weight"] == 3
+        assert spot["base"] == 0
+        assert fargate["weight"] == 1
+        assert fargate["base"] == 1
+
+    def test_fargate_only_via_weights(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 0
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 1
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE"
+
+    def test_fallback_when_both_weights_zero(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 0
+        challenge.fargate_spot_base = 0
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 1
+
+    def test_spot_with_base(self):
+        challenge = MagicMock()
+        challenge.fargate_spot_weight = 2
+        challenge.fargate_spot_base = 3
+        challenge.fargate_weight = 0
+        challenge.fargate_base = 0
+        challenge.use_fargate_spot = True
+
+        result = get_capacity_provider_strategy(challenge)
+        assert len(result) == 1
+        assert result[0]["capacityProvider"] == "FARGATE_SPOT"
+        assert result[0]["weight"] == 2
+        assert result[0]["base"] == 3
+
+
+class TestCreateServiceFargateSpot:
+    def test_create_service_with_fargate_spot(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = True
+        mock_challenge.fargate_spot_weight = 1
+        mock_challenge.fargate_spot_base = 0
+        mock_challenge.fargate_weight = 0
+        mock_challenge.fargate_base = 0
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 1
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "capacityProviderStrategy" in call_kwargs
+        assert "launchType" not in call_kwargs
+        strategy = call_kwargs["capacityProviderStrategy"]
+        assert len(strategy) == 1
+        assert strategy[0]["capacityProvider"] == "FARGATE_SPOT"
+
+    def test_create_service_with_fargate_launch_type(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = False
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        assert mock_challenge.workers == 1
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "launchType" in call_kwargs
+        assert call_kwargs["launchType"] == "FARGATE"
+        assert "capacityProviderStrategy" not in call_kwargs
+
+    def test_create_service_with_mixed_strategy(
+        self, mock_client, mock_challenge, client_token
+    ):
+        mock_challenge.workers = None
+        mock_challenge.task_def_arn = "valid_task_def_arn"
+        mock_challenge.use_fargate_spot = True
+        mock_challenge.fargate_spot_weight = 3
+        mock_challenge.fargate_spot_base = 0
+        mock_challenge.fargate_weight = 1
+        mock_challenge.fargate_base = 1
+        mock_challenge.pk = 42
+
+        response_metadata = {"HTTPStatusCode": HTTPStatus.OK}
+        mock_client.create_service.return_value = {
+            "ResponseMetadata": response_metadata
+        }
+
+        with patch(
+            "challenges.aws_utils.register_task_def_by_challenge_pk",
+            return_value={"ResponseMetadata": response_metadata},
+        ), patch(
+            "challenges.aws_utils.setup_auto_scaling_for_service",
+        ), patch(
+            "challenges.aws_utils.schedule_challenge_cleanup",
+        ):
+            response = create_service_by_challenge_pk(
+                mock_client, mock_challenge, client_token
+            )
+
+        assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+
+        call_kwargs = mock_client.create_service.call_args[1]
+        assert "capacityProviderStrategy" in call_kwargs
+        assert "launchType" not in call_kwargs
+        strategy = call_kwargs["capacityProviderStrategy"]
+        assert len(strategy) == 2
+        spot = next(
+            p for p in strategy if p["capacityProvider"] == "FARGATE_SPOT"
+        )
+        fargate = next(
+            p for p in strategy if p["capacityProvider"] == "FARGATE"
+        )
+        assert spot["weight"] == 3
+        assert fargate["weight"] == 1
+        assert fargate["base"] == 1

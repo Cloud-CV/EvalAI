@@ -1,6 +1,11 @@
+import logging
+
 from allauth.account.utils import send_email_confirmation
+from base.utils import get_user_by_email
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.db import IntegrityError
+from rest_auth.registration.views import RegisterView
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -10,18 +15,48 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .authentication import ExpiringTokenAuthentication
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
-from .serializers import JwtTokenSerializer
+from .serializers import JwtTokenSerializer, UpdateEmailSerializer
 from .throttles import ResendEmailThrottle
+
+logger = logging.getLogger(__name__)
+
+
+class SafeRegisterView(RegisterView):
+    """Registration view that converts duplicate-email IntegrityErrors into
+    a 400 response instead of letting them bubble up as 500 errors.
+
+    The adapter's clean_email() catches most duplicates at validation time,
+    but a race condition (two concurrent requests with the same email) can
+    slip past the check. This view acts as a safety net for that case.
+    """
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as exc:
+            if "auth_user_email_unique" in str(exc):
+                logger.warning(
+                    "Duplicate-email IntegrityError caught during "
+                    "registration for email=%s",
+                    request.data.get("email", "<unknown>"),
+                )
+                return Response(
+                    {
+                        "email": [
+                            "A user is already registered with this email address."
+                        ]
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            raise
 
 
 @api_view(["POST"])
@@ -42,7 +77,7 @@ def disable_user(request):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_auth_token(request):
     try:
-        user = User.objects.get(email=request.user.email)
+        user = get_user_by_email(request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
@@ -93,7 +128,7 @@ def resend_email_confirmation(request):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def refresh_auth_token(request):
     try:
-        user = User.objects.get(email=request.user.email)
+        user = get_user_by_email(request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
@@ -128,3 +163,39 @@ def refresh_auth_token(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_email(request):
+    """
+    Allows an authenticated user to change their email address.
+    Validates MX records, creates a new unverified EmailAddress, and
+    sends a confirmation email. The old address stays until the new
+    one is confirmed (handled by allauth).
+    """
+    serializer = UpdateEmailSerializer(
+        data=request.data, context={"user": request.user}
+    )
+    if not serializer.is_valid():
+        errors = serializer.errors
+        first_error = next(iter(errors.values()))[0]
+        return Response(
+            {"error": str(first_error)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer.save()
+    new_email = serializer.validated_data["email"]
+    send_email_confirmation(request._request, request.user, email=new_email)
+
+    return Response(
+        {
+            "message": "A confirmation email has been sent to {}.".format(
+                new_email
+            )
+        },
+        status=status.HTTP_200_OK,
+    )

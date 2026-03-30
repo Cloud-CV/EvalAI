@@ -14,6 +14,7 @@ from jobs.utils import (
     is_url_valid,
     reorder_submissions_comparator_to_key,
 )
+from jobs.views import _compute_remaining_limits
 
 
 class TestUtils(unittest.TestCase):
@@ -49,7 +50,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
 
         (
             leaderboard_data,
@@ -66,16 +71,13 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_max_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 1
         mock_challenge_phase.max_submissions_per_month = 5
@@ -102,17 +104,14 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_monthly_and_daily_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         # Setup mocks
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 10
         mock_challenge_phase.max_submissions_per_month = 2
@@ -151,16 +150,13 @@ class TestUtils(unittest.TestCase):
     @patch("jobs.utils.Submission")
     @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
     @patch("jobs.utils.get_challenge_phase_model")
-    @patch("jobs.utils.get_challenge_model")
     def test_get_remaining_submission_for_a_phase_both_monthly_and_daily_limit(
         self,
-        mock_get_challenge_model,
         mock_get_challenge_phase_model,
         mock_get_team_id,
         mock_Submission,
     ):
         mock_user = MagicMock()
-        mock_get_challenge_model.return_value = MagicMock()
         mock_challenge_phase = MagicMock()
         mock_challenge_phase.max_submissions = 10
         mock_challenge_phase.max_submissions_per_month = 2
@@ -191,6 +187,141 @@ class TestUtils(unittest.TestCase):
             response["message"],
         )
         self.assertIn("remaining_time", response)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_for_a_phase_with_prefetched_phase(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that passing a pre-fetched challenge_phase avoids N+1 queries."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_team_id.return_value = 123
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1, challenge_phase=mock_challenge_phase
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_challenge_phase_model.assert_not_called()
+        self.assertIn("remaining_submissions_count", response)
+        self.assertEqual(response["remaining_submissions_count"], 10)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_for_a_phase_without_prefetched_phase(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test backward compatibility - when challenge_phase is not passed, it's fetched."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_challenge_phase_model.return_value = mock_challenge_phase
+        mock_get_team_id.return_value = 123
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_challenge_phase_model.assert_called_once_with(1)
+        self.assertIn("remaining_submissions_count", response)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_with_prefetched_participant_team_pk(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that passing participant_team_pk skips the DB lookup."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user,
+            1,
+            1,
+            challenge_phase=mock_challenge_phase,
+            participant_team_pk=456,
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_team_id.assert_not_called()
+        mock_get_challenge_phase_model.assert_not_called()
+        self.assertIn("remaining_submissions_count", response)
+        self.assertEqual(response["remaining_submissions_count"], 10)
+
+    @patch("jobs.utils.Submission")
+    @patch("jobs.utils.get_participant_team_id_of_user_for_a_challenge")
+    @patch("jobs.utils.get_challenge_phase_model")
+    def test_get_remaining_submission_without_participant_team_pk_falls_back(
+        self,
+        mock_get_challenge_phase_model,
+        mock_get_team_id,
+        mock_Submission,
+    ):
+        """Test that omitting participant_team_pk still calls the lookup (backward compat)."""
+        mock_user = MagicMock()
+        mock_challenge_phase = MagicMock()
+        mock_challenge_phase.max_submissions = 10
+        mock_challenge_phase.max_submissions_per_month = 5
+        mock_challenge_phase.max_submissions_per_day = 2
+        mock_get_team_id.return_value = 789
+
+        mock_qs = MagicMock()
+        mock_qs.count.return_value = 0
+        mock_Submission.objects.filter.return_value.exclude.return_value = (
+            mock_qs
+        )
+        mock_qs.filter.return_value = mock_qs
+
+        response, status_code = get_remaining_submission_for_a_phase(
+            mock_user, 1, 1, challenge_phase=mock_challenge_phase
+        )
+
+        self.assertEqual(status_code, 200)
+        mock_get_team_id.assert_called_once_with(mock_user, 1)
+        self.assertIn("remaining_submissions_count", response)
 
     @patch("jobs.utils.LeaderboardData")
     def test_calculate_distinct_sorted_leaderboard_data_missing_labels_key(
@@ -238,7 +369,11 @@ class TestUtils(unittest.TestCase):
         mock_challenge_phase_split = MagicMock()
         mock_leaderboard_data = MagicMock()
         mock_filter.return_value = mock_leaderboard_data
-        mock_exclude.return_value = mock_leaderboard_data
+        mock_leaderboard_data.filter.return_value = mock_leaderboard_data
+        mock_leaderboard_data.order_by.return_value = mock_leaderboard_data
+        mock_leaderboard_data.annotate.return_value = mock_leaderboard_data
+        mock_leaderboard_data.values.return_value = []
+        # When challenge_hosts_emails is [], exclude is not called
 
         mock_leaderboard = MagicMock()
         mock_leaderboard.schema = {
@@ -452,7 +587,9 @@ class TestReorderSubmissionsComparator(TestCase):
         self.challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
         )
+        self.challenge_phase_split.show_scores_on_leaderboard = True
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -461,8 +598,12 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -477,9 +618,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -506,6 +649,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -514,8 +658,12 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -530,9 +678,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -559,6 +709,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(result, [])
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -567,9 +718,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that participant teams are fetched in bulk to avoid N+1 queries."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -600,9 +755,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -644,6 +801,7 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertIn("id__in", call_kwargs[1])
         self.assertEqual(set(call_kwargs[1]["id__in"]), {1, 2})
 
+    @patch("jobs.utils.User")
     @patch("jobs.utils.ParticipantTeam")
     @patch("challenges.models.LeaderboardData.objects")
     @patch("hosts.utils.is_user_a_staff_or_host")
@@ -652,9 +810,13 @@ class TestReorderSubmissionsComparator(TestCase):
         mock_is_user_a_staff_or_host,
         mock_leaderboard_data_objects,
         mock_participant_team,
+        mock_user_model,
     ):
         """Test that teams with any banned participant are excluded."""
         mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
 
         # Test data for leaderboard entries
         test_data = [
@@ -677,9 +839,11 @@ class TestReorderSubmissionsComparator(TestCase):
         ]
 
         # Set up chainable mock for:
-        # .exclude().filter().filter().order_by().annotate().values()
+        # .filter().exclude().filter().filter().order_by().annotate().values()
         mock_qs = MagicMock()
-        mock_leaderboard_data_objects.exclude.return_value = mock_qs
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -719,6 +883,350 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["submission__participant_team"], 2)
 
+    @patch("jobs.utils.User")
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_empty_banned_email_ids_includes_all_teams(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+        mock_user_model,
+    ):
+        """Test that empty banned_email_ids excludes no teams."""
+        mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
+        self.challenge_obj.banned_email_ids = []
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 2)
+
+    @patch("jobs.utils.User")
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_none_banned_email_ids_includes_all_teams(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+        mock_user_model,
+    ):
+        """Test that None banned_email_ids excludes no teams (set conversion)."""
+        mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
+        self.challenge_obj.banned_email_ids = None
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 1)
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": 10, "time": 5},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 9,
+                "result": {"score": 9, "time": 4},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(len(result), 2)
+
+    @patch("jobs.utils.User")
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_distinct_team_list_with_many_duplicates(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+        mock_user_model,
+    ):
+        """Test set-based team_list gives correct distinct result with many entries."""
+        mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
+
+        # Many entries from same teams - Team1 appears 5x, Team2 appears 3x
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": float(i),
+                "result": {"score": str(i), "time": "0"},
+            }
+            for i in range(10, 5, -1)
+        ] + [
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Team2",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": float(i),
+                "result": {"score": str(i), "time": "0"},
+            }
+            for i in range(9, 6, -1)
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "user2@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Only 2 distinct teams (best entry per team)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(
+            result[0]["submission__participant_team__team_name"], "Team1"
+        )
+        self.assertEqual(
+            result[1]["submission__participant_team__team_name"], "Team2"
+        )
+
+    @patch("jobs.utils.User")
+    @patch("jobs.utils.ParticipantTeam")
+    @patch("challenges.models.LeaderboardData.objects")
+    @patch("hosts.utils.is_user_a_staff_or_host")
+    def test_baseline_entries_always_included(
+        self,
+        mock_is_user_a_staff_or_host,
+        mock_leaderboard_data_objects,
+        mock_participant_team,
+        mock_user_model,
+    ):
+        """Test baseline entries are always included regardless of team_list."""
+        mock_is_user_a_staff_or_host.return_value = False
+        mock_user_model.objects.filter.return_value.values_list.return_value = [
+            1
+        ]
+
+        test_data = [
+            {
+                "submission__participant_team": 1,
+                "submission__participant_team__team_name": "Team1",
+                "submission__is_baseline": False,
+                "error": None,
+                "filtering_score": 10,
+                "result": {"score": "10", "time": "0"},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Baseline",
+                "submission__is_baseline": True,
+                "error": None,
+                "filtering_score": 5,
+                "result": {"score": "5", "time": "0"},
+            },
+            {
+                "submission__participant_team": 2,
+                "submission__participant_team__team_name": "Baseline",
+                "submission__is_baseline": True,
+                "error": None,
+                "filtering_score": 3,
+                "result": {"score": "3", "time": "0"},
+            },
+        ]
+
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
+
+        mock_team1 = Mock()
+        mock_team1.id = 1
+        mock_p1 = Mock()
+        mock_p1.user.email = "user1@example.com"
+        mock_team1.participants.all.return_value = [mock_p1]
+
+        mock_team2 = Mock()
+        mock_team2.id = 2
+        mock_p2 = Mock()
+        mock_p2.user.email = "baseline@example.com"
+        mock_team2.participants.all.return_value = [mock_p2]
+
+        mock_participant_team.objects.filter.return_value.prefetch_related.return_value = [
+            mock_team1,
+            mock_team2,
+        ]
+
+        result, status_code = calculate_distinct_sorted_leaderboard_data(
+            self.user,
+            self.challenge_obj,
+            self.challenge_phase_split,
+            False,
+            "score",
+        )
+
+        self.assertEqual(status_code, 200)
+        # Team1 (1) + 2 baseline entries = 3
+        self.assertEqual(len(result), 3)
+
+    def _create_mock_leaderboard_chain(
+        self, mock_leaderboard_data_objects, test_data
+    ):
+        """Helper to create mock chain for LeaderboardData queryset."""
+        mock_qs = MagicMock()
+        mock_filter_result = MagicMock()
+        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
+        mock_filter_result.exclude.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.values.return_value = test_data
+        return mock_qs
+
     def test_all_comparisons(self):
         def dummy_comparator(a, b):
             return a - b
@@ -753,6 +1261,72 @@ class TestReorderSubmissionsComparator(TestCase):
         self.assertTrue(key1 >= key2)
         self.assertTrue(key4 >= key1)
         self.assertFalse(key3 >= key1)
+
+
+class TestComputeRemainingLimits(unittest.TestCase):
+    """Tests for _compute_remaining_limits which powers the batched view."""
+
+    def _make_phase(self, max_total=100, max_month=50, max_day=10):
+        phase = MagicMock()
+        phase.max_submissions = max_total
+        phase.max_submissions_per_month = max_month
+        phase.max_submissions_per_day = max_day
+        return phase
+
+    def test_remaining_counts_when_under_all_limits(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=50, max_day=10)
+        result = _compute_remaining_limits(phase, 5, 3, 1, now)
+        self.assertEqual(result["remaining_submissions_count"], 95)
+        self.assertEqual(result["remaining_submissions_this_month_count"], 47)
+        self.assertEqual(result["remaining_submissions_today_count"], 9)
+
+    def test_max_total_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=10, max_month=50, max_day=5)
+        result = _compute_remaining_limits(phase, 10, 3, 1, now)
+        self.assertTrue(result["submission_limit_exceeded"])
+        self.assertIn("exhausted maximum submission limit", result["message"])
+
+    def test_monthly_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=10)
+        result = _compute_remaining_limits(phase, 5, 5, 1, now)
+        self.assertIn("this month's submission limit", result["message"])
+        self.assertIn("remaining_time", result)
+
+    def test_daily_limit_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=50, max_day=3)
+        result = _compute_remaining_limits(phase, 5, 4, 3, now)
+        self.assertIn("today's submission limit", result["message"])
+        self.assertIn("remaining_time", result)
+
+    def test_both_monthly_and_daily_exhausted(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=3)
+        result = _compute_remaining_limits(phase, 5, 5, 3, now)
+        self.assertIn("Both daily and monthly", result["message"])
+
+    def test_remaining_today_capped_by_month(self):
+        """remaining_submissions_today_count should never exceed monthly remaining."""
+        from django.utils import timezone
+
+        now = timezone.now()
+        phase = self._make_phase(max_total=100, max_month=5, max_day=10)
+        result = _compute_remaining_limits(phase, 0, 3, 0, now)
+        self.assertEqual(result["remaining_submissions_this_month_count"], 2)
+        self.assertEqual(result["remaining_submissions_today_count"], 2)
 
 
 class Submission:

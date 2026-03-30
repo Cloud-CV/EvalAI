@@ -57,6 +57,9 @@ media/
 docker/prod/docker_staging.env
 docker/prod/docker_production.env
 
+# Local Postgres data (docker-compose dev)
+postgres_data/
+
 # SSL files
 ssl/
 
@@ -66,13 +69,6 @@ ssl/
 *.iws
 out/
 .idea_modules/
-
-# Monitoring Setup
-monitoring/prometheus/prometheus_db/*
-!monitoring/prometheus/prometheus_db/.gitkeep
-monitoring/grafana/grafana_db/grafana.db
-monitoring/alertmanager/data/*
-!monitoring/alertmanager/data/.gitkeep
 
 # LLM Coding Agents
 .claude/
@@ -86,3 +82,6 @@ monitoring/alertmanager/data/*
 .continue/
 .codeium/
 .tabnine/
+
+# Lambda Functions Zip Files
+scripts/lambda/*.zip

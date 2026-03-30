@@ -13,6 +13,7 @@ from base.utils import (
     is_user_a_staff,
     paginated_queryset,
 )
+from challenges.aws_utils import ensure_workers_for_submission
 from challenges.models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -33,7 +34,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import dateparse, timezone
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -58,12 +59,12 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from apps.accounts.authentication import ExpiringTokenAuthentication
+
 from .aws_utils import generate_aws_eks_bearer_token
+from .constants import submission_status_to_exclude
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -77,7 +78,6 @@ from .tasks import download_file_and_publish_submission_message
 from .utils import (
     calculate_distinct_sorted_leaderboard_data,
     get_leaderboard_data_model,
-    get_remaining_submission_for_a_phase,
     get_submission_model,
     handle_submission_rerun,
     handle_submission_resume,
@@ -214,6 +214,14 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        if challenge.is_submission_paused:
+            response_data = {
+                "error": "Submissions are currently paused for this challenge. Please try again later."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         # check if challenge phase is active
         if not challenge_phase.is_active:
             response_data = {
@@ -223,8 +231,17 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        if challenge_phase.is_submission_paused:
+            response_data = {
+                "error": "Submissions are currently paused for this challenge phase. Please try again later."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         # check if user is a challenge host or a participant
-        if not is_user_a_host_of_challenge(request.user, challenge_id):
+        is_host = is_user_a_host_of_challenge(request.user, challenge_id)
+        if not is_host:
             # check if challenge phase is public and accepting solutions
             if not challenge_phase.is_public:
                 response_data = {
@@ -244,6 +261,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     return Response(
                         response_data, status=status.HTTP_403_FORBIDDEN
                     )
+            # Ensure worker stack exists for participant submissions
+            ensure_workers_for_submission(challenge)
+        else:
+            # Ensure the worker stack exists for host submissions
+            ensure_workers_for_submission(challenge)
 
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id
@@ -849,6 +871,73 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     return paginator.get_paginated_response(response_data)
 
 
+def _compute_remaining_limits(
+    phase,
+    submissions_done_count,
+    submissions_done_this_month_count,
+    submissions_done_today_count,
+    now,
+):
+    """Pure-Python logic to compute remaining submission limits for a phase.
+
+    Mirrors the branching in get_remaining_submission_for_a_phase() but
+    operates on pre-computed counts so it needs no database access.
+    """
+    max_submissions_count = phase.max_submissions
+    max_submissions_per_month_count = phase.max_submissions_per_month
+    max_submissions_per_day_count = phase.max_submissions_per_day
+
+    if submissions_done_count >= max_submissions_count:
+        return {
+            "message": "You have exhausted maximum submission limit!",
+            "submission_limit_exceeded": True,
+        }
+
+    if submissions_done_this_month_count >= max_submissions_per_month_count:
+        next_month_start = (now + datetime.timedelta(days=30)).replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        remaining_time = next_month_start - now
+        if submissions_done_today_count >= max_submissions_per_day_count:
+            return {
+                "message": "Both daily and monthly submission limits are exhausted!",
+                "remaining_time": remaining_time,
+            }
+        return {
+            "message": "You have exhausted this month's submission limit!",
+            "remaining_time": remaining_time,
+        }
+
+    if submissions_done_today_count >= max_submissions_per_day_count:
+        tomorrow = now + datetime.timedelta(1)
+        midnight = tomorrow.replace(hour=0, minute=0, second=0)
+        remaining_time = midnight - now
+        return {
+            "message": "You have exhausted today's submission limit!",
+            "remaining_time": remaining_time,
+        }
+
+    remaining_submission_count = max_submissions_count - submissions_done_count
+    remaining_submissions_this_month_count = (
+        max_submissions_per_month_count - submissions_done_this_month_count
+    )
+    remaining_submissions_today_count = (
+        max_submissions_per_day_count - submissions_done_today_count
+    )
+    remaining_submissions_this_month_count = min(
+        remaining_submission_count, remaining_submissions_this_month_count
+    )
+    remaining_submissions_today_count = min(
+        remaining_submissions_this_month_count,
+        remaining_submissions_today_count,
+    )
+    return {
+        "remaining_submissions_this_month_count": remaining_submissions_this_month_count,
+        "remaining_submissions_today_count": remaining_submissions_today_count,
+        "remaining_submissions_count": remaining_submission_count,
+    }
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -890,34 +979,62 @@ def get_remaining_submissions(request, challenge_pk):
     """
     phases_data = {}
     challenge = get_challenge_model(challenge_pk)
+
+    participant_team = get_participant_team_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
+    if not participant_team:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     challenge_phases = ChallengePhase.objects.filter(
         challenge=challenge
     ).order_by("pk")
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        challenge_phases = challenge_phases.filter(
-            challenge=challenge, is_public=True
-        ).order_by("pk")
-    phase_data_list = list()
+        challenge_phases = challenge_phases.filter(is_public=True)
+
+    now = timezone.now()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    submission_filter = Q(
+        submissions__participant_team=participant_team,
+        submissions__challenge_phase__challenge=challenge_pk,
+    ) & ~Q(submissions__status__in=submission_status_to_exclude)
+
+    challenge_phases = challenge_phases.annotate(
+        submissions_count=Count(
+            "submissions",
+            filter=submission_filter,
+        ),
+        submissions_this_month_count=Count(
+            "submissions",
+            filter=submission_filter
+            & Q(submissions__submitted_at__gte=month_start),
+        ),
+        submissions_today_count=Count(
+            "submissions",
+            filter=submission_filter
+            & Q(submissions__submitted_at__gte=today_start),
+        ),
+    )
+
+    phase_data_list = []
     for phase in challenge_phases:
-        (
-            remaining_submission_message,
-            response_status,
-        ) = get_remaining_submission_for_a_phase(
-            request.user, phase.id, challenge_pk
+        limits = _compute_remaining_limits(
+            phase,
+            phase.submissions_count,
+            phase.submissions_this_month_count,
+            phase.submissions_today_count,
+            now,
         )
-        if response_status != status.HTTP_200_OK:
-            return Response(
-                remaining_submission_message, status=response_status
-            )
         phase_data_list.append(
             RemainingSubmissionDataSerializer(
-                phase, context={"limits": remaining_submission_message}
+                phase, context={"limits": limits}
             ).data
         )
+
     phases_data["phases"] = phase_data_list
-    participant_team = get_participant_team_of_user_for_a_challenge(
-        request.user, challenge_pk
-    )
     phases_data["participant_team"] = participant_team.team_name
     phases_data["participant_team_id"] = participant_team.id
     return Response(phases_data, status=status.HTTP_200_OK)
@@ -2739,7 +2856,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is a challenge host or a participant
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
+    if not is_host:
         # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
@@ -2765,6 +2883,11 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+        # Ensure worker stack exists for participant submissions
+        ensure_workers_for_submission(challenge)
+    else:
+        # Ensure the worker stack exists for host submissions
+        ensure_workers_for_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
@@ -3034,7 +3157,8 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
+    if not is_host:
         if not challenge_phase.is_public:
             response_data = {
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
@@ -3057,6 +3181,11 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
+        # Ensure worker stack exists for participant submissions
+        ensure_workers_for_submission(challenge)
+    else:
+        # Ensure the worker stack exists for host submissions
+        ensure_workers_for_submission(challenge)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import os
@@ -8,7 +9,7 @@ from http import HTTPStatus
 
 import yaml
 from accounts.models import JwtToken
-from base.utils import get_boto3_client, send_email
+from base.utils import get_boto3_client
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
@@ -46,6 +47,12 @@ aws_keys = {
     ),
 }
 
+CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get(
+    "CHALLENGE_CLEANUP_LAMBDA_ARN", ""
+)
+EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
+    "EVENTBRIDGE_SCHEDULER_ROLE_ARN", ""
+)
 
 COMMON_SETTINGS_DICT = {
     "EXECUTION_ROLE_ARN": os.environ.get(
@@ -84,8 +91,6 @@ COMMON_SETTINGS_DICT = {
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
-    "STATSD_ENDPOINT": os.environ.get("STATSD_ENDPOINT"),
-    "STATSD_PORT": os.environ.get("STATSD_PORT"),
 }
 
 VPC_DICT = {
@@ -93,6 +98,43 @@ VPC_DICT = {
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
+
+
+def get_capacity_provider_strategy(challenge):
+    """
+    Build the ECS capacityProviderStrategy list from per-challenge fields.
+
+    Returns a list of dicts suitable for passing to client.create_service().
+    Only includes providers whose weight > 0.
+    Falls back to a single FARGATE_SPOT entry if both weights are 0.
+    """
+    strategy = []
+    spot_weight = getattr(challenge, "fargate_spot_weight", 0) or 0
+    spot_base = getattr(challenge, "fargate_spot_base", 0) or 0
+    fg_weight = getattr(challenge, "fargate_weight", 0) or 0
+    fg_base = getattr(challenge, "fargate_base", 0) or 0
+
+    if spot_weight > 0:
+        strategy.append(
+            {
+                "capacityProvider": "FARGATE_SPOT",
+                "weight": spot_weight,
+                "base": spot_base,
+            }
+        )
+    if fg_weight > 0:
+        strategy.append(
+            {
+                "capacityProvider": "FARGATE",
+                "weight": fg_weight,
+                "base": fg_base,
+            }
+        )
+    if not strategy:
+        strategy = [
+            {"capacityProvider": "FARGATE_SPOT", "weight": 1, "base": 0}
+        ]
+    return strategy
 
 
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
@@ -136,6 +178,392 @@ def get_log_group_name(challenge_pk):
         f"challenge-pk-{challenge_pk}-{settings.ENVIRONMENT}-workers"
     )
     return log_group_name
+
+
+def setup_auto_scaling_for_service(challenge):
+    """
+    Registers the ECS service as a scalable target with Application Auto Scaling
+    and creates CloudWatch alarms that scale the service based on SQS queue depth.
+
+    Scale-up: when ApproximateNumberOfMessagesVisible > 0 for 1 minute.
+    Scale-down: when ApproximateNumberOfMessagesVisible = 0 for 2 minutes.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose service to configure.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping auto-scaling setup for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    queue_name = challenge.queue
+    service_name = f"{queue_name}_service"
+    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
+    resource_id = f"service/{cluster}/{service_name}"
+
+    autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
+
+    try:
+        # Register the ECS service as a scalable target (min=0, max=1)
+        autoscaling_client.register_scalable_target(
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            MinCapacity=0,
+            MaxCapacity=1,
+        )
+
+        # Create scale-up policy
+        scale_up_response = autoscaling_client.put_scaling_policy(
+            PolicyName=f"{service_name}_scale_up",
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            PolicyType="StepScaling",
+            StepScalingPolicyConfiguration={
+                "AdjustmentType": "ExactCapacity",
+                "StepAdjustments": [
+                    {
+                        "MetricIntervalLowerBound": 0,
+                        "ScalingAdjustment": 1,
+                    }
+                ],
+                "Cooldown": 60,
+            },
+        )
+        scale_up_policy_arn = scale_up_response["PolicyARN"]
+
+        # Create scale-down policy
+        scale_down_response = autoscaling_client.put_scaling_policy(
+            PolicyName=f"{service_name}_scale_down",
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+            PolicyType="StepScaling",
+            StepScalingPolicyConfiguration={
+                "AdjustmentType": "ExactCapacity",
+                "StepAdjustments": [
+                    {
+                        "MetricIntervalUpperBound": 0,
+                        "ScalingAdjustment": 0,
+                    }
+                ],
+                "Cooldown": 120,
+            },
+        )
+        scale_down_policy_arn = scale_down_response["PolicyARN"]
+
+        # Create CloudWatch alarms linked to the scaling policies
+        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+
+        # Scale-up alarm: queue depth > 0 for 1 minute
+        cloudwatch_client.put_metric_alarm(
+            AlarmName=f"{service_name}_scale_up",
+            Namespace="AWS/SQS",
+            MetricName="ApproximateNumberOfMessagesVisible",
+            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
+            Statistic="Sum",
+            Period=60,
+            EvaluationPeriods=1,
+            Threshold=0,
+            ComparisonOperator="GreaterThanThreshold",
+            AlarmActions=[scale_up_policy_arn],
+        )
+
+        # Scale-down alarm: queue depth = 0 for 2 minutes
+        cloudwatch_client.put_metric_alarm(
+            AlarmName=f"{service_name}_scale_down",
+            Namespace="AWS/SQS",
+            MetricName="ApproximateNumberOfMessagesVisible",
+            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
+            Statistic="Sum",
+            Period=120,
+            EvaluationPeriods=1,
+            Threshold=0,
+            ComparisonOperator="LessThanOrEqualToThreshold",
+            AlarmActions=[scale_down_policy_arn],
+        )
+
+        logger.info(
+            "Auto-scaling configured for challenge %s (service: %s)",
+            challenge.pk,
+            service_name,
+        )
+    except ClientError as e:
+        logger.exception(
+            "Failed to setup auto-scaling for challenge %s: %s",
+            challenge.pk,
+            e,
+        )
+
+
+def cleanup_auto_scaling_for_service(challenge):
+    """
+    Removes auto-scaling configuration and CloudWatch alarms for a challenge.
+
+    Called during service deletion or challenge cleanup. Handles cases where
+    resources have already been removed gracefully.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to clean up.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping auto-scaling cleanup for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    queue_name = challenge.queue
+    service_name = f"{queue_name}_service"
+    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
+    resource_id = f"service/{cluster}/{service_name}"
+
+    # Deregister scalable target (also removes scaling policies)
+    try:
+        autoscaling_client = get_boto3_client(
+            "application-autoscaling", aws_keys
+        )
+        autoscaling_client.deregister_scalable_target(
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+        )
+    except ClientError:
+        pass  # Already deregistered or never registered
+
+    # Delete CloudWatch alarms
+    try:
+        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+        cloudwatch_client.delete_alarms(
+            AlarmNames=[
+                f"{service_name}_scale_up",
+                f"{service_name}_scale_down",
+            ]
+        )
+    except ClientError:
+        pass  # Already deleted or never created
+
+    # Delete EventBridge cleanup schedule
+    delete_challenge_cleanup_schedule(challenge)
+
+    logger.info(
+        "Auto-scaling cleaned up for challenge %s (service: %s)",
+        challenge.pk,
+        service_name,
+    )
+
+
+def schedule_challenge_cleanup(challenge):
+    """
+    Creates a one-time EventBridge Scheduler schedule that fires at the
+    challenge's end_date to trigger a Lambda that cleans up all AWS resources
+    (ECS service, auto-scaling, CloudWatch alarms).
+
+    The schedule auto-deletes after firing (ActionAfterCompletion=DELETE).
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to schedule cleanup for.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge cleanup schedule for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
+            "Skipping EventBridge schedule for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    # EventBridge Scheduler uses the 'at()' expression for one-time schedules
+    schedule_expression = "at({})".format(
+        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.create_schedule(
+            Name=schedule_name,
+            ScheduleExpression=schedule_expression,
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+                "Input": json.dumps(
+                    {
+                        "challenge_pk": challenge.pk,
+                        "queue_name": challenge.queue,
+                    }
+                ),
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info(
+            "Scheduled cleanup for challenge %s at %s",
+            challenge.pk,
+            challenge.end_date,
+        )
+    except ClientError as e:
+        logger.exception(
+            "Failed to schedule cleanup for challenge %s: %s",
+            challenge.pk,
+            e,
+        )
+
+
+def update_challenge_cleanup_schedule(challenge):
+    """
+    Updates the EventBridge Scheduler schedule for a challenge when its
+    end_date changes. If the schedule doesn't exist (already fired and
+    auto-deleted), creates a new one instead.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose schedule to update.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge schedule update for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
+            "Skipping EventBridge schedule update for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    schedule_expression = "at({})".format(
+        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.update_schedule(
+            Name=schedule_name,
+            ScheduleExpression=schedule_expression,
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+                "Input": json.dumps(
+                    {
+                        "challenge_pk": challenge.pk,
+                        "queue_name": challenge.queue,
+                    }
+                ),
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info(
+            "Updated cleanup schedule for challenge %s to %s",
+            challenge.pk,
+            challenge.end_date,
+        )
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ResourceNotFoundException":
+            # Schedule was already fired and auto-deleted; create a new one
+            schedule_challenge_cleanup(challenge)
+        else:
+            logger.exception(
+                "Failed to update cleanup schedule for challenge %s: %s",
+                challenge.pk,
+                e,
+            )
+
+
+def delete_challenge_cleanup_schedule(challenge):
+    """
+    Deletes the EventBridge Scheduler schedule for a challenge.
+    Handles the case where the schedule has already been deleted gracefully.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge whose schedule to delete.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge schedule deletion for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        scheduler_client.delete_schedule(Name=schedule_name)
+    except ClientError:
+        pass  # Schedule already deleted or never created
+
+
+def ensure_workers_for_submission(challenge):
+    """
+    Ensures the worker stack (ECS service, auto-scaling, EventBridge cleanup)
+    exists for a challenge when a submission is made (host or participant).
+    If no active workers exist (workers is None or workers == 0), this triggers
+    stack creation/start via start_workers.
+
+    This allows both challenge hosts (pre-approval testing) and participants
+    (approved challenges) to recover from missing/stopped workers.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge to ensure workers for.
+    """
+    if settings.DEBUG or settings.TEST:
+        logger.info(
+            "Skipping ensure_workers_for_submission for challenge %s "
+            "in development/test environment.",
+            challenge.pk,
+        )
+        return
+
+    # Only applies to Fargate-managed challenges
+    if (
+        challenge.is_docker_based
+        or challenge.uses_ec2_worker
+        or challenge.remote_evaluation
+    ):
+        return
+
+    # Stack already has active workers
+    if challenge.workers not in (None, 0):
+        return
+
+    logger.info(
+        "Submission detected for challenge %s with no active workers. "
+        "Creating worker stack.",
+        challenge.pk,
+    )
+    response = start_workers([challenge])
+    count, failures = response["count"], response["failures"]
+    if count:
+        logger.info(
+            "Worker stack created successfully for challenge %s.",
+            challenge.pk,
+        )
+    else:
+        logger.error(
+            "Failed to create worker stack for challenge %s: %s",
+            challenge.pk,
+            failures[0]["message"] if failures else "Unknown error",
+        )
 
 
 def client_token_generator(challenge_pk):
@@ -346,19 +774,59 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 return response
         task_def_arn = challenge.task_def_arn
-        definition = service_definition.format(
-            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-            service_name=service_name,
-            task_def_arn=task_def_arn,
-            client_token=client_token,
-            **VPC_DICT,
-        )
-        definition = eval(definition)
+        if getattr(challenge, "use_fargate_spot", False):
+            definition = {
+                "cluster": COMMON_SETTINGS_DICT["CLUSTER"],
+                "serviceName": service_name,
+                "taskDefinition": task_def_arn,
+                "desiredCount": 1,
+                "clientToken": client_token,
+                "platformVersion": "LATEST",
+                "capacityProviderStrategy": get_capacity_provider_strategy(
+                    challenge
+                ),
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": [
+                            VPC_DICT["SUBNET_1"],
+                            VPC_DICT["SUBNET_2"],
+                        ],
+                        "securityGroups": [VPC_DICT["SUBNET_SECURITY_GROUP"]],
+                        "assignPublicIp": "ENABLED",
+                    }
+                },
+                "schedulingStrategy": "REPLICA",
+                "deploymentController": {"type": "ECS"},
+                "deploymentConfiguration": {
+                    "deploymentCircuitBreaker": {
+                        "enable": True,
+                        "rollback": False,
+                    }
+                },
+                "tags": [
+                    {"key": "challenge_pk", "value": str(challenge.pk)},
+                    {"key": "managed_by", "value": "evalai"},
+                ],
+                "propagateTags": "SERVICE",
+            }
+        else:
+            definition = service_definition.format(
+                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=service_name,
+                task_def_arn=task_def_arn,
+                client_token=client_token,
+                challenge_pk=str(challenge.pk),
+                **VPC_DICT,
+            )
+            definition = eval(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
                 challenge.workers = 1
                 challenge.save()
+                # Set up auto-scaling and schedule cleanup
+                setup_auto_scaling_for_service(challenge)
+                schedule_challenge_cleanup(challenge)
             return response
         except ClientError as e:
             logger.exception(e)
@@ -438,12 +906,19 @@ def delete_service_by_challenge_pk(challenge):
     )
     kwargs = eval(kwargs)
     try:
+        # Clean up auto-scaling and EventBridge schedule before deleting
+        cleanup_auto_scaling_for_service(challenge)
+
         if challenge.workers != 0:
             response = update_service_by_challenge_pk(
                 client, challenge, 0, False
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
-                return response
+                # If service doesn't exist, proceed to delete anyway (will be
+                # handled gracefully)
+                error_code = response.get("Error", {}).get("Code")
+                if error_code != "ServiceNotFoundException":
+                    return response
 
         response = client.delete_service(**kwargs)
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -456,6 +931,30 @@ def delete_service_by_challenge_pk(challenge):
             challenge.save()
         return response
     except ClientError as e:
+        # Handle ServiceNotFoundException gracefully - if the service doesn't exist,
+        # the deletion goal is achieved. Clean up challenge state and return
+        # success.
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ServiceNotFoundException":
+            logger.info(
+                "Service for challenge %s does not exist, treating delete as success",
+                challenge.pk,
+            )
+            challenge.workers = None
+            challenge.save()
+            # Try to deregister task definition if it exists, but don't fail if
+            # it doesn't
+            if challenge.task_def_arn:
+                try:
+                    client.deregister_task_definition(
+                        taskDefinition=challenge.task_def_arn
+                    )
+                except ClientError:
+                    pass  # Task definition may not exist either
+            challenge.task_def_arn = ""
+            challenge.save()
+            # Return a success-like response
+            return {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
         logger.exception(e)
         return e.response
 
@@ -484,6 +983,22 @@ def service_manager(
         response = update_service_by_challenge_pk(
             client, challenge, num_of_tasks, force_new_deployment
         )
+        # Handle ServiceNotFoundException: ECS service was deleted (e.g. after
+        # AWS key rotation) but DB still has workers set. Sync state and
+        # either create the service (start/restart) or treat stop as success.
+        error_code = response.get("Error", {}).get("Code")
+        if error_code == "ServiceNotFoundException":
+            if num_of_tasks == 0:
+                challenge.workers = 0
+                challenge.save()
+                return {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+            # num_of_tasks > 0: create the service
+            challenge.workers = None
+            challenge.save()
+            client_token = client_token_generator(challenge.pk)
+            return create_service_by_challenge_pk(
+                client, challenge, client_token
+            )
         return response
     else:
         client_token = client_token_generator(challenge.pk)
@@ -879,6 +1394,10 @@ def start_workers(queryset):
                     }
                 )
                 continue
+            # Clear any OOM or evaluation module error on successful start
+            if challenge.evaluation_module_error:
+                challenge.evaluation_module_error = None
+                challenge.save()
             count += 1
         else:
             response = "Please select challenge with inactive workers only."
@@ -1194,6 +1713,10 @@ def restart_workers(queryset):
                     }
                 )
                 continue
+            # Clear any OOM or evaluation module error on successful restart
+            if challenge.evaluation_module_error:
+                challenge.evaluation_module_error = None
+                challenge.save()
             count += 1
         else:
             response = "Please select challenges with active workers only."
@@ -1201,6 +1724,28 @@ def restart_workers(queryset):
                 {"message": response, "challenge_pk": challenge.pk}
             )
     return {"count": count, "failures": failures}
+
+
+def _file_content_changed(old_field, new_field):
+    """Compare two Django FileField values by content hash, not path.
+
+    Returns True if the file content actually changed, False if identical.
+    Handles cases where one or both fields are empty/missing.
+    """
+    if bool(old_field) != bool(new_field):
+        return True
+    if not old_field and not new_field:
+        return False
+    try:
+        old_field.seek(0)
+        old_hash = hashlib.md5(old_field.read()).hexdigest()
+        old_field.seek(0)
+        new_field.seek(0)
+        new_hash = hashlib.md5(new_field.read()).hexdigest()
+        new_field.seek(0)
+        return old_hash != new_hash
+    except Exception:
+        return True
 
 
 def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
@@ -1219,7 +1764,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     elif field_name == "test_annotation":
         instance._original_test_annotation = curr
 
-    if prev != curr:
+    if _file_content_changed(prev, curr):
         challenge = None
         if field_name == "test_annotation":
             challenge = instance.challenge
@@ -1241,44 +1786,12 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 f"Error: {failures[0]['message']}"
             )
         else:
-            challenge_url = "{}/web/challenges/challenge-page/{}".format(
-                settings.EVALAI_API_SERVER, challenge.id
+            logger.info(
+                "Workers restarted successfully for challenge %s "
+                "after %s change.",
+                challenge.id,
+                field_name,
             )
-            challenge_manage_url = (
-                "{}/web/challenges/challenge-page/{}/manage".format(
-                    settings.EVALAI_API_SERVER, challenge.id
-                )
-            )
-
-            if field_name == "test_annotation":
-                file_updated = "Test Annotation"
-            elif field_name == "evaluation_script":
-                file_updated = "Evaluation script"
-
-            template_data = {
-                "CHALLENGE_NAME": challenge.title,
-                "CHALLENGE_MANAGE_URL": challenge_manage_url,
-                "CHALLENGE_URL": challenge_url,
-                "FILE_UPDATED": file_updated,
-            }
-
-            if challenge.image:
-                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
-
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-                "WORKER_RESTART_EMAIL"
-            )
-
-            # Send email notification only when inform_hosts is true
-            if challenge.inform_hosts:
-                emails = challenge.creator.get_all_challenge_host_email()
-                for email in emails:
-                    send_email(
-                        sender=settings.CLOUDCV_TEAM_EMAIL,
-                        recipient=email,
-                        template_id=template_id,
-                        template_data=template_data,
-                    )
 
 
 def get_logs_from_cloudwatch(

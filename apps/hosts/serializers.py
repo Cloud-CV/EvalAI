@@ -1,3 +1,4 @@
+from base.utils import get_user_by_email
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -61,7 +62,7 @@ class InviteHostToTeamSerializer(serializers.Serializer):
         if value == self.user.email:
             raise serializers.ValidationError("A host cannot invite himself")
         try:
-            User.objects.get(email=value)
+            get_user_by_email(value)
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
         return value
@@ -69,7 +70,7 @@ class InviteHostToTeamSerializer(serializers.Serializer):
     def save(self):
         email = self.validated_data.get("email")
         return ChallengeHost.objects.get_or_create(
-            user=User.objects.get(email=email),
+            user=get_user_by_email(email),
             status=ChallengeHost.ACCEPTED,
             team_name=self.challenge_host_team,
             permissions=ChallengeHost.WRITE,
