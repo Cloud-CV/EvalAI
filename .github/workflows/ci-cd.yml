@@ -1,4 +1,4 @@
-name: Continuous Integration and Deployment
+name: ci-cd
 
 on:
   push:
@@ -20,7 +20,7 @@ on:
         default: true
 
 concurrency:
-  group: continuous-integration-and-deployment-${{ github.ref }}
+  group: ci-cd-${{ github.ref }}
   cancel-in-progress: true
 
 env:

@@ -5,7 +5,7 @@ name: Codecov upload
 
 on:
   workflow_run:
-    workflows: ["Continuous Integration and Deployment"]
+    workflows: ["ci-cd"]
     types: [completed]
 
 jobs:
