@@ -1,0 +1,53 @@
+# Uploads coverage using CODECOV_TOKEN from repository secrets. Triggered after the main
+# CI workflow completes so fork pull requests are supported: pull_request jobs from forks
+# cannot use secrets, but workflow_run executes in the base repo context and can.
+name: Codecov upload
+
+on:
+  workflow_run:
+    workflows: ["ci-cd"]
+    types: [completed]
+
+jobs:
+  upload:
+    name: Upload coverage to Codecov
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: codecov-coverage-reports
+          path: codecov-reports
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # override_pr only for pull_request (short-circuit avoids pull_requests[0] on push).
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: codecov-reports/coverage-backend.xml
+          flags: backend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.event.workflow_run.head_sha }}
+          override_branch: ${{ github.event.workflow_run.head_branch }}
+          override_pr: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.pull_requests[0].number || '' }}
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: codecov-reports/coverage/frontend/lcov.info
+          flags: frontend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.event.workflow_run.head_sha }}
+          override_branch: ${{ github.event.workflow_run.head_branch }}
+          override_pr: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.pull_requests[0].number || '' }}
