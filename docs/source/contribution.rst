@@ -75,11 +75,11 @@ reviewed. To submit code, follow these steps:
       the “compare” dropdown. If the code is mergeable (you get a
       message saying “Able to merge”), go ahead and create the pull
       request.
-   -  Check back after some time to see if the Travis checks have
-      passed, if not you should click on “Details” link on your PR
-      thread at the right of “The Travis CI build failed”, which will
-      take you to the dashboard for your PR. You will see what failed /
-      stalled, and will need to resolve them.
+   -  Check back after a few minutes to see if the GitHub Actions
+      workflow checks have completed. If they have not passed, click
+      the “Details” link next to the failed check in your PR checks
+      section to open the Actions run page, inspect logs, and fix the
+      failing step before pushing another commit.
    -  If your checks have passed, your PR will be assigned a reviewer
       who will review your code and provide comments. Please address
       each review comment by pushing new commits to the same branch (the
