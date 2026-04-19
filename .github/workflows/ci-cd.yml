@@ -1,7 +1,13 @@
 name: ci-cd
 
 on:
+  # Scoped to integration branches only — feature-branch pushes are covered by
+  # the pull_request event, preventing a double-trigger on same-repo PRs.
   push:
+    branches:
+      - master
+      - staging
+      - production
   pull_request:
   workflow_dispatch:
     inputs:
@@ -49,54 +55,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python runtime
-        uses: actions/setup-python@v5
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
         with:
-          python-version: ${{ env.PYTHON_RUNTIME_VERSION }}
-          cache: pip
-
-      - name: Validate Docker Compose availability
-        run: |
-          docker --version
-          docker compose version
-
-      - name: Install shared command-line dependencies
-        run: |
-          pip install --upgrade pip
-          pip install awscli=="${AWS_COMMAND_LINE_INTERFACE_VERSION}"
-          sudo rm -f /etc/boto.cfg
-          mkdir -p "$HOME/.config/pip"
-          {
-            echo "[build_ext]"
-            echo "parallel = 1"
-          } > "$HOME/.config/pip/pip.conf"
-
-      - name: Configure CI runtime limits
-        run: |
-          ulimit -u 16384 || true
-          ulimit -n 4096 || true
-
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
-            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          else
-            echo "Skipping Docker Hub authentication (secrets not configured)."
-          fi
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker images for CI
-        env:
-          COMPOSE_BAKE: true
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker compose $WORKER_DOCKER_COMPOSE_PROFILES build $DOCKER_COMPOSE_BUILD_ARGUMENTS
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run code quality checks
         run: |
@@ -120,6 +83,18 @@ jobs:
         run: |
           docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
 
+      - name: Save pull request number for downstream coverage upload
+        run: |
+          mkdir -p pr-metadata
+          echo "${{ github.event.pull_request.number }}" > pr-metadata/pr_number.txt
+
+      - name: Upload pull request metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr-metadata/pr_number.txt
+          if-no-files-found: error
+
   tests:
     name: Tests (${{ matrix.suite }})
     runs-on: ubuntu-latest
@@ -139,54 +114,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python runtime
-        uses: actions/setup-python@v5
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
         with:
-          python-version: ${{ env.PYTHON_RUNTIME_VERSION }}
-          cache: pip
-
-      - name: Validate Docker Compose availability
-        run: |
-          docker --version
-          docker compose version
-
-      - name: Install shared command-line dependencies
-        run: |
-          pip install --upgrade pip
-          pip install awscli=="${AWS_COMMAND_LINE_INTERFACE_VERSION}"
-          sudo rm -f /etc/boto.cfg
-          mkdir -p "$HOME/.config/pip"
-          {
-            echo "[build_ext]"
-            echo "parallel = 1"
-          } > "$HOME/.config/pip/pip.conf"
-
-      - name: Configure CI runtime limits
-        run: |
-          ulimit -u 16384 || true
-          ulimit -n 4096 || true
-
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
-            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          else
-            echo "Skipping Docker Hub authentication (secrets not configured)."
-          fi
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker images for CI
-        env:
-          COMPOSE_BAKE: true
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker compose $WORKER_DOCKER_COMPOSE_PROFILES build $DOCKER_COMPOSE_BUILD_ARGUMENTS
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run backend tests
         if: matrix.suite == 'backend'
@@ -276,132 +208,12 @@ jobs:
             coverage/frontend/lcov.info
           if-no-files-found: error
 
-  collect_ci_artifacts:
-    name: Collect reports for Codecov and JUnit
-    runs-on: ubuntu-latest
-    needs: [code_quality, tests]
-    permissions:
-      contents: read
-      actions: write
-    steps:
-      - name: Download backend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-backend-reports
-          path: .
-
-      - name: Download frontend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-frontend-reports
-          path: .
-
-      - name: Write Codecov metadata (PR number)
-        run: |
-          mkdir -p codecov-metadata
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "${{ github.event.pull_request.number }}" > codecov-metadata/pr_number.txt
-          else
-            : > codecov-metadata/pr_number.txt
-          fi
-
-      - name: Verify coverage files exist (upload-artifact may not fail if only some paths are missing)
-        run: |
-          set -euo pipefail
-          test -f coverage-backend.xml
-          test -f coverage/frontend/lcov.info
-
-      - name: Upload backend and frontend test reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-test-reports
-          path: |
-            junit-backend.xml
-            coverage/frontend/TEST-frontend.xml
-          if-no-files-found: error
-
-      - name: Upload coverage artifacts for Codecov
-        uses: actions/upload-artifact@v4
-        with:
-          name: codecov-coverage-reports
-          path: |
-            coverage-backend.xml
-            coverage/frontend/lcov.info
-            codecov-metadata/pr_number.txt
-          if-no-files-found: error
-
-  upload_coverage:
-    name: Upload coverage to Codecov
-    runs-on: ubuntu-latest
-    needs: [collect_ci_artifacts]
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository (Codecov CLI reads codecov.yml from default branch)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          fetch-depth: 1
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: codecov-coverage-reports
-          path: codecov-reports
-
-      - name: Resolve coverage report paths
-        id: codecov_paths
-        run: |
-          set -euo pipefail
-          backend="$(find codecov-reports -name coverage-backend.xml -type f | head -n 1)"
-          frontend="$(find codecov-reports -name lcov.info -type f | head -n 1)"
-          if [ -z "$backend" ]; then
-            echo "No coverage-backend.xml under codecov-reports"
-            ls -laR codecov-reports
-            exit 1
-          fi
-          if [ -z "$frontend" ]; then
-            echo "No lcov.info under codecov-reports"
-            ls -laR codecov-reports
-            exit 1
-          fi
-          echo "backend=$backend" >> "$GITHUB_OUTPUT"
-          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-
-      - name: Upload backend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ steps.codecov_paths.outputs.backend }}
-          flags: backend
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
-          override_commit: ${{ github.sha }}
-          override_branch: ${{ github.head_ref || github.ref_name }}
-          override_pr: ${{ github.event.pull_request.number || '' }}
-
-      - name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ steps.codecov_paths.outputs.frontend }}
-          flags: frontend
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
-          override_commit: ${{ github.sha }}
-          override_branch: ${{ github.head_ref || github.ref_name }}
-          override_pr: ${{ github.event.pull_request.number || '' }}
-
   package_and_deploy_services:
     name: Package and Deploy Services
     runs-on: ubuntu-latest
     needs:
       - code_quality
       - tests
-      - collect_ci_artifacts
-      - upload_coverage
     permissions:
       contents: read
       id-token: write

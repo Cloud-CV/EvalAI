@@ -1,0 +1,98 @@
+name: upload-coverage
+
+# Runs after ci-cd completes — in the BASE repo's security context so
+# CODECOV_TOKEN is always available, including for fork PRs.
+on:
+  workflow_run:
+    workflows: [ci-cd]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read # required to download artifacts from the triggering run
+
+jobs:
+  upload_coverage:
+    name: Upload coverage to Codecov
+    runs-on: ubuntu-latest
+    # Only upload when CI passed; no valid coverage to report on failure.
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout repository (Codecov CLI reads codecov.yml from default branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+
+      - name: Download pull request metadata from triggering run
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr-metadata
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download backend artifacts from triggering run
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-backend-reports
+          path: codecov-reports
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download frontend artifacts from triggering run
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-frontend-reports
+          path: codecov-reports
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve pull request number
+        id: pr
+        run: |
+          # pr_number.txt is empty for non-PR runs (push to master/staging/production).
+          pr_number="$(tr -d '[:space:]' < pr-metadata/pr_number.txt || true)"
+          echo "number=${pr_number}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify coverage files exist
+        run: |
+          set -euo pipefail
+          test -f codecov-reports/coverage-backend.xml
+          test -f codecov-reports/coverage/frontend/lcov.info
+
+      - name: Upload combined JUnit test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-reports
+          path: |
+            codecov-reports/junit-backend.xml
+            codecov-reports/coverage/frontend/TEST-frontend.xml
+          if-no-files-found: warn
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: codecov-reports/coverage-backend.xml
+          flags: backend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.event.workflow_run.head_sha }}
+          override_branch: ${{ github.event.workflow_run.head_branch }}
+          override_pr: ${{ steps.pr.outputs.number }}
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: codecov-reports/coverage/frontend/lcov.info
+          flags: frontend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.event.workflow_run.head_sha }}
+          override_branch: ${{ github.event.workflow_run.head_branch }}
+          override_pr: ${{ steps.pr.outputs.number }}
