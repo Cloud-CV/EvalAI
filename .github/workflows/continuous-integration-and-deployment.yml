@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Codecov OIDC uploads (codecov-action use_oidc)
+      actions: write # upload coverage artifacts for follow-up Codecov workflow
 
     steps:
       - name: Checkout repository
@@ -184,26 +184,17 @@ jobs:
             coverage/frontend/TEST-frontend.xml
           if-no-files-found: warn
 
-      # Authenticate uploads with GitHub OIDC (no CODECOV_TOKEN secret). Requires
-      # codecov-action v4.2+. Fork PRs: GitHub may not mint id-token; public repos may
-      # still get tokenless uploads per Codecov branch naming — see codecov/codecov-action#1489.
-      - name: Upload backend coverage to Codecov
-        uses: codecov/codecov-action@v4
+      # Coverage is uploaded in a separate workflow (codecov-upload.yml) triggered by
+      # workflow_run so CODECOV_TOKEN is available for fork PRs (secrets are not exposed
+      # to pull_request jobs from forks, but workflow_run on the default branch can use them).
+      - name: Upload coverage artifacts for Codecov
+        uses: actions/upload-artifact@v4
         with:
-          use_oidc: true
-          files: coverage-backend.xml
-          flags: backend
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          use_oidc: true
-          files: coverage/frontend/lcov.info
-          flags: frontend
-          fail_ci_if_error: true
-          verbose: true
+          name: codecov-coverage-reports
+          path: |
+            coverage-backend.xml
+            coverage/frontend/lcov.info
+          if-no-files-found: error
 
   package_and_deploy_services:
     name: Package and Deploy Services
