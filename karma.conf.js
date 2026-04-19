@@ -133,8 +133,8 @@ module.exports = function(config) {
     }
   };
 
-  // Detect if this is TravisCI running the tests and tell it to use chromium
-  if(process.env.TRAVIS){
+  // Detect CI providers and use resilient headless browser settings.
+  if (process.env.TRAVIS || process.env.GITHUB_ACTIONS === 'true') {
       configuration.browsers = ['ChromeWithNoSandbox'];
       configuration.browserDisconnectTimeout = 20000;
       configuration.browserDisconnectTolerance = 5;
