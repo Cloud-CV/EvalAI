@@ -90,7 +90,7 @@ The CI/CD workflow in `.github/workflows/ci-cd.yml` expects deployment configura
 
 - Environment secrets: `AWS_ACCOUNT_ID`, `AWS_REGION`, `AWS_OIDC_DEPLOYMENT_ROLE_ARN`, `JUMPBOX_INSTANCE`, `DEPLOYMENT_INSTANCE_HOST`, `DEPLOYMENT_SSH_PRIVATE_KEY`, `DEPLOYMENT_SSH_KNOWN_HOSTS`
 - Repository secrets (optional for authenticated Docker Hub access): `DOCKER_USERNAME`, `DOCKER_PASSWORD`
-- Repository secret for Codecov uploads: `CODECOV_TOKEN` (used by `.github/workflows/codecov-upload.yml`, which runs after a successful `ci-cd` workflow so fork pull requests can upload without exposing the token in the main job)
+- Optional repository secret `CODECOV_TOKEN` for Codecov: the `upload_coverage` job in `.github/workflows/ci-cd.yml` runs after tests; uploads use the token when set, and for public repositories Codecov can accept GitHub Actions uploads without it. A failed upload fails the same `ci-cd` workflow run.
 
 The deployment job uses AWS OIDC role assumption and does not require long-lived AWS access keys in GitHub secrets.
 

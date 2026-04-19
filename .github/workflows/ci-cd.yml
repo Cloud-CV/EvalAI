@@ -265,12 +265,12 @@ jobs:
           path: |
             coverage/frontend/TEST-frontend.xml
             coverage/frontend/lcov.info
-          if-no-files-found: warn
+          if-no-files-found: error
 
   collect_ci_artifacts:
     name: Collect reports for Codecov and JUnit
     runs-on: ubuntu-latest
-    needs: [tests]
+    needs: [code_quality, tests]
     permissions:
       contents: read
       actions: write
@@ -287,6 +287,15 @@ jobs:
           name: ci-frontend-reports
           path: .
 
+      - name: Write Codecov metadata (PR number)
+        run: |
+          mkdir -p codecov-metadata
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "${{ github.event.pull_request.number }}" > codecov-metadata/pr_number.txt
+          else
+            : > codecov-metadata/pr_number.txt
+          fi
+
       - name: Upload backend and frontend test reports
         uses: actions/upload-artifact@v4
         with:
@@ -294,7 +303,7 @@ jobs:
           path: |
             junit-backend.xml
             coverage/frontend/TEST-frontend.xml
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Upload coverage artifacts for Codecov
         uses: actions/upload-artifact@v4
@@ -303,7 +312,72 @@ jobs:
           path: |
             coverage-backend.xml
             coverage/frontend/lcov.info
+            codecov-metadata/pr_number.txt
           if-no-files-found: error
+
+  upload_coverage:
+    name: Upload coverage to Codecov
+    runs-on: ubuntu-latest
+    needs: [collect_ci_artifacts]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository (Codecov CLI reads codecov.yml from default branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: codecov-coverage-reports
+          path: codecov-reports
+
+      - name: Resolve coverage report paths
+        id: codecov_paths
+        run: |
+          set -euo pipefail
+          backend="$(find codecov-reports -name coverage-backend.xml -type f | head -n 1)"
+          frontend="$(find codecov-reports -name lcov.info -type f | head -n 1)"
+          if [ -z "$backend" ]; then
+            echo "No coverage-backend.xml under codecov-reports"
+            ls -laR codecov-reports
+            exit 1
+          fi
+          if [ -z "$frontend" ]; then
+            echo "No lcov.info under codecov-reports"
+            ls -laR codecov-reports
+            exit 1
+          fi
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.codecov_paths.outputs.backend }}
+          flags: backend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.sha }}
+          override_branch: ${{ github.head_ref || github.ref_name }}
+          override_pr: ${{ github.event.pull_request.number || '' }}
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.codecov_paths.outputs.frontend }}
+          flags: frontend
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          override_commit: ${{ github.sha }}
+          override_branch: ${{ github.head_ref || github.ref_name }}
+          override_pr: ${{ github.event.pull_request.number || '' }}
 
   package_and_deploy_services:
     name: Package and Deploy Services
@@ -312,6 +386,7 @@ jobs:
       - code_quality
       - tests
       - collect_ci_artifacts
+      - upload_coverage
     permissions:
       contents: read
       id-token: write
