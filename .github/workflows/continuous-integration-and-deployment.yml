@@ -37,6 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write # Codecov OIDC uploads (codecov-action use_oidc)
 
     steps:
       - name: Checkout repository
@@ -183,12 +184,13 @@ jobs:
             coverage/frontend/TEST-frontend.xml
           if-no-files-found: warn
 
-      # Requires repo secret CODECOV_TOKEN (Codecov → repo Settings → upload token) when
-      # Codecov has "protected branches" enabled for this branch.
+      # Authenticate uploads with GitHub OIDC (no CODECOV_TOKEN secret). Requires
+      # codecov-action v4.2+. Fork PRs: GitHub may not mint id-token; public repos may
+      # still get tokenless uploads per Codecov branch naming — see codecov/codecov-action#1489.
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: coverage-backend.xml
           flags: backend
           fail_ci_if_error: true
@@ -197,7 +199,7 @@ jobs:
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: coverage/frontend/lcov.info
           flags: frontend
           fail_ci_if_error: true
