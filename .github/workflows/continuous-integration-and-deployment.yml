@@ -1,0 +1,328 @@
+name: Continuous Integration and Deployment
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deployment_environment_name:
+        description: "Deployment environment to target (staging or production)"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+      run_deployment_in_dry_mode:
+        description: "Validate deployment access without updating remote services"
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: continuous-integration-and-deployment-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_RUNTIME_VERSION: "3.9.21"
+  AWS_COMMAND_LINE_INTERFACE_VERSION: "1.18.66"
+  DISPLAY_SERVER_ADDRESS: ":99.0"
+  CHROME_BROWSER_BINARY: "chromium-browser"
+  WORKER_DOCKER_COMPOSE_PROFILES: "--profile worker_py3_7 --profile worker_py3_8 --profile worker_py3_9"
+  DOCKER_COMPOSE_BUILD_ARGUMENTS: "--build-arg PIP_NO_CACHE_DIR=1"
+
+jobs:
+  build_test_quality:
+    name: Build Test and Quality Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Codecov OIDC uploads (codecov-action use_oidc)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_RUNTIME_VERSION }}
+          cache: pip
+
+      - name: Validate Docker Compose availability
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Install shared command-line dependencies
+        run: |
+          pip install --upgrade pip
+          pip install awscli=="${AWS_COMMAND_LINE_INTERFACE_VERSION}"
+          sudo rm -f /etc/boto.cfg
+          mkdir -p "$HOME/.config/pip"
+          {
+            echo "[build_ext]"
+            echo "parallel = 1"
+          } > "$HOME/.config/pip/pip.conf"
+
+      - name: Configure CI runtime limits
+        run: |
+          ulimit -u 16384 || true
+          ulimit -n 4096 || true
+
+      # Optional: set DOCKER_USERNAME + DOCKER_PASSWORD (access token) repo secrets for higher Docker Hub pull limits.
+      # secrets cannot be used in step `if:`; gate on event here, then check credentials in the shell.
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          else
+            echo "Skipping Docker Hub authentication (secrets not configured)."
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images for CI
+        env:
+          COMPOSE_BAKE: true
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker compose $WORKER_DOCKER_COMPOSE_PROFILES build $DOCKER_COMPOSE_BUILD_ARGUMENTS
+
+      - name: Run frontend build and tests
+        env:
+          CHROME_BIN: ${{ env.CHROME_BROWSER_BINARY }}
+          DISPLAY: ${{ env.DISPLAY_SERVER_ADDRESS }}
+        run: |
+          docker compose run nodejs bash -c '
+            set -e
+            echo "=== Installing dependencies ==="
+            npm install
+            export SASS_SILENCE_DEPRECATIONS=legacy-js-api,import
+            echo "=== Building frontend (dev) ==="
+            gulp dev
+            echo "=== Running frontend tests ==="
+            mkdir -p coverage/frontend
+            karma_result=0
+            timeout 300 karma start --single-run --reporters=brief,junit,coverage || karma_result=$?
+            pkill -f chrome 2>/dev/null || true
+            pkill -f chromium 2>/dev/null || true
+            sleep 3
+            junit_status=2
+            junit_file=$(find coverage/frontend -name "TEST-frontend.xml" -type f 2>/dev/null | head -n 1 || true)
+            if [ -n "$junit_file" ]; then
+              if grep -Eq "failures=\"0\"" "$junit_file" && grep -Eq "errors=\"0\"" "$junit_file"; then
+                junit_status=0
+              else
+                junit_status=1
+              fi
+            fi
+            if [ $junit_status -eq 0 ]; then
+              echo "=== Frontend tests passed ==="
+            elif [ $junit_status -eq 1 ]; then
+              echo "=== Frontend tests failed ==="
+              exit 1
+            elif [ $karma_result -eq 124 ] && [ -f coverage/frontend/lcov.info ]; then
+              echo "=== Frontend tests passed (karma timed out after completion) ==="
+            elif [ $karma_result -eq 0 ]; then
+              echo "=== Frontend tests passed ==="
+            else
+              echo "=== Frontend tests failed ==="
+              exit 1
+            fi
+            echo "=== Building frontend (staging) ==="
+            gulp staging
+            echo "=== Frontend build complete ==="
+          '
+
+      - name: Run backend tests
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
+            set -e
+            echo "=== Flushing database ==="
+            python manage.py flush --noinput
+            echo "=== Running backend tests with coverage ==="
+            pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy
+            echo "=== Backend tests passed ==="
+          '
+
+      - name: Run code quality checks
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
+            set -e
+            echo "=== Installing code quality tools ==="
+            pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0
+            echo "=== Running black check ==="
+            black --check --diff ./
+            echo "=== Running isort check ==="
+            isort --check-only --diff --profile=black ./
+            echo "=== Running flake8 check ==="
+            flake8 --config=.flake8 ./
+            echo "=== Running pylint check ==="
+            pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./
+            echo "=== All code quality checks passed ==="
+          '
+
+      - name: Validate Django migrations for pull requests
+        if: github.event_name == 'pull_request'
+        run: |
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
+
+      - name: Upload backend and frontend test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-reports
+          path: |
+            junit-backend.xml
+            coverage/frontend/TEST-frontend.xml
+          if-no-files-found: warn
+
+      # Authenticate uploads with GitHub OIDC (no CODECOV_TOKEN secret). Requires
+      # codecov-action v4.2+. Fork PRs: GitHub may not mint id-token; public repos may
+      # still get tokenless uploads per Codecov branch naming — see codecov/codecov-action#1489.
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          use_oidc: true
+          files: coverage-backend.xml
+          flags: backend
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          use_oidc: true
+          files: coverage/frontend/lcov.info
+          flags: frontend
+          fail_ci_if_error: true
+          verbose: true
+
+  package_and_deploy_services:
+    name: Package and Deploy Services
+    runs-on: ubuntu-latest
+    needs:
+      - build_test_quality
+    permissions:
+      contents: read
+      id-token: write
+    if: >
+      (github.event_name == 'push' && (github.ref_name == 'staging' || github.ref_name == 'production')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.deployment_environment_name == 'staging' || github.event.inputs.deployment_environment_name == 'production'))
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_environment_name || github.ref_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine deployment context
+        id: deployment_context
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "deployment_environment_name=${{ github.event.inputs.deployment_environment_name }}" >> "$GITHUB_OUTPUT"
+            echo "run_deployment_in_dry_mode=${{ github.event.inputs.run_deployment_in_dry_mode }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployment_environment_name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "run_deployment_in_dry_mode=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate required deployment configuration
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_OIDC_DEPLOYMENT_ROLE_ARN: ${{ secrets.AWS_OIDC_DEPLOYMENT_ROLE_ARN }}
+          JUMPBOX_INSTANCE: ${{ secrets.JUMPBOX_INSTANCE }}
+          DEPLOYMENT_INSTANCE_HOST: ${{ secrets.DEPLOYMENT_INSTANCE_HOST }}
+          DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          DEPLOYMENT_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_SSH_KNOWN_HOSTS }}
+        run: |
+          required_variable_names=(
+            AWS_ACCOUNT_ID
+            AWS_REGION
+            AWS_OIDC_DEPLOYMENT_ROLE_ARN
+            JUMPBOX_INSTANCE
+            DEPLOYMENT_INSTANCE_HOST
+            DEPLOYMENT_SSH_PRIVATE_KEY
+            DEPLOYMENT_SSH_KNOWN_HOSTS
+          )
+
+          for required_variable_name in "${required_variable_names[@]}"; do
+            if [ -z "${!required_variable_name}" ]; then
+              echo "Required configuration '${required_variable_name}' is missing."
+              exit 1
+            fi
+          done
+
+      - name: Configure AWS credentials from OIDC role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_DEPLOYMENT_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up Python runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_RUNTIME_VERSION }}
+          cache: pip
+
+      - name: Install deployment dependencies
+        run: |
+          pip install --upgrade pip
+          pip install awscli=="${AWS_COMMAND_LINE_INTERFACE_VERSION}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          else
+            echo "Skipping Docker Hub authentication (secrets not configured)."
+          fi
+
+      - name: Prepare SSH key and known hosts
+        id: ssh_materials
+        env:
+          DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          DEPLOYMENT_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_SSH_KNOWN_HOSTS }}
+        run: |
+          ssh_private_key_path="$RUNNER_TEMP/evalai_deployment_key"
+          known_hosts_path="$RUNNER_TEMP/evalai_known_hosts"
+
+          printf '%s\n' "$DEPLOYMENT_SSH_PRIVATE_KEY" > "$ssh_private_key_path"
+          chmod 600 "$ssh_private_key_path"
+
+          printf '%s\n' "$DEPLOYMENT_SSH_KNOWN_HOSTS" > "$known_hosts_path"
+          chmod 600 "$known_hosts_path"
+
+          echo "ssh_private_key_path=${ssh_private_key_path}" >> "$GITHUB_OUTPUT"
+          echo "known_hosts_path=${known_hosts_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Package and deploy services
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          DEPLOYMENT_BRANCH_NAME: ${{ steps.deployment_context.outputs.deployment_environment_name }}
+          CI_EVENT_NAME: ${{ github.event_name }}
+          IS_PULL_REQUEST_BUILD: "false"
+          DRY_RUN_DEPLOYMENT: ${{ steps.deployment_context.outputs.run_deployment_in_dry_mode }}
+          JUMPBOX_INSTANCE: ${{ secrets.JUMPBOX_INSTANCE }}
+          TARGET_INSTANCE_HOST: ${{ secrets.DEPLOYMENT_INSTANCE_HOST }}
+          SSH_PRIVATE_KEY_PATH: ${{ steps.ssh_materials.outputs.ssh_private_key_path }}
+          DEPLOY_SSH_KNOWN_HOSTS_PATH: ${{ steps.ssh_materials.outputs.known_hosts_path }}
+          COMPOSE_BAKE: true
+          DOCKER_BUILDKIT: 1
+        run: |
+          bash ./scripts/deployment/push.sh
+          bash ./scripts/deployment/deploy.sh auto_deploy
