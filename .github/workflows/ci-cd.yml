@@ -254,6 +254,15 @@ jobs:
             fi
             echo "=== Building frontend (staging) ==="
             gulp staging
+            if [ ! -f coverage/frontend/lcov.info ]; then
+              echo "=== Missing coverage/frontend/lcov.info after build (required for Codecov) ==="
+              ls -laR coverage 2>/dev/null || true
+              exit 1
+            fi
+            if ! find coverage/frontend -name "TEST-frontend.xml" -type f 2>/dev/null | grep -q .; then
+              echo "=== Missing coverage/frontend/TEST-frontend.xml (required for CI) ==="
+              exit 1
+            fi
             echo "=== Frontend build complete ==="
           '
 
@@ -295,6 +304,12 @@ jobs:
           else
             : > codecov-metadata/pr_number.txt
           fi
+
+      - name: Verify coverage files exist (upload-artifact may not fail if only some paths are missing)
+        run: |
+          set -euo pipefail
+          test -f coverage-backend.xml
+          test -f coverage/frontend/lcov.info
 
       - name: Upload backend and frontend test reports
         uses: actions/upload-artifact@v4
