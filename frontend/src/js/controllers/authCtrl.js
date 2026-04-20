@@ -217,6 +217,39 @@
             };
             utilities.sendRequest(parameters, "header");
         };
+        
+        // Function to activate account
+        vm.activateAccount = function(activateForm) {
+            if(activateForm){
+                vm.startLoader("Activating Your Account");
+                var parameters = {};
+                parameters.url = 'accounts/user/generate_activation_link/'+vm.getUser.email; // API URL
+                parameters.method = 'GET';
+                console.log(vm.getUser.email);
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        console.log(response);
+                        if (response.status === 200) {
+                            $rootScope.notify("success",response.data.message);
+                        }
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        console.log(response);
+                        if (response.status === 400) {
+                            $rootScope.notify("error",response.data.message);
+                        }
+                        else{
+                            $rootScope.notify("error",response.data.error);
+                        }
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
+        }else {
+            vm.stopLoader();
+            }
+        };
 
         // Function to login
         vm.userLogin = function(loginFormValid) {
