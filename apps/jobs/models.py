@@ -149,6 +149,16 @@ class Submission(TimeStampedModel):
     class Meta:
         app_label = "jobs"
         db_table = "submission"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase", "participant_team", "status"],
+                name="sub_phase_team_status_idx",
+            ),
+            models.Index(
+                fields=["challenge_phase", "participant_team", "submitted_at"],
+                name="sub_phase_team_date_idx",
+            ),
+        ]
 
     @property
     def execution_time(self):
