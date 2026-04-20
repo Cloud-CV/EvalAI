@@ -3113,6 +3113,30 @@ describe('Unit tests for challenge controller', function () {
 
             expect(vm.chosenMetrics).toEqual([]);
         });
+
+        it('should set orderLeaderboardBy from default_order_by when the URL metric is not in schema labels', function () {
+            vm.orderLeaderboardBy = 'stale_metric_not_in_labels';
+            var fakeLeaderboard = [{
+                id: 1,
+                leaderboard__schema: {
+                    labels: ['accuracy', 'loss'],
+                    default_order_by: 'loss'
+                },
+                submission__submission_metadata: null,
+                submission__submitted_at: new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
+            }];
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.url && params.url.includes('/leaderboard/')) {
+                    params.callback.onSuccess({ data: { results: fakeLeaderboard } });
+                } else if (params.url && params.url.includes('/challenge_phase_split/')) {
+                    params.callback.onSuccess({ data: {} });
+                }
+            });
+
+            vm.getLeaderboard(123);
+
+            expect(vm.orderLeaderboardBy).toBe('loss');
+        });
     });
 
     describe('Unit tests for re-run submission logic', function () {
