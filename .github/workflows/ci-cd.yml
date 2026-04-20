@@ -1,7 +1,13 @@
-name: Continuous Integration and Deployment
+name: ci-cd
 
 on:
+  # Scoped to integration branches only — feature-branch pushes are covered by
+  # the pull_request event, preventing a double-trigger on same-repo PRs.
   push:
+    branches:
+      - master
+      - staging
+      - production
   pull_request:
   workflow_dispatch:
     inputs:
@@ -20,7 +26,7 @@ on:
         default: true
 
 concurrency:
-  group: continuous-integration-and-deployment-${{ github.ref }}
+  group: ci-cd-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -32,12 +38,16 @@ env:
   DOCKER_COMPOSE_BUILD_ARGUMENTS: "--build-arg PIP_NO_CACHE_DIR=1"
 
 jobs:
-  build_test_quality:
-    name: Build Test and Quality Checks
+  # Runs in parallel with test matrix; each job pays a docker compose build, but wall time
+  # is roughly max(quality, backend tests, frontend tests) instead of the sum.
+  code_quality:
+    name: Code quality and migrations
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Codecov OIDC uploads (codecov-action use_oidc)
+      actions: write # BuildKit GHA cache (type=gha) export
+    env:
+      COMPOSE_FILE: docker-compose.yml:docker/docker-compose.ci-cache.yml
 
     steps:
       - name: Checkout repository
@@ -45,56 +55,107 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python runtime
-        uses: actions/setup-python@v5
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
         with:
-          python-version: ${{ env.PYTHON_RUNTIME_VERSION }}
-          cache: pip
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Validate Docker Compose availability
+      - name: Run code quality checks
         run: |
-          docker --version
-          docker compose version
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
+            set -e
+            echo "=== Installing code quality tools ==="
+            pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0
+            echo "=== Running black check ==="
+            black --check --diff ./
+            echo "=== Running isort check ==="
+            isort --check-only --diff --profile=black ./
+            echo "=== Running flake8 check ==="
+            flake8 --config=.flake8 ./
+            echo "=== Running pylint check ==="
+            pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./
+            echo "=== All code quality checks passed ==="
+          '
 
-      - name: Install shared command-line dependencies
+      - name: Validate Django migrations for pull requests
+        if: github.event_name == 'pull_request'
         run: |
-          pip install --upgrade pip
-          pip install awscli=="${AWS_COMMAND_LINE_INTERFACE_VERSION}"
-          sudo rm -f /etc/boto.cfg
-          mkdir -p "$HOME/.config/pip"
-          {
-            echo "[build_ext]"
-            echo "parallel = 1"
-          } > "$HOME/.config/pip/pip.conf"
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
 
-      - name: Configure CI runtime limits
+      - name: Save pull request number for downstream coverage upload
         run: |
-          ulimit -u 16384 || true
-          ulimit -n 4096 || true
+          mkdir -p pr-metadata
+          echo "${{ github.event.pull_request.number }}" > pr-metadata/pr_number.txt
 
-      # Optional: set DOCKER_USERNAME + DOCKER_PASSWORD (access token) repo secrets for higher Docker Hub pull limits.
-      # secrets cannot be used in step `if:`; gate on event here, then check credentials in the shell.
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Upload pull request metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr-metadata/pr_number.txt
+          if-no-files-found: error
+
+  test_backend:
+    name: Tests (backend)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # artifacts + BuildKit GHA cache export
+    env:
+      COMPOSE_FILE: docker-compose.yml:docker/docker-compose.ci-cache.yml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
+        with:
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Run backend tests
         run: |
-          if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
-            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          else
-            echo "Skipping Docker Hub authentication (secrets not configured)."
-          fi
+          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
+            set -e
+            echo "=== Flushing database ==="
+            python manage.py flush --noinput
+            echo "=== Running backend tests with coverage ==="
+            pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy
+            echo "=== Backend tests passed ==="
+          '
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Upload backend test and coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-backend-reports
+          path: |
+            junit-backend.xml
+            coverage-backend.xml
+          if-no-files-found: error
 
-      - name: Build Docker images for CI
-        env:
-          COMPOSE_BAKE: true
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker compose $WORKER_DOCKER_COMPOSE_PROFILES build $DOCKER_COMPOSE_BUILD_ARGUMENTS
+  test_frontend:
+    name: Tests (frontend)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # artifacts + BuildKit GHA cache export
+    env:
+      COMPOSE_FILE: docker-compose.yml:docker/docker-compose.ci-cache.yml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
+        with:
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run frontend build and tests
         env:
@@ -139,77 +200,34 @@ jobs:
             fi
             echo "=== Building frontend (staging) ==="
             gulp staging
+            if [ ! -f coverage/frontend/lcov.info ]; then
+              echo "=== Missing coverage/frontend/lcov.info after build (required for Codecov) ==="
+              ls -laR coverage 2>/dev/null || true
+              exit 1
+            fi
+            if ! find coverage/frontend -name "TEST-frontend.xml" -type f 2>/dev/null | grep -q .; then
+              echo "=== Missing coverage/frontend/TEST-frontend.xml (required for CI) ==="
+              exit 1
+            fi
             echo "=== Frontend build complete ==="
           '
 
-      - name: Run backend tests
-        run: |
-          docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
-            set -e
-            echo "=== Flushing database ==="
-            python manage.py flush --noinput
-            echo "=== Running backend tests with coverage ==="
-            pytest --cov . --cov-config .coveragerc --cov-report=xml:coverage-backend.xml --junitxml=junit-backend.xml -o junit_family=legacy
-            echo "=== Backend tests passed ==="
-          '
-
-      - name: Run code quality checks
-        run: |
-          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c '
-            set -e
-            echo "=== Installing code quality tools ==="
-            pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0
-            echo "=== Running black check ==="
-            black --check --diff ./
-            echo "=== Running isort check ==="
-            isort --check-only --diff --profile=black ./
-            echo "=== Running flake8 check ==="
-            flake8 --config=.flake8 ./
-            echo "=== Running pylint check ==="
-            pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./
-            echo "=== All code quality checks passed ==="
-          '
-
-      - name: Validate Django migrations for pull requests
-        if: github.event_name == 'pull_request'
-        run: |
-          docker compose run -e DJANGO_SETTINGS_MODULE=settings.dev django python manage.py makemigrations --check --dry-run
-
-      - name: Upload backend and frontend test reports
+      - name: Upload frontend test and coverage artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: junit-test-reports
+          name: ci-frontend-reports
           path: |
-            junit-backend.xml
             coverage/frontend/TEST-frontend.xml
-          if-no-files-found: warn
-
-      # Authenticate uploads with GitHub OIDC (no CODECOV_TOKEN secret). Requires
-      # codecov-action v4.2+. Fork PRs: GitHub may not mint id-token; public repos may
-      # still get tokenless uploads per Codecov branch naming — see codecov/codecov-action#1489.
-      - name: Upload backend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          use_oidc: true
-          files: coverage-backend.xml
-          flags: backend
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          use_oidc: true
-          files: coverage/frontend/lcov.info
-          flags: frontend
-          fail_ci_if_error: true
-          verbose: true
+            coverage/frontend/lcov.info
+          if-no-files-found: error
 
   package_and_deploy_services:
     name: Package and Deploy Services
     runs-on: ubuntu-latest
     needs:
-      - build_test_quality
+      - code_quality
+      - test_backend
+      - test_frontend
     permissions:
       contents: read
       id-token: write

@@ -86,10 +86,11 @@ If the code is mergeable (you get a message saying “Able to merge”), go ahea
 
 ### GitHub Actions deployment configuration
 
-The CI/CD workflow in `.github/workflows/continuous-integration-and-deployment.yml` expects deployment configuration to be stored in GitHub Environments (`staging` and `production`) using descriptive secret names:
+The CI/CD workflow in `.github/workflows/ci-cd.yml` expects deployment configuration to be stored in GitHub Environments (`staging` and `production`) using descriptive secret names:
 
 - Environment secrets: `AWS_ACCOUNT_ID`, `AWS_REGION`, `AWS_OIDC_DEPLOYMENT_ROLE_ARN`, `JUMPBOX_INSTANCE`, `DEPLOYMENT_INSTANCE_HOST`, `DEPLOYMENT_SSH_PRIVATE_KEY`, `DEPLOYMENT_SSH_KNOWN_HOSTS`
 - Repository secrets (optional for authenticated Docker Hub access): `DOCKER_USERNAME`, `DOCKER_PASSWORD`
+- Optional repository secret `CODECOV_TOKEN` for Codecov: the `upload_coverage` job in `.github/workflows/ci-cd.yml` runs after tests; uploads use the token when set, and for public repositories Codecov can accept GitHub Actions uploads without it. A failed upload fails the same `ci-cd` workflow run.
 
 The deployment job uses AWS OIDC role assumption and does not require long-lived AWS access keys in GitHub secrets.
 
