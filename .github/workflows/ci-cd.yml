@@ -95,18 +95,14 @@ jobs:
           path: pr-metadata/pr_number.txt
           if-no-files-found: error
 
-  tests:
-    name: Tests (${{ matrix.suite }})
+  test_backend:
+    name: Tests (backend)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: write # artifacts + BuildKit GHA cache export
     env:
       COMPOSE_FILE: docker-compose.yml:docker/docker-compose.ci-cache.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        suite: [backend, frontend]
 
     steps:
       - name: Checkout repository
@@ -121,7 +117,6 @@ jobs:
           docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run backend tests
-        if: matrix.suite == 'backend'
         run: |
           docker compose run -e DJANGO_SETTINGS_MODULE=settings.test django bash -c '
             set -e
@@ -133,7 +128,6 @@ jobs:
           '
 
       - name: Upload backend test and coverage artifacts
-        if: matrix.suite == 'backend'
         uses: actions/upload-artifact@v4
         with:
           name: ci-backend-reports
@@ -142,8 +136,28 @@ jobs:
             coverage-backend.xml
           if-no-files-found: error
 
+  test_frontend:
+    name: Tests (frontend)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # artifacts + BuildKit GHA cache export
+    env:
+      COMPOSE_FILE: docker-compose.yml:docker/docker-compose.ci-cache.yml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-setup
+        with:
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Run frontend build and tests
-        if: matrix.suite == 'frontend'
         env:
           CHROME_BIN: ${{ env.CHROME_BROWSER_BINARY }}
           DISPLAY: ${{ env.DISPLAY_SERVER_ADDRESS }}
@@ -199,7 +213,6 @@ jobs:
           '
 
       - name: Upload frontend test and coverage artifacts
-        if: matrix.suite == 'frontend'
         uses: actions/upload-artifact@v4
         with:
           name: ci-frontend-reports
@@ -213,7 +226,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - code_quality
-      - tests
+      - test_backend
+      - test_frontend
     permissions:
       contents: read
       id-token: write
