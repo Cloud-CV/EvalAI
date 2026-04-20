@@ -9,7 +9,8 @@ on:
 
 permissions:
   contents: read
-  actions: read # required to download artifacts from the triggering run
+  actions: read    # required to download artifacts from the triggering run
+  statuses: write  # required to post commit status back to the triggering PR commit
 
 jobs:
   upload_coverage:
@@ -96,3 +97,28 @@ jobs:
           override_commit: ${{ github.event.workflow_run.head_sha }}
           override_branch: ${{ github.event.workflow_run.head_branch }}
           override_pr: ${{ steps.pr.outputs.number }}
+
+      # Report the final status of this workflow back to the commit that triggered ci-cd.
+      # This makes the Codecov upload a visible, blockable check on PRs even though
+      # it runs in a separate workflow_run context.
+      - name: Report coverage upload status to triggering commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          CONCLUSION: ${{ job.status }}
+        run: |
+          if [ "${CONCLUSION}" = "success" ]; then
+            state="success"
+            description="Coverage uploaded to Codecov successfully."
+          else
+            state="failure"
+            description="Coverage upload to Codecov failed."
+          fi
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/statuses/${SHA}" \
+            --field state="${state}" \
+            --field description="${description}" \
+            --field context="upload-coverage / Codecov" \
+            --field target_url="https://app.codecov.io/gh/${{ github.repository }}"
