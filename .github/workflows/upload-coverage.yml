@@ -57,11 +57,16 @@ jobs:
           pr_number="$(tr -d '[:space:]' < pr-metadata/pr_number.txt || true)"
           echo "number=${pr_number}" >> "$GITHUB_OUTPUT"
 
+      - name: List downloaded artifacts
+        run: |
+          echo "=== codecov-reports tree ==="
+          find codecov-reports -type f | sort || echo "(empty or missing)"
+
       - name: Verify coverage files exist
         run: |
           set -euo pipefail
           test -f codecov-reports/coverage-backend.xml
-          test -f codecov-reports/coverage/frontend/lcov.info
+          test -f codecov-reports/lcov.info
 
       - name: Upload combined JUnit test reports
         uses: actions/upload-artifact@v4
@@ -69,7 +74,7 @@ jobs:
           name: junit-test-reports
           path: |
             codecov-reports/junit-backend.xml
-            codecov-reports/coverage/frontend/TEST-frontend.xml
+            codecov-reports/TEST-frontend.xml
           if-no-files-found: warn
 
       - name: Upload backend coverage to Codecov
@@ -89,7 +94,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: codecov-reports/coverage/frontend/lcov.info
+          files: codecov-reports/lcov.info
           flags: frontend
           disable_search: true
           fail_ci_if_error: true
