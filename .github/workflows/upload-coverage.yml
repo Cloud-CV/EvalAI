@@ -57,6 +57,11 @@ jobs:
           pr_number="$(tr -d '[:space:]' < pr-metadata/pr_number.txt || true)"
           echo "number=${pr_number}" >> "$GITHUB_OUTPUT"
 
+      - name: List downloaded artifacts
+        run: |
+          echo "=== codecov-reports tree ==="
+          find codecov-reports -type f | sort || echo "(empty or missing)"
+
       - name: Verify coverage files exist
         run: |
           set -euo pipefail
