@@ -1192,6 +1192,87 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data["phases"][0]["limits"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_submissions_from_other_challenge_not_counted(self):
+        """
+        Submissions made to a different challenge's phase must not affect
+        remaining-submission counts for the current challenge.
+
+        This is the key correctness guard for the optimised submission_filter
+        that no longer includes submissions__challenge_phase__challenge. The
+        LEFT JOIN on submission.challenge_phase_id already scopes rows to the
+        phases of the queried challenge; this test confirms that isolation.
+        """
+        self.url = reverse_lazy(
+            "jobs:get_remaining_submissions",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.submission3.status = "cancelled"
+        self.submission2.status = "failed"
+        self.submission3.save()
+        self.submission2.save()
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            other_challenge = Challenge.objects.create(
+                title="Other Challenge",
+                description="Another challenge",
+                terms_and_conditions="Terms",
+                submission_guidelines="Guidelines",
+                creator=self.challenge_host_team,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                published=False,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+            )
+            other_phase = ChallengePhase.objects.create(
+                name="Other Phase",
+                description="Phase in other challenge",
+                leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions_per_month=20,
+                max_submissions=100,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=other_challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                codename="Other Phase Codename",
+            )
+
+        other_challenge.participant_teams.add(self.participant_team)
+        other_challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=other_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=other_phase.test_annotation,
+            method_name="Other Challenge Submission",
+            method_description="Should not affect counts for self.challenge",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        # Only submission1 (status=submitted) counts for self.challenge_phase.
+        # The submission above belongs to other_phase and must not be counted.
+        expected = {
+            "remaining_submissions_today_count": 9,
+            "remaining_submissions_this_month_count": 19,
+            "remaining_submissions_count": 99,
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data["phases"][0]["limits"], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_all_phases_remaining(self):
         self.maxDiff = None
         self.url = reverse_lazy(
