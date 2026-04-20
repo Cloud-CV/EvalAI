@@ -3884,7 +3884,7 @@ describe('Unit tests for challenge controller', function () {
         it('should set chosenMetrics if undefined and toggle leaderboardDropdown', function () {
             vm.chosenMetrics = undefined;
             vm.openLeaderboardDropdown();
-            expect(vm.chosenMetrics).toEqual(['accuracy', 'loss']);
+            expect(vm.chosenMetrics).toEqual(['0', '1']);
             expect(vm.leaderboardDropdown).toBe(true);
         });
 
