@@ -1006,9 +1006,13 @@ def get_remaining_submissions(request, challenge_pk):
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
+    # Omitting submissions__challenge_phase__challenge here intentionally:
+    # challenge_phases is already filtered to this challenge, so the JOIN
+    # on submission.challenge_phase_id already scopes submissions correctly.
+    # Including it caused Django ORM to emit a redundant self-join on
+    # challenge_phase (T4 alias), inflating query cost significantly.
     submission_filter = Q(
         submissions__participant_team=participant_team,
-        submissions__challenge_phase__challenge=challenge_pk,
     ) & ~Q(submissions__status__in=submission_status_to_exclude)
 
     challenge_phases = challenge_phases.annotate(

@@ -1,2 +1,2 @@
 kubernetes==12.0.1
-requests==2.25.1
+requests==2.33.0

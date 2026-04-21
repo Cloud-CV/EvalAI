@@ -68,7 +68,7 @@ Our central development branch is development. Coding is done on feature branche
 
     - On your GitHub fork, select your branch and click “New pull request”. Select “master” as the base branch and your branch in the “compare” dropdown.
 If the code is mergeable (you get a message saying “Able to merge”), go ahead and create the pull request.
-    - Check back after some time to see if the Travis checks have passed, if not you should click on “Details” link on your PR thread at the right of “The Travis CI build failed”, which will take you to the dashboard for your PR. You will see what failed / stalled, and will need to resolve them.
+    - Check back after a few minutes to see if the GitHub Actions workflow checks have completed. If they have not passed, click the “Details” link next to the failed check in your PR checks section to open the Actions run page, inspect logs, and fix the failing step before pushing another commit.
     - If your checks have passed, your PR will be assigned a reviewer who will review your code and provide comments. Please address each review comment by pushing new commits to the same branch (the PR will automatically update, so you don’t need to submit a new one). Once you are done, comment below each review comment marking it as “Done”. Feel free to use the thread to have a discussion about comments that you don’t understand completely or don’t agree with.
 
     - Once all comments are addressed, the maintainer will approve the PR.
@@ -83,5 +83,15 @@ If the code is mergeable (you get a message saying “Able to merge”), go ahea
 
     - For further query regarding rebasing, visit https://github.com/todotxt/todo.txt-android/wiki/Squash-All-Commits-Related-to-a-Single-Issue-into-a-Single-Commit
     - Once rebasing is done, the reviewer will approve and merge the PR.
+
+### GitHub Actions deployment configuration
+
+The CI/CD workflow in `.github/workflows/ci-cd.yml` expects deployment configuration to be stored in GitHub Environments (`staging` and `production`) using descriptive secret names:
+
+- Environment secrets: `AWS_ACCOUNT_ID`, `AWS_REGION`, `AWS_OIDC_DEPLOYMENT_ROLE_ARN`, `JUMPBOX_INSTANCE`, `DEPLOYMENT_INSTANCE_HOST`, `DEPLOYMENT_SSH_PRIVATE_KEY`, `DEPLOYMENT_SSH_KNOWN_HOSTS`
+- Repository secrets (optional for authenticated Docker Hub access): `DOCKER_USERNAME`, `DOCKER_PASSWORD`
+- Optional repository secret `CODECOV_TOKEN` for Codecov: the `upload_coverage` job in `.github/workflows/ci-cd.yml` runs after tests; uploads use the token when set, and for public repositories Codecov can accept GitHub Actions uploads without it. A failed upload fails the same `ci-cd` workflow run.
+
+The deployment job uses AWS OIDC role assumption and does not require long-lived AWS access keys in GitHub secrets.
 
 Congratulations, you have successfully contributed to Project EvalAI!
