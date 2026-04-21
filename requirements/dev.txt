@@ -14,7 +14,7 @@ mock==4.0.2
 pre-commit>=3.0.0
 pytest-cov==2.10.1
 pytest-django==3.9.0
-pytest==5.4.2
+pytest==9.0.3
 recommonmark==0.6.0
 responses==0.13.4
 sphinx==3.3.1
