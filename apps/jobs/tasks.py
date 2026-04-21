@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 
+from challenges.aws_utils import trigger_eks_node_autoscale
 from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -76,6 +77,12 @@ def download_file_and_publish_submission_message(
                     "phase_pk": challenge_phase.pk,
                     "submission_pk": submission.pk,
                 }
+            )
+            trigger_eks_node_autoscale(
+                challenge_phase.challenge.pk,
+                trigger_source="submission_created",
+                submission_pk=submission.pk,
+                submission_status=Submission.SUBMITTED,
             )
             logger.info("Message published to submission worker successfully!")
         shutil.rmtree(file_download_temp_dir_path)

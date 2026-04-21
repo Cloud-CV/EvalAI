@@ -5470,20 +5470,10 @@ def modify_leaderboard_data(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["PATCH"])
-@throttle_classes([AnonRateThrottle])
-@permission_classes(())
-@authentication_classes(())
-def update_evaluation_module_error(request, challenge_pk):
+def _authenticate_lambda_request(request):
     """
-    Internal API endpoint for Lambda functions to update evaluation_module_error
-    on a challenge. Authenticated via a shared secret token passed in the
-    Authorization header (Bearer <token>).
-
-    Used by the OOM handler Lambda to notify challenge hosts when a worker
-    is killed due to OutOfMemoryError.
+    Authenticate internal Lambda requests via shared bearer token.
     """
-    # Authenticate via shared secret token
     expected_token = os.environ.get("LAMBDA_AUTH_TOKEN")
     if not expected_token:
         return Response(
@@ -5504,6 +5494,122 @@ def update_evaluation_module_error(request, challenge_pk):
             {"error": "Invalid auth token."},
             status=status.HTTP_403_FORBIDDEN,
         )
+
+    return None
+
+
+@api_view(["GET"])
+@throttle_classes([])
+@permission_classes(())
+@authentication_classes(())
+def get_challenge_autoscale_meta(request, challenge_pk):
+    """
+    Internal API endpoint for Lambda autoscaling metadata.
+    """
+    auth_error = _authenticate_lambda_request(request)
+    if auth_error:
+        return auth_error
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": f"Challenge with pk {challenge_pk} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    cluster_name = None
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+        cluster_name = challenge_evaluation_cluster.name
+    except ChallengeEvaluationCluster.DoesNotExist:
+        # Some challenges might not have cluster setup yet.
+        pass
+
+    response_data = {
+        "challenge_pk": challenge.pk,
+        "is_docker_based": challenge.is_docker_based,
+        "remote_evaluation": challenge.remote_evaluation,
+        "is_static_dataset_code_upload": challenge.is_static_dataset_code_upload,
+        "end_date": (
+            challenge.end_date.isoformat() if challenge.end_date else None
+        ),
+        "cluster_name": cluster_name,
+        "queue": challenge.queue,
+        "aws_region": challenge.aws_region
+        or os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+        "use_host_credentials": challenge.use_host_credentials,
+        "scale_up_cap": challenge.max_worker_instance or 1,
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([])
+@permission_classes(())
+@authentication_classes(())
+def get_challenge_pending_submission_count(request, challenge_pk):
+    """
+    Internal API endpoint to return pending submission counts for autoscaling.
+    """
+    auth_error = _authenticate_lambda_request(request)
+    if auth_error:
+        return auth_error
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": f"Challenge with pk {challenge_pk} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    pending_statuses = [
+        Submission.RUNNING,
+        Submission.SUBMITTED,
+        Submission.QUEUED,
+        Submission.RESUMING,
+    ]
+    grouped_counts = (
+        Submission.objects.filter(
+            challenge_phase__challenge=challenge, status__in=pending_statuses
+        )
+        .values("status")
+        .annotate(count=Count("id"))
+    )
+    status_counts = {row["status"]: row["count"] for row in grouped_counts}
+    for status_key in pending_statuses:
+        status_counts.setdefault(status_key, 0)
+
+    pending_submissions = sum(status_counts.values())
+    return Response(
+        {
+            "challenge_pk": challenge.pk,
+            "pending_submissions": pending_submissions,
+            "status_counts": status_counts,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["PATCH"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes(())
+@authentication_classes(())
+def update_evaluation_module_error(request, challenge_pk):
+    """
+    Internal API endpoint for Lambda functions to update evaluation_module_error
+    on a challenge. Authenticated via a shared secret token passed in the
+    Authorization header (Bearer <token>).
+
+    Used by the OOM handler Lambda to notify challenge hosts when a worker
+    is killed due to OutOfMemoryError.
+    """
+    auth_error = _authenticate_lambda_request(request)
+    if auth_error:
+        return auth_error
 
     # Validate request body
     error_message = request.data.get("evaluation_module_error")
