@@ -5,15 +5,15 @@
                 <form name="updateParticipantTeamDataForm" ng-submit="teams.updateParticipantTeamData(updateParticipantTeamDataForm.$valid)">
                     <div class="pass-title">Update Participant Team</div>
                     <div class="input-field align-left">
-                        <input id="teamName" name="teamName" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.teamName" value="{{teams.team.teamName}}" focus-if="teams.team.teamName" required>
+                        <input id="teamName" name="teamName" type="text" class="validate text-dark-black dark-autofill w-400" ng-pattern="/^[\w -.]*$/" ng-model="teams.team.teamName" value="{{teams.team.teamName}}" focus-if="teams.team.teamName" required>
                         <label class="active" for="teamName">Team Name</label>
                     </div>
                     <div class="input-field align-left">
-                        <input id="teamUrl" name="teamUrl" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.teamUrl" value="{{teams.team.teamUrl}}" focus-if="teams.team.teamUrl">
+                        <input id="teamUrl" name="teamUrl" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.teamUrl" value="{{teams.team.teamUrl}}" focus-if="teams.team.teamUrl">
                         <label for="teamUrl">Team URL (Optional)</label>
                     </div>
                     <ul class="inline-list pointer">
-                        <li><a class="dark-link" type="button" ng-click="teams.updateParticipantTeamData(false)"><strong>Cancel </strong></a></li>
+                        <li><a class="dark-link" type="button" ng-click="teams.updateParticipantTeamData(null)"><strong>Cancel </strong></a></li>
                         <li><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="updateParticipantTeamDataForm.$pristine" type="submit" value="Submit">Submit </button></li>
                     </ul>
                 </form>
