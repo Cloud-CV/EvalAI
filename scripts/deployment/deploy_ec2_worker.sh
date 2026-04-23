@@ -66,6 +66,6 @@ fi
 # Step 10: Setting up crontab
 echo "Step 10/10: Setting up crontab"
 echo "@reboot docker restart worker_${QUEUE}" >> workercron
-crontab workercron
+crontab -u ubuntu workercron
 rm workercron
 
