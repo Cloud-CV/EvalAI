@@ -2419,9 +2419,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         cache.clear()
         url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={
-                "challenge_phase_split_id": self.challenge_phase_split.id
-            },
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
         )
         with mock.patch(
             "jobs.views.calculate_distinct_sorted_leaderboard_data",
@@ -2446,9 +2444,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         cache.clear()
         url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={
-                "challenge_phase_split_id": self.challenge_phase_split.id
-            },
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
         )
         with mock.patch(
             "jobs.views.calculate_distinct_sorted_leaderboard_data",
@@ -2472,9 +2468,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         cache.clear()
         url = reverse_lazy(
             "jobs:leaderboard",
-            kwargs={
-                "challenge_phase_split_id": self.challenge_phase_split.id
-            },
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
         )
         with mock.patch(
             "jobs.views.calculate_distinct_sorted_leaderboard_data",
