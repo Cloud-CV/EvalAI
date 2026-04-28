@@ -31,6 +31,7 @@ from challenges.utils import (
     get_participant_model,
 )
 from django.conf import settings
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
@@ -639,16 +640,32 @@ def leaderboard(request, challenge_phase_split_id):
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     order_by = request.GET.get("order_by")
-    (
-        response_data,
-        http_status_code,
-    ) = calculate_distinct_sorted_leaderboard_data(
-        request.user,
-        challenge_obj,
-        challenge_phase_split,
-        only_public_entries=True,
-        order_by=order_by,
+
+    is_host_bit = int(
+        bool(is_user_a_staff_or_host(request.user, challenge_obj.pk))
     )
+    cache_key = "leaderboard:v1:{phase_split}:{order_by}:{is_host}".format(
+        phase_split=challenge_phase_split_id,
+        order_by=order_by or "default",
+        is_host=is_host_bit,
+    )
+    cached = cache.get(cache_key)
+    if cached is not None:
+        response_data, http_status_code = cached
+    else:
+        (
+            response_data,
+            http_status_code,
+        ) = calculate_distinct_sorted_leaderboard_data(
+            request.user,
+            challenge_obj,
+            challenge_phase_split,
+            only_public_entries=True,
+            order_by=order_by,
+        )
+        if http_status_code == status.HTTP_200_OK:
+            cache.set(cache_key, (response_data, http_status_code), 30)
+
     # The response 400 will be returned if the leaderboard isn't public or
     # `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
