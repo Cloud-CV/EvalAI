@@ -25,7 +25,7 @@ repos:
         verbose: true
 
   - repo: https://github.com/pycqa/flake8
-    rev: 3.8.2
+    rev: 7.1.2
     hooks:
       - id: flake8
         args: ['--config=.flake8', '--verbose']
