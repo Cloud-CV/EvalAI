@@ -33,7 +33,7 @@ aws configure set default.region ${AWS_REGION}
 export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 export COMMIT_ID="latest"
 export AWS_DEFAULT_REGION=${AWS_REGION}
-export TRAVIS_BRANCH=${ENVIRONMENT}
+export DEPLOYMENT_BRANCH_NAME=${ENVIRONMENT}
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
 # Step 7: Copying Docker environment file

@@ -1,0 +1,33 @@
+# Merge with docker-compose.yml only in GitHub Actions (see ci-cd workflow COMPOSE_FILE).
+# Enables BuildKit cache export/import via actions/cache (type=gha). Not for local use.
+services:
+  django:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-django
+      cache_to:
+        - type=gha,scope=evalai-django,mode=max
+  nodejs:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-nodejs
+      cache_to:
+        - type=gha,scope=evalai-nodejs,mode=max
+  worker_py3_7:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-worker-py37
+      cache_to:
+        - type=gha,scope=evalai-worker-py37,mode=max
+  worker_py3_8:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-worker-py38
+      cache_to:
+        - type=gha,scope=evalai-worker-py38,mode=max
+  worker_py3_9:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-worker-py39
+      cache_to:
+        - type=gha,scope=evalai-worker-py39,mode=max

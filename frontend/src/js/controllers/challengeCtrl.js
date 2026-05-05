@@ -1111,11 +1111,14 @@
                         }
 
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
-                        var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+                        var defaultOrderBy = vm.leaderboard[i].leaderboard__schema.default_order_by;
+                        if (leaderboardLabels.indexOf(vm.orderLeaderboardBy) === -1 && defaultOrderBy) {
+                            vm.orderLeaderboardBy = defaultOrderBy;
+                        }
                         if (vm.selectedPhaseSplit && vm.selectedPhaseSplit.show_scores_on_leaderboard === false) {
                             vm.chosenMetrics = [];
                         } else {
-                            vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
+                            vm.chosenMetrics = leaderboardLabels.map(function(_, idx) { return idx.toString() });
                         }
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
@@ -3124,8 +3127,7 @@
                 vm.leaderboard && vm.leaderboard[0]) {
                 var index = [];
                 for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
-                    var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();
-                    index.push(label);
+                    index.push(k.toString());
                 }
                 vm.chosenMetrics = index;
             }

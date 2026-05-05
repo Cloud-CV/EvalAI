@@ -270,6 +270,44 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @mock.patch(
+        "jobs.views.download_file_and_publish_submission_message.delay"
+    )
+    @mock.patch("jobs.views.is_url_valid", return_value=True)
+    def test_challenge_submission_file_url_not_queued_when_challenge_paused(
+        self, mock_is_url_valid, mock_delay
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "file_url": "http://example.com/submission.bin",
+                "method_name": "test",
+                "method_description": "desc",
+                "project_url": "http://project.example.com",
+                "publication_url": "http://pub.example.com",
+            },
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        mock_delay.assert_not_called()
+
+        self.challenge.is_submission_paused = False
+        self.challenge.save()
+
     def test_challenge_submission_when_phase_submissions_are_paused(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
@@ -293,6 +331,32 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_challenge_submission_inactive_phase_errors_before_challenge_paused(
+        self,
+    ):
+        """Phase activity is checked before submission pause (same as multipart APIs)."""
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+        self.challenge_phase.end_date = timezone.now() - timedelta(days=1)
+        self.challenge_phase.save()
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+        expected = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
 
     def test_challenge_submission_when_phase_submissions_unpaused(self):
         self.url = reverse_lazy(
@@ -1191,6 +1255,87 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data["phases"][0]["limits"], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_submissions_from_other_challenge_not_counted(self):
+        """
+        Submissions made to a different challenge's phase must not affect
+        remaining-submission counts for the current challenge.
+
+        This is the key correctness guard for the optimised submission_filter
+        that no longer includes submissions__challenge_phase__challenge. The
+        LEFT JOIN on submission.challenge_phase_id already scopes rows to the
+        phases of the queried challenge; this test confirms that isolation.
+        """
+        self.url = reverse_lazy(
+            "jobs:get_remaining_submissions",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.submission3.status = "cancelled"
+        self.submission2.status = "failed"
+        self.submission3.save()
+        self.submission2.save()
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            other_challenge = Challenge.objects.create(
+                title="Other Challenge",
+                description="Another challenge",
+                terms_and_conditions="Terms",
+                submission_guidelines="Guidelines",
+                creator=self.challenge_host_team,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                published=False,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+            )
+            other_phase = ChallengePhase.objects.create(
+                name="Other Phase",
+                description="Phase in other challenge",
+                leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions_per_month=20,
+                max_submissions=100,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=other_challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                codename="Other Phase Codename",
+            )
+
+        other_challenge.participant_teams.add(self.participant_team)
+        other_challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=other_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=other_phase.test_annotation,
+            method_name="Other Challenge Submission",
+            method_description="Should not affect counts for self.challenge",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        # Only submission1 (status=submitted) counts for self.challenge_phase.
+        # The submission above belongs to other_phase and must not be counted.
+        expected = {
+            "remaining_submissions_today_count": 9,
+            "remaining_submissions_this_month_count": 19,
+            "remaining_submissions_count": 99,
+        }
+
         response = self.client.get(self.url, {})
         self.assertEqual(response.data["phases"][0]["limits"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2916,3 +3061,359 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_submission_presigned_url_rejected_when_challenge_paused(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+        url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        mock_ensure_workers.assert_not_called()
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+        self.challenge.is_submission_paused = False
+        self.challenge.save()
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_submission_presigned_url_rejected_when_phase_paused(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+        url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        mock_ensure_workers.assert_not_called()
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+        self.challenge_phase.is_submission_paused = False
+        self.challenge_phase.save()
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_finish_submission_file_upload_rejected_when_challenge_paused_after_presign(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        submission_pk = response.data["submission_pk"]
+        upload_id = response.data["upload_id"]
+        submission = Submission.objects.get(pk=submission_pk)
+        presigned_url_object = response.data["presigned_urls"][0]
+        file_data = submission.input_file.read()
+        put_resp = requests.put(presigned_url_object["url"], data=file_data)
+        self.assertEqual(put_resp.status_code, status.HTTP_200_OK)
+        parts = [
+            {
+                "ETag": put_resp.headers["ETag"],
+                "PartNumber": presigned_url_object["partNumber"],
+            }
+        ]
+
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+
+        finish_url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+        response = self.client.post(
+            finish_url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": upload_id,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+        self.challenge.is_submission_paused = False
+        self.challenge.save()
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_send_submission_message_rejected_when_challenge_paused(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        submission_pk = response.data["submission_pk"]
+        upload_id = response.data["upload_id"]
+        submission = Submission.objects.get(pk=submission_pk)
+        presigned_url_object = response.data["presigned_urls"][0]
+        put_resp = requests.put(
+            presigned_url_object["url"],
+            data=submission.input_file.read(),
+        )
+        self.assertEqual(put_resp.status_code, status.HTTP_200_OK)
+        parts = [
+            {
+                "ETag": put_resp.headers["ETag"],
+                "PartNumber": presigned_url_object["partNumber"],
+            }
+        ]
+        finish_url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        finish_resp = self.client.post(
+            finish_url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": upload_id,
+            },
+        )
+        self.assertEqual(finish_resp.status_code, status.HTTP_201_CREATED)
+
+        self.challenge.is_submission_paused = True
+        self.challenge.save()
+
+        send_url = reverse_lazy(
+            "jobs:send_submission_message",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+        response = self.client.post(send_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+        self.challenge.is_submission_paused = False
+        self.challenge.save()
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_finish_submission_file_upload_rejected_when_phase_paused_after_presign(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        submission_pk = response.data["submission_pk"]
+        upload_id = response.data["upload_id"]
+        submission = Submission.objects.get(pk=submission_pk)
+        presigned_url_object = response.data["presigned_urls"][0]
+        put_resp = requests.put(
+            presigned_url_object["url"],
+            data=submission.input_file.read(),
+        )
+        self.assertEqual(put_resp.status_code, status.HTTP_200_OK)
+        parts = [
+            {
+                "ETag": put_resp.headers["ETag"],
+                "PartNumber": presigned_url_object["partNumber"],
+            }
+        ]
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+
+        finish_url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+        response = self.client.post(
+            finish_url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": upload_id,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+        self.challenge_phase.is_submission_paused = False
+        self.challenge_phase.save()
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_send_submission_message_rejected_when_phase_paused(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        submission_pk = response.data["submission_pk"]
+        upload_id = response.data["upload_id"]
+        submission = Submission.objects.get(pk=submission_pk)
+        presigned_url_object = response.data["presigned_urls"][0]
+        put_resp = requests.put(
+            presigned_url_object["url"],
+            data=submission.input_file.read(),
+        )
+        self.assertEqual(put_resp.status_code, status.HTTP_200_OK)
+        parts = [
+            {
+                "ETag": put_resp.headers["ETag"],
+                "PartNumber": presigned_url_object["partNumber"],
+            }
+        ]
+        finish_url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        finish_resp = self.client.post(
+            finish_url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": upload_id,
+            },
+        )
+        self.assertEqual(finish_resp.status_code, status.HTTP_201_CREATED)
+
+        self.challenge_phase.is_submission_paused = True
+        self.challenge_phase.save()
+
+        send_url = reverse_lazy(
+            "jobs:send_submission_message",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission_pk,
+            },
+        )
+        expected = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+        response = self.client.post(send_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+        self.challenge_phase.is_submission_paused = False
+        self.challenge_phase.save()

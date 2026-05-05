@@ -28,6 +28,17 @@ def download_file_and_publish_submission_message(
     """
     user = User.objects.get(pk=user_pk)
     challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_id)
+    if (
+        challenge_phase.challenge.is_submission_paused
+        or challenge_phase.is_submission_paused
+    ):
+        logger.warning(
+            "Skipping URL-based submission task: submissions paused for "
+            "challenge_pk=%s phase_pk=%s",
+            challenge_phase.challenge.pk,
+            challenge_phase.pk,
+        )
+        return
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_phase.challenge.pk
     )

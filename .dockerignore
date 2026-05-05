@@ -59,7 +59,6 @@ Dockerfile*
 # CI/CD
 .github/
 .gitlab-ci.yml
-.travis.yml
 
 # Testing
 .pytest_cache/
