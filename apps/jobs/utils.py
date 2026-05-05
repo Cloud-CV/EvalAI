@@ -17,6 +17,7 @@ from hosts.utils import is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import status
+from rest_framework.response import Response
 
 from .constants import submission_status_to_exclude
 from .models import Submission
@@ -26,6 +27,24 @@ get_submission_model = get_model_object(Submission)
 get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
 
 logger = logging.getLogger(__name__)
+
+
+def response_if_submissions_paused(challenge, challenge_phase):
+    """
+    Return HTTP 406 if new submissions are paused at challenge or phase level.
+    Error payloads match challenge_submission.
+    """
+    if challenge.is_submission_paused:
+        response_data = {
+            "error": "Submissions are currently paused for this challenge. Please try again later."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if challenge_phase.is_submission_paused:
+        response_data = {
+            "error": "Submissions are currently paused for this challenge phase. Please try again later."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    return None
 
 
 def get_remaining_submission_for_a_phase(

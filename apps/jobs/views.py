@@ -84,6 +84,7 @@ from .utils import (
     is_url_valid,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
+    response_if_submissions_paused,
 )
 
 logger = logging.getLogger(__name__)
@@ -214,14 +215,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        if challenge.is_submission_paused:
-            response_data = {
-                "error": "Submissions are currently paused for this challenge. Please try again later."
-            }
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
-
         # check if challenge phase is active
         if not challenge_phase.is_active:
             response_data = {
@@ -231,13 +224,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        if challenge_phase.is_submission_paused:
-            response_data = {
-                "error": "Submissions are currently paused for this challenge phase. Please try again later."
-            }
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+        paused = response_if_submissions_paused(challenge, challenge_phase)
+        if paused is not None:
+            return paused
 
         # check if user is a challenge host or a participant
         is_host = is_user_a_host_of_challenge(request.user, challenge_id)
@@ -2859,6 +2848,10 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    paused = response_if_submissions_paused(challenge, challenge_phase)
+    if paused is not None:
+        return paused
+
     # Check if user is a challenge host or a participant
     is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
     if not is_host:
@@ -3041,6 +3034,10 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    paused = response_if_submissions_paused(challenge, challenge_phase)
+    if paused is not None:
+        return paused
+
     # Check if user is a challenge host or a participant
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         # Check if challenge phase is public and accepting solutions
@@ -3160,6 +3157,10 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
             "error": "Sorry, cannot accept submissions since challenge phase is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    paused = response_if_submissions_paused(challenge, challenge_phase)
+    if paused is not None:
+        return paused
 
     is_host = is_user_a_host_of_challenge(request.user, challenge.pk)
     if not is_host:
