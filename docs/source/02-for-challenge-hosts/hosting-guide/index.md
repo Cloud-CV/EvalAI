@@ -7,4 +7,4 @@ getting-started
 challenge-types
 host-challenge
 approval-process
-
+challenge-host-management
