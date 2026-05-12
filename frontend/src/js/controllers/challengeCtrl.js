@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout', 'ngMeta'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout, ngMeta) {
         var vm = this;
         vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
@@ -406,6 +406,12 @@
                     vm.page.image = "dist/images/logo.png";
 
                 }
+
+                // Update Open Graph / Twitter meta tags for challenge sharing
+                ngMeta.setTitle(details.title);
+                ngMeta.setTag('description', details.short_description || details.description || '');
+                ngMeta.setTag('image', vm.page.image);
+                ngMeta.setTag('url', window.location.href);
 
 
                 // Get challenge prizes
