@@ -114,14 +114,44 @@ perform_auto_deploy() {
 
     chmod 600 "${ssh_private_key_path}"
 
-    ssh \
-        -i "${ssh_private_key_path}" \
-        -o BatchMode=yes \
-        -o IdentitiesOnly=yes \
-        -o StrictHostKeyChecking=yes \
-        -o UserKnownHostsFile="${deploy_ssh_known_hosts_path}" \
-        -o ProxyJump="ubuntu@${JUMPBOX_INSTANCE}" \
-        "ubuntu@${deployment_instance_host}" <<ENDSSH
+    # Host names and User ubuntu live only in a short-lived chmod 600 SSH client config so
+    # argv/logs show Host aliases (evalai-deploy-jump / evalai-deploy-target), not IPs/DNS/user.
+    # HostKeyAlias keeps known_hosts entries aligned with those aliases instead of the raw IPs.
+    ssh_deploy_client_config="$(mktemp)"
+    chmod 600 "${ssh_deploy_client_config}"
+    trap 'rm -f "${ssh_deploy_client_config}"' EXIT
+
+    ssh_proxy_via_jump=$(printf 'ssh -F %q -W %%h:%%p evalai-deploy-jump' "${ssh_deploy_client_config}")
+
+    {
+        printf '%s\n' \
+            'Host evalai-deploy-jump' \
+            "    HostName ${JUMPBOX_INSTANCE}" \
+            '    HostKeyAlias evalai-deploy-jump' \
+            '    User ubuntu' \
+            "    IdentityFile ${ssh_private_key_path}" \
+            '    IdentitiesOnly yes' \
+            '    StrictHostKeyChecking yes' \
+            '    CheckHostIP no' \
+            "    UserKnownHostsFile ${deploy_ssh_known_hosts_path}" \
+            '    BatchMode yes' \
+            '    LogLevel ERROR' \
+            '' \
+            'Host evalai-deploy-target' \
+            "    HostName ${deployment_instance_host}" \
+            '    HostKeyAlias evalai-deploy-target' \
+            '    User ubuntu' \
+            "    IdentityFile ${ssh_private_key_path}" \
+            '    IdentitiesOnly yes' \
+            '    StrictHostKeyChecking yes' \
+            '    CheckHostIP no' \
+            "    UserKnownHostsFile ${deploy_ssh_known_hosts_path}" \
+            '    BatchMode yes' \
+            '    LogLevel ERROR' \
+            "    ProxyCommand ${ssh_proxy_via_jump}"
+    } >"${ssh_deploy_client_config}"
+
+    ssh -F "${ssh_deploy_client_config}" evalai-deploy-target <<ENDSSH
 set -euo pipefail
 
 cd ~/Projects/EvalAI
