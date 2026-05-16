@@ -13,8 +13,10 @@ from jobs.utils import (
     handle_submission_resume,
     is_url_valid,
     reorder_submissions_comparator_to_key,
+    response_if_submissions_paused,
 )
 from jobs.views import _compute_remaining_limits
+from rest_framework import status
 
 
 class TestUtils(unittest.TestCase):
@@ -1327,6 +1329,49 @@ class TestComputeRemainingLimits(unittest.TestCase):
         result = _compute_remaining_limits(phase, 0, 3, 0, now)
         self.assertEqual(result["remaining_submissions_this_month_count"], 2)
         self.assertEqual(result["remaining_submissions_today_count"], 2)
+
+
+class TestResponseIfSubmissionsPaused(unittest.TestCase):
+    def test_returns_none_when_not_paused(self):
+        challenge = MagicMock()
+        challenge.is_submission_paused = False
+        phase = MagicMock()
+        phase.is_submission_paused = False
+        self.assertIsNone(response_if_submissions_paused(challenge, phase))
+
+    def test_challenge_paused_returns_406_body(self):
+        challenge = MagicMock()
+        challenge.is_submission_paused = True
+        phase = MagicMock()
+        phase.is_submission_paused = False
+        resp = response_if_submissions_paused(challenge, phase)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            resp.data["error"],
+            "Submissions are currently paused for this challenge. Please try again later.",
+        )
+
+    def test_phase_paused_returns_406_body(self):
+        challenge = MagicMock()
+        challenge.is_submission_paused = False
+        phase = MagicMock()
+        phase.is_submission_paused = True
+        resp = response_if_submissions_paused(challenge, phase)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            resp.data["error"],
+            "Submissions are currently paused for this challenge phase. Please try again later.",
+        )
+
+    def test_challenge_paused_wins_when_both_paused(self):
+        challenge = MagicMock()
+        challenge.is_submission_paused = True
+        phase = MagicMock()
+        phase.is_submission_paused = True
+        resp = response_if_submissions_paused(challenge, phase)
+        self.assertIn("challenge", resp.data["error"])
 
 
 class Submission:
