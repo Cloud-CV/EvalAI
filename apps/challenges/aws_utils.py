@@ -53,6 +53,9 @@ CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get(
 EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
     "EVENTBRIDGE_SCHEDULER_ROLE_ARN", ""
 )
+EKS_NODE_AUTOSCALE_LAMBDA_ARN = os.environ.get(
+    "EKS_NODE_AUTOSCALE_LAMBDA_ARN", ""
+)
 
 COMMON_SETTINGS_DICT = {
     "EXECUTION_ROLE_ARN": os.environ.get(
@@ -563,6 +566,88 @@ def ensure_workers_for_submission(challenge):
             "Failed to create worker stack for challenge %s: %s",
             challenge.pk,
             failures[0]["message"] if failures else "Unknown error",
+        )
+
+
+def trigger_eks_node_autoscale(
+    challenge_pk,
+    trigger_source,
+    submission_pk=None,
+    submission_status=None,
+    previous_submission_status=None,
+):
+    """
+    Invoke the EKS node autoscale Lambda asynchronously.
+
+    This is best-effort and intentionally non-blocking for submission flows.
+    """
+    if settings.DEBUG or settings.TEST:
+        logger.info(
+            "Skipping autoscale Lambda invoke for challenge %s in dev/test.",
+            challenge_pk,
+        )
+        return
+
+    pending_statuses = {"running", "submitted", "queued", "resuming"}
+    terminal_statuses = {"finished", "failed", "cancelled"}
+    normalized_status = (
+        submission_status.lower()
+        if isinstance(submission_status, str)
+        else None
+    )
+    normalized_previous_status = (
+        previous_submission_status.lower()
+        if isinstance(previous_submission_status, str)
+        else None
+    )
+
+    # This event only republishes a message for static code-upload second-stage
+    # evaluation and does not change queue pressure by itself.
+    if trigger_source == "submission_message_republished":
+        return
+
+    # Debounce status updates: invoke autoscale only when a submission crosses
+    # pending/non-pending boundary or reaches terminal states.
+    if trigger_source == "submission_status_changed":
+        if normalized_status not in pending_statuses.union(terminal_statuses):
+            return
+        if normalized_previous_status:
+            was_pending = normalized_previous_status in pending_statuses
+            is_pending = normalized_status in pending_statuses
+            if was_pending == is_pending:
+                return
+
+    if not EKS_NODE_AUTOSCALE_LAMBDA_ARN:
+        logger.info(
+            "EKS_NODE_AUTOSCALE_LAMBDA_ARN not configured. "
+            "Skipping autoscale invoke for challenge %s.",
+            challenge_pk,
+        )
+        return
+
+    payload = {
+        "challenge_pk": challenge_pk,
+        "trigger_source": trigger_source,
+    }
+    if submission_pk is not None:
+        payload["submission_pk"] = submission_pk
+    if submission_status is not None:
+        payload["submission_status"] = normalized_status
+    if previous_submission_status is not None:
+        payload["previous_submission_status"] = normalized_previous_status
+
+    try:
+        lambda_client = get_boto3_client("lambda", aws_keys)
+        lambda_client.invoke(
+            FunctionName=EKS_NODE_AUTOSCALE_LAMBDA_ARN,
+            InvocationType="Event",
+            Payload=json.dumps(payload).encode("utf-8"),
+        )
+    except ClientError as err:
+        logger.exception(
+            "Failed to invoke autoscale Lambda for challenge %s: %s",
+            challenge_pk,
+            err,
         )
 
 

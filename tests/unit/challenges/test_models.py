@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 from datetime import timedelta
+from unittest.mock import patch
 
 from challenges.models import (
     Challenge,
@@ -162,6 +163,24 @@ class ChallengeTestCase(BaseTestCase):
     def test_get_end_date(self):
         self.assertEqual(
             self.challenge.end_date, self.challenge.get_end_date()
+        )
+
+    @patch("challenges.aws_utils.trigger_eks_node_autoscale")
+    def test_end_date_change_triggers_eks_autoscale_for_docker_challenge(
+        self, mock_trigger_eks_node_autoscale
+    ):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        self.challenge.uses_ec2_worker = False
+        self.challenge.save()
+
+        mock_trigger_eks_node_autoscale.reset_mock()
+        self.challenge.end_date = timezone.now() - timedelta(days=3)
+        self.challenge.save()
+
+        mock_trigger_eks_node_autoscale.assert_called_once_with(
+            self.challenge.pk,
+            trigger_source="challenge_end_date_changed",
         )
 
 

@@ -30,6 +30,7 @@ import yaml
 django.setup()  # isort:skip noqa:E402
 # fmt: on
 
+from challenges.aws_utils import trigger_eks_node_autoscale  # noqa:E402
 from challenges.models import ChallengePhase  # noqa:E402
 from challenges.models import (  # noqa:E402
     Challenge,
@@ -732,6 +733,9 @@ def process_submission_message(message):
     phase_id = message.get("phase_pk")
     submission_id = message.get("submission_pk")
     submission_instance = extract_submission_data(submission_id)
+    previous_submission_status = (
+        submission_instance.status if submission_instance else None
+    )
 
     # so that the further execution does not happen
     if not submission_instance:
@@ -762,6 +766,14 @@ def process_submission_message(message):
         challenge_phase,
         submission_instance,
         user_annotation_file_path,
+    )
+    submission_instance.refresh_from_db()
+    trigger_eks_node_autoscale(
+        challenge_id,
+        trigger_source="submission_status_changed",
+        submission_pk=submission_id,
+        submission_status=submission_instance.status,
+        previous_submission_status=previous_submission_status,
     )
     # Delete submission data after processing submission
     delete_submission_data_directory(

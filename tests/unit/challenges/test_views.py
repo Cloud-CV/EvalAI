@@ -16,6 +16,7 @@ from allauth.account.models import EmailAddress
 from challenges.models import (
     Challenge,
     ChallengeConfiguration,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     ChallengePrize,
@@ -8224,6 +8225,129 @@ class UpdateEvaluationModuleErrorTest(BaseAPITestClass):
                 format="json",
             )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ChallengeAutoscaleInternalAPITest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+        self.auth_token = "test-lambda-secret-token"
+        self.meta_url = reverse_lazy(
+            "challenges:get_challenge_autoscale_meta",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.pending_url = reverse_lazy(
+            "challenges:get_challenge_pending_submission_count",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+    def _client_with_auth(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+        return client
+
+    def test_meta_missing_lambda_auth_token_env(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            response = APIClient().get(self.meta_url, format="json")
+        self.assertEqual(
+            response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    def test_meta_missing_authorization_header(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = APIClient().get(self.meta_url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_meta_success(self):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        self.challenge.max_worker_instance = 7
+        self.challenge.queue = "challenge-test-queue"
+        self.challenge.aws_region = "us-west-2"
+        self.challenge.use_host_credentials = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge, name="test-eks-cluster"
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.meta_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["challenge_pk"], self.challenge.pk)
+        self.assertEqual(response.data["cluster_name"], "test-eks-cluster")
+        self.assertEqual(response.data["scale_up_cap"], 7)
+        self.assertEqual(response.data["queue"], "challenge-test-queue")
+        self.assertEqual(response.data["aws_region"], "us-west-2")
+        self.assertTrue(response.data["use_host_credentials"])
+
+    def test_pending_missing_authorization_header(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = APIClient().get(self.pending_url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_pending_submission_count_success(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            phase = ChallengePhase.objects.create(
+                name="Phase 1",
+                description="Description for Phase 1",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                codename="phase_1_codename_pending_count",
+                test_annotation=SimpleUploadedFile(
+                    "test_annotation_pending.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+            created_pks = []
+            for _ in range(4):
+                submission = Submission.objects.create(
+                    participant_team=self.participant_team,
+                    challenge_phase=phase,
+                    created_by=self.user,
+                    status=Submission.SUBMITTED,
+                    input_file=SimpleUploadedFile(
+                        "test_file_pending.txt",
+                        b"Dummy file content",
+                        content_type="text/plain",
+                    ),
+                )
+                created_pks.append(submission.pk)
+            Submission.objects.filter(pk=created_pks[0]).update(
+                status=Submission.RUNNING
+            )
+            Submission.objects.filter(pk=created_pks[1]).update(
+                status=Submission.QUEUED
+            )
+            Submission.objects.filter(pk=created_pks[2]).update(
+                status=Submission.RESUMING
+            )
+            Submission.objects.filter(pk=created_pks[3]).update(
+                status=Submission.FINISHED
+            )
+
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.pending_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["pending_submissions"], 3)
+        self.assertEqual(response.data["status_counts"]["running"], 1)
+        self.assertEqual(response.data["status_counts"]["queued"], 1)
+        self.assertEqual(response.data["status_counts"]["resuming"], 1)
 
 
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):

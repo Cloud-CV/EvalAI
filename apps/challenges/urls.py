@@ -325,6 +325,16 @@ urlpatterns = [
         name="modify_leaderboard_data",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/autoscale_meta/$",
+        views.get_challenge_autoscale_meta,
+        name="get_challenge_autoscale_meta",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/pending_submission_count/$",
+        views.get_challenge_pending_submission_count,
+        name="get_challenge_pending_submission_count",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/update_evaluation_module_error/$",
         views.update_evaluation_module_error,
         name="update_evaluation_module_error",

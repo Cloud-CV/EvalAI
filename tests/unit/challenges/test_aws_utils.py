@@ -1,3 +1,4 @@
+import json
 import unittest
 from http import HTTPStatus
 from unittest import TestCase, mock
@@ -39,6 +40,7 @@ from challenges.aws_utils import (
     stop_ec2_instance,
     stop_workers,
     terminate_ec2_instance,
+    trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
@@ -5143,3 +5145,148 @@ class TestCreateServiceFargateSpot:
         assert spot["weight"] == 3
         assert fargate["weight"] == 1
         assert fargate["base"] == 1
+
+
+class TestTriggerEksNodeAutoscale:
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN", "")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_when_lambda_not_configured(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+
+        trigger_eks_node_autoscale(11, "submission_created")
+
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_invokes_lambda_with_event_payload(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_lambda_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_lambda_client
+
+        trigger_eks_node_autoscale(
+            21,
+            "submission_status_changed",
+            submission_pk=77,
+            submission_status="running",
+        )
+
+        mock_get_boto3_client.assert_called_once()
+        kwargs = mock_lambda_client.invoke.call_args.kwargs
+        assert kwargs["FunctionName"] == (
+            "arn:aws:lambda:us-east-1:123:function:autoscale"
+        )
+        assert kwargs["InvocationType"] == "Event"
+        payload = json.loads(kwargs["Payload"].decode("utf-8"))
+        assert payload["challenge_pk"] == 21
+        assert payload["trigger_source"] == "submission_status_changed"
+        assert payload["submission_pk"] == 77
+        assert payload["submission_status"] == "running"
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_in_debug_or_test(self, mock_get_boto3_client, mock_settings):
+        mock_settings.DEBUG = True
+        mock_settings.TEST = False
+        trigger_eks_node_autoscale(11, "submission_created")
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_for_message_republished_event(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+
+        trigger_eks_node_autoscale(
+            42,
+            "submission_message_republished",
+            submission_pk=3,
+            submission_status="submitted",
+        )
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_when_pending_boundary_unchanged(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+
+        trigger_eks_node_autoscale(
+            42,
+            "submission_status_changed",
+            submission_pk=3,
+            submission_status="running",
+            previous_submission_status="queued",
+        )
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_invoke_when_crossing_pending_boundary(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_lambda_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_lambda_client
+
+        trigger_eks_node_autoscale(
+            42,
+            "submission_status_changed",
+            submission_pk=3,
+            submission_status="running",
+            previous_submission_status="failed",
+        )
+        mock_lambda_client.invoke.assert_called_once()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_for_irrelevant_status_value(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+
+        trigger_eks_node_autoscale(
+            42,
+            "submission_status_changed",
+            submission_pk=3,
+            submission_status="submitting",
+            previous_submission_status="submitting",
+        )
+        mock_get_boto3_client.assert_not_called()
