@@ -16,7 +16,7 @@ from jobs.tasks import (
 @patch("jobs.tasks.SubmissionSerializer")
 @patch("jobs.tasks.publish_submission_message")
 @patch("jobs.tasks.shutil.rmtree")
-@patch("jobs.tasks.enqueue_submission_artifact_retention_tagging")
+@patch("jobs.s3_retention.enqueue_submission_artifact_retention_tagging")
 @patch("jobs.tasks.open", create=True)
 def test_download_file_and_publish_submission_message_success(
     mock_open,
