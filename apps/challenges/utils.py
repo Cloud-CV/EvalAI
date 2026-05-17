@@ -164,7 +164,7 @@ def generate_presigned_url(file_key_on_s3, challenge_pk):
 
 
 def generate_presigned_url_for_multipart_upload(
-    file_key_on_s3, challenge_pk, num_parts
+    file_key_on_s3, challenge_pk, num_parts, s3_tags=None
 ):
     """
     Function to get the presigned urls to upload a file to s3 in chunks
@@ -181,11 +181,18 @@ def generate_presigned_url_for_multipart_upload(
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
 
         s3 = get_boto3_client("s3", aws_keys)
-        response = s3.create_multipart_upload(
-            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
-            Key=file_key_on_s3,
-            ACL="public-read",
-        )
+        create_multipart_upload_kwargs = {
+            "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+            "Key": file_key_on_s3,
+            "ACL": "public-read",
+        }
+        if s3_tags:
+            from jobs.s3_retention import encode_s3_tagging
+
+            create_multipart_upload_kwargs["Tagging"] = encode_s3_tagging(
+                s3_tags
+            )
+        response = s3.create_multipart_upload(**create_multipart_upload_kwargs)
 
         upload_id = response["UploadId"]
         presigned_urls = []

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 
 from base.models import TimeStampedModel
-from base.utils import RandomFileName
+from base.utils import SubmissionArtifactFileName
 from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -88,11 +88,9 @@ class Submission(TimeStampedModel):
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
     # Model to store submitted submission files by the user
-    input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}")
-    )
+    input_file = models.FileField(upload_to=SubmissionArtifactFileName())
     submission_input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )
@@ -100,27 +98,27 @@ class Submission(TimeStampedModel):
     # user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )
     stderr_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )
     environment_log_file = models.FileField(
-        upload_to=RandomFileName("submission_files/environment_log_file_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )
     submission_result_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )
     submission_metadata_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=SubmissionArtifactFileName(),
         null=True,
         blank=True,
     )

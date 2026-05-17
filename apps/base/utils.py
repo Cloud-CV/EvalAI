@@ -91,6 +91,32 @@ class RandomFileName:
         return filename
 
 
+@deconstructible
+class SubmissionArtifactFileName:
+    def __call__(self, instance, filename):
+        extension = os.path.splitext(filename)[1]
+        submission_id = instance.pk or "pending"
+        challenge_phase = getattr(instance, "challenge_phase", None)
+
+        if challenge_phase and getattr(challenge_phase, "pk", None):
+            challenge_id = challenge_phase.challenge_id
+            phase_id = challenge_phase.pk
+            path = "/".join(
+                [
+                    "submission_files",
+                    f"challenge_{challenge_id}",
+                    f"phase_{phase_id}",
+                    f"submission_{submission_id}",
+                ]
+            )
+        else:
+            path = "/".join(
+                ["submission_files", f"submission_{submission_id}"]
+            )
+
+        return f"{path}/{uuid.uuid4()}{extension}"
+
+
 def get_model_object(model_name):
     def get_model_by_pk(pk):
         try:

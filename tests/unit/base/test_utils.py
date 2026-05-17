@@ -11,6 +11,7 @@ import responses
 from allauth.account.models import EmailAddress
 from base.utils import (
     RandomFileName,
+    SubmissionArtifactFileName,
     decode_data,
     encode_data,
     get_boto3_client,
@@ -131,6 +132,32 @@ class TestRandomFileName(BaseAPITestClass):
             self.submission.pk, filepath.split("/")[2]
         )
         self.assertEqual(filepath, expected)
+
+
+class TestSubmissionArtifactFileName(BaseAPITestClass):
+    def test_nested_path_matches_challenge_phase(self):
+        naming = SubmissionArtifactFileName()
+
+        filename = naming(self.submission, "submission.json")
+
+        self.assertIn(
+            f"submission_files/challenge_{self.challenge.pk}", filename
+        )
+        self.assertIn(f"phase_{self.challenge_phase.pk}", filename)
+        self.assertIn(f"submission_{self.submission.pk}", filename)
+
+    def test_fallback_path_when_no_challenge_phase(self):
+        naming = SubmissionArtifactFileName()
+
+        class Obj:
+            pk = 101
+
+        filename = naming(Obj(), "data.bin")
+
+        self.assertRegex(
+            filename,
+            r"submission_files/submission_101/[0-9a-f\-]{36}\.bin",
+        )
 
 
 class TestSeeding(BaseAPITestClass):

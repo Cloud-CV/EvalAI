@@ -42,6 +42,9 @@ from django.conf import settings  # noqa:E402
 from django.core.files.base import ContentFile  # noqa:E402
 from django.utils import timezone  # noqa:E402
 from jobs.models import Submission  # noqa:E402
+from jobs.s3_retention import (  # noqa:E402
+    enqueue_submission_artifact_retention_tagging,
+)
 from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
@@ -546,6 +549,10 @@ def run_submission(
                     submission.stderr_file.save(
                         "stderr.txt", ContentFile(stderr_content)
                     )
+                enqueue_submission_artifact_retention_tagging(
+                    submission,
+                    [submission.stdout_file.name, submission.stderr_file.name],
+                )
 
             # delete the complete temp run directory
             shutil.rmtree(temp_run_dir)
@@ -699,6 +706,13 @@ def run_submission(
             "submission_metadata.json", ContentFile(submission_metadata)
         )
         submission.save()
+        enqueue_submission_artifact_retention_tagging(
+            submission,
+            [
+                submission.submission_result_file.name,
+                submission.submission_metadata_file.name,
+            ],
+        )
 
     stderr.close()
     stdout.close()
@@ -718,6 +732,12 @@ def run_submission(
                 submission.stderr_file.save(
                     "stderr.txt", ContentFile(stderr_content)
                 )
+        artifact_paths = [submission.stdout_file.name]
+        if submission.stderr_file.name:
+            artifact_paths.append(submission.stderr_file.name)
+        enqueue_submission_artifact_retention_tagging(
+            submission, artifact_paths
+        )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
