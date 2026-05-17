@@ -37,9 +37,7 @@ def encode_s3_tagging(tags):
 
 
 def get_submission_artifact_s3_key(path):
-    location = getattr(default_storage, "location", "") or getattr(
-        settings, "MEDIAFILES_LOCATION", "media"
-    )
+    location = getattr(settings, "MEDIAFILES_LOCATION", "media")
     location = location.strip("/")
     normalized_path = str(path).lstrip("/")
 
