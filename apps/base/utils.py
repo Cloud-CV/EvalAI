@@ -93,14 +93,39 @@ class RandomFileName:
 
 @deconstructible
 class SubmissionArtifactFileName:
+    """Build S3-relative paths under ``media/submission_files/``.
+
+    Uses ``challenge_phase_id`` when present so the nested layout is stable
+    even if the cached ``challenge_phase`` relation is not populated (some
+    querysets omit or defer the FK cache). Resolved ``(challenge_id, phase_id)``
+    is memoized per instance across multiple ``FileField`` saves.
+    """
+
+    _phase_ctx_attr = "_submission_artifact_challenge_phase_ctx"
+
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
         submission_id = instance.pk or "pending"
-        challenge_phase = getattr(instance, "challenge_phase", None)
+        phase_id = getattr(instance, "challenge_phase_id", None)
+        challenge_id = None
 
-        if challenge_phase and getattr(challenge_phase, "pk", None):
-            challenge_id = challenge_phase.challenge_id
-            phase_id = challenge_phase.pk
+        if phase_id:
+            ctx = getattr(instance, self._phase_ctx_attr, None)
+            if isinstance(ctx, tuple) and ctx[1] == phase_id:
+                challenge_id = ctx[0]
+            else:
+                from challenges.models import ChallengePhase
+
+                challenge_id = (
+                    ChallengePhase.objects.filter(pk=phase_id)
+                    .values_list("challenge_id", flat=True)
+                    .first()
+                )
+                setattr(
+                    instance, self._phase_ctx_attr, (challenge_id, phase_id)
+                )
+
+        if challenge_id and phase_id:
             path = "/".join(
                 [
                     "submission_files",

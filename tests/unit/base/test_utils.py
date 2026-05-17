@@ -159,6 +159,24 @@ class TestSubmissionArtifactFileName(BaseAPITestClass):
             r"submission_files/submission_101/[0-9a-f\-]{36}\.bin",
         )
 
+    def test_nested_path_uses_challenge_phase_id_without_relation_loaded(self):
+        naming = SubmissionArtifactFileName()
+
+        class StubSubmission:
+            pass
+
+        stub = StubSubmission()
+        stub.pk = self.submission.pk
+        stub.challenge_phase_id = self.challenge_phase.pk
+
+        filename = naming(stub, "stdout.txt")
+
+        self.assertIn(
+            f"submission_files/challenge_{self.challenge.pk}",
+            filename,
+        )
+        self.assertIn(f"phase_{self.challenge_phase.pk}", filename)
+
 
 class TestSeeding(BaseAPITestClass):
     def test_if_seeding_works(self):

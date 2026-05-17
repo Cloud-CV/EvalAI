@@ -1192,16 +1192,23 @@ class DeleteOldTempDirectoriesTest(BaseAPITestClass):
 
 class ExtractSubmissionDataCancelledTest(BaseAPITestClass):
     @patch("scripts.workers.submission_worker.logger.info")
-    @patch("scripts.workers.submission_worker.Submission.objects.get")
+    @patch("scripts.workers.submission_worker.Submission.objects")
     def test_extract_submission_data_cancelled(
-        self, mock_submission_get, mock_logger_info
+        self, mock_submission_objects, mock_logger_info
     ):
         mock_submission = MagicMock()
         mock_submission.status = Submission.CANCELLED
-        mock_submission_get.return_value = mock_submission
+        queryset = MagicMock()
+        queryset.get.return_value = mock_submission
+        mock_submission_objects.select_related.return_value = queryset
 
         result = extract_submission_data(123)
         assert result is None
+        mock_submission_objects.select_related.assert_called_once_with(
+            "challenge_phase",
+            "challenge_phase__challenge",
+        )
+        queryset.get.assert_called_once_with(id=123)
         mock_logger_info.assert_called_with(
             "{} Submission {} was cancelled by the user".format(
                 "SUBMISSION_LOG", 123

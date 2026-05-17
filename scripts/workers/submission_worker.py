@@ -419,7 +419,11 @@ def extract_submission_data(submission_id):
     """
 
     try:
-        submission = Submission.objects.get(id=submission_id)
+        # Preload FKs used during evaluation and for FileField(upload_to).
+        submission = Submission.objects.select_related(
+            "challenge_phase",
+            "challenge_phase__challenge",
+        ).get(id=submission_id)
     except Submission.DoesNotExist:
         logger.critical(
             "{} Submission {} does not exist".format(
