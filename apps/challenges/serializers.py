@@ -53,6 +53,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "creator",
             "domain",
             "domain_name",
+            "challenge_usage_type",
             "list_tags",
             "has_prize",
             "has_sponsors",
@@ -128,6 +129,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "max_submissions_per_day",
             "max_submissions_per_month",
             "max_submissions",
+            "submission_artifact_retention_policy",
             "is_public",
             "is_active",
             "codename",
@@ -313,6 +315,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "challenge_usage_type",
             "submission_time_limit",
             "is_registration_open",
             "enable_forum",
@@ -418,6 +421,20 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             if config_id:
                 kwargs["data"]["config_id"] = config_id
 
+    def create(self, validated_data):
+        challenge = validated_data.get("challenge")
+        if (
+            challenge
+            and challenge.challenge_usage_type == Challenge.INTERNAL
+            and "submission_artifact_retention_policy" not in validated_data
+        ):
+            validated_data["submission_artifact_retention_policy"] = (
+                ChallengePhase.DAYS_14
+            )
+        return super(ChallengePhaseCreateSerializer, self).create(
+            validated_data
+        )
+
     class Meta:
         model = ChallengePhase
         fields = (
@@ -431,6 +448,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "max_submissions_per_day",
             "max_submissions_per_month",
             "max_submissions",
+            "submission_artifact_retention_policy",
             "is_public",
             "is_active",
             "is_submission_public",
