@@ -1761,6 +1761,15 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
             max_submissions_per_month=100,
             test_annotation=None,
         )
+        # validate_challenge_phases replaces description with get_value_from_field;
+        # it must resolve to the same string as phase.description for the lock check.
+        self.phase_desc_html = "phase_desc_{}.html".format(suffix)
+        with open(
+            join(MEDIA_APPROVED_VALIDATE, self.phase_desc_html),
+            "w",
+            encoding="utf-8",
+        ) as desc_file:
+            desc_file.write("desc")
         ChallengePhaseSplit.objects.create(
             challenge_phase=self.phase,
             leaderboard=self.lb,
@@ -1854,7 +1863,7 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
                     "id": 1,
                     "codename": "pv1",
                     "name": "Phase 1",
-                    "description": "desc",
+                    "description": self.phase_desc_html,
                     "start_date": self.phase.start_date,
                     "end_date": self.phase.end_date,
                 }
@@ -1875,7 +1884,7 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
                     "id": 1,
                     "codename": "pv1",
                     "name": "Renamed Phase",
-                    "description": "desc",
+                    "description": self.phase_desc_html,
                     "start_date": self.phase.start_date,
                     "end_date": self.phase.end_date,
                 }
