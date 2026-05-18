@@ -1696,3 +1696,363 @@ class TestApprovedConfigLockMessageCoverage(TestCase):
             }
         )
         self.assertIsNone(msg)
+
+
+MEDIA_APPROVED_VALIDATE = "/tmp/evalai-approved-validate"
+
+
+@override_settings(MEDIA_ROOT=MEDIA_APPROVED_VALIDATE)
+class TestApprovedValidateMethodsRealLockIntegration(TestCase):
+    """
+    Exercise validate_* approved-lock branches with a real Challenge graph
+    (no mocking of _locked_*), raising Codecov on the call sites in
+    challenge_config_utils.py.
+    """
+
+    def setUp(self):
+        os.makedirs(MEDIA_APPROVED_VALIDATE, exist_ok=True)
+        suffix = uuid.uuid4().hex[:12]
+        self.user = User.objects.create_user(
+            username="apvl_{}".format(suffix), password="secret"
+        )
+        self.team = ChallengeHostTeam.objects.create(
+            team_name="Apv Host {}".format(suffix),
+            created_by=self.user,
+        )
+        now = timezone.now()
+        self.challenge = Challenge.objects.create(
+            title="Apv Challenge",
+            short_description="s",
+            description="d",
+            terms_and_conditions="t",
+            submission_guidelines="g",
+            creator=self.team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=30),
+            approved_by_admin=True,
+        )
+        self.lb = Leaderboard.objects.create(
+            config_id=1,
+            schema={
+                "labels": ["yes/no", "overall"],
+                "default_order_by": "overall",
+            },
+        )
+        self.ds = DatasetSplit.objects.create(
+            config_id=1,
+            name="Split Name",
+            codename="split_codename",
+        )
+        self.phase = ChallengePhase.objects.create(
+            name="Phase 1",
+            description="desc",
+            leaderboard_public=False,
+            is_public=False,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+            challenge=self.challenge,
+            config_id=1,
+            codename="pv1",
+            max_submissions_per_day=100,
+            max_submissions=100,
+            max_submissions_per_month=100,
+            test_annotation=None,
+        )
+        ChallengePhaseSplit.objects.create(
+            challenge_phase=self.phase,
+            leaderboard=self.lb,
+            dataset_split=self.ds,
+            visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True,
+        )
+        self.util = ValidateChallengeConfigUtil.__new__(
+            ValidateChallengeConfigUtil
+        )
+        self.util.current_challenge = self.challenge
+        self.util.error_messages_dict = error_message_dict
+        self.util.error_messages = []
+        self.util.leaderboard_ids = []
+        self.util.phase_ids = []
+        self.util.dataset_splits_ids = []
+        self.util.challenge_config_location = MEDIA_APPROVED_VALIDATE
+        self.util.files = {"challenge_test_annotation_files": []}
+
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
+    def test_validate_leaderboards_real_lock_no_error(self, mock_ls):
+        mock_ls.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "leaderboard": [
+                {
+                    "id": 1,
+                    "schema": {
+                        "labels": ["yes/no", "overall"],
+                        "default_order_by": "overall",
+                    },
+                }
+            ]
+        }
+        self.util.validate_leaderboards([1])
+        self.assertEqual(self.util.error_messages, [])
+
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
+    def test_validate_leaderboards_real_lock_error(self, mock_ls):
+        mock_ls.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "leaderboard": [
+                {
+                    "id": 1,
+                    "schema": {"labels": ["x"], "default_order_by": "x"},
+                }
+            ]
+        }
+        self.util.validate_leaderboards([1])
+        self.assertTrue(self.util.error_messages)
+
+    @mockpatch("challenges.challenge_config_utils.DatasetSplitSerializer")
+    def test_validate_dataset_splits_real_lock_no_error(self, mock_dss):
+        mock_dss.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "dataset_splits": [
+                {
+                    "id": 1,
+                    "name": "Split Name",
+                    "codename": "split_codename",
+                }
+            ]
+        }
+        self.util.validate_dataset_splits([1])
+        self.assertEqual(self.util.error_messages, [])
+
+    @mockpatch("challenges.challenge_config_utils.DatasetSplitSerializer")
+    def test_validate_dataset_splits_real_lock_error(self, mock_dss):
+        mock_dss.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "dataset_splits": [
+                {
+                    "id": 1,
+                    "name": "Other Name",
+                    "codename": "split_codename",
+                }
+            ]
+        }
+        self.util.validate_dataset_splits([1])
+        self.assertTrue(self.util.error_messages)
+
+    @mockpatch(
+        "challenges.challenge_config_utils.ChallengePhaseCreateSerializer"
+    )
+    def test_validate_challenge_phases_real_lock_no_error(self, mock_cps):
+        mock_cps.return_value.is_valid.return_value = True
+        self.phase.refresh_from_db()
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {
+                    "id": 1,
+                    "codename": "pv1",
+                    "name": "Phase 1",
+                    "description": "desc",
+                    "start_date": self.phase.start_date,
+                    "end_date": self.phase.end_date,
+                }
+            ]
+        }
+        self.util.validate_challenge_phases([1])
+        self.assertEqual(self.util.error_messages, [])
+
+    @mockpatch(
+        "challenges.challenge_config_utils.ChallengePhaseCreateSerializer"
+    )
+    def test_validate_challenge_phases_real_lock_error(self, mock_cps):
+        mock_cps.return_value.is_valid.return_value = True
+        self.phase.refresh_from_db()
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {
+                    "id": 1,
+                    "codename": "pv1",
+                    "name": "Renamed Phase",
+                    "description": "desc",
+                    "start_date": self.phase.start_date,
+                    "end_date": self.phase.end_date,
+                }
+            ]
+        }
+        self.util.validate_challenge_phases([1])
+        self.assertTrue(
+            any("approved by an admin" in m for m in self.util.error_messages)
+        )
+
+    @mockpatch(
+        "challenges.challenge_config_utils.ZipChallengePhaseSplitSerializer"
+    )
+    def test_validate_challenge_phase_splits_real_lock_no_error(
+        self, mock_zss
+    ):
+        mock_zss.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "challenge_phase_splits": [
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": ChallengePhaseSplit.PUBLIC,
+                    "dataset_split_id": 1,
+                    "leaderboard_id": 1,
+                    "challenge_phase_id": 1,
+                }
+            ]
+        }
+        self.util.phase_ids = [1]
+        self.util.leaderboard_ids = [1]
+        self.util.dataset_splits_ids = [1]
+        self.util.validate_challenge_phase_splits([(1, 1, 1)], [1], [1], [1])
+        self.assertEqual(self.util.error_messages, [])
+
+    @mockpatch(
+        "challenges.challenge_config_utils.ZipChallengePhaseSplitSerializer"
+    )
+    def test_validate_challenge_phase_splits_real_lock_error(self, mock_zss):
+        mock_zss.return_value.is_valid.return_value = True
+        self.util.yaml_file_data = {
+            "challenge_phase_splits": [
+                {
+                    "is_leaderboard_order_descending": True,
+                    "leaderboard_decimal_precision": 2,
+                    "visibility": ChallengePhaseSplit.HOST,
+                    "dataset_split_id": 1,
+                    "leaderboard_id": 1,
+                    "challenge_phase_id": 1,
+                }
+            ]
+        }
+        self.util.phase_ids = [1]
+        self.util.leaderboard_ids = [1]
+        self.util.dataset_splits_ids = [1]
+        self.util.validate_challenge_phase_splits([(1, 1, 1)], [1], [1], [1])
+        self.assertTrue(self.util.error_messages)
+
+
+@override_settings(MEDIA_ROOT="/tmp/evalai-vcu-orch")
+class TestValidateChallengeConfigUtilOrchestratorBranch(TestCase):
+    """Cover validate_challenge_config_util() when current_challenge is set."""
+
+    def setUp(self):
+        os.makedirs("/tmp/evalai-vcu-orch", exist_ok=True)
+        suffix = uuid.uuid4().hex[:12]
+        self.user = User.objects.create_user(
+            username="orch_{}".format(suffix), password="secret"
+        )
+        self.team = ChallengeHostTeam.objects.create(
+            team_name="Orch Host {}".format(suffix),
+            created_by=self.user,
+        )
+        now = timezone.now()
+        self.challenge = Challenge.objects.create(
+            title="Orch Challenge",
+            short_description="s",
+            description="d",
+            terms_and_conditions="t",
+            submission_guidelines="g",
+            creator=self.team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=30),
+            approved_by_admin=False,
+        )
+        lb = Leaderboard.objects.create(
+            config_id=1,
+            schema={"labels": ["a"], "default_order_by": "a"},
+        )
+        ds = DatasetSplit.objects.create(
+            config_id=1,
+            name="n",
+            codename="c",
+        )
+        phase = ChallengePhase.objects.create(
+            name="P",
+            description="d",
+            leaderboard_public=False,
+            is_public=False,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+            challenge=self.challenge,
+            config_id=1,
+            codename="o1",
+            max_submissions_per_day=100,
+            max_submissions=100,
+            max_submissions_per_month=100,
+        )
+        ChallengePhaseSplit.objects.create(
+            challenge_phase=phase,
+            leaderboard=lb,
+            dataset_split=ds,
+            visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True,
+        )
+
+    @mockpatch("challenges.challenge_config_utils.read_yaml_file")
+    @mockpatch(
+        "challenges.challenge_config_utils.get_yaml_files_from_challenge_config"
+    )
+    def test_orchestrator_passes_existing_config_ids_to_validators(
+        self, mock_get_yaml, mock_read_yaml
+    ):
+        mock_get_yaml.return_value = (1, "challenge_config.yaml", "extracted")
+        mock_read_yaml.return_value = {"title": "T"}
+        request = Mock()
+        request.data = {"GITHUB_REPOSITORY": "a/b"}
+        zip_ref = Mock()
+        captured = {}
+
+        def capture_lb(util_self, lb_ids):
+            captured["leaderboard_ids"] = list(lb_ids)
+
+        def capture_ph(util_self, ph_ids):
+            captured["phase_ids"] = list(ph_ids)
+
+        def capture_ds(util_self, ds_ids):
+            captured["dataset_ids"] = list(ds_ids)
+
+        def capture_spl(util_self, split_ids, *args, **kwargs):
+            captured["split_ids"] = [
+                tuple(int(x) for x in t) for t in split_ids
+            ]
+
+        noop = Mock()
+        with mockpatch.multiple(
+            ValidateChallengeConfigUtil,
+            validate_challenge_title=noop,
+            validate_challenge_logo=noop,
+            validate_challenge_description=noop,
+            validate_evaluation_details_file=noop,
+            validate_terms_and_conditions_file=noop,
+            validate_submission_guidelines_file=noop,
+            validate_evaluation_script_file=noop,
+            validate_dates=noop,
+            validate_serializer=noop,
+            validate_leaderboards=capture_lb,
+            validate_challenge_phases=capture_ph,
+            validate_dataset_splits=capture_ds,
+            validate_challenge_phase_splits=capture_spl,
+            check_tags=noop,
+            check_domain=noop,
+            check_prizes=noop,
+        ):
+            validate_challenge_config_util(
+                request,
+                self.team,
+                "/tmp/base",
+                "unique",
+                zip_ref,
+                self.challenge,
+            )
+        self.assertEqual(captured["leaderboard_ids"], [1])
+        self.assertEqual(captured["phase_ids"], [1])
+        self.assertEqual(captured["dataset_ids"], [1])
+        self.assertEqual(captured["split_ids"], [(1, 1, 1)])
