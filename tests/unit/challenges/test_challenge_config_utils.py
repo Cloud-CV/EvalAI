@@ -1,8 +1,11 @@
 import io
+import os
 import tempfile
 import unittest
+import uuid
 import zipfile
-from os.path import join
+from datetime import timedelta
+from os.path import basename, join
 from unittest.mock import Mock
 from unittest.mock import patch as mockpatch
 
@@ -12,6 +15,7 @@ import yaml
 from challenges.challenge_config_utils import (
     ValidateChallengeConfigUtil,
     download_and_write_file,
+    error_message_dict,
     get_value_from_field,
     get_yaml_files_from_challenge_config,
     get_yaml_read_error,
@@ -22,12 +26,16 @@ from challenges.challenge_config_utils import (
     validate_challenge_config_util,
 )
 from challenges.models import (
+    Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
     Leaderboard,
 )
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
 
@@ -1454,3 +1462,238 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.assertEqual(
             len(self.util.error_messages), 0
         )  # No error messages expected
+
+
+@override_settings(MEDIA_ROOT="/tmp/evalai-lock-coverage")
+@pytest.mark.django_db
+class TestApprovedConfigLockMessageCoverage(unittest.TestCase):
+    """
+    Cover _locked_* helpers and _stable_json for Codecov on post-approval
+    immutability checks (real ORM queries, no mocks of the methods under test).
+    """
+
+    @staticmethod
+    def _bare_util(challenge):
+        util = ValidateChallengeConfigUtil.__new__(ValidateChallengeConfigUtil)
+        util.current_challenge = challenge
+        util.error_messages_dict = error_message_dict
+        return util
+
+    def setUp(self):
+        os.makedirs("/tmp/evalai-lock-coverage", exist_ok=True)
+        suffix = uuid.uuid4().hex[:12]
+        self.user = User.objects.create_user(
+            username="lockcovuser_{}".format(suffix), password="secret"
+        )
+        self.team = ChallengeHostTeam.objects.create(
+            team_name="Lock Cov Host {}".format(suffix),
+            created_by=self.user,
+        )
+        now = timezone.now()
+        self.challenge = Challenge.objects.create(
+            title="Lock Cov Challenge",
+            short_description="s",
+            description="d",
+            terms_and_conditions="t",
+            submission_guidelines="g",
+            creator=self.team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=30),
+            approved_by_admin=True,
+        )
+        self.lb = Leaderboard.objects.create(
+            config_id=1,
+            schema={
+                "labels": ["yes/no", "overall"],
+                "default_order_by": "overall",
+            },
+        )
+        self.ds = DatasetSplit.objects.create(
+            config_id=1,
+            name="Split Name",
+            codename="split_codename",
+        )
+        self.phase = ChallengePhase.objects.create(
+            name="Phase 1",
+            description="desc",
+            leaderboard_public=False,
+            is_public=False,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+            challenge=self.challenge,
+            config_id=1,
+            codename="p1",
+            max_submissions_per_day=100,
+            max_submissions=100,
+            max_submissions_per_month=100,
+            test_annotation=SimpleUploadedFile(
+                "ann.txt", b"x", content_type="text/plain"
+            ),
+        )
+        ChallengePhaseSplit.objects.create(
+            challenge_phase=self.phase,
+            leaderboard=self.lb,
+            dataset_split=self.ds,
+            visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True,
+        )
+        self.phase.refresh_from_db()
+        self.phase_annotation_basename = basename(
+            self.phase.test_annotation.name
+        )
+        self.util = self._bare_util(self.challenge)
+
+    def test_stable_json(self):
+        self.assertEqual(
+            ValidateChallengeConfigUtil._stable_json({"b": 1, "a": 2}),
+            '{"a": 2, "b": 1}',
+        )
+
+    def test_approved_config_locked(self):
+        self.assertTrue(self.util._approved_config_locked())
+        self.challenge.approved_by_admin = False
+        self.challenge.save()
+        self.assertFalse(self.util._approved_config_locked())
+
+    def test_locked_leaderboard_detects_schema_change(self):
+        msg = self.util._locked_leaderboard_modified_message(
+            {
+                "id": 1,
+                "schema": {"labels": ["x"], "default_order_by": "x"},
+            }
+        )
+        self.assertIsNotNone(msg)
+        self.assertIn("approved", msg.lower())
+
+    def test_locked_leaderboard_none_when_schema_matches(self):
+        msg = self.util._locked_leaderboard_modified_message(
+            {
+                "id": 1,
+                "schema": {
+                    "labels": ["yes/no", "overall"],
+                    "default_order_by": "overall",
+                },
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_leaderboard_none_when_not_linked(self):
+        Leaderboard.objects.create(
+            config_id=99,
+            schema={"labels": ["a"], "default_order_by": "a"},
+        )
+        msg = self.util._locked_leaderboard_modified_message(
+            {"id": 99, "schema": {"labels": ["z"], "default_order_by": "z"}}
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_dataset_split_detects_change(self):
+        msg = self.util._locked_dataset_split_modified_message(
+            {"id": 1, "name": "Other", "codename": "split_codename"}
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_dataset_split_none_when_match(self):
+        msg = self.util._locked_dataset_split_modified_message(
+            {
+                "id": 1,
+                "name": "Split Name",
+                "codename": "split_codename",
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_detects_name_change(self):
+        msg = self.util._locked_challenge_phase_modified_message(
+            {"id": 1, "name": "Renamed"}
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_challenge_phase_none_when_consistent(self):
+        msg = self.util._locked_challenge_phase_modified_message(
+            {
+                "id": 1,
+                "name": "Phase 1",
+                "test_annotation_file": self.phase_annotation_basename,
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_detects_annotation_reference_change(self):
+        msg = self.util._locked_challenge_phase_modified_message(
+            {
+                "id": 1,
+                "name": "Phase 1",
+                "test_annotation_file": "nonexistent_annotation.txt",
+            }
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_challenge_phase_split_visibility_change(self):
+        msg = self.util._locked_challenge_phase_split_modified_message(
+            {
+                "leaderboard_id": 1,
+                "challenge_phase_id": 1,
+                "dataset_split_id": 1,
+                "visibility": ChallengePhaseSplit.HOST,
+                "leaderboard_decimal_precision": 2,
+                "is_leaderboard_order_descending": True,
+            }
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_challenge_phase_split_precision_change(self):
+        msg = self.util._locked_challenge_phase_split_modified_message(
+            {
+                "leaderboard_id": 1,
+                "challenge_phase_id": 1,
+                "dataset_split_id": 1,
+                "visibility": ChallengePhaseSplit.PUBLIC,
+                "leaderboard_decimal_precision": 5,
+                "is_leaderboard_order_descending": True,
+            }
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_challenge_phase_split_order_change(self):
+        msg = self.util._locked_challenge_phase_split_modified_message(
+            {
+                "leaderboard_id": 1,
+                "challenge_phase_id": 1,
+                "dataset_split_id": 1,
+                "visibility": ChallengePhaseSplit.PUBLIC,
+                "leaderboard_decimal_precision": 2,
+                "is_leaderboard_order_descending": False,
+            }
+        )
+        self.assertIsNotNone(msg)
+
+    def test_locked_challenge_phase_split_none_when_match(self):
+        msg = self.util._locked_challenge_phase_split_modified_message(
+            {
+                "leaderboard_id": 1,
+                "challenge_phase_id": 1,
+                "dataset_split_id": 1,
+                "visibility": ChallengePhaseSplit.PUBLIC,
+                "leaderboard_decimal_precision": 2,
+                "is_leaderboard_order_descending": True,
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_split_missing_row(self):
+        msg = self.util._locked_challenge_phase_split_modified_message(
+            {
+                "leaderboard_id": 8,
+                "challenge_phase_id": 8,
+                "dataset_split_id": 8,
+                "visibility": ChallengePhaseSplit.PUBLIC,
+                "leaderboard_decimal_precision": 2,
+                "is_leaderboard_order_descending": True,
+            }
+        )
+        self.assertIsNone(msg)
