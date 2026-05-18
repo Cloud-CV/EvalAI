@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 import zipfile
@@ -30,6 +31,32 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+_CHALLENGE_PHASE_APPROVED_LOCK_FIELDS = (
+    "name",
+    "description",
+    "leaderboard_public",
+    "start_date",
+    "end_date",
+    "is_public",
+    "codename",
+    "max_submissions_per_day",
+    "max_submissions_per_month",
+    "max_submissions",
+    "max_concurrent_submissions_allowed",
+    "submission_meta_attributes",
+    "default_submission_meta_attributes",
+    "submission_artifact_retention_policy",
+    "is_submission_public",
+    "annotations_uploaded_using_cli",
+    "is_restricted_to_select_one_submission",
+    "allowed_submission_file_types",
+    "allowed_email_ids",
+    "disable_logs",
+    "is_submission_paused",
+    "environment_image",
+    "is_partial_submission_evaluation_enabled",
+)
 
 
 def write_file(output_path, mode, file_content):
@@ -324,6 +351,23 @@ error_message_dict = {
     "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
+    "locked_leaderboard_modified": (
+        "ERROR: Leaderboard {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the leaderboard block to match the approved configuration or contact support."
+    ),
+    "locked_dataset_split_modified": (
+        "ERROR: Dataset split {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the dataset split block to match the approved configuration or contact support."
+    ),
+    "locked_challenge_phase_modified": (
+        "ERROR: Challenge phase {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the phase block to match the approved configuration or contact support."
+    ),
+    "locked_challenge_phase_split_modified": (
+        "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) "
+        "cannot be changed after the challenge is approved by an admin. Revert visibility / ordering "
+        "fields to match the approved configuration or contact support."
+    ),
 }
 
 
@@ -407,6 +451,117 @@ class ValidateChallengeConfigUtil:
             ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
             return False
+
+    def _approved_config_locked(self):
+        return (
+            self.current_challenge is not None
+            and self.current_challenge.approved_by_admin is True
+        )
+
+    @staticmethod
+    def _stable_json(value):
+        return json.dumps(value, sort_keys=True, default=str)
+
+    def _locked_leaderboard_modified_message(self, data):
+        lb = Leaderboard.objects.filter(
+            config_id=int(data["id"]),
+            id__in=ChallengePhaseSplit.objects.filter(
+                challenge_phase__challenge_id=self.current_challenge.pk
+            ).values_list("leaderboard_id", flat=True),
+        ).first()
+        if lb is None:
+            return None
+        if self._stable_json(lb.schema) != self._stable_json(data["schema"]):
+            return self.error_messages_dict[
+                "locked_leaderboard_modified"
+            ].format(data["id"])
+        return None
+
+    def _locked_dataset_split_modified_message(self, split):
+        ds = DatasetSplit.objects.filter(
+            config_id=int(split["id"]),
+            id__in=ChallengePhaseSplit.objects.filter(
+                challenge_phase__challenge_id=self.current_challenge.pk
+            ).values_list("dataset_split_id", flat=True),
+        ).first()
+        if ds is None:
+            return None
+        if (
+            split.get("name") != ds.name
+            or split.get("codename") != ds.codename
+        ):
+            return self.error_messages_dict[
+                "locked_dataset_split_modified"
+            ].format(split["id"])
+        return None
+
+    def _locked_challenge_phase_modified_message(self, data):
+        phase = ChallengePhase.objects.filter(
+            challenge_id=self.current_challenge.pk,
+            config_id=int(data["id"]),
+        ).first()
+        if phase is None:
+            return None
+        for field in _CHALLENGE_PHASE_APPROVED_LOCK_FIELDS:
+            if field not in data:
+                continue
+            if self._stable_json(getattr(phase, field)) != self._stable_json(
+                data.get(field)
+            ):
+                return self.error_messages_dict[
+                    "locked_challenge_phase_modified"
+                ].format(data["id"])
+        yaml_ann = data.get("test_annotation_file")
+        db_ann_name = None
+        if phase.test_annotation:
+            db_ann_name = basename(phase.test_annotation.name)
+        if yaml_ann != db_ann_name:
+            return self.error_messages_dict[
+                "locked_challenge_phase_modified"
+            ].format(data["id"])
+        return None
+
+    def _locked_challenge_phase_split_modified_message(self, data):
+        try:
+            cps = ChallengePhaseSplit.objects.select_related(
+                "challenge_phase", "leaderboard", "dataset_split"
+            ).get(
+                challenge_phase__challenge_id=self.current_challenge.pk,
+                leaderboard__config_id=int(data["leaderboard_id"]),
+                challenge_phase__config_id=int(data["challenge_phase_id"]),
+                dataset_split__config_id=int(data["dataset_split_id"]),
+            )
+        except ChallengePhaseSplit.DoesNotExist:
+            return None
+        if int(cps.visibility) != int(data["visibility"]):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        if int(cps.leaderboard_decimal_precision) != int(
+            data["leaderboard_decimal_precision"]
+        ):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        if bool(cps.is_leaderboard_order_descending) != bool(
+            data["is_leaderboard_order_descending"]
+        ):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        return None
 
     def validate_challenge_title(self):
         challenge_title = self.yaml_file_data.get("title")
@@ -660,6 +815,17 @@ class ValidateChallengeConfigUtil:
                         ).format(data["id"], serializer_error)
                         self.error_messages.append(message)
                     else:
+                        if (
+                            self._approved_config_locked()
+                            and current_leaderboard_config_ids
+                            and int(data["id"])
+                            in current_leaderboard_config_ids
+                        ):
+                            locked_msg = (
+                                self._locked_leaderboard_modified_message(data)
+                            )
+                            if locked_msg:
+                                self.error_messages.append(locked_msg)
                         self.leaderboard_ids.append(data["id"])
         else:
             message = self.error_messages_dict.get("missing_leaderboard_key")
@@ -824,6 +990,16 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
+                if (
+                    self._approved_config_locked()
+                    and current_phase_config_ids
+                    and int(data["id"]) in current_phase_config_ids
+                ):
+                    locked_msg = self._locked_challenge_phase_modified_message(
+                        data
+                    )
+                    if locked_msg:
+                        self.error_messages.append(locked_msg)
                 self.phase_ids.append(data["id"])
 
         for current_challenge_phase_id in current_phase_config_ids:
@@ -909,6 +1085,12 @@ class ValidateChallengeConfigUtil:
                             for t in current_phase_split_ids
                         }
                         if norm_split in norm_existing:
+                            if self._approved_config_locked():
+                                ps_msg = self._locked_challenge_phase_split_modified_message(
+                                    data
+                                )
+                                if ps_msg:
+                                    self.error_messages.append(ps_msg)
                             challenge_phase_split_uuids.append(split_triple)
                         else:
                             phase_cfg_id = int(data["challenge_phase_id"])
@@ -1035,6 +1217,16 @@ class ValidateChallengeConfigUtil:
                     ].format(split["id"], serializer_error)
                     self.error_messages.append(message)
                 else:
+                    if (
+                        self._approved_config_locked()
+                        and current_dataset_config_ids
+                        and int(split["id"]) in current_dataset_config_ids
+                    ):
+                        locked_msg = (
+                            self._locked_dataset_split_modified_message(split)
+                        )
+                        if locked_msg:
+                            self.error_messages.append(locked_msg)
                     self.dataset_splits_ids.append(split["id"])
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]

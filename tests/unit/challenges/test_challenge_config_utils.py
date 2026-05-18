@@ -1043,6 +1043,53 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.validate_leaderboards([1])
         self.assertEqual(self.util.error_messages, [])
 
+    @mockpatch.object(
+        ValidateChallengeConfigUtil, "_locked_leaderboard_modified_message"
+    )
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
+    def test_existing_leaderboard_checked_when_challenge_approved(
+        self, MockSerializer, mock_locked_msg
+    ):
+        mock_ser = MockSerializer.return_value
+        mock_ser.is_valid.return_value = True
+        mock_locked_msg.return_value = "LOCKED_LB"
+        self.current_challenge.approved_by_admin = True
+        self.util.yaml_file_data = {
+            "leaderboard": [
+                {
+                    "id": 1,
+                    "schema": {"labels": ["z"], "default_order_by": "z"},
+                },
+            ]
+        }
+        self.util.validate_leaderboards([1])
+        mock_locked_msg.assert_called_once()
+        self.assertIn("LOCKED_LB", self.util.error_messages)
+        self.assertIn(1, self.util.leaderboard_ids)
+
+    @mockpatch.object(
+        ValidateChallengeConfigUtil, "_locked_leaderboard_modified_message"
+    )
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
+    def test_existing_leaderboard_lock_skipped_without_admin_approval(
+        self, MockSerializer, mock_locked_msg
+    ):
+        mock_ser = MockSerializer.return_value
+        mock_ser.is_valid.return_value = True
+        self.current_challenge.approved_by_admin = False
+        self.util.yaml_file_data = {
+            "leaderboard": [
+                {
+                    "id": 1,
+                    "schema": {"labels": ["z"], "default_order_by": "z"},
+                },
+            ]
+        }
+        self.util.validate_leaderboards([1])
+        mock_locked_msg.assert_not_called()
+        self.assertEqual(self.util.error_messages, [])
+        self.assertIn(1, self.util.leaderboard_ids)
+
     def test_leaderboard_deletion_after_creation(self):
         self.util.yaml_file_data = {
             "leaderboard": [
