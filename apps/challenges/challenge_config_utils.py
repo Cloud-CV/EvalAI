@@ -282,6 +282,19 @@ error_message_dict = {
     "dataset_split_addition": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
     "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
     "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
+    "challenge_phase_split_addition_for_existing_phase": (
+        "ERROR: Cannot add a new leaderboard/dataset-split mapping for an existing "
+        "challenge phase (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}). "
+        "New mappings are only allowed for newly added challenge phases."
+    ),
+    "challenge_phase_split_leaderboard_not_allowed": (
+        "ERROR: Leaderboard id {} is not part of this challenge or the uploaded configuration. "
+        "New challenge phases may only use leaderboards declared in the configuration."
+    ),
+    "challenge_phase_split_dataset_split_not_allowed": (
+        "ERROR: Dataset split id {} is not part of this challenge or the uploaded configuration. "
+        "New challenge phases must use dataset splits declared in the configuration."
+    ),
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
     "missing_keys_in_challenge_phase_splits": "ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}",
     "challenge_phase_split_not_found": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.",
@@ -647,15 +660,6 @@ class ValidateChallengeConfigUtil:
                         ).format(data["id"], serializer_error)
                         self.error_messages.append(message)
                     else:
-                        if (
-                            current_leaderboard_config_ids
-                            and int(data["id"])
-                            not in current_leaderboard_config_ids
-                        ):
-                            message = self.error_messages_dict.get(
-                                "leaderboard_additon_after_creation"
-                            ).format(data["id"])
-                            self.error_messages.append(message)
                         self.leaderboard_ids.append(data["id"])
         else:
             message = self.error_messages_dict.get("missing_leaderboard_key")
@@ -820,14 +824,6 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
-                if (
-                    current_phase_config_ids
-                    and int(data["id"]) not in current_phase_config_ids
-                ):
-                    message = self.error_messages_dict[
-                        "challenge_phase_addition"
-                    ].format(data["id"])
-                    self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
 
         for current_challenge_phase_id in current_phase_config_ids:
@@ -837,7 +833,13 @@ class ValidateChallengeConfigUtil:
                 ].format(current_challenge_phase_id)
                 self.error_messages.append(message)
 
-    def validate_challenge_phase_splits(self, current_phase_split_ids):
+    def validate_challenge_phase_splits(
+        self,
+        current_phase_split_ids,
+        current_phase_config_ids=None,
+        current_leaderboard_config_ids=None,
+        current_dataset_config_ids=None,
+    ):
         challenge_phase_splits = self.yaml_file_data.get(
             "challenge_phase_splits"
         )
@@ -870,6 +872,12 @@ class ValidateChallengeConfigUtil:
                 self.error_messages.append(message)
 
         challenge_phase_split_uuids = []
+        if current_phase_config_ids is None:
+            current_phase_config_ids = []
+        if current_leaderboard_config_ids is None:
+            current_leaderboard_config_ids = []
+        if current_dataset_config_ids is None:
+            current_dataset_config_ids = []
         if challenge_phase_splits:
             phase_split = 1
             exclude_fields = [
@@ -887,31 +895,64 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 if expected_keys.issubset(data.keys()):
-                    if (
-                        current_phase_split_ids
-                        and (
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        not in current_phase_split_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "challenge_phase_split_not_exist"
-                        ].format(
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        self.error_messages.append(message)
+                    split_triple = (
+                        data["leaderboard_id"],
+                        data["challenge_phase_id"],
+                        data["dataset_split_id"],
+                    )
+                    if not current_phase_split_ids:
+                        challenge_phase_split_uuids.append(split_triple)
                     else:
-                        challenge_phase_split_uuids.append(
-                            (
-                                data["leaderboard_id"],
-                                data["challenge_phase_id"],
-                                data["dataset_split_id"],
-                            )
-                        )
+                        norm_split = tuple(int(x) for x in split_triple)
+                        norm_existing = {
+                            tuple(int(x) for x in t)
+                            for t in current_phase_split_ids
+                        }
+                        if norm_split in norm_existing:
+                            challenge_phase_split_uuids.append(split_triple)
+                        else:
+                            phase_cfg_id = int(data["challenge_phase_id"])
+                            if phase_cfg_id in current_phase_config_ids:
+                                message = self.error_messages_dict[
+                                    "challenge_phase_split_addition_for_existing_phase"
+                                ].format(
+                                    data["leaderboard_id"],
+                                    data["challenge_phase_id"],
+                                    data["dataset_split_id"],
+                                )
+                                self.error_messages.append(message)
+                            else:
+                                allowed = True
+                                lb_id = int(data["leaderboard_id"])
+                                ds_id = int(data["dataset_split_id"])
+                                yaml_leaderboard_ids = {
+                                    int(x) for x in self.leaderboard_ids
+                                }
+                                yaml_dataset_ids = {
+                                    int(x) for x in self.dataset_splits_ids
+                                }
+                                if (
+                                    lb_id not in current_leaderboard_config_ids
+                                    and lb_id not in yaml_leaderboard_ids
+                                ):
+                                    message = self.error_messages_dict[
+                                        "challenge_phase_split_leaderboard_not_allowed"
+                                    ].format(lb_id)
+                                    self.error_messages.append(message)
+                                    allowed = False
+                                if (
+                                    ds_id not in current_dataset_config_ids
+                                    and ds_id not in yaml_dataset_ids
+                                ):
+                                    message = self.error_messages_dict[
+                                        "challenge_phase_split_dataset_split_not_allowed"
+                                    ].format(ds_id)
+                                    self.error_messages.append(message)
+                                    allowed = False
+                                if allowed:
+                                    challenge_phase_split_uuids.append(
+                                        split_triple
+                                    )
 
                     (
                         _is_mapping_valid,
@@ -942,8 +983,11 @@ class ValidateChallengeConfigUtil:
                         "missing_keys_in_challenge_phase_splits"
                     ].format(phase_split, missing_keys_string)
                     self.error_messages.append(message)
+            norm_yaml_uuids = {
+                tuple(int(x) for x in t) for t in challenge_phase_split_uuids
+            }
             for uuid in current_phase_split_ids:
-                if uuid not in challenge_phase_split_uuids:
+                if tuple(int(x) for x in uuid) not in norm_yaml_uuids:
                     message = self.error_messages_dict[
                         "challenge_phase_split_not_found"
                     ].format(uuid[0], uuid[1], uuid[2])
@@ -991,14 +1035,6 @@ class ValidateChallengeConfigUtil:
                     ].format(split["id"], serializer_error)
                     self.error_messages.append(message)
                 else:
-                    if (
-                        current_dataset_config_ids
-                        and int(split["id"]) not in current_dataset_config_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "dataset_split_addition"
-                        ].format(split["id"])
-                        self.error_messages.append(message)
                     self.dataset_splits_ids.append(split["id"])
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]
@@ -1172,7 +1208,12 @@ def validate_challenge_config_util(
     val_config_util.validate_dataset_splits(current_dataset_config_ids)
 
     # Validate challenge phase splits
-    val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
+    val_config_util.validate_challenge_phase_splits(
+        current_phase_split_ids,
+        current_phase_config_ids,
+        current_leaderboard_config_ids,
+        current_dataset_config_ids,
+    )
 
     # Validate tags
     val_config_util.check_tags()

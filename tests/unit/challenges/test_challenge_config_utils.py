@@ -633,7 +633,12 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.util.dataset_splits_ids = [1]
         self.util.error_messages = []
 
-        self.util.validate_challenge_phase_splits([(99, 98, 97)])
+        self.util.validate_challenge_phase_splits(
+            [(99, 98, 97)],
+            current_phase_config_ids=[],
+            current_leaderboard_config_ids=[2],
+            current_dataset_config_ids=[1],
+        )
 
         assert any(
             "challenge phase split" in msg.lower()
@@ -890,7 +895,6 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             "invalid_leaderboard_schema": "Invalid leaderboard schema.",
             "missing_leaderboard_key": "Leaderboard key is missing.",
             "leaderboard_schema_error": "Leaderboard schema error for leaderboard with ID: {}",
-            "leaderboard_additon_after_creation": "Cannot add new leaderboard after challenge creation.",
             "leaderboard_deletion_after_creation": "Cannot delete leaderboard after challenge creation.",
             "missing_challenge_phases": "Missing challenge phases.",
             "no_codename_for_challenge_phase": "Codename is missing for challenge phase.",
@@ -995,41 +999,41 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                     ].format("test_id", "some_error"),
                 )
 
-    def test_leaderboard_addition_after_creation(self):
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
+    def test_leaderboard_addition_after_creation(self, MockSerializer):
+        mock_ser = MockSerializer.return_value
+        mock_ser.is_valid.return_value = True
         self.util.yaml_file_data = {
             "leaderboard": [
                 {
-                    "id": "new_leaderboard_id",
+                    "id": 99,
                     "schema": {"labels": ["a"], "default_order_by": "a"},
                 }
             ]
         }
-        self.util.validate_leaderboards(["existing_leaderboard_id"])
-        self.assertIn(
-            "Leaderboard schema error for leaderboard with ID: new_leaderboard_id",
-            self.util.error_messages[0],
-        )
+        self.util.validate_leaderboards([1])
+        self.assertEqual(self.util.error_messages, [])
 
+    @mockpatch("challenges.challenge_config_utils.LeaderboardSerializer")
     def test_leaderboard_addition_after_creation_with_multiple_leaderboards(
-        self,
+        self, MockSerializer
     ):
+        mock_ser = MockSerializer.return_value
+        mock_ser.is_valid.return_value = True
         self.util.yaml_file_data = {
             "leaderboard": [
                 {
-                    "id": "new_leaderboard_id1",
+                    "id": 99,
                     "schema": {"labels": ["a"], "default_order_by": "a"},
                 },
                 {
-                    "id": "new_leaderboard_id2",
+                    "id": 100,
                     "schema": {"labels": ["b"], "default_order_by": "b"},
                 },
             ]
         }
-        self.util.validate_leaderboards(["existing_leaderboard_id"])
-        self.assertIn(
-            "Leaderboard schema error for leaderboard with ID: new_leaderboard_id1",
-            self.util.error_messages[0],
-        )
+        self.util.validate_leaderboards([1])
+        self.assertEqual(self.util.error_messages, [])
 
     def test_leaderboard_deletion_after_creation(self):
         self.util.yaml_file_data = {
