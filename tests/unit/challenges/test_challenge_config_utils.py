@@ -1866,6 +1866,11 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
                     "description": self.phase_desc_html,
                     "start_date": self.phase.start_date,
                     "end_date": self.phase.end_date,
+                    # validate_challenge_phases sets max_submissions_per_month from
+                    # max_submissions when absent; None vs DB 100 trips the lock.
+                    "max_submissions": 100,
+                    "max_submissions_per_month": 100,
+                    "max_submissions_per_day": 100,
                 }
             ]
         }
@@ -1887,6 +1892,9 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
                     "description": self.phase_desc_html,
                     "start_date": self.phase.start_date,
                     "end_date": self.phase.end_date,
+                    "max_submissions": 100,
+                    "max_submissions_per_month": 100,
+                    "max_submissions_per_day": 100,
                 }
             ]
         }
