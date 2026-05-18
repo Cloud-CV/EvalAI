@@ -1006,9 +1006,13 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.yaml_file_data = {
             "leaderboard": [
                 {
+                    "id": 1,
+                    "schema": {"labels": ["z"], "default_order_by": "z"},
+                },
+                {
                     "id": 99,
                     "schema": {"labels": ["a"], "default_order_by": "a"},
-                }
+                },
             ]
         }
         self.util.validate_leaderboards([1])
@@ -1022,6 +1026,10 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         mock_ser.is_valid.return_value = True
         self.util.yaml_file_data = {
             "leaderboard": [
+                {
+                    "id": 1,
+                    "schema": {"labels": ["z"], "default_order_by": "z"},
+                },
                 {
                     "id": 99,
                     "schema": {"labels": ["a"], "default_order_by": "a"},
