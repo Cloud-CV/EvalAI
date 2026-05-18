@@ -9,6 +9,29 @@ from django.core.files.storage import default_storage
 
 logger = logging.getLogger(__name__)
 
+
+def log_submission_artifact_upload_context(submission, source_label):
+    """Log revision + FK context whenever artifacts are persisted to storage.
+
+    Set ``EVALAI_GIT_REVISION`` at image build (see Dockerfiles); compare with
+    the API task to verify worker/API parity during incident response.
+    """
+    revision = os.environ.get("EVALAI_GIT_REVISION", "unknown")
+    phase_pk = getattr(submission, "challenge_phase_id", None)
+    remote_eval = submission.challenge_phase.challenge.remote_evaluation
+    logger.info(
+        "submission_artifact_upload_context source=%s evalai_revision=%s "
+        "submission_id=%s challenge_phase_id=%s challenge_id=%s "
+        "remote_evaluation=%s",
+        source_label,
+        revision,
+        submission.pk,
+        phase_pk,
+        submission.challenge_phase.challenge.pk,
+        remote_eval,
+    )
+
+
 SUBMISSION_ARTIFACT_FIELDS = (
     "input_file",
     "submission_input_file",

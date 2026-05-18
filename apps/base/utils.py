@@ -135,6 +135,13 @@ class SubmissionArtifactFileName:
                 ]
             )
         else:
+            if phase_id and not challenge_id:
+                logger.warning(
+                    "Submission artifact flat path: ChallengePhase id=%s has no "
+                    "challenge_id row (submission pk=%s); check DB integrity.",
+                    phase_id,
+                    getattr(instance, "pk", None),
+                )
             path = "/".join(
                 ["submission_files", f"submission_{submission_id}"]
             )

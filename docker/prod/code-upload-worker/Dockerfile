@@ -46,6 +46,9 @@ RUN apt-get update && \
 
 WORKDIR /code
 
+ARG EVALAI_GIT_REVISION=unknown
+ENV EVALAI_GIT_REVISION=${EVALAI_GIT_REVISION}
+
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin

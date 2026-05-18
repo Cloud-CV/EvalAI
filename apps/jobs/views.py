@@ -70,6 +70,7 @@ from .models import Submission
 from .s3_retention import (
     build_submission_artifact_s3_tags,
     enqueue_submission_artifact_retention_tagging,
+    log_submission_artifact_upload_context,
 )
 from .sender import publish_submission_message
 from .serializers import (
@@ -1448,6 +1449,11 @@ def update_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
+        log_submission_artifact_upload_context(
+            submission,
+            "jobs.views.update_submission.put",
+        )
+
         submission.status = submission_status
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
@@ -1908,6 +1914,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
+        log_submission_artifact_upload_context(
+            submission,
+            "jobs.views.update_partially_evaluated_submission.put",
+        )
+
         submission.status = submission_status
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
@@ -2105,6 +2116,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+
+            log_submission_artifact_upload_context(
+                submission,
+                "jobs.views.update_partially_evaluated_submission.patch_to_finished",
+            )
 
             submission.status = submission_status
             submission.completed_at = timezone.now()
