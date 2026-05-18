@@ -34,7 +34,7 @@ from challenges.models import (
 )
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 
@@ -1465,8 +1465,7 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
 
 
 @override_settings(MEDIA_ROOT="/tmp/evalai-lock-coverage")
-@pytest.mark.django_db
-class TestApprovedConfigLockMessageCoverage(unittest.TestCase):
+class TestApprovedConfigLockMessageCoverage(TestCase):
     """
     Cover _locked_* helpers and _stable_json for Codecov on post-approval
     immutability checks (real ORM queries, no mocks of the methods under test).
