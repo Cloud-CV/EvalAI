@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import zipfile
+from datetime import datetime
 from os.path import basename, isfile, join
 
 import requests
@@ -14,6 +15,7 @@ from challenges.models import (
     Leaderboard,
 )
 from django.core.files.base import ContentFile
+from django.utils import dateparse, timezone
 from rest_framework import status
 from yaml.scanner import ScannerError
 
@@ -57,6 +59,33 @@ _CHALLENGE_PHASE_APPROVED_LOCK_FIELDS = (
     "environment_image",
     "is_partial_submission_evaluation_enabled",
 )
+
+_CHALLENGE_PHASE_DATE_LOCK_FIELDS = frozenset({"start_date", "end_date"})
+
+
+def _parse_lock_datetime(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, str):
+        stripped = value.strip()
+        dt = dateparse.parse_datetime(stripped)
+        if dt is None:
+            dt = dateparse.parse_datetime(stripped.replace(" ", "T", 1))
+    else:
+        return value
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.utc)
+    return dt.astimezone(timezone.utc).replace(microsecond=0)
+
+
+def _normalize_lock_field_value(field, value):
+    if field in _CHALLENGE_PHASE_DATE_LOCK_FIELDS:
+        return _parse_lock_datetime(value)
+    if field == "description" and isinstance(value, str):
+        return value.rstrip()
+    return value
 
 
 def write_file(output_path, mode, file_content):
@@ -462,6 +491,13 @@ class ValidateChallengeConfigUtil:
     def _stable_json(value):
         return json.dumps(value, sort_keys=True, default=str)
 
+    def _lock_field_values_equal(self, field, db_value, yaml_value):
+        norm_db = _normalize_lock_field_value(field, db_value)
+        norm_yaml = _normalize_lock_field_value(field, yaml_value)
+        if isinstance(norm_db, datetime) and isinstance(norm_yaml, datetime):
+            return norm_db == norm_yaml
+        return self._stable_json(norm_db) == self._stable_json(norm_yaml)
+
     def _locked_leaderboard_modified_message(self, data):
         lb = Leaderboard.objects.filter(
             config_id=int(data["id"]),
@@ -505,8 +541,8 @@ class ValidateChallengeConfigUtil:
         for field in _CHALLENGE_PHASE_APPROVED_LOCK_FIELDS:
             if field not in data:
                 continue
-            if self._stable_json(getattr(phase, field)) != self._stable_json(
-                data.get(field)
+            if not self._lock_field_values_equal(
+                field, getattr(phase, field), data.get(field)
             ):
                 return self.error_messages_dict[
                     "locked_challenge_phase_modified"
