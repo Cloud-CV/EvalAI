@@ -4,7 +4,7 @@ import tempfile
 import unittest
 import uuid
 import zipfile
-from datetime import timedelta
+from datetime import datetime, timedelta
 from os.path import basename, join
 from unittest.mock import Mock
 from unittest.mock import patch as mockpatch
@@ -1617,6 +1617,64 @@ class TestApprovedConfigLockMessageCoverage(TestCase):
             {
                 "id": 1,
                 "name": "Phase 1",
+                "test_annotation_file": self.phase_annotation_basename,
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_accepts_yaml_date_format(self):
+        phase_start = timezone.make_aware(
+            datetime(2019, 1, 19, 0, 0, 0), timezone.utc
+        )
+        phase_end = timezone.make_aware(
+            datetime(2019, 1, 20, 0, 0, 0), timezone.utc
+        )
+        self.phase.start_date = phase_start
+        self.phase.end_date = phase_end
+        self.phase.save()
+
+        msg = self.util._locked_challenge_phase_modified_message(
+            {
+                "id": 1,
+                "name": "Phase 1",
+                "start_date": "2019-01-19 00:00:00",
+                "end_date": "2019-01-20 00:00:00",
+                "test_annotation_file": self.phase_annotation_basename,
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_accepts_iso_date_format(self):
+        phase_start = timezone.make_aware(
+            datetime(2019, 1, 19, 0, 0, 0), timezone.utc
+        )
+        phase_end = timezone.make_aware(
+            datetime(2019, 1, 20, 0, 0, 0), timezone.utc
+        )
+        self.phase.start_date = phase_start
+        self.phase.end_date = phase_end
+        self.phase.save()
+
+        msg = self.util._locked_challenge_phase_modified_message(
+            {
+                "id": 1,
+                "name": "Phase 1",
+                "start_date": "2019-01-19T00:00:00Z",
+                "end_date": "2019-01-20T00:00:00Z",
+                "test_annotation_file": self.phase_annotation_basename,
+            }
+        )
+        self.assertIsNone(msg)
+
+    def test_locked_challenge_phase_accepts_description_trailing_newline(self):
+        self.phase.description = "<p>hello</p>"
+        self.phase.save()
+
+        msg = self.util._locked_challenge_phase_modified_message(
+            {
+                "id": 1,
+                "name": "Phase 1",
+                "description": "<p>hello</p>\n",
                 "test_annotation_file": self.phase_annotation_basename,
             }
         )
