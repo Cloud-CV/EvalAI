@@ -460,8 +460,7 @@ def calculate_distinct_sorted_leaderboard_data(
     # Prefetch all participant teams and their participants' emails in bulk
     # (fixes N+1 query)
     unique_team_ids = set(
-        item["submission__participant_team"]
-        for item in leaderboard_data_light
+        item["submission__participant_team"] for item in leaderboard_data_light
     )
     participant_teams = ParticipantTeam.objects.filter(
         id__in=unique_team_ids
