@@ -17,9 +17,25 @@ require_variable() {
     fi
 }
 
+verify_submission_worker_images() {
+    local deployment_environment_name="$1"
+    local -a worker_ecr_repositories=(
+        "evalai-${deployment_environment_name}-worker-py3.7"
+        "evalai-${deployment_environment_name}-worker-py3.8"
+        "evalai-${deployment_environment_name}-worker-py3.9"
+    )
+
+    for worker_ecr_repository in "${worker_ecr_repositories[@]}"; do
+        local worker_image="${AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/${worker_ecr_repository}:${COMMIT_ID}"
+        echo "Verifying Python dependencies in ${worker_image}..."
+        docker run --rm "${worker_image}" python -c "import boto3, django; print('OK', boto3.__version__, django.get_version())"
+    done
+}
+
 build_and_push_images() {
     local deployment_environment_name="$1"
     local compose_file_path="docker-compose-${deployment_environment_name}.yml"
+    local deploy_cache_compose_path="docker/docker-compose.deploy-cache.yml"
 
     aws configure set default.region "${aws_region}"
     aws ecr get-login-password --region "${aws_region}" | \
@@ -39,16 +55,38 @@ build_and_push_images() {
         return 0
     fi
 
-    # Image tag uses COMMIT_ID; embed same value into Python services for logs
-    # (Submission worker / Django diagnostic: EVALAI_GIT_REVISION).
-    DOCKER_BUILDKIT=1 docker compose -f "${compose_file_path}" build \
-        --build-arg COMMIT_ID="${COMMIT_ID}" \
-        --build-arg EVALAI_GIT_REVISION="${COMMIT_ID}" \
-        --build-arg AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}" \
-        --compress
-    docker compose -f "${compose_file_path}" push
+    local -a compose_file_arguments=(-f "${compose_file_path}")
+    if [[ -f "${deploy_cache_compose_path}" ]]; then
+        compose_file_arguments+=(-f "${deploy_cache_compose_path}")
+    fi
 
-    # Tag and push all ECR images with the latest tag.
+    local -a shared_build_arguments=(
+        "${compose_file_arguments[@]}"
+        build
+        --build-arg "COMMIT_ID=${COMMIT_ID}"
+        --build-arg "EVALAI_GIT_REVISION=${COMMIT_ID}"
+        --build-arg "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}"
+        --compress
+    )
+
+    # Bake parallelizes services that share docker/prod/worker_py3_7/Dockerfile and
+    # produced images with empty site-packages. Build workers sequentially first.
+    unset COMPOSE_BAKE
+
+    echo "=== Building submission worker images (worker_py3_7 without cache) ==="
+    DOCKER_BUILDKIT=1 docker compose "${shared_build_arguments[@]}" --no-cache worker_py3_7
+    DOCKER_BUILDKIT=1 docker compose "${shared_build_arguments[@]}" worker_py3_8 worker_py3_9
+
+    verify_submission_worker_images "${deployment_environment_name}"
+
+    echo "=== Building remaining deploy images (remote-worker reuses worker_py3.7 image) ==="
+    DOCKER_BUILDKIT=1 docker compose "${shared_build_arguments[@]}" \
+        django celery nodejs remote-worker code-upload-worker
+
+    echo "=== Pushing commit-tagged images to ECR ==="
+    docker compose "${compose_file_arguments[@]}" push
+
+    echo "=== Tagging and pushing :latest after worker verification ==="
     local container_image_references
     container_image_references=$(
         docker compose -f "${compose_file_path}" config | \

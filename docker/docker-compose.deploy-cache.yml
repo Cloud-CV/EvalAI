@@ -1,0 +1,27 @@
+# Merged in scripts/deployment/push.sh for staging/production deploy builds.
+# Separate GHA cache scopes so worker_py3_7 and remote-worker never share layers.
+services:
+  worker_py3_7:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-deploy-worker-py37
+      cache_to:
+        - type=gha,scope=evalai-deploy-worker-py37,mode=max
+  worker_py3_8:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-deploy-worker-py38
+      cache_to:
+        - type=gha,scope=evalai-deploy-worker-py38,mode=max
+  worker_py3_9:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-deploy-worker-py39
+      cache_to:
+        - type=gha,scope=evalai-deploy-worker-py39,mode=max
+  remote-worker:
+    build:
+      cache_from:
+        - type=gha,scope=evalai-deploy-remote-worker
+      cache_to:
+        - type=gha,scope=evalai-deploy-remote-worker,mode=max

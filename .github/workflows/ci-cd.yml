@@ -231,6 +231,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: write
     if: >
       (github.event_name == 'push' && (github.ref_name == 'staging' || github.ref_name == 'production')) ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.deployment_environment_name == 'staging' || github.event.inputs.deployment_environment_name == 'production'))
@@ -339,7 +340,6 @@ jobs:
           TARGET_INSTANCE_HOST: ${{ secrets.DEPLOYMENT_INSTANCE_HOST }}
           SSH_PRIVATE_KEY_PATH: ${{ steps.ssh_materials.outputs.ssh_private_key_path }}
           DEPLOY_SSH_KNOWN_HOSTS_PATH: ${{ steps.ssh_materials.outputs.known_hosts_path }}
-          COMPOSE_BAKE: true
           DOCKER_BUILDKIT: 1
         run: |
           bash ./scripts/deployment/push.sh

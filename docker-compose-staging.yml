@@ -92,7 +92,11 @@ services:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker_py3_7/Dockerfile
+      dockerfile: docker/prod/remote_submission_worker/Dockerfile
+      args:
+        AWS_ACCOUNT_ID: ${AWS_ACCOUNT_ID}
+        COMMIT_ID: ${COMMIT_ID}
+        DEPLOYMENT_ENV: staging
     command: [ 'python', '-m', 'scripts.workers.remote_submission_worker' ]
     env_file:
       - docker/prod/docker_remote_worker.env
