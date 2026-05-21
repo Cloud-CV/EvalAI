@@ -65,7 +65,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "EvalAI"
-copyright = "2018, CloudCV Team"
+copyright = "2026, CloudCV Team"
 author = "CloudCV Team"
 
 # The version info for the project you're documenting, acts as replacement for

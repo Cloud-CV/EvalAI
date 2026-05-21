@@ -64,6 +64,7 @@ On [eval.ai](https://eval.ai), the [EvalAI team](https://eval.ai/team) approves 
 
 ## Next steps
 
+- [Challenge examples with EvalAI-Starters](../../06-examples-tutorials/evalai-starters-guide.html) — map the template repo to common challenge patterns
 - [Host a Challenge](host-challenge.html) — full hosting walkthrough
 - [Remote evaluation](../evaluation/remote-evaluation.html) — run workers on your infrastructure
 - [Example challenge configs](../templates/example-challenges.html)

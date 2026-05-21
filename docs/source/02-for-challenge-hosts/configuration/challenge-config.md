@@ -2,7 +2,7 @@
 
 This section explains how to configure the main details of your EvalAI challenge in the `challenge_config.yaml` file. It includes challenge metadata, display settings, timeline, tags, and top-level files (evaluation scripts, images, HTML templates).
 
-For ready to use end-to-end challenge configuration examples refer to <a href="../templates/example-challenges.html">this</a> section.
+For ready-to-use examples, see [Challenge configuration examples](../templates/example-challenges.html) and [Challenge examples with EvalAI-Starters](../../06-examples-tutorials/evalai-starters-guide.html) (how to apply them in the template repository).
 
 Following fields are required (and can be customized) in the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml).
 
