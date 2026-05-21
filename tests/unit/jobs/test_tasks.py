@@ -1,6 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-from jobs.tasks import download_file_and_publish_submission_message
+from jobs.models import Submission
+from jobs.tasks import (
+    download_file_and_publish_submission_message,
+    tag_submission_artifact_retention_tags,
+)
 
 
 @patch("jobs.tasks.get_participant_team_id_of_user_for_a_challenge")
@@ -12,9 +16,11 @@ from jobs.tasks import download_file_and_publish_submission_message
 @patch("jobs.tasks.SubmissionSerializer")
 @patch("jobs.tasks.publish_submission_message")
 @patch("jobs.tasks.shutil.rmtree")
+@patch("jobs.s3_retention.enqueue_submission_artifact_retention_tagging")
 @patch("jobs.tasks.open", create=True)
 def test_download_file_and_publish_submission_message_success(
     mock_open,
+    mock_enqueue_tagging,
     mock_rmtree,
     mock_publish,
     mock_serializer,
@@ -50,6 +56,9 @@ def test_download_file_and_publish_submission_message_success(
     mock_serializer_instance = MagicMock()
     mock_serializer_instance.is_valid.return_value = True
     mock_serializer_instance.instance.pk = 123
+    mock_serializer_instance.instance.input_file.name = (
+        "submission_files/foo/bar.txt"
+    )
     mock_serializer.return_value = mock_serializer_instance
 
     request_data = {
@@ -65,8 +74,50 @@ def test_download_file_and_publish_submission_message_success(
     )
 
     mock_serializer.assert_called()
+    mock_enqueue_tagging.assert_called_once_with(
+        mock_serializer_instance.instance,
+        ["submission_files/foo/bar.txt"],
+    )
     mock_publish.assert_called()
     mock_rmtree.assert_called()
+
+
+@patch("jobs.s3_retention.tag_submission_artifacts_for_retention")
+@patch("jobs.tasks.Submission.objects")
+def test_tag_submission_artifact_retention_tags_calls_retention_helper(
+    mock_submission_objects, mock_tag_fn
+):
+    mock_submission = MagicMock()
+    qs = MagicMock()
+    mock_submission_objects.select_related.return_value = qs
+    qs.get.return_value = mock_submission
+
+    tag_submission_artifact_retention_tags(42, ["media/path/file.bin"])
+
+    mock_submission_objects.select_related.assert_called_once_with(
+        "challenge_phase",
+        "challenge_phase__challenge",
+    )
+    qs.get.assert_called_once_with(pk=42)
+    mock_tag_fn.assert_called_once_with(
+        mock_submission,
+        ["media/path/file.bin"],
+    )
+
+
+@patch("jobs.s3_retention.tag_submission_artifacts_for_retention")
+@patch("jobs.tasks.Submission.objects")
+def test_tag_submission_artifact_retention_tags_handles_missing_submission(
+    mock_submission_objects,
+    mock_tag_fn,
+):
+    qs = MagicMock()
+    mock_submission_objects.select_related.return_value = qs
+    qs.get.side_effect = Submission.DoesNotExist()
+
+    tag_submission_artifact_retention_tags(999999, ["x"])
+
+    mock_tag_fn.assert_not_called()
 
 
 @patch("jobs.tasks.get_participant_team_id_of_user_for_a_challenge")

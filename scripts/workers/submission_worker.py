@@ -42,6 +42,10 @@ from django.conf import settings  # noqa:E402
 from django.core.files.base import ContentFile  # noqa:E402
 from django.utils import timezone  # noqa:E402
 from jobs.models import Submission  # noqa:E402
+from jobs.s3_retention import (  # noqa:E402
+    enqueue_submission_artifact_retention_tagging,
+    log_submission_artifact_upload_context,
+)
 from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
@@ -413,10 +417,17 @@ def load_challenge(challenge):
 def extract_submission_data(submission_id):
     """
     * Expects submission id and extracts input file for it.
+
+    Subsequent ``run_submission`` persistence uses Django ``FileField.save`` /
+    ``SubmissionArtifactFileName`` — same ``UploadTo`` as the API multipart flow.
     """
 
     try:
-        submission = Submission.objects.get(id=submission_id)
+        # Preload FKs used during evaluation and for FileField(upload_to).
+        submission = Submission.objects.select_related(
+            "challenge_phase",
+            "challenge_phase__challenge",
+        ).get(id=submission_id)
     except Submission.DoesNotExist:
         logger.critical(
             "{} Submission {} does not exist".format(
@@ -508,6 +519,9 @@ def run_submission(
     stderr = open(stderr_file, "a+")
 
     remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+    log_submission_artifact_upload_context(
+        submission, "submission_worker.run_submission.before_eval"
+    )
 
     if remote_evaluation:
         try:
@@ -536,6 +550,10 @@ def run_submission(
             submission.completed_at = timezone.now()
             submission.save()
             if not challenge_phase.disable_logs:
+                log_submission_artifact_upload_context(
+                    submission,
+                    "submission_worker.run_submission.remote_eval_failed_logs",
+                )
                 with open(stdout_file, "r") as stdout:
                     stdout_content = stdout.read()
                     submission.stdout_file.save(
@@ -546,6 +564,10 @@ def run_submission(
                     submission.stderr_file.save(
                         "stderr.txt", ContentFile(stderr_content)
                     )
+                enqueue_submission_artifact_retention_tagging(
+                    submission,
+                    [submission.stdout_file.name, submission.stderr_file.name],
+                )
 
             # delete the complete temp run directory
             shutil.rmtree(temp_run_dir)
@@ -682,6 +704,10 @@ def run_submission(
     # after the execution is finished, set `status` to finished and hence
     # `completed_at`
     if submission_output and successful_submission_flag:
+        log_submission_artifact_upload_context(
+            submission,
+            "submission_worker.run_submission.before_result_files",
+        )
         output = {}
         output["result"] = submission_output.get("result", "")
         submission.output = output
@@ -699,6 +725,13 @@ def run_submission(
             "submission_metadata.json", ContentFile(submission_metadata)
         )
         submission.save()
+        enqueue_submission_artifact_retention_tagging(
+            submission,
+            [
+                submission.submission_result_file.name,
+                submission.submission_metadata_file.name,
+            ],
+        )
 
     stderr.close()
     stdout.close()
@@ -707,6 +740,9 @@ def run_submission(
 
     # TODO :: see if two updates can be combine into a single update.
     if not challenge_phase.disable_logs:
+        log_submission_artifact_upload_context(
+            submission, "submission_worker.run_submission.before_stdout_stderr"
+        )
         with open(stdout_file, "r") as stdout:
             stdout_content = stdout.read()
             submission.stdout_file.save(
@@ -718,6 +754,12 @@ def run_submission(
                 submission.stderr_file.save(
                     "stderr.txt", ContentFile(stderr_content)
                 )
+        artifact_paths = [submission.stdout_file.name]
+        if submission.stderr_file.name:
+            artifact_paths.append(submission.stderr_file.name)
+        enqueue_submission_artifact_retention_tagging(
+            submission, artifact_paths
+        )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
@@ -873,6 +915,13 @@ def load_challenge_and_return_max_submissions(q_params):
 
 def main():
     killer = GracefulKiller()
+    logger.info(
+        "{} Submission worker revision {} "
+        "(set EVALAI_GIT_REVISION at image build to match Django API)".format(
+            WORKER_LOGS_PREFIX,
+            os.environ.get("EVALAI_GIT_REVISION", "unknown"),
+        )
+    )
     logger.info(
         "{} Using {} as temp directory to store data".format(
             WORKER_LOGS_PREFIX, BASE_TEMP_DIR

@@ -133,6 +133,17 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.refresh_from_db()
         self.assertTrue(self.challenge.is_approval_requested)
 
+    def test_challenge_usage_type_defaults_to_other(self):
+        self.assertEqual(Challenge.OTHER, self.challenge.challenge_usage_type)
+
+    def test_challenge_usage_type_can_be_internal(self):
+        self.challenge.challenge_usage_type = Challenge.INTERNAL
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertEqual(
+            Challenge.INTERNAL, self.challenge.challenge_usage_type
+        )
+
     def test_get_evaluation_script_path(self):
         self.assertEqual(
             self.challenge.evaluation_script.url,
@@ -210,6 +221,34 @@ class ChallengePhaseTestCase(BaseTestCase):
     def test_is_restricted_to_select_one_submission(self):
         self.assertEqual(
             True, self.challenge_phase.is_restricted_to_select_one_submission
+        )
+
+    def test_submission_artifact_retention_policy_defaults_to_keep_forever(
+        self,
+    ):
+        self.assertEqual(
+            ChallengePhase.KEEP_FOREVER,
+            self.challenge_phase.submission_artifact_retention_policy,
+        )
+
+    def test_submission_artifact_retention_policy_includes_supported_windows(
+        self,
+    ):
+        retention_policies = [
+            choice[0]
+            for choice in ChallengePhase.SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS
+        ]
+
+        self.assertEqual(
+            [
+                ChallengePhase.KEEP_FOREVER,
+                ChallengePhase.DAYS_14,
+                ChallengePhase.DAYS_30,
+                ChallengePhase.MONTHS_3,
+                ChallengePhase.MONTHS_6,
+                ChallengePhase.MONTHS_12,
+            ],
+            retention_policies,
         )
 
 

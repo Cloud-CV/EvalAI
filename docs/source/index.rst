@@ -24,23 +24,6 @@ Contents:
    06-examples-tutorials/README
    07-troubleshooting/README
    08-reference/README
-   .. github_based_challenge_setup
-   .. configuration
-   .. evaluation_scripts
-   .. edit_evaluation_script
-   .. approve_challenge
-   .. participate
-   .. make_submission_public_private_baseline
-   .. pull_request
-   .. contribution
-   .. architecture
-   .. architecture_decisions
-   .. directory_structure
-   .. submission
-   .. migrations
-   .. cite
-   .. faq(developers)
-   .. glossary
 
 Indices and tables
 ==================
