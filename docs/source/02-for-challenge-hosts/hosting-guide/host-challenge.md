@@ -119,7 +119,7 @@ Please ensure the following fields are set to the following values:
 
 - `remote_evaluation : True`
 
-Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/configuration.html) for details on challenge configuration.
+Refer to [Challenge configuration](../configuration/challenge-config.md) for details on challenge configuration.
 
 ### Step 3: Edit remote evaluation script
 
