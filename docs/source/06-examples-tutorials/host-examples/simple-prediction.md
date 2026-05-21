@@ -1,6 +1,6 @@
 # Simple Prediction Challenge Example
 
-Single-phase prediction upload challenge with one leaderboard — based on [Example 1](../../02-for-challenge-hosts/templates/example-challenges.html) in the templates doc.
+Single-phase prediction upload challenge with one leaderboard — adapt [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) using [Example 1](../../02-for-challenge-hosts/templates/example-challenges.html#example-1-one-challenge-one-phase-one-leaderboard-one-phase-split).
 
 ## Highlights
 
@@ -9,13 +9,15 @@ Single-phase prediction upload challenge with one leaderboard — based on [Exam
 - One `dataset_splits` entry (`test_split`)
 - Leaderboard schema with a single metric (for example `Accuracy`)
 
-## Steps
+## Steps (EvalAI-Starters)
 
-1. Fork [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters).
-2. Copy `example_1` patterns from [Example challenge configs](../../02-for-challenge-hosts/templates/example-challenges.html).
-3. Place test annotations and HTML templates at paths referenced in YAML.
-4. Implement `evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs)`.
-5. Push to `challenge` branch and verify GitHub Actions build.
+1. [Create a repo from EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters/generate) and configure secrets plus `github/host_config.json` ([getting started](../../02-for-challenge-hosts/hosting-guide/getting-started.html)).
+2. Replace [`challenge_config.yaml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) with the YAML from [Example 1](../../02-for-challenge-hosts/templates/example-challenges.html#example-1-one-challenge-one-phase-one-leaderboard-one-phase-split) (or remove the second phase and extra splits from the default template).
+3. Add `annotations/test_annotations_devsplit.json` (or your annotation filename) and point `test_annotation_file` at it.
+4. Update `templates/*.html` and package `evaluation_script/` into `evaluation_script.zip` for CI.
+5. Simplify [`evaluation_script/main.py`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/evaluation_script/main.py) — one branch for your phase `codename`.
+6. Test locally with `python -m worker.run` (see [EvalAI-Starters guide](../evalai-starters-guide.html#default-template-included-in-the-repo)).
+7. Push to the `challenge` branch and verify GitHub Actions.
 
 ## Evaluation output
 
@@ -31,5 +33,6 @@ return {
 
 ## See also
 
+- [EvalAI-Starters challenge examples](../evalai-starters-guide.html)
 - [Prediction upload](../../02-for-challenge-hosts/evaluation/prediction-upload.html)
 - [Evaluation scripts](../../02-for-challenge-hosts/evaluation/evaluation-scripts.html)

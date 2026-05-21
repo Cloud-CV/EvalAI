@@ -20,5 +20,6 @@ Push commits to `challenge`. EvalAI updates challenge metadata when the workflow
 
 ## See also
 
+- [Challenge examples with EvalAI-Starters](../evalai-starters-guide.html)
 - [Host a challenge](../../02-for-challenge-hosts/hosting-guide/host-challenge.html)
 - [Remote evaluation example](../host-examples/remote-evaluation.html)
