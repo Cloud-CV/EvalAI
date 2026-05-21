@@ -46,7 +46,7 @@ Submission messages include:
 }
 ```
 
-Processing details: see legacy [submission processing notes](../../../submission.md) or [Submission Types](../../03-for-participants/submissions/submission-types.html).
+Processing details: see [Submission Types](../../03-for-participants/submissions/submission-types.html).
 
 ## Remote and code-upload workers
 

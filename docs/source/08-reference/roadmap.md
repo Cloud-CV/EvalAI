@@ -14,7 +14,7 @@ Recent work reorganized docs under numbered sections (`01-getting-started/` thro
 
 ## Architecture notes
 
-Historical design decisions may be recorded in [architecture_decisions.md](../architecture_decisions.md) in the source tree.
+Historical design decisions are documented in [Architectural Decisions](../04-development/architecture/architectural-decisions.md).
 
 ## Related
 

@@ -43,7 +43,28 @@ redirects:
     to_url: /02-for-challenge-hosts/evaluation/prediction-upload.html
   - type: page
     from_url: /glossary.html
-    to_url: /08-reference/README.html
+    to_url: /08-reference/glossary.html
   - type: page
     from_url: /faq(developers).html
     to_url: /07-troubleshooting/support/faq.html
+  - type: page
+    from_url: /migrations.html
+    to_url: /04-development/maintenance/migrations.html
+  - type: page
+    from_url: /approve_challenge.html
+    to_url: /02-for-challenge-hosts/hosting-guide/approval-process.html
+  - type: page
+    from_url: /architecture_decisions.html
+    to_url: /04-development/architecture/architectural-decisions.html
+  - type: page
+    from_url: /cite.html
+    to_url: /08-reference/cite.html
+  - type: page
+    from_url: /make_submission_public_private_baseline.html
+    to_url: /03-for-participants/visibility/baseline-submissions.html
+  - type: page
+    from_url: /pull_request.html
+    to_url: /04-development/contributing/pull-requests.html
+  - type: page
+    from_url: /contribution.html
+    to_url: /04-development/contributing/contribution-guide.html
