@@ -68,3 +68,6 @@ redirects:
   - type: page
     from_url: /contribution.html
     to_url: /04-development/contributing/contribution-guide.html
+  - type: page
+    from_url: /host_challenge.html
+    to_url: /02-for-challenge-hosts/hosting-guide/host-challenge.html
