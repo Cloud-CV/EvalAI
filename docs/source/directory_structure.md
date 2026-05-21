@@ -1,5 +1,10 @@
 # Directory structure
 
+```{admonition} Deprecated
+:class: warning
+See [Directory structure](04-development/architecture/directory-structure.md) in the development docs.
+```
+
 ### Django apps
 
 EvalAI is a Django-based application, hence it leverages the concept of Django apps to properly namespace the functionalities. All the apps can be found in the `apps` directory situated in the root folder.

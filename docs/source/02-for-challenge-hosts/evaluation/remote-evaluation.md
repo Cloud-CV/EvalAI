@@ -1,47 +1,89 @@
 # Remote Evaluation
-Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 
-## Writing Remote Evaluation Script
+Remote evaluation lets challenge hosts run `evaluate()` on their own machines while EvalAI handles submissions, queuing, and leaderboards.
 
-The starter template for remote challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/tree/master/remote_challenge_evaluation).
+Each challenge still uses an evaluation script, but a **remote worker** you operate pulls submissions from EvalAI and returns scores.
 
-Here are the steps to configure remote evaluation:
+## When to use remote evaluation
 
-1. **Setup Configs**:
+Use remote evaluation when you need:
 
-    To configure authentication for the challenge set the following environment variables:
+- Custom hardware (GPUs, large memory, proprietary tooling)
+- Evaluation code that cannot run on EvalAI workers
+- Full control over the evaluation environment
 
-    1. AUTH_TOKEN:  Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
-    2. API_SERVER: Use `https://eval.ai` when setting up challenge on production server. Otherwise, use `https://staging.eval.ai`
-        <img src="_static/img/github_based_setup/evalai_profile_get_auth_token.png"><br />
-        <img src="_static/img/github_based_setup/evalai_profile_copy_auth_token.png"><br />
-    3. QUEUE_NAME: Go to the challenge manage tab to fetch the challenge queue name.
-    4. CHALLENGE_PK: Go to the challenge manage tab to fetch the challenge primary key.
-        <img src="_static/img/remote_evaluation_meta.png"><br />
-    5. SAVE_DIR: (Optional) Path to submission data download location.
+Set `remote_evaluation: true` in `challenge_config.yaml`. See [Host a remote evaluation challenge](../hosting-guide/host-challenge.html#host-a-remote-evaluation-challenge) for the hosting workflow.
 
-2. **Write `evaluate` method**:
-    Evaluation scripts are required to have an `evaluate()` function. This is the main function, which is used by workers to evaluate the submission messages.
+## Starter template
 
-    The syntax of evaluate function for a remote challenge is:
+The remote evaluation starter lives in [EvalAI-Starters/remote_challenge_evaluation](https://github.com/Cloud-CV/EvalAI-Starters/tree/master/remote_challenge_evaluation).
 
-    ```python
-    def evaluate(user_submission_file, phase_codename, test_annotation_file = None, **kwargs)
-        pass
-    ```
+## Setup environment variables
 
-    It receives three arguments, namely:
+Configure authentication and challenge metadata before starting the worker:
 
-    - `user_annotation_file`: It represents the local path of the file submitted by the user for a particular challenge phase.
+| Variable | Description |
+|----------|-------------|
+| `AUTH_TOKEN` | From [EvalAI profile](https://eval.ai/web/profile) → **Get your Auth Token** → copy. |
+| `API_SERVER` | `https://eval.ai` (production) or `https://staging.eval.ai` (staging). |
+| `QUEUE_NAME` | Challenge queue name from the challenge **Manage** tab. |
+| `CHALLENGE_PK` | Challenge primary key from the **Manage** tab. |
+| `SAVE_DIR` | Optional local path to store downloaded submission files. |
 
-    - `phase_codename`: It is the `codename` of the challenge phase from the [challenge configuration yaml](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml). This is passed as an argument so that the script can take actions according to the challenge phase.
+![Get auth token](../../_static/img/github_based_setup/evalai_profile_get_auth_token.png)
 
-    - `test_annotation_file`: It represents the local path to the annotation file for the challenge. This is the file uploaded by the Challenge host while creating a challenge.
+![Copy auth token](../../_static/img/github_based_setup/evalai_profile_copy_auth_token.png)
 
-    You may pass the `test_annotation_file` as default argument or choose to pass separately in the `main.py` depending on the case. The `phase_codename` is passed automatically but is left as an argument to allow customization.
+![Remote evaluation meta on manage tab](../../_static/img/remote_evaluation_meta.png)
 
-    After reading the files, some custom actions can be performed. This varies per challenge.
+## Write the `evaluate` method
 
-    The `evaluate()` method also accepts keyword arguments.
+Remote evaluation scripts must define `evaluate()`:
 
-    **IMPORTANT** ⚠️: If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
+```python
+def evaluate(user_submission_file, phase_codename, test_annotation_file=None, **kwargs):
+    # Load predictions, compute metrics, return leaderboard output
+    pass
+```
+
+Arguments:
+
+- **user_submission_file**: Local path to the participant submission file.
+- **phase_codename**: Phase codename from `challenge_config.yaml`; use it to branch logic per phase.
+- **test_annotation_file**: Local path to the host-uploaded annotation file for the phase (optional in signature; can be passed from `main.py`).
+
+The function may accept additional `**kwargs` (for example submission metadata for Slack or webhooks).
+
+**Important:** If evaluation fails, raise an `Exception` with a clear message so the submission is marked failed and the participant sees useful feedback.
+
+Return format matches standard challenges — see [Metrics and Leaderboards](metrics-leaderboards.html).
+
+## Run the remote evaluation worker
+
+1. Create a conda or virtual environment ([conda environments guide](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)).
+
+2. Install dependencies:
+
+   ```bash
+   cd EvalAI-Starters
+   pip install -r remote_challenge_evaluation/requirements.txt
+   ```
+
+3. Set the environment variables from the table above.
+
+4. Start the worker:
+
+   ```bash
+   cd EvalAI-Starters/remote_challenge_evaluation
+   python main.py
+   ```
+
+Keep the worker running while the challenge is active so submissions are processed promptly.
+
+## Related documentation
+
+- [Prediction Upload Challenges](prediction-upload.html) — hosted evaluation on EvalAI workers
+- [Evaluation Scripts](evaluation-scripts.html) — `evaluate()` output format
+- [Remote Evaluation example](../../06-examples-tutorials/host-examples/remote-evaluation.html) — condensed end-to-end walkthrough
+
+For help, contact [team@eval.ai](mailto:team@eval.ai) or open a [GitHub issue](https://github.com/Cloud-CV/EvalAI/issues/new).

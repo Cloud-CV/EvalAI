@@ -1,3 +1,8 @@
+```{admonition} Deprecated
+:class: warning
+Terms are documented across the new guides; start from [Reference](08-reference/README.md).
+```
+
 ## Glossary
 
 ### Challenge

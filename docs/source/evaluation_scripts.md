@@ -1,3 +1,8 @@
+```{admonition} Deprecated
+:class: warning
+Evaluation documentation has moved to [Evaluation Scripts](02-for-challenge-hosts/evaluation/evaluation-scripts.md) and [Remote Evaluation](02-for-challenge-hosts/evaluation/remote-evaluation.md).
+```
+
 ## Writing Evaluation Script
 
 ### Writing an Evaluation Script

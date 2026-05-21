@@ -1,3 +1,8 @@
+```{admonition} Deprecated
+:class: warning
+See [Prediction Upload Challenges](02-for-challenge-hosts/evaluation/prediction-upload.md).
+```
+
 ## Editing Evaluation Script
 
 Each prediction upload challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating a submission is customizable and varies from challenge to challenge.

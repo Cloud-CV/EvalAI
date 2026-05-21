@@ -1,3 +1,8 @@
+```{admonition} Deprecated
+:class: warning
+See [Getting Started as a Challenge Host](02-for-challenge-hosts/hosting-guide/getting-started.md).
+```
+
 ## Setup challenge using github
 
 1. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.

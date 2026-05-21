@@ -1,5 +1,10 @@
 # Participate in a challenge
 
+```{admonition} Deprecated
+:class: warning
+See [Getting Started as a Participant](03-for-participants/participation-guide/getting-started.md).
+```
+
 You have to create an account on [EvalAI](http://eval.ai) and a participant team in order to participate in a challenge.
 
 If you are already familiar with the flow of EvalAI, you may want to skip this section else please follow the following steps to participate in a challenge (VQA Challenge 2017 in this example):

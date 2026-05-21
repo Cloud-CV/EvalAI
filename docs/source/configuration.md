@@ -1,5 +1,10 @@
 # Challenge configuration
 
+```{admonition} Deprecated
+:class: warning
+This page has moved to the [Challenge Configuration guide](02-for-challenge-hosts/configuration/challenge-config.md) and [YAML schema reference](08-reference/config-reference/yaml-schema.md).
+```
+
 Following fields are required (and can be customized) in the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml).
 
 - **title**: Title of the challenge

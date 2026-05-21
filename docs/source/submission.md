@@ -1,3 +1,8 @@
+```{admonition} Deprecated
+:class: warning
+See [Submission types](03-for-participants/submissions/submission-types.md) and [Worker setup](04-development/deployment/worker-setup.md).
+```
+
 ## Submission
 
 ### How is a submission processed?
