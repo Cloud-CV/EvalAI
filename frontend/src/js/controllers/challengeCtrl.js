@@ -2259,6 +2259,21 @@
             return false;
         };
 
+        vm.getSubmissionMetadataForEdit = function(submission) {
+            if (submission.submission_metadata != null) {
+                return JSON.parse(JSON.stringify(submission.submission_metadata));
+            }
+
+            var phaseId = submission.challenge_phase || vm.phaseId;
+            var phaseAttributes = vm.submissionMetaAttributes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            });
+            if (phaseAttributes && phaseAttributes.attributes != null) {
+                return JSON.parse(JSON.stringify(phaseAttributes.attributes));
+            }
+            return null;
+        };
+
         vm.showMdDialog = function (ev, submissionId) {
             for (var i = 0; i < vm.submissionResult.count; i++) {
                 if (vm.submissionResult.results[i].id === submissionId) {
@@ -2271,9 +2286,7 @@
             vm.project_url = vm.submissionMetaData.project_url;
             vm.publication_url = vm.submissionMetaData.publication_url;
             vm.submissionId = submissionId;
-            if (vm.submissionMetaData.submission_metadata != null) {
-                vm.currentSubmissionMetaData = JSON.parse(JSON.stringify(vm.submissionMetaData.submission_metadata));
-            }
+            vm.currentSubmissionMetaData = vm.getSubmissionMetadataForEdit(vm.submissionMetaData);
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
