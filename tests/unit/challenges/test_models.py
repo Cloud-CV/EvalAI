@@ -133,8 +133,8 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.refresh_from_db()
         self.assertTrue(self.challenge.is_approval_requested)
 
-    def test_challenge_usage_type_defaults_to_other(self):
-        self.assertEqual(Challenge.OTHER, self.challenge.challenge_usage_type)
+    def test_challenge_usage_type_defaults_to_paid(self):
+        self.assertEqual(Challenge.PAID, self.challenge.challenge_usage_type)
 
     def test_challenge_usage_type_can_be_internal(self):
         self.challenge.challenge_usage_type = Challenge.INTERNAL
