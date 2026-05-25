@@ -67,11 +67,9 @@ class Challenge(TimeStampedModel):
     )
     PAID = "paid"
     INTERNAL = "internal"
-    OTHER = "other"
     CHALLENGE_USAGE_TYPE_OPTIONS = (
         (PAID, "Paid"),
         (INTERNAL, "Internal"),
-        (OTHER, "Other"),
     )
     domain = models.CharField(
         max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
@@ -79,7 +77,7 @@ class Challenge(TimeStampedModel):
     challenge_usage_type = models.CharField(
         max_length=20,
         choices=CHALLENGE_USAGE_TYPE_OPTIONS,
-        default=OTHER,
+        default=PAID,
         db_index=True,
     )
     list_tags = ArrayField(
