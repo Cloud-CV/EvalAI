@@ -4,6 +4,7 @@
 
 [![Join the chat on Slack](https://img.shields.io/badge/Join%20Slack-Chat-blue?logo=slack)](https://join.slack.com/t/cloudcv-community/shared_invite/zt-3252n6or8-e0QuZKIZFLB0zXtQ6XgxfA)
 [![Build Status](https://github.com/Cloud-CV/EvalAI/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/Cloud-CV/EvalAI/actions/workflows/ci-cd.yml)
+[![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Cloud-CV/EvalAI?style=flat-square)](https://coderabbit.ai)
 [![Coverage](https://img.shields.io/codecov/c/github/Cloud-CV/EvalAI?label=Coverage&style=flat-square)](https://codecov.io/gh/Cloud-CV/EvalAI)
 [![Backend Coverage](https://img.shields.io/codecov/c/github/Cloud-CV/EvalAI?flag=backend&label=Backend&style=flat-square)](https://codecov.io/gh/Cloud-CV/EvalAI?flag=backend)
 [![Frontend Coverage](https://img.shields.io/codecov/c/github/Cloud-CV/EvalAI?flag=frontend&label=Frontend&style=flat-square)](https://codecov.io/gh/Cloud-CV/EvalAI?flag=frontend)
