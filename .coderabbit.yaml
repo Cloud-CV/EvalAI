@@ -6,7 +6,7 @@
 language: en-US
 
 reviews:
-  profile: chill
+  profile: followup
   review_status: true
   review_details: false
   poem: false
