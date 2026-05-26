@@ -11,8 +11,8 @@
 language: en-US
 
 reviews:
-  # followup: thorough feedback plus re-raises unresolved review comments on new commits.
-  profile: followup
+  # Valid values: chill | assertive. chill keeps volume sane for OSS contributors.
+  profile: chill
 
   # Don't let CodeRabbit auto-block PRs with a "changes requested" gate;
   # maintainers and CODEOWNERS stay the merge authority.
