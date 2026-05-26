@@ -1,6 +1,6 @@
 # AGENTS.md
 
-## Cursor Cloud specific instructions
+## Cursor Cloud-specific instructions
 
 ### Overview
 
@@ -50,7 +50,7 @@ Docker must be installed with `fuse-overlayfs` storage driver and `iptables-lega
 - **Backend**: `docker exec -e DJANGO_SETTINGS_MODULE=settings.test workspace-django-1 bash -c 'cd /code && python manage.py flush --noinput && pytest --cov . --cov-config .coveragerc -q'`
   - Note: `flush --noinput` clears the DB. Re-run `manage.py seed` or manually recreate users afterward if you need the dev data.
 - **Frontend**: `docker exec workspace-nodejs-1 bash -c 'Xvfb :99 -screen 0 1024x768x24 &>/dev/null & sleep 1 && npm test -- --single-run'`
-- **Both**: `./scripts/run-all-tests.sh` (requires containers named `evalai-nodejs-1` / `evalai-django-1`)
+- **Both**: `./scripts/run-all-tests.sh` (requires containers named `evalai-nodejs-1` / `evalai-django-1`; set `COMPOSE_PROJECT_NAME=evalai` or rename containers to match)
 
 ### Linting
 
