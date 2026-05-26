@@ -39,8 +39,11 @@ build_and_push_images() {
         return 0
     fi
 
+    # Image tag uses COMMIT_ID; embed same value into Python services for logs
+    # (Submission worker / Django diagnostic: EVALAI_GIT_REVISION).
     DOCKER_BUILDKIT=1 docker compose -f "${compose_file_path}" build \
         --build-arg COMMIT_ID="${COMMIT_ID}" \
+        --build-arg EVALAI_GIT_REVISION="${COMMIT_ID}" \
         --build-arg AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}" \
         --compress
     docker compose -f "${compose_file_path}" push

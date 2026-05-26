@@ -1,6 +1,8 @@
+import json
 import logging
 import re
 import zipfile
+from datetime import datetime
 from os.path import basename, isfile, join
 
 import requests
@@ -13,6 +15,7 @@ from challenges.models import (
     Leaderboard,
 )
 from django.core.files.base import ContentFile
+from django.utils import dateparse, timezone
 from rest_framework import status
 from yaml.scanner import ScannerError
 
@@ -30,6 +33,59 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+_CHALLENGE_PHASE_APPROVED_LOCK_FIELDS = (
+    "name",
+    "description",
+    "leaderboard_public",
+    "start_date",
+    "end_date",
+    "is_public",
+    "codename",
+    "max_submissions_per_day",
+    "max_submissions_per_month",
+    "max_submissions",
+    "max_concurrent_submissions_allowed",
+    "submission_meta_attributes",
+    "default_submission_meta_attributes",
+    "submission_artifact_retention_policy",
+    "is_submission_public",
+    "annotations_uploaded_using_cli",
+    "is_restricted_to_select_one_submission",
+    "allowed_submission_file_types",
+    "allowed_email_ids",
+    "disable_logs",
+    "is_submission_paused",
+    "environment_image",
+    "is_partial_submission_evaluation_enabled",
+)
+
+_CHALLENGE_PHASE_DATE_LOCK_FIELDS = frozenset({"start_date", "end_date"})
+
+
+def _parse_lock_datetime(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, str):
+        stripped = value.strip()
+        dt = dateparse.parse_datetime(stripped)
+        if dt is None:
+            dt = dateparse.parse_datetime(stripped.replace(" ", "T", 1))
+    else:
+        return value
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.utc)
+    return dt.astimezone(timezone.utc).replace(microsecond=0)
+
+
+def _normalize_lock_field_value(field, value):
+    if field in _CHALLENGE_PHASE_DATE_LOCK_FIELDS:
+        return _parse_lock_datetime(value)
+    if field == "description" and isinstance(value, str):
+        return value.rstrip()
+    return value
 
 
 def write_file(output_path, mode, file_content):
@@ -282,6 +338,19 @@ error_message_dict = {
     "dataset_split_addition": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
     "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
     "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
+    "challenge_phase_split_addition_for_existing_phase": (
+        "ERROR: Cannot add a new leaderboard/dataset-split mapping for an existing "
+        "challenge phase (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}). "
+        "New mappings are only allowed for newly added challenge phases."
+    ),
+    "challenge_phase_split_leaderboard_not_allowed": (
+        "ERROR: Leaderboard id {} is not part of this challenge or the uploaded configuration. "
+        "New challenge phases may only use leaderboards declared in the configuration."
+    ),
+    "challenge_phase_split_dataset_split_not_allowed": (
+        "ERROR: Dataset split id {} is not part of this challenge or the uploaded configuration. "
+        "New challenge phases must use dataset splits declared in the configuration."
+    ),
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
     "missing_keys_in_challenge_phase_splits": "ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}",
     "challenge_phase_split_not_found": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.",
@@ -311,6 +380,23 @@ error_message_dict = {
     "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
+    "locked_leaderboard_modified": (
+        "ERROR: Leaderboard {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the leaderboard block to match the approved configuration or contact support."
+    ),
+    "locked_dataset_split_modified": (
+        "ERROR: Dataset split {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the dataset split block to match the approved configuration or contact support."
+    ),
+    "locked_challenge_phase_modified": (
+        "ERROR: Challenge phase {} cannot be changed after the challenge is approved by an admin. "
+        "Revert the phase block to match the approved configuration or contact support."
+    ),
+    "locked_challenge_phase_split_modified": (
+        "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) "
+        "cannot be changed after the challenge is approved by an admin. Revert visibility / ordering "
+        "fields to match the approved configuration or contact support."
+    ),
 }
 
 
@@ -394,6 +480,124 @@ class ValidateChallengeConfigUtil:
             ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
             return False
+
+    def _approved_config_locked(self):
+        return (
+            self.current_challenge is not None
+            and self.current_challenge.approved_by_admin is True
+        )
+
+    @staticmethod
+    def _stable_json(value):
+        return json.dumps(value, sort_keys=True, default=str)
+
+    def _lock_field_values_equal(self, field, db_value, yaml_value):
+        norm_db = _normalize_lock_field_value(field, db_value)
+        norm_yaml = _normalize_lock_field_value(field, yaml_value)
+        if isinstance(norm_db, datetime) and isinstance(norm_yaml, datetime):
+            return norm_db == norm_yaml
+        return self._stable_json(norm_db) == self._stable_json(norm_yaml)
+
+    def _locked_leaderboard_modified_message(self, data):
+        lb = Leaderboard.objects.filter(
+            config_id=int(data["id"]),
+            id__in=ChallengePhaseSplit.objects.filter(
+                challenge_phase__challenge_id=self.current_challenge.pk
+            ).values_list("leaderboard_id", flat=True),
+        ).first()
+        if lb is None:
+            return None
+        if self._stable_json(lb.schema) != self._stable_json(data["schema"]):
+            return self.error_messages_dict[
+                "locked_leaderboard_modified"
+            ].format(data["id"])
+        return None
+
+    def _locked_dataset_split_modified_message(self, split):
+        ds = DatasetSplit.objects.filter(
+            config_id=int(split["id"]),
+            id__in=ChallengePhaseSplit.objects.filter(
+                challenge_phase__challenge_id=self.current_challenge.pk
+            ).values_list("dataset_split_id", flat=True),
+        ).first()
+        if ds is None:
+            return None
+        if (
+            split.get("name") != ds.name
+            or split.get("codename") != ds.codename
+        ):
+            return self.error_messages_dict[
+                "locked_dataset_split_modified"
+            ].format(split["id"])
+        return None
+
+    def _locked_challenge_phase_modified_message(self, data):
+        phase = ChallengePhase.objects.filter(
+            challenge_id=self.current_challenge.pk,
+            config_id=int(data["id"]),
+        ).first()
+        if phase is None:
+            return None
+        for field in _CHALLENGE_PHASE_APPROVED_LOCK_FIELDS:
+            if field not in data:
+                continue
+            if not self._lock_field_values_equal(
+                field, getattr(phase, field), data.get(field)
+            ):
+                return self.error_messages_dict[
+                    "locked_challenge_phase_modified"
+                ].format(data["id"])
+        yaml_ann = data.get("test_annotation_file")
+        db_ann_name = None
+        if phase.test_annotation:
+            db_ann_name = basename(phase.test_annotation.name)
+        if yaml_ann != db_ann_name:
+            return self.error_messages_dict[
+                "locked_challenge_phase_modified"
+            ].format(data["id"])
+        return None
+
+    def _locked_challenge_phase_split_modified_message(self, data):
+        try:
+            cps = ChallengePhaseSplit.objects.select_related(
+                "challenge_phase", "leaderboard", "dataset_split"
+            ).get(
+                challenge_phase__challenge_id=self.current_challenge.pk,
+                leaderboard__config_id=int(data["leaderboard_id"]),
+                challenge_phase__config_id=int(data["challenge_phase_id"]),
+                dataset_split__config_id=int(data["dataset_split_id"]),
+            )
+        except ChallengePhaseSplit.DoesNotExist:
+            return None
+        if int(cps.visibility) != int(data["visibility"]):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        if int(cps.leaderboard_decimal_precision) != int(
+            data["leaderboard_decimal_precision"]
+        ):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        if bool(cps.is_leaderboard_order_descending) != bool(
+            data["is_leaderboard_order_descending"]
+        ):
+            return self.error_messages_dict[
+                "locked_challenge_phase_split_modified"
+            ].format(
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+        return None
 
     def validate_challenge_title(self):
         challenge_title = self.yaml_file_data.get("title")
@@ -648,14 +852,16 @@ class ValidateChallengeConfigUtil:
                         self.error_messages.append(message)
                     else:
                         if (
-                            current_leaderboard_config_ids
+                            self._approved_config_locked()
+                            and current_leaderboard_config_ids
                             and int(data["id"])
-                            not in current_leaderboard_config_ids
+                            in current_leaderboard_config_ids
                         ):
-                            message = self.error_messages_dict.get(
-                                "leaderboard_additon_after_creation"
-                            ).format(data["id"])
-                            self.error_messages.append(message)
+                            locked_msg = (
+                                self._locked_leaderboard_modified_message(data)
+                            )
+                            if locked_msg:
+                                self.error_messages.append(locked_msg)
                         self.leaderboard_ids.append(data["id"])
         else:
             message = self.error_messages_dict.get("missing_leaderboard_key")
@@ -821,13 +1027,15 @@ class ValidateChallengeConfigUtil:
                 self.error_messages.append(message)
             else:
                 if (
-                    current_phase_config_ids
-                    and int(data["id"]) not in current_phase_config_ids
+                    self._approved_config_locked()
+                    and current_phase_config_ids
+                    and int(data["id"]) in current_phase_config_ids
                 ):
-                    message = self.error_messages_dict[
-                        "challenge_phase_addition"
-                    ].format(data["id"])
-                    self.error_messages.append(message)
+                    locked_msg = self._locked_challenge_phase_modified_message(
+                        data
+                    )
+                    if locked_msg:
+                        self.error_messages.append(locked_msg)
                 self.phase_ids.append(data["id"])
 
         for current_challenge_phase_id in current_phase_config_ids:
@@ -837,7 +1045,13 @@ class ValidateChallengeConfigUtil:
                 ].format(current_challenge_phase_id)
                 self.error_messages.append(message)
 
-    def validate_challenge_phase_splits(self, current_phase_split_ids):
+    def validate_challenge_phase_splits(
+        self,
+        current_phase_split_ids,
+        current_phase_config_ids=None,
+        current_leaderboard_config_ids=None,
+        current_dataset_config_ids=None,
+    ):
         challenge_phase_splits = self.yaml_file_data.get(
             "challenge_phase_splits"
         )
@@ -870,6 +1084,12 @@ class ValidateChallengeConfigUtil:
                 self.error_messages.append(message)
 
         challenge_phase_split_uuids = []
+        if current_phase_config_ids is None:
+            current_phase_config_ids = []
+        if current_leaderboard_config_ids is None:
+            current_leaderboard_config_ids = []
+        if current_dataset_config_ids is None:
+            current_dataset_config_ids = []
         if challenge_phase_splits:
             phase_split = 1
             exclude_fields = [
@@ -887,31 +1107,70 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 if expected_keys.issubset(data.keys()):
-                    if (
-                        current_phase_split_ids
-                        and (
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        not in current_phase_split_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "challenge_phase_split_not_exist"
-                        ].format(
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        self.error_messages.append(message)
+                    split_triple = (
+                        data["leaderboard_id"],
+                        data["challenge_phase_id"],
+                        data["dataset_split_id"],
+                    )
+                    if not current_phase_split_ids:
+                        challenge_phase_split_uuids.append(split_triple)
                     else:
-                        challenge_phase_split_uuids.append(
-                            (
-                                data["leaderboard_id"],
-                                data["challenge_phase_id"],
-                                data["dataset_split_id"],
-                            )
-                        )
+                        norm_split = tuple(int(x) for x in split_triple)
+                        norm_existing = {
+                            tuple(int(x) for x in t)
+                            for t in current_phase_split_ids
+                        }
+                        if norm_split in norm_existing:
+                            if self._approved_config_locked():
+                                ps_msg = self._locked_challenge_phase_split_modified_message(
+                                    data
+                                )
+                                if ps_msg:
+                                    self.error_messages.append(ps_msg)
+                            challenge_phase_split_uuids.append(split_triple)
+                        else:
+                            phase_cfg_id = int(data["challenge_phase_id"])
+                            if phase_cfg_id in current_phase_config_ids:
+                                message = self.error_messages_dict[
+                                    "challenge_phase_split_addition_for_existing_phase"
+                                ].format(
+                                    data["leaderboard_id"],
+                                    data["challenge_phase_id"],
+                                    data["dataset_split_id"],
+                                )
+                                self.error_messages.append(message)
+                            else:
+                                allowed = True
+                                lb_id = int(data["leaderboard_id"])
+                                ds_id = int(data["dataset_split_id"])
+                                yaml_leaderboard_ids = {
+                                    int(x) for x in self.leaderboard_ids
+                                }
+                                yaml_dataset_ids = {
+                                    int(x) for x in self.dataset_splits_ids
+                                }
+                                if (
+                                    lb_id not in current_leaderboard_config_ids
+                                    and lb_id not in yaml_leaderboard_ids
+                                ):
+                                    message = self.error_messages_dict[
+                                        "challenge_phase_split_leaderboard_not_allowed"
+                                    ].format(lb_id)
+                                    self.error_messages.append(message)
+                                    allowed = False
+                                if (
+                                    ds_id not in current_dataset_config_ids
+                                    and ds_id not in yaml_dataset_ids
+                                ):
+                                    message = self.error_messages_dict[
+                                        "challenge_phase_split_dataset_split_not_allowed"
+                                    ].format(ds_id)
+                                    self.error_messages.append(message)
+                                    allowed = False
+                                if allowed:
+                                    challenge_phase_split_uuids.append(
+                                        split_triple
+                                    )
 
                     (
                         _is_mapping_valid,
@@ -942,8 +1201,11 @@ class ValidateChallengeConfigUtil:
                         "missing_keys_in_challenge_phase_splits"
                     ].format(phase_split, missing_keys_string)
                     self.error_messages.append(message)
+            norm_yaml_uuids = {
+                tuple(int(x) for x in t) for t in challenge_phase_split_uuids
+            }
             for uuid in current_phase_split_ids:
-                if uuid not in challenge_phase_split_uuids:
+                if tuple(int(x) for x in uuid) not in norm_yaml_uuids:
                     message = self.error_messages_dict[
                         "challenge_phase_split_not_found"
                     ].format(uuid[0], uuid[1], uuid[2])
@@ -992,13 +1254,15 @@ class ValidateChallengeConfigUtil:
                     self.error_messages.append(message)
                 else:
                     if (
-                        current_dataset_config_ids
-                        and int(split["id"]) not in current_dataset_config_ids
+                        self._approved_config_locked()
+                        and current_dataset_config_ids
+                        and int(split["id"]) in current_dataset_config_ids
                     ):
-                        message = self.error_messages_dict[
-                            "dataset_split_addition"
-                        ].format(split["id"])
-                        self.error_messages.append(message)
+                        locked_msg = (
+                            self._locked_dataset_split_modified_message(split)
+                        )
+                        if locked_msg:
+                            self.error_messages.append(locked_msg)
                     self.dataset_splits_ids.append(split["id"])
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]
@@ -1172,7 +1436,12 @@ def validate_challenge_config_util(
     val_config_util.validate_dataset_splits(current_dataset_config_ids)
 
     # Validate challenge phase splits
-    val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
+    val_config_util.validate_challenge_phase_splits(
+        current_phase_split_ids,
+        current_phase_config_ids,
+        current_leaderboard_config_ids,
+        current_dataset_config_ids,
+    )
 
     # Validate tags
     val_config_util.check_tags()

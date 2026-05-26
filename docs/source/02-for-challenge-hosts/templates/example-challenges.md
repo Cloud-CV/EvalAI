@@ -2,6 +2,19 @@
 
 This guide provides a set of fully functional examples of `challenge_config.yaml` file for common challenge setups on EvalAI. Each example illustrates a different real-world use case—ranging from single-phase challenges to multi-phase, multi-leaderboard competitions. These templates are designed to help organizers get started quickly, and understand how various components of the configuration work together.
 
+## Using EvalAI-Starters
+
+Fork [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) and replace the contents of `challenge_config.yaml` with one of the examples below (or merge fields into the [default two-phase template](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml)). Ensure every path in YAML exists in your repo (`annotations/`, `templates/`, `logo.jpg`, `evaluation_script.zip` after packaging).
+
+| Example below | Closest EvalAI-Starters starting point |
+|---------------|----------------------------------------|
+| Example 1 | Simplify default config to one phase and one split |
+| Example 2 | Default config structure with two leaderboards / splits in one phase |
+| Example 3 | **Default** `challenge_config.yaml` (dev + test phases) |
+| Example 4 | Extend default with a third phase and extra splits |
+
+Step-by-step mapping and local testing: [Challenge examples with EvalAI-Starters](../../06-examples-tutorials/evalai-starters-guide.html).
+
 Before using any of the following templates as your challenge configuration, make sure all the mentioned files exist in the respective paths as mentioned in different fields of the configuration. (e.g., `test_annotation_file`, `description`, etc.)
 
 ## Example 1: One Challenge, One Phase, One Leaderboard, One Phase Split

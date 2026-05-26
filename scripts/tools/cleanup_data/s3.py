@@ -39,6 +39,9 @@ Progress bar:
     submissions, and S3 delete batches.
 
 Run from project root in an environment with database access.
+
+For age-filtered cleanup of internal-challenge submission artifacts only
+(DB rows preserved), see cleanup_expired_internal_submissions.py in this directory.
 """
 
 import argparse
@@ -295,7 +298,8 @@ def bulk_delete_s3_files(file_paths, logger, dry_run=True):
                     )
 
             logger.log(
-                f"  [BULK DELETE] Batch {i//S3_DELETE_BATCH_SIZE + 1}: {deleted_count} deleted, {error_count} failed"
+                f"  [BULK DELETE] Batch {i // S3_DELETE_BATCH_SIZE + 1}: "
+                f"{deleted_count} deleted, {error_count} failed"
             )
         except Exception as e:
             logger.log(f"  [ERROR] Bulk delete failed: {e}")
@@ -344,9 +348,10 @@ def collect_challenge_files_optimized(
         .first()
     )
 
-    logger.log(f"\n{'='*60}")
+    section_rule = "=" * 60
+    logger.log(f"\n{section_rule}")
     logger.log(f"Challenge: {challenge_title} (ID: {challenge_id})")
-    logger.log(f"{'='*60}")
+    logger.log(section_rule)
 
     # 1. Challenge files - skip image/logos, conditionally include evaluation_script
     if include_evaluation_scripts:
@@ -539,6 +544,7 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_file_path = os.path.join(SCRIPT_DIR, f"cleanup_{timestamp}.log")
     logger = Logger(log_file_path)
+    section_rule = "=" * 60
 
     logger.log("=" * 60)
     logger.log(f"S3 Cleanup - {'DRY RUN' if dry_run else 'EXECUTE'}")
@@ -611,9 +617,9 @@ def main():
         connection.close()
 
     # Calculate total size (get sizes from S3 for both dry run and execute)
-    logger.log(f"\n{'='*60}")
+    logger.log(f"\n{section_rule}")
     logger.log("SIZE CALCULATION PHASE")
-    logger.log(f"{'='*60}")
+    logger.log(section_rule)
     logger.log(f"Total files to delete: {len(all_files_to_delete)}")
     logger.log("  Getting file sizes from S3...")
 
@@ -633,9 +639,9 @@ def main():
         )
 
     # Bulk delete all collected files
-    logger.log(f"\n{'='*60}")
+    logger.log(f"\n{section_rule}")
     logger.log("BULK DELETE PHASE")
-    logger.log(f"{'='*60}")
+    logger.log(section_rule)
     logger.log(f"Total files to delete: {len(all_files_to_delete)}")
 
     deleted, failed = bulk_delete_s3_files(

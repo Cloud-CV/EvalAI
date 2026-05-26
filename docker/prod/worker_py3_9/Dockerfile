@@ -116,6 +116,11 @@ RUN apt-get update && \
 
 WORKDIR /code
 
+# Compare with Django API deployments: CI should inject the same git SHA via
+#   docker build ... --build-arg EVALAI_GIT_REVISION="$(git rev-parse HEAD)"
+ARG EVALAI_GIT_REVISION=unknown
+ENV EVALAI_GIT_REVISION=${EVALAI_GIT_REVISION}
+
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin

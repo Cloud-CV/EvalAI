@@ -68,6 +68,11 @@ from .aws_utils import generate_aws_eks_bearer_token
 from .constants import submission_status_to_exclude
 from .filters import SubmissionFilter
 from .models import Submission
+from .s3_retention import (
+    build_submission_artifact_s3_tags,
+    enqueue_submission_artifact_retention_tagging,
+    log_submission_artifact_upload_context,
+)
 from .sender import publish_submission_message
 from .serializers import (
     CreateLeaderboardDataSerializer,
@@ -423,6 +428,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
+            enqueue_submission_artifact_retention_tagging(
+                submission, [submission.input_file.name]
+            )
             message["submission_pk"] = submission.id
             # publish message in the queue
             publish_submission_message(message)
@@ -1458,6 +1466,11 @@ def update_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
+        log_submission_artifact_upload_context(
+            submission,
+            "jobs.views.update_submission.put",
+        )
+
         submission.status = submission_status
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
@@ -1472,6 +1485,16 @@ def update_submission(request, challenge_pk):
             "submission_metadata_file.json", ContentFile(str(metadata))
         )
         submission.save()
+        enqueue_submission_artifact_retention_tagging(
+            submission,
+            [
+                submission.stdout_file.name,
+                submission.stderr_file.name,
+                submission.environment_log_file.name,
+                submission.submission_result_file.name,
+                submission.submission_metadata_file.name,
+            ],
+        )
         response_data = {
             "success": "Submission result has been successfully updated"
         }
@@ -1496,6 +1519,10 @@ def update_submission(request, challenge_pk):
             )
             if serializer.is_valid():
                 serializer.save()
+                enqueue_submission_artifact_retention_tagging(
+                    serializer.instance,
+                    [serializer.instance.submission_input_file.name],
+                )
                 message = {
                     "challenge_pk": challenge_pk,
                     "phase_pk": submission.challenge_phase.pk,
@@ -1904,6 +1931,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
+        log_submission_artifact_upload_context(
+            submission,
+            "jobs.views.update_partially_evaluated_submission.put",
+        )
+
         submission.status = submission_status
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
@@ -1915,6 +1947,15 @@ def update_partially_evaluated_submission(request, challenge_pk):
             "submission_metadata_file.json", ContentFile(str(metadata))
         )
         submission.save()
+        enqueue_submission_artifact_retention_tagging(
+            submission,
+            [
+                submission.stdout_file.name,
+                submission.stderr_file.name,
+                submission.submission_result_file.name,
+                submission.submission_metadata_file.name,
+            ],
+        )
         response_data = {
             "success": "Submission result has been successfully updated"
         }
@@ -2093,6 +2134,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
+            log_submission_artifact_upload_context(
+                submission,
+                "jobs.views.update_partially_evaluated_submission.patch_to_finished",
+            )
+
             submission.status = submission_status
             submission.completed_at = timezone.now()
             submission.stdout_file.save(
@@ -2105,6 +2151,14 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 "submission_result.json", ContentFile(str(public_results))
             )
             submission.save()
+            enqueue_submission_artifact_retention_tagging(
+                submission,
+                [
+                    submission.stdout_file.name,
+                    submission.stderr_file.name,
+                    submission.submission_result_file.name,
+                ],
+            )
             response_data = {
                 "success": "Submission result has been successfully updated"
             }
@@ -2991,7 +3045,14 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
             settings.MEDIAFILES_LOCATION, submission.input_file.name
         )
         response = generate_presigned_url_for_multipart_upload(
-            file_key_on_s3, challenge.pk, num_file_chunks
+            file_key_on_s3,
+            challenge.pk,
+            num_file_chunks,
+            s3_tags=(
+                build_submission_artifact_s3_tags(submission)
+                if not challenge.use_host_credentials
+                else None
+            ),
         )
         if response.get("error"):
             response_data = response

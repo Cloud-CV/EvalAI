@@ -24,7 +24,7 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 ### Q. What are the technologies that EvalAI uses?
 
-Please refer to [Technologies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
+Please refer to [Technology Stack](../../04-development/architecture/technology-stack.md)
 
 ### Q. Why was `virtualenv` setup deprecated?
 

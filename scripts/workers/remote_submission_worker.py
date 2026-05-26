@@ -44,6 +44,10 @@ SUBMISSION_DATA_DIR = join(
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, "{input_file}")
 CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 EVALUATION_SCRIPTS = {}
+
+# PUT ``update_submission_data`` → ``jobs.urls`` name ``jobs:update_submission``
+# (views.update_submission). Persists stdout/result blobs with the same Django
+# ``SubmissionArtifactFileName`` as in-container submission_worker uploads.
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
     "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",

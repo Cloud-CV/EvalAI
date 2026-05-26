@@ -96,6 +96,17 @@ class ChallengeSerializerTest(BaseTestCase):
         self.assertIn("is_approval_requested", serializer.data)
         self.assertTrue(serializer.data["is_approval_requested"])
 
+    def test_challenge_usage_type_in_serialized_data(self):
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("challenge_usage_type", serializer.data)
+        self.assertEqual(
+            Challenge.PAID, serializer.data["challenge_usage_type"]
+        )
+
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def setUp(self):
@@ -233,6 +244,43 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 instance=self.challenge_phase
             )
 
+    def test_phase_retention_policy_in_serialized_data(self):
+        serializer = ChallengePhaseSerializer(self.challenge_phase)
+        self.assertIn("submission_artifact_retention_policy", serializer.data)
+        self.assertEqual(
+            ChallengePhase.KEEP_FOREVER,
+            serializer.data["submission_artifact_retention_policy"],
+        )
+
+    def test_internal_challenge_defaults_created_phase_to_days_14(self):
+        self.challenge.challenge_usage_type = Challenge.INTERNAL
+        self.challenge.save()
+        request = RequestFactory().post("/")
+        request.user = self.user
+        serializer = ChallengePhaseCreateSerializer(
+            data={
+                "name": "Internal Phase",
+                "description": "Internal phase",
+                "leaderboard_public": False,
+                "is_public": False,
+                "start_date": timezone.now() - timedelta(days=1),
+                "end_date": timezone.now() + timedelta(days=1),
+                "max_submissions_per_day": 100000,
+                "max_submissions": 100000,
+                "max_submissions_per_month": 100000,
+                "codename": "internal-phase",
+            },
+            context={"challenge": self.challenge, "request": request},
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        challenge_phase = serializer.save()
+
+        self.assertEqual(
+            ChallengePhase.DAYS_14,
+            challenge_phase.submission_artifact_retention_policy,
+        )
+
     def test_challenge_phase_create_serializer(self):
         data = self.challenge_phase_create_serializer.data
 
@@ -250,6 +298,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions_per_month",
                     "max_submissions",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",
@@ -335,6 +384,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions",
                     "max_submissions_per_month",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",
@@ -416,6 +466,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions_per_month",
                     "max_submissions",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",

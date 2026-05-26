@@ -67,7 +67,7 @@ The steps are:
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
 
-If you are facing any issue during installation, please see our <a href="https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation" target="_blank">common errors during installation</a> page.
+If you are facing any issue during installation, please see our <a href="https://evalai.readthedocs.io/en/latest/07-troubleshooting/common-issues/installation-issues.html" target="_blank">installation troubleshooting</a> page.
 
 ## Setup Instructions for EvalAI Documentation
 

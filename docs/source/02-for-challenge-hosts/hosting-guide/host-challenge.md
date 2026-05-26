@@ -55,7 +55,7 @@ Add `evalai_user_auth_token` and `host_team_pk` in `github/host_config.json`.
 
 ### Step 5: Update challenge details
 
-Read [EvalAI challenge creation documentation](https://evalai.readthedocs.io/en/latest/configuration.html) to know more about how you want to structure your challenge. Once you are ready, start making changes in the yaml file, HTML templates, evaluation script according to your need.
+Read [Challenge configuration documentation](../configuration/challenge-config.md) to know more about how you want to structure your challenge. Once you are ready, start making changes in the yaml file, HTML templates, evaluation script according to your need.
 
 ### Step 6: Push changes to the challenge
 
@@ -119,7 +119,7 @@ Please ensure the following fields are set to the following values:
 
 - `remote_evaluation : True`
 
-Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/configuration.html) for details on challenge configuration.
+Refer to [Challenge configuration](../configuration/challenge-config.md) for details on challenge configuration.
 
 ### Step 3: Edit remote evaluation script
 

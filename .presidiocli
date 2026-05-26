@@ -1,0 +1,13 @@
+language: en
+threshold: 0.35
+ignore: |
+  .git
+entities:
+  - CREDIT_CARD
+  - CRYPTO
+  - EMAIL_ADDRESS
+  - IBAN_CODE
+  - PHONE_NUMBER
+  - US_BANK_NUMBER
+  - US_ITIN
+  - US_SSN
