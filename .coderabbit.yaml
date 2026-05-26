@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# EvalAI is a public repository. This file must be merged to master so CodeRabbit
+# uses it by default; PR branches that include this file also apply it to that PR.
+
+language: en-US
+
+reviews:
+  profile: chill
+  review_status: true
+  review_details: false
+  poem: false
+  prompt_for_ai_agents: false
+  instructions: |
+    EvalAI is a public open-source repository. Treat all review output as public.
+    Never expose sensitive data in inline comments, walkthroughs, summaries,
+    titles, labels, or suggested fixes.
+
+    Never quote, repeat, or include in output:
+    - API keys, tokens, passwords, secrets, or connection strings
+    - Email addresses, phone numbers, or other PII
+    - AWS credentials, SendGrid keys, Django secret keys, or auth tokens
+    - User IDs, participant IDs, challenge IDs, team IDs, submission IDs,
+      host IDs, primary keys, UUIDs used as identifiers, or database record IDs
+
+    When discussing issues involving sensitive values:
+    - Use placeholders such as [REDACTED] instead of real values
+    - Describe the problem without echoing the literal secret or identifier
+    - Do not suggest committing real credentials or production identifiers
+    - Prefer file and line references over pasting code that contains sensitive literals
+    - Do not include example payloads, logs, or API responses containing real IDs
+  path_filters:
+    - "!**/.env"
+    - "!**/.env.*"
+    - "!**/*.env"
+    - "!docker/**/*.env"
+    - "!**/secrets/**"
+    - "!**/*credentials*"
+    - "!**/*secret*"
+  path_instructions:
+    - path: "settings/**"
+      instructions: |
+        Django settings may reference secrets via environment variables. Flag hardcoded
+        credentials, but never repeat secret values or production identifiers in comments.
+    - path: "tests/**"
+      instructions: |
+        Test fixtures may contain fake passwords and emails. Do not quote those values
+        in review comments. Flag accidental use of real secrets, not test placeholders.
+    - path: "apps/**"
+      instructions: |
+        Avoid repeating database IDs, user identifiers, tokens, or serialized object
+        payloads in review comments. Reference fields and logic without echoing values.
+  auto_review:
+    enabled: true
+    drafts: true
+    base_branches:
+      - ".*"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+  tools:
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    presidio:
+      enabled: true
+
+chat:
+  auto_reply: true
