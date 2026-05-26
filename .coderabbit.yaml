@@ -29,9 +29,9 @@ reviews:
 
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true
     base_branches:
-      - "master"
+      - ".*"
     ignore_usernames:
       - "dependabot[bot]"
       - "renovate[bot]"
