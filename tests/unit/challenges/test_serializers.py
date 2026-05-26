@@ -104,7 +104,7 @@ class ChallengeSerializerTest(BaseTestCase):
         )
         self.assertIn("challenge_usage_type", serializer.data)
         self.assertEqual(
-            Challenge.OTHER, serializer.data["challenge_usage_type"]
+            Challenge.PAID, serializer.data["challenge_usage_type"]
         )
 
 
