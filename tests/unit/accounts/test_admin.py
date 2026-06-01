@@ -1,5 +1,6 @@
 from accounts.admin import JwtTokenAdmin, _get_outstanding_token_for_jwt
 from accounts.models import JwtToken
+from allauth.account.models import EmailAddress
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -18,6 +19,9 @@ class BaseAPITestClass(APITestCase):
             username="user",
             email="user@test.com",
             password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
         )
         self.client.force_authenticate(user=self.user)
 
