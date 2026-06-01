@@ -23,10 +23,19 @@ describe('Unit tests for permission controller', function () {
             spyOn(utilities, 'getData');
         });
 
-        it('permission controller has default values', function () {
+        it('permission controller has default values for email verification', function () {
             vm = createController();
             expect(utilities.getData).toHaveBeenCalledWith('emailError');
             expect(vm.emailError).toEqual(utilities.getData('emailError'));
+            expect(vm.isEmailVerificationRequired).toBe(true);
+        });
+
+        it('permission controller shows general permission message', function () {
+            utilities.deleteData('emailError');
+            utilities.storeData('permissionDeniedMessage', 'You do not have access.');
+            vm = createController();
+            expect(vm.isEmailVerificationRequired).toBe(false);
+            expect(vm.deniedMessage).toEqual('You do not have access.');
         });
     });
 

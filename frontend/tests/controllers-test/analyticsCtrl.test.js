@@ -81,7 +81,7 @@ describe('Unit tests for analytics controller', function() {
 			status = 403;
 			vm = createController();
 			expect(vm.error).toEqual(error_response);
-			expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+			expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
 		});
 
 		it('401 backend error', function () {

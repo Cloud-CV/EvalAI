@@ -160,6 +160,38 @@
                 default: return "other";
             }
         };
+
+        this.isEmailVerificationError = function(errorData) {
+            if (!errorData || !errorData.detail) {
+                return false;
+            }
+            var detail = errorData.detail.toString().toLowerCase();
+            return detail.indexOf("verify") !== -1 && detail.indexOf("email") !== -1;
+        };
+
+        this.handlePermissionDeniedError = function($state, response) {
+            if (!response || response.status !== 403) {
+                return false;
+            }
+
+            var errorData = response.data || {};
+            var isEmailVerification = this.isEmailVerificationError(errorData);
+            var message = errorData.error || errorData.detail;
+
+            if (isEmailVerification) {
+                this.storeData("emailError", errorData.detail);
+                this.deleteData("permissionDeniedMessage");
+            } else {
+                this.deleteData("emailError");
+                this.storeData(
+                    "permissionDeniedMessage",
+                    message || "Sorry, you do not have permission to view this page."
+                );
+            }
+
+            $state.go("web.permission-denied");
+            return true;
+        };
     }
 
 })();
