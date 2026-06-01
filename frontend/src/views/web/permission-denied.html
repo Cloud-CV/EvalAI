@@ -2,16 +2,17 @@
     <div class="row">
         <div class="col s12 m6 offset-m3">
             <div class="card horizontal ev-md-container ev-card-panel ev-z-depth-5 ">
-                <div class="card-image">
+                <div class="card-image" ng-if="perm.isEmailVerificationRequired">
                     <img src="dist/images/email.png" height="100">
                 </div>
                 <div class="card-stacked">
                     <div class="card-content">
-                        <p><strong>Please verify your email to continue.</strong></p>
-                        <div ng-if="!perm.sendMail">
+                        <p ng-if="perm.isEmailVerificationRequired"><strong>Please verify your email to continue.</strong></p>
+                        <p ng-if="!perm.isEmailVerificationRequired"><strong>{{perm.deniedMessage}}</strong></p>
+                        <div ng-if="perm.isEmailVerificationRequired && !perm.sendMail">
                             <p> <span class="text-light-black">Didn't get the email?</span> <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="perm.requestLink()">Resend Email</a></p>
                         </div>
-                        <div ng-if="perm.sendMail">
+                        <div ng-if="perm.isEmailVerificationRequired && perm.sendMail">
                             <p> <span class="text-light-gray">The verification mail has been sent to you. Please confirm!</span></p>
                         </div>
                     </div>

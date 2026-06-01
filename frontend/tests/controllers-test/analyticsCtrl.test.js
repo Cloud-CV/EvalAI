@@ -54,6 +54,7 @@ describe('Unit tests for analytics controller', function() {
 			spyOn($state, 'go');
 			spyOn(window, 'alert');
 			spyOn(utilities, 'resetStorage');
+			spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function(parameters) {
                 if (success) {
@@ -81,7 +82,7 @@ describe('Unit tests for analytics controller', function() {
 			status = 403;
 			vm = createController();
 			expect(vm.error).toEqual(error_response);
-			expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+			expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
 		});
 
 		it('401 backend error', function () {
