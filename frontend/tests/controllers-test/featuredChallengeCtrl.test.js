@@ -49,8 +49,8 @@ describe('Unit tests for featured challenge controller', function () {
 
         beforeEach(function () {
             spyOn($state, 'go');
-            spyOn(utilities, 'storeData');
             spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if ((challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
@@ -103,8 +103,7 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = null;
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -127,8 +126,7 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = false;
             challengePhaseSplitSuccess = null;
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -152,8 +150,7 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = false;
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });

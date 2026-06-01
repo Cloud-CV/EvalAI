@@ -69,8 +69,8 @@ describe('Unit tests for teams controller', function () {
 
         beforeEach(function () {
             spyOn(utilities, 'deleteData');
-            spyOn(utilities, 'storeData');
             spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -80,7 +80,8 @@ describe('Unit tests for teams controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -195,10 +196,8 @@ describe('Unit tests for teams controller', function () {
             errorResponse = {
                 detail: 'email error'
             };
-            spyOn($state, 'go');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });

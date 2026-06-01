@@ -156,10 +156,9 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var error = response.data;
-                utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
-                utilities.hideLoader();
+                if (!utilities.handlePermissionDeniedError($state, response)) {
+                    utilities.hideLoader();
+                }
             }
         };
 

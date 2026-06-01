@@ -54,6 +54,7 @@ describe('Unit tests for analytics controller', function() {
 			spyOn($state, 'go');
 			spyOn(window, 'alert');
 			spyOn(utilities, 'resetStorage');
+			spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function(parameters) {
                 if (success) {
