@@ -20,10 +20,10 @@ COPY requirements/ /code/requirements/
 
 # Install Python dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -r requirements/code_upload_worker.txt && \
-    # Clean up pip cache and Python bytecode (directories first, then files)
-    rm -rf /root/.cache/pip && \
-    find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    pip install --no-cache-dir --no-compile -r requirements/code_upload_worker.txt
+
+# Best-effort bytecode cleanup; keep separate so pip failures fail the build.
+RUN find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python3.9/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
 # Stage 2: Minimal runtime stage (needs shell for install script, so can't use distroless)
