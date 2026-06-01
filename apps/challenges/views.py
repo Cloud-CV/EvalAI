@@ -4740,9 +4740,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
                     ).first()
-                    if (
-                        challenge_test_annotation_file
-                        and not challenge_phase.annotations_uploaded_using_cli
+                    config_id_for_phase = data.get("config_id", data["id"])
+                    if challenge_phase is None:
+                        data["slug"] = "{}-{}-{}".format(
+                            challenge.title.split(" ")[0].lower(),
+                            get_slug(data["codename"]),
+                            challenge.pk,
+                        )[:198]
+                    if challenge_test_annotation_file and (
+                        challenge_phase is None
+                        or not challenge_phase.annotations_uploaded_using_cli
                     ):
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
@@ -4750,11 +4757,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             context={
                                 "challenge": challenge,
                                 "test_annotation": challenge_test_annotation_file,
-                                "config_id": data["config_id"],
+                                "config_id": config_id_for_phase,
                             },
                         )
                     elif (
                         challenge_test_annotation_file
+                        and challenge_phase is not None
                         and challenge_phase.annotations_uploaded_using_cli
                     ):
                         data.pop("test_annotation", None)
@@ -4763,7 +4771,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             data=data,
                             context={
                                 "challenge": challenge,
-                                "config_id": data["config_id"],
+                                "config_id": config_id_for_phase,
                             },
                             partial=True,
                         )
@@ -4773,7 +4781,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             data=data,
                             context={
                                 "challenge": challenge,
-                                "config_id": data["config_id"],
+                                "config_id": config_id_for_phase,
                             },
                         )
                     if serializer.is_valid():

@@ -24,7 +24,6 @@ RUN apt-get update && \
     curl \
     wget \
     gnupg \
-    xvfb \
     || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
         python2 \
         python-is-python2 \
@@ -34,8 +33,7 @@ RUN apt-get update && \
         ca-certificates \
         curl \
         wget \
-        gnupg \
-        xvfb) && \
+        gnupg) && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -85,8 +83,7 @@ RUN bower install --allow-root
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1 \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing google-chrome-stable libxss1) && \
+    apt-get install -y --no-install-recommends google-chrome-stable libxss1 xvfb && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/* && \
     # Clean Chrome unnecessary files

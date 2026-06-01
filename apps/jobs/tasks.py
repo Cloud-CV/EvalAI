@@ -80,6 +80,13 @@ def download_file_and_publish_submission_message(
         if serializer.is_valid():
             serializer.save()
             submission = serializer.instance
+            from .s3_retention import (
+                enqueue_submission_artifact_retention_tagging,
+            )
+
+            enqueue_submission_artifact_retention_tagging(
+                submission, [submission.input_file.name]
+            )
 
             # publish messages in the submission worker queue
             publish_submission_message(
@@ -105,3 +112,16 @@ def download_file_and_publish_submission_message(
                 e
             )
         )
+
+
+@app.task
+def tag_submission_artifact_retention_tags(submission_pk, artifact_paths):
+    from .s3_retention import tag_submission_artifacts_for_retention
+
+    try:
+        submission = Submission.objects.select_related(
+            "challenge_phase", "challenge_phase__challenge"
+        ).get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        return
+    tag_submission_artifacts_for_retention(submission, artifact_paths)

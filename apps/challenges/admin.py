@@ -49,6 +49,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
         "creator",
+        "challenge_usage_type",
         "published",
         "approved_by_admin",
         "is_frozen",
@@ -62,6 +63,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     )
     list_filter = (
         ChallengeFilter,
+        "challenge_usage_type",
         "published",
         "is_frozen",
         "is_submission_paused",
@@ -288,11 +290,17 @@ class ChallengePhaseAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
         "test_annotation",
+        "submission_artifact_retention_policy",
         "is_public",
         "is_submission_public",
         "leaderboard_public",
     )
-    list_filter = ("leaderboard_public", "start_date", "end_date")
+    list_filter = (
+        "submission_artifact_retention_policy",
+        "leaderboard_public",
+        "start_date",
+        "end_date",
+    )
     search_fields = ("name", "challenge__title")
 
     def get_challenge_name_and_id(self, obj):

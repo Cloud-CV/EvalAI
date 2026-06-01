@@ -171,6 +171,7 @@ class TestChallengeAdminListDisplay(TestCase):
             "start_date",
             "end_date",
             "creator",
+            "challenge_usage_type",
             "published",
             "approved_by_admin",
             "is_frozen",

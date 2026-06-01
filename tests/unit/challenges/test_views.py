@@ -166,6 +166,7 @@ class GetChallengeTest(BaseAPITestClass):
                 },
                 "domain": self.challenge.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge.challenge_usage_type,
                 "list_tags": self.challenge.list_tags,
                 "has_prize": self.challenge.has_prize,
                 "has_sponsors": self.challenge.has_sponsors,
@@ -594,6 +595,7 @@ class GetParticularChallenge(BaseAPITestClass):
             },
             "domain": self.challenge.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge.challenge_usage_type,
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -704,6 +706,7 @@ class GetParticularChallenge(BaseAPITestClass):
             },
             "domain": self.challenge.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge.challenge_usage_type,
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -839,6 +842,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             },
             "domain": self.challenge.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge.challenge_usage_type,
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -923,6 +927,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             },
             "domain": self.challenge.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge.challenge_usage_type,
             "list_tags": self.challenge.list_tags,
             "has_prize": self.challenge.has_prize,
             "has_sponsors": self.challenge.has_sponsors,
@@ -2005,6 +2010,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge3.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge3.challenge_usage_type,
                 "list_tags": self.challenge3.list_tags,
                 "has_prize": self.challenge3.has_prize,
                 "has_sponsors": self.challenge3.has_sponsors,
@@ -2097,6 +2103,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2189,6 +2196,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge4.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge4.challenge_usage_type,
                 "list_tags": self.challenge4.list_tags,
                 "has_prize": self.challenge4.has_prize,
                 "has_sponsors": self.challenge4.has_sponsors,
@@ -2281,6 +2289,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge4.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge4.challenge_usage_type,
                 "list_tags": self.challenge4.list_tags,
                 "has_prize": self.challenge4.has_prize,
                 "has_sponsors": self.challenge4.has_sponsors,
@@ -2354,6 +2363,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge3.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge3.challenge_usage_type,
                 "list_tags": self.challenge3.list_tags,
                 "has_prize": self.challenge3.has_prize,
                 "has_sponsors": self.challenge3.has_sponsors,
@@ -2427,6 +2437,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -2605,6 +2616,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 },
                 "domain": self.challenge3.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge3.challenge_usage_type,
                 "list_tags": self.challenge3.list_tags,
                 "has_prize": self.challenge3.has_prize,
                 "has_sponsors": self.challenge3.has_sponsors,
@@ -2854,6 +2866,7 @@ class GetChallengeByPk(BaseAPITestClass):
             },
             "domain": self.challenge3.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge3.challenge_usage_type,
             "list_tags": self.challenge3.list_tags,
             "has_prize": self.challenge3.has_prize,
             "has_sponsors": self.challenge3.has_sponsors,
@@ -2960,6 +2973,7 @@ class GetChallengeByPk(BaseAPITestClass):
             },
             "domain": self.challenge4.domain,
             "domain_name": "Computer Vision",
+            "challenge_usage_type": self.challenge4.challenge_usage_type,
             "list_tags": self.challenge4.list_tags,
             "has_prize": self.challenge4.has_prize,
             "has_sponsors": self.challenge4.has_sponsors,
@@ -3127,6 +3141,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -3217,6 +3232,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -3307,6 +3323,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -3395,6 +3412,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "domain": self.challenge.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge.challenge_usage_type,
                 "list_tags": self.challenge.list_tags,
                 "has_prize": self.challenge.has_prize,
                 "has_sponsors": self.challenge.has_sponsors,
@@ -3468,6 +3486,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "domain": self.challenge2.domain,
                 "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge2.challenge_usage_type,
                 "list_tags": self.challenge2.list_tags,
                 "has_prize": self.challenge2.has_prize,
                 "has_sponsors": self.challenge2.has_sponsors,
@@ -3782,6 +3801,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
             {
@@ -3812,6 +3832,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
         ]
@@ -3853,6 +3874,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.challenge_phase.is_submission_paused,
             }
         ]
@@ -3904,6 +3926,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
             {
@@ -3934,6 +3957,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,  # noqa: C0301
                 "is_submission_public": self.private_challenge_phase.is_submission_public,  # noqa: C0301
                 "disable_logs": self.private_challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.private_challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.private_challenge_phase.is_submission_paused,
             },
         ]
@@ -4304,6 +4328,7 @@ class GetParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
             "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         self.client.force_authenticate(user=self.participant_user)
@@ -4344,6 +4369,7 @@ class GetParticularChallengePhase(
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "disable_logs": self.challenge_phase.disable_logs,
+            "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
             "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         self.client.force_authenticate(user=self.user)
@@ -4408,6 +4434,7 @@ class GetParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
             "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.put(
@@ -4513,6 +4540,7 @@ class UpdateParticularChallengePhase(
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
             "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -6453,6 +6481,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
             "disable_logs": self.challenge_phase.disable_logs,
+            "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
             "is_submission_paused": self.challenge_phase.is_submission_paused,
         }
         response = self.client.get(self.url, {})
@@ -6527,6 +6556,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.private_challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.private_challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.private_challenge_phase.is_submission_paused,
             },
             {
@@ -6561,6 +6591,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,  # noqa: C0301
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.challenge_phase.disable_logs,
+                "submission_artifact_retention_policy": self.challenge_phase.submission_artifact_retention_policy,
                 "is_submission_paused": self.challenge_phase.is_submission_paused,
             },
         ]

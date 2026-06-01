@@ -65,8 +65,20 @@ class Challenge(TimeStampedModel):
         ("AUD", "Audio"),
         ("TAB", "Tabular"),
     )
+    PAID = "paid"
+    INTERNAL = "internal"
+    CHALLENGE_USAGE_TYPE_OPTIONS = (
+        (PAID, "Paid"),
+        (INTERNAL, "Internal"),
+    )
     domain = models.CharField(
         max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+    )
+    challenge_usage_type = models.CharField(
+        max_length=20,
+        choices=CHALLENGE_USAGE_TYPE_OPTIONS,
+        default=PAID,
+        db_index=True,
     )
     list_tags = ArrayField(
         models.TextField(null=True, blank=True), default=list, blank=True
@@ -453,6 +465,26 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    KEEP_FOREVER = "keep_forever"
+    DAYS_14 = "days_14"
+    DAYS_30 = "days_30"
+    MONTHS_3 = "months_3"
+    MONTHS_6 = "months_6"
+    MONTHS_12 = "months_12"
+    SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS = (
+        (KEEP_FOREVER, "Keep forever"),
+        (DAYS_14, "14 days"),
+        (DAYS_30, "30 days"),
+        (MONTHS_3, "3 months"),
+        (MONTHS_6, "6 months"),
+        (MONTHS_12, "12 months"),
+    )
+    submission_artifact_retention_policy = models.CharField(
+        max_length=20,
+        choices=SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS,
+        default=KEEP_FOREVER,
+        db_index=True,
+    )
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     annotations_uploaded_using_cli = models.BooleanField(default=False)

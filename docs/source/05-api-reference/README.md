@@ -1,5 +1,7 @@
 # API Reference
 
+REST API overview for challenges, submissions, leaderboards, and authentication.
+
 ```{toctree}
 :maxdepth: 2
 
