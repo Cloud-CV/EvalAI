@@ -64,7 +64,8 @@ describe('Unit tests for featured challenge controller', function () {
                 (challengePhaseSuccess == false && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
                 (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split')) {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -102,7 +103,8 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = null;
             vm = createController();
-            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -125,7 +127,8 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = false;
             challengePhaseSplitSuccess = null;
             vm = createController();
-            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -149,7 +152,8 @@ describe('Unit tests for featured challenge controller', function () {
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = false;
             vm = createController();
-            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });

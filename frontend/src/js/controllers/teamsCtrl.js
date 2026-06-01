@@ -98,7 +98,7 @@
                         parameters.token = userKey;
                         parameters.callback = {
                             onSuccess: function() {
-                                $state.go('web.challenge-page.overview');
+                                $state.go('web.challenge-main.challenge-page.overview');
                                 vm.stopLoader();
                             },
                             onError: function() {
@@ -156,9 +156,10 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                if (!utilities.handlePermissionDeniedError($state, response)) {
-                    utilities.hideLoader();
-                }
+                var error = response.data;
+                utilities.storeData('emailError', error.detail);
+                $state.go('web.permission-denied');
+                utilities.hideLoader();
             }
         };
 

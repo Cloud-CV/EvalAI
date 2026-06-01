@@ -135,7 +135,7 @@ describe('Unit tests for teams controller', function () {
             expect(vm.loaderTitle).toEqual('');
             expect(angular.element).toHaveBeenCalledWith('.exist-team-card');
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
-            expect($state.go).toHaveBeenCalledWith('web.challenge-page.overview');
+            expect($state.go).toHaveBeenCalledWith('web.challenge-main.challenge-page.overview');
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
@@ -195,8 +195,10 @@ describe('Unit tests for teams controller', function () {
             errorResponse = {
                 detail: 'email error'
             };
+            spyOn($state, 'go');
             vm = createController();
-            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });
