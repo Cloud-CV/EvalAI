@@ -12,8 +12,10 @@
     function PermCtrl(utilities, $rootScope) {
         var vm = this;
 
-        // message for not verified users
         vm.emailError = utilities.getData('emailError');
+        vm.isEmailVerificationRequired = !!vm.emailError;
+        vm.deniedMessage = utilities.getData('permissionDeniedMessage') ||
+            'Sorry, you do not have permission to view this page.';
 
         vm.sendMail = false;
         // Function to request a new verification email.

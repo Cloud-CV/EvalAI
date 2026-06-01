@@ -102,7 +102,8 @@ describe('Unit tests for challenge host team controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -147,10 +148,9 @@ describe('Unit tests for challenge host team controller', function () {
             errorResponse = {
                 detail: 'email error'
             };
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -199,7 +199,8 @@ describe('Unit tests for challenge host team controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -261,7 +262,8 @@ describe('Unit tests for challenge host team controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -352,7 +354,8 @@ describe('Unit tests for challenge host team controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };

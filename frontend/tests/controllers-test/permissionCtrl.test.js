@@ -20,7 +20,7 @@ describe('Unit tests for permission controller', function () {
 
     describe('Global variables', function () {
         beforeEach(function () {
-            spyOn(utilities, 'getData');
+            spyOn(utilities, 'getData').and.callThrough();
         });
 
         it('permission controller has default values', function () {

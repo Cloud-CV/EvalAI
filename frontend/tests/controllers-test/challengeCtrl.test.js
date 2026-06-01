@@ -546,16 +546,14 @@ describe('Unit tests for challenge controller', function () {
             challengePhaseSuccess = false;
             challengePhaseSplitSuccess = null;
 
-            status = 404;
+            status = 403;
             errorResponse = {
-                detail: 'error'
+                error: 'Sorry, you do not have permission to view this page.'
             };
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
             spyOn(utilities, 'hideLoader');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -600,16 +598,14 @@ describe('Unit tests for challenge controller', function () {
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = false;
 
-            status = 404;
+            status = 403;
             errorResponse = {
-                detail: 'error'
+                error: 'Sorry, you do not have permission to view this page.'
             };
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
             spyOn(utilities, 'hideLoader');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });
@@ -623,8 +619,7 @@ describe('Unit tests for challenge controller', function () {
 
         beforeEach(function () {
             spyOn(utilities, 'hideLoader');
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -633,7 +628,8 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -727,8 +723,7 @@ describe('Unit tests for challenge controller', function () {
             success = false;
             vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
         });
     });
 
@@ -941,8 +936,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
             spyOn($rootScope, 'notify');
-            spyOn($state, 'go');
-            spyOn(utilities, 'storeData');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             vm.challengeId = 1;
             vm.phases = {
@@ -965,7 +959,8 @@ describe('Unit tests for challenge controller', function () {
                 } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count") ||
                     (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/")) {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -1063,8 +1058,7 @@ describe('Unit tests for challenge controller', function () {
                 detail: 'error'
             };
             vm.getResults(phaseId);
-            expect(utilities.storeData).toHaveBeenCalledWith("emailError", errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
@@ -1580,8 +1574,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(vm, 'stopLoader');
             spyOn(angular, 'element');
             spyOn($interval, 'cancel');
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -1590,7 +1583,8 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -1646,8 +1640,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.isResult).toEqual(true);
             expect(vm.phaseId).toEqual(phaseId);
 
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(vm.stopLoader).toHaveBeenCalled();
         });
     });
@@ -2772,10 +2765,9 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'getData');
             spyOn(utilities, 'hideLoader');
             spyOn(utilities, 'showLoader');
-            spyOn(utilities, 'storeData');
             spyOn($mdDialog, 'hide');
             spyOn($rootScope, 'notify');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -2785,7 +2777,8 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -2846,8 +2839,7 @@ describe('Unit tests for challenge controller', function () {
             var editChallengePhaseForm = false;
             success = false;
             vm.editChallengePhase(editChallengePhaseForm);
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
