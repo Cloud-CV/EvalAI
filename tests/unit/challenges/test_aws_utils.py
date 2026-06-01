@@ -5,7 +5,7 @@ from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 from challenges.aws_utils import (
     _file_content_changed,
     challenge_approval_callback,
@@ -5205,6 +5205,29 @@ class TestTriggerEksNodeAutoscale:
         mock_settings.TEST = False
         trigger_eks_node_autoscale(11, "submission_created")
         mock_get_boto3_client.assert_not_called()
+
+        mock_get_boto3_client.reset_mock()
+        mock_settings.DEBUG = False
+        mock_settings.TEST = True
+        trigger_eks_node_autoscale(11, "submission_created")
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:autoscale",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_logs_boto_core_error_without_raising(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_get_boto3_client.side_effect = NoCredentialsError()
+
+        trigger_eks_node_autoscale(11, "submission_created")
+
+        mock_get_boto3_client.assert_called_once()
 
     @patch("challenges.aws_utils.settings")
     @patch(

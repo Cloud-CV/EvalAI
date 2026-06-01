@@ -5603,7 +5603,7 @@ def get_challenge_pending_submission_count(request, challenge_pk):
 
 
 @api_view(["PATCH"])
-@throttle_classes([AnonRateThrottle])
+@throttle_classes([])
 @permission_classes(())
 @authentication_classes(())
 def update_evaluation_module_error(request, challenge_pk):

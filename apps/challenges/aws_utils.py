@@ -10,7 +10,7 @@ from http import HTTPStatus
 import yaml
 from accounts.models import JwtToken
 from base.utils import get_boto3_client
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
@@ -643,7 +643,7 @@ def trigger_eks_node_autoscale(
             InvocationType="Event",
             Payload=json.dumps(payload).encode("utf-8"),
         )
-    except ClientError as err:
+    except (ClientError, BotoCoreError) as err:
         logger.exception(
             "Failed to invoke autoscale Lambda for challenge %s: %s",
             challenge_pk,

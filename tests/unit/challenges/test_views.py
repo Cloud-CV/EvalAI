@@ -8290,6 +8290,15 @@ class ChallengeAutoscaleInternalAPITest(BaseAPITestClass):
             response = APIClient().get(self.meta_url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_meta_invalid_auth_token(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION="Bearer wrong-token")
+            response = client.get(self.meta_url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_meta_success(self):
         self.challenge.is_docker_based = True
         self.challenge.remote_evaluation = False
@@ -8316,12 +8325,59 @@ class ChallengeAutoscaleInternalAPITest(BaseAPITestClass):
         self.assertEqual(response.data["aws_region"], "us-west-2")
         self.assertTrue(response.data["use_host_credentials"])
 
+    def test_meta_non_docker_based_challenge(self):
+        self.challenge.is_docker_based = False
+        self.challenge.save()
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.meta_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["is_docker_based"])
+        self.assertIsNone(response.data["cluster_name"])
+
+    def test_meta_missing_evaluation_cluster(self):
+        self.challenge.is_docker_based = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.filter(
+            challenge=self.challenge
+        ).delete()
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.meta_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["is_docker_based"])
+        self.assertIsNone(response.data["cluster_name"])
+
     def test_pending_missing_authorization_header(self):
         with mock.patch.dict(
             os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
         ):
             response = APIClient().get(self.pending_url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_pending_missing_lambda_auth_token_env(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            response = APIClient().get(self.pending_url, format="json")
+        self.assertEqual(
+            response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    def test_pending_invalid_auth_token(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION="Bearer wrong-token")
+            response = client.get(self.pending_url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_pending_submission_count_success(self):
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
