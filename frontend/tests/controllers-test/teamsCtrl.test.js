@@ -69,8 +69,8 @@ describe('Unit tests for teams controller', function () {
 
         beforeEach(function () {
             spyOn(utilities, 'deleteData');
-            spyOn(utilities, 'storeData');
             spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -130,7 +130,7 @@ describe('Unit tests for teams controller', function () {
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
-            spyOn(utilities, 'handlePermissionDeniedError');
+            spyOn($state, 'go');
             spyOn(angular, 'element');
             vm.selectExistTeam();
             expect(vm.loaderTitle).toEqual('');
@@ -156,7 +156,7 @@ describe('Unit tests for teams controller', function () {
             success = false;
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
-            spyOn(utilities, 'handlePermissionDeniedError');
+            spyOn($state, 'go');
             spyOn(angular, 'element');
 
             vm.selectExistTeam();
@@ -196,9 +196,10 @@ describe('Unit tests for teams controller', function () {
             errorResponse = {
                 detail: 'email error'
             };
-            spyOn(utilities, 'handlePermissionDeniedError');
+            spyOn($state, 'go');
             vm = createController();
-            expect(utilities.handlePermissionDeniedError).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
+            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });
@@ -246,8 +247,7 @@ describe('Unit tests for teams controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse,
-                        status: 403
+                        data: errorResponse
                     });
                 }
             };
@@ -373,8 +373,7 @@ describe('Unit tests for teams controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse,
-                        status: 403
+                        data: errorResponse
                     });
                 }
             };
@@ -437,8 +436,7 @@ describe('Unit tests for teams controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse,
-                        status: 403
+                        data: errorResponse
                     });
                 }
             };

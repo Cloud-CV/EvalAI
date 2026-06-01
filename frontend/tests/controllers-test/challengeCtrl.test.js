@@ -1574,8 +1574,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(vm, 'stopLoader');
             spyOn(angular, 'element');
             spyOn($interval, 'cancel');
-            spyOn(utilities, 'storeData');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -1584,7 +1583,8 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };
@@ -2765,10 +2765,9 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'getData');
             spyOn(utilities, 'hideLoader');
             spyOn(utilities, 'showLoader');
-            spyOn(utilities, 'storeData');
             spyOn($mdDialog, 'hide');
             spyOn($rootScope, 'notify');
-            spyOn($state, 'go');
+            spyOn(utilities, 'handlePermissionDeniedError');
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -2778,7 +2777,8 @@ describe('Unit tests for challenge controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data: errorResponse,
+                        status: 403
                     });
                 }
             };

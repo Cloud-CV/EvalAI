@@ -156,8 +156,9 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                utilities.handlePermissionDeniedError($state, response);
-                utilities.hideLoader();
+                if (!utilities.handlePermissionDeniedError($state, response)) {
+                    utilities.hideLoader();
+                }
             }
         };
 
