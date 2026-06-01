@@ -24,7 +24,7 @@ reviews:
   collapse_walkthrough: false
   sequence_diagrams: true
   poem: false
-  prompt_for_ai_agents: false
+  prompt_for_ai_agents: true
   assess_linked_issues: true
 
   auto_review:
