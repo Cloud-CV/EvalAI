@@ -1,7 +1,10 @@
 import logging
 
 from base.admin import ImportExportTimeStampedAdmin
-from challenges.aws_utils import ensure_workers_for_submission
+from challenges.aws_utils import (
+    ensure_workers_for_submission,
+    trigger_eks_node_autoscale,
+)
 from django.contrib import admin
 
 from .admin_filters import (
@@ -76,6 +79,12 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                 challenges_checked.add(challenge.pk)
             message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
+            trigger_eks_node_autoscale(
+                challenge.pk,
+                trigger_source="submission_created",
+                submission_pk=message.get("submission_pk"),
+                submission_status=Submission.SUBMITTED,
+            )
 
     submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
 
