@@ -6,7 +6,7 @@
     background-color: $transparent;
     color: #fff;
     z-index: 10;
-    top: 98px;
+    top: $announcement-banner-height - 2px;
     text-align: center;
 }
 
@@ -25,7 +25,7 @@
 
 .links-section {
     ul {
-        margin-top: 100px;
+        margin-top: $announcement-banner-height;
     }
     li {
         a {

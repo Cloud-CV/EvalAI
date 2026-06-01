@@ -14,7 +14,7 @@
 .web-container {
     width: calc(100vw - 223px);
     float: right;
-    padding-top: 170px;
+    padding-top: calc(70px + #{$announcement-banner-height});
     overflow-x: hidden;
     &.center {
         float: none;
