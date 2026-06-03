@@ -2834,6 +2834,10 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = LeaderboardSerializer(
         data=request.data, many=True, allow_empty=False
     )
