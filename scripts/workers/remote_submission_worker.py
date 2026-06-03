@@ -134,8 +134,10 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         with open(download_location, "wb") as f:
             f.write(response.content)
         # extract zip file
+        from base.utils import safe_extract_zip_file
+
         zip_ref = zipfile.ZipFile(download_location, "r")
-        zip_ref.extractall(extract_location)
+        safe_extract_zip_file(zip_ref, extract_location)
         zip_ref.close()
         # delete zip file
         try:

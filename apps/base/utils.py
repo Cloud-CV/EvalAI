@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import uuid
+import zipfile
 from contextlib import contextmanager
 from email.utils import formataddr, parseaddr
 
@@ -497,6 +498,23 @@ def is_model_field_changed(model_obj, field_name):
     if prev != curr:
         return True
     return False
+
+
+def safe_extract_zip_file(zip_ref, destination):
+    """
+    Extract zip archive members while preventing path traversal (zip slip).
+    """
+    destination_path = os.path.abspath(destination)
+    for member in zip_ref.namelist():
+        member_path = os.path.abspath(os.path.join(destination_path, member))
+        if not (
+            member_path == destination_path
+            or member_path.startswith(destination_path + os.sep)
+        ):
+            raise zipfile.BadZipFile(
+                "Zip archive contains unsafe file paths."
+            )
+    zip_ref.extractall(destination_path)
 
 
 def is_user_a_staff(user):

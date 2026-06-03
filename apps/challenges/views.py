@@ -24,6 +24,7 @@ from base.utils import (
     get_user_by_email,
     is_user_a_staff,
     paginated_queryset,
+    safe_extract_zip_file,
     send_slack_notification,
 )
 from challenges.challenge_config_utils import (
@@ -1412,7 +1413,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # Extract zip file
     try:
         zip_ref = zipfile.ZipFile(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "r")
-        zip_ref.extractall(join(BASE_LOCATION, unique_folder_name))
+        safe_extract_zip_file(
+            zip_ref, join(BASE_LOCATION, unique_folder_name)
+        )
         zip_ref.close()
     except zipfile.BadZipfile:
         message = (
