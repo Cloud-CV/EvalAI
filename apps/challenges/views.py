@@ -148,6 +148,8 @@ from .serializers import (
     LeaderboardSerializer,
     PWCChallengeLeaderboardSerializer,
     StarChallengeSerializer,
+    ChallengeInvitationAcceptSerializer,
+    ChallengeInvitationRegisterSerializer,
     UserInvitationSerializer,
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
@@ -3279,7 +3281,7 @@ def invite_users_to_challenge(request, challenge_pk):
                 except User.DoesNotExist:
                     user = User.objects.create(username=email, email=email)
                     EmailAddress.objects.create(
-                        user=user, email=email, primary=True, verified=True
+                        user=user, email=email, primary=True, verified=False
                     )
                 data["user"] = user.pk
                 valid_emails.append(data)
@@ -3306,7 +3308,7 @@ def invite_users_to_challenge(request, challenge_pk):
 
 
 @api_view(["GET", "PATCH"])
-@throttle_classes([UserRateThrottle])
+@throttle_classes([AnonRateThrottle])
 @permission_classes(())
 def accept_challenge_invitation(request, invitation_key):
     try:
@@ -3320,29 +3322,37 @@ def accept_challenge_invitation(request, invitation_key):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
-        serializer = UserInvitationSerializer(invitation)
+        serializer = ChallengeInvitationAcceptSerializer(invitation)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "PATCH":
-        serializer = UserDetailsSerializer(
-            invitation.user, data=request.data, partial=True
+        if invitation.status != UserInvitation.PENDING:
+            response_data = {"error": "This invitation has already been accepted."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ChallengeInvitationRegisterSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = invitation.user
+        user.first_name = serializer.validated_data.get(
+            "first_name", user.first_name
         )
-        if serializer.is_valid():
-            serializer.save()
-            data = {"password": make_password(serializer.data.get("password"))}
-            serializer = UserDetailsSerializer(
-                invitation.user, data=data, partial=True
-            )
-            if serializer.is_valid():
-                serializer.save()
-            data = {"status": UserInvitation.ACCEPTED}
-            serializer = UserInvitationSerializer(
-                invitation, data=data, partial=True
-            )
-            if serializer.is_valid():
-                serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user.last_name = serializer.validated_data.get(
+            "last_name", user.last_name
+        )
+        user.password = make_password(serializer.validated_data["password"])
+        user.save()
+
+        EmailAddress.objects.filter(user=user, email=invitation.email).update(
+            verified=True
+        )
+
+        invitation.status = UserInvitation.ACCEPTED
+        invitation.save()
+
+        response_serializer = ChallengeInvitationAcceptSerializer(invitation)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

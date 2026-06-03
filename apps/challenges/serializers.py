@@ -533,6 +533,46 @@ class UserInvitationSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class ChallengeInvitationAcceptSerializer(serializers.ModelSerializer):
+    """
+    Public serializer for challenge invitation acceptance pages.
+    Does not expose invitation keys or internal user identifiers.
+    """
+
+    challenge_title = serializers.SerializerMethodField()
+    challenge_host_team_name = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserInvitation
+        fields = (
+            "email",
+            "status",
+            "challenge_title",
+            "challenge_host_team_name",
+            "user_details",
+        )
+
+    def get_challenge_title(self, obj):
+        return obj.challenge.title
+
+    def get_challenge_host_team_name(self, obj):
+        return obj.challenge.creator.team_name
+
+    def get_user_details(self, obj):
+        return {"username": obj.user.username}
+
+
+class ChallengeInvitationRegisterSerializer(serializers.Serializer):
+    """
+    Serializer for completing a pending challenge invitation.
+    """
+
+    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, min_length=8)
+
+
 class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengeEvaluationCluster
