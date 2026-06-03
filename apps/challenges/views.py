@@ -5403,10 +5403,39 @@ def update_challenge_attributes(request):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # Update attributes based on the request data
+    allowed_fields = {
+        "title",
+        "short_description",
+        "description",
+        "terms_and_conditions",
+        "submission_guidelines",
+        "evaluation_details",
+        "approved_by_admin",
+        "ephemeral_storage",
+        "ec2_storage",
+        "workers",
+        "worker_cpu_cores",
+        "worker_memory",
+        "is_disabled",
+        "published",
+        "featured",
+        "evaluation_module_error",
+        "end_date",
+        "start_date",
+        "is_frozen",
+        "max_concurrent_submission_evaluation",
+        "sqs_retention_period",
+    }
+
     for key, value in request.data.items():
-        if key != "challenge_pk" and hasattr(challenge, key):
-            setattr(challenge, key, value)
+        if key == "challenge_pk":
+            continue
+        if key not in allowed_fields:
+            return Response(
+                {"error": f"Updating '{key}' is not allowed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        setattr(challenge, key, value)
 
     try:
         challenge.save()
