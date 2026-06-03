@@ -7,11 +7,14 @@ from django.shortcuts import render
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
+    authentication_classes,
     permission_classes,
     throttle_classes,
 )
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from accounts.authentication import ExpiringTokenAuthentication
 
 from .models import Subscribers, Team
 from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
@@ -99,18 +102,11 @@ def contact_us(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET", "POST"])
+@api_view(["POST"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def subscribe(request):
-    if request.method == "GET":
-        subscribers = Subscribers.objects.all().order_by("-pk")
-        serializer = SubscribeSerializer(
-            subscribers, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    elif request.method == "POST":
+    if request.method == "POST":
         email = request.data.get("email")
         # When user has already subscribed
         if Subscribers.objects.filter(email=email).exists():
@@ -132,7 +128,7 @@ def subscribe(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
@@ -143,15 +139,17 @@ def our_team(request):
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    elif request.method == "POST":
-        # team_type is set to Team.CONTRIBUTOR by default and can be overridden
-        # by the requester
-        request.data["team_type"] = request.data.get(
-            "team_type", Team.CONTRIBUTOR
-        )
-        serializer = TeamSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response_data = {"message", "Successfully added the contributor."}
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAdminUser,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def add_team_member(request):
+    request.data["team_type"] = request.data.get("team_type", Team.CONTRIBUTOR)
+    serializer = TeamSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        response_data = {"message": "Successfully added the contributor."}
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
