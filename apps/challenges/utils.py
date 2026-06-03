@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import random
+import re
 import string
 import uuid
 
@@ -29,6 +30,51 @@ from .models import (
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
+
+EMAIL_LIST_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def parse_invite_email_list(emails):
+    """
+    Parse invite email payloads without using eval().
+
+    Accepts a JSON array string, a Python list, or a comma-separated string.
+    Returns a list of normalized email strings.
+    """
+    if emails is None:
+        raise ValueError("Users email can't be blank")
+
+    if isinstance(emails, list):
+        email_list = emails
+    elif isinstance(emails, str):
+        emails = emails.strip()
+        if not emails:
+            raise ValueError("Users email can't be blank")
+        try:
+            parsed = json.loads(emails)
+        except json.JSONDecodeError:
+            email_list = [email.strip() for email in emails.split(",")]
+        else:
+            if not isinstance(parsed, list):
+                raise ValueError("Invalid format for users email")
+            email_list = parsed
+    else:
+        raise ValueError("Invalid format for users email")
+
+    normalized_emails = []
+    for email in email_list:
+        if not isinstance(email, str):
+            raise ValueError("Invalid format for users email")
+        email = email.strip()
+        if not email or not EMAIL_LIST_PATTERN.match(email):
+            raise ValueError("Invalid format for users email")
+        normalized_emails.append(email)
+
+    if not normalized_emails:
+        raise ValueError("Users email can't be blank")
+
+    return normalized_emails
+
 
 get_challenge_model = get_model_object(Challenge)
 

@@ -18,6 +18,7 @@ from challenges.utils import (
     generate_presigned_url_for_multipart_upload,
     get_file_content,
     get_participants_with_incomplete_profiles,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
     send_emails,
     send_subscription_plans_email,
