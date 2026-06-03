@@ -30,6 +30,25 @@ from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
 
+
+def get_challenge_host_team_membership_error(request, challenge_host_team_pk):
+    """
+    Return a 401 Response if the user is not a member of the host team.
+    """
+    from hosts.models import ChallengeHost
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user, team_name_id=challenge_host_team_pk
+    ).exists():
+        return Response(
+            {"error": "Sorry, you do not belong to this Host Team!"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
 get_challenge_model = get_model_object(Challenge)
 
 get_challenge_phase_model = get_model_object(ChallengePhase)

@@ -45,6 +45,7 @@ from challenges.utils import (
     get_leaderboard_model,
     get_participant_model,
     get_participants_with_incomplete_profiles,
+    get_challenge_host_team_membership_error,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
@@ -1289,6 +1290,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
     """
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
+
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
     if request.data.get("is_challenge_template"):
@@ -3538,6 +3545,12 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def validate_challenge_config(request, challenge_host_team_pk):
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
+
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
     response_data = {}
