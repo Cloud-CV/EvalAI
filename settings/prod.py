@@ -7,7 +7,10 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
 _INSECURE_SECRET_KEYS = {"", "random_secret_key", "some-secret-key"}
-if SECRET_KEY in _INSECURE_SECRET_KEYS:  # noqa: ignore=F405
+if (
+    not SECRET_KEY  # noqa: F405
+    or str(SECRET_KEY).strip() in _INSECURE_SECRET_KEYS  # noqa: F405
+):
     raise ImproperlyConfigured(
         "SECRET_KEY must be set to a unique value in production."
     )
