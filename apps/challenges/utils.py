@@ -39,9 +39,14 @@ def get_challenge_host_required_error(request):
     from rest_framework import status
     from rest_framework.response import Response
 
-    if not ChallengeHost.objects.filter(user=request.user).exists():
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
         return Response(
-            {"error": "Sorry, you are not authorized to perform this operation!"},
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
     return None
@@ -57,7 +62,9 @@ def get_challenge_modification_error(request, challenge_pk):
 
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         return Response(
-            {"error": "Sorry, you are not authorized to perform this operation!"},
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
     return None
@@ -72,9 +79,14 @@ def get_leaderboard_modification_error(request, leaderboard_pk):
     from rest_framework import status
     from rest_framework.response import Response
 
-    if not ChallengeHost.objects.filter(user=request.user).exists():
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
         return Response(
-            {"error": "Sorry, you are not authorized to perform this operation!"},
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
