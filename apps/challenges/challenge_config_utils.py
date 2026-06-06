@@ -94,12 +94,14 @@ def write_file(output_path, mode, file_content):
 
 
 def extract_zip_file(file_path, mode, output_path):
-    from base.utils import safe_extract_zip_file
+    from base.zip_utils import safe_extract_zip_file
 
     zip_ref = zipfile.ZipFile(file_path, mode)
-    safe_extract_zip_file(zip_ref, output_path)
-    logger.info("Zip file extracted to {}".format(output_path))
-    zip_ref.close()
+    try:
+        safe_extract_zip_file(zip_ref, output_path)
+        logger.info("Zip file extracted to {}".format(output_path))
+    finally:
+        zip_ref.close()
     return zip_ref
 
 
