@@ -15,7 +15,6 @@ import pytz
 import requests
 import yaml
 from accounts.permissions import HasVerifiedEmail
-from accounts.serializers import UserDetailsSerializer
 from allauth.account.models import EmailAddress
 from base.utils import (
     get_queue_name,
@@ -136,6 +135,8 @@ from .queryset import get_submissions_queryset
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
+    ChallengeInvitationAcceptSerializer,
+    ChallengeInvitationRegisterSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseSplitSerializer,
@@ -148,8 +149,6 @@ from .serializers import (
     LeaderboardSerializer,
     PWCChallengeLeaderboardSerializer,
     StarChallengeSerializer,
-    ChallengeInvitationAcceptSerializer,
-    ChallengeInvitationRegisterSerializer,
     UserInvitationSerializer,
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
@@ -3326,30 +3325,55 @@ def accept_challenge_invitation(request, invitation_key):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "PATCH":
-        if invitation.status != UserInvitation.PENDING:
-            response_data = {"error": "This invitation has already been accepted."}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = ChallengeInvitationRegisterSerializer(data=request.data)
+        serializer = ChallengeInvitationRegisterSerializer(
+            data=request.data,
+            context={"user": invitation.user},
+        )
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        user = invitation.user
-        user.first_name = serializer.validated_data.get(
-            "first_name", user.first_name
-        )
-        user.last_name = serializer.validated_data.get(
-            "last_name", user.last_name
-        )
-        user.password = make_password(serializer.validated_data["password"])
-        user.save()
+        with transaction.atomic():
+            locked_invitation = (
+                UserInvitation.objects.select_for_update()
+                .select_related("user")
+                .get(pk=invitation.pk)
+            )
+            if locked_invitation.status != UserInvitation.PENDING:
+                response_data = {
+                    "error": "This invitation has already been accepted."
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
 
-        EmailAddress.objects.filter(user=user, email=invitation.email).update(
-            verified=True
-        )
+            user = locked_invitation.user
+            user.first_name = serializer.validated_data.get(
+                "first_name", user.first_name
+            )
+            user.last_name = serializer.validated_data.get(
+                "last_name", user.last_name
+            )
+            user.password = make_password(
+                serializer.validated_data["password"]
+            )
+            user.save()
 
-        invitation.status = UserInvitation.ACCEPTED
-        invitation.save()
+            updated_count = EmailAddress.objects.filter(
+                user=user, email=locked_invitation.email
+            ).update(verified=True)
+            if updated_count == 0:
+                EmailAddress.objects.create(
+                    user=user,
+                    email=locked_invitation.email,
+                    primary=True,
+                    verified=True,
+                )
+
+            locked_invitation.status = UserInvitation.ACCEPTED
+            locked_invitation.save()
+            invitation = locked_invitation
 
         response_serializer = ChallengeInvitationAcceptSerializer(invitation)
         return Response(response_serializer.data, status=status.HTTP_200_OK)

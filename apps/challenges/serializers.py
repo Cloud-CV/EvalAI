@@ -1,4 +1,5 @@
 from accounts.serializers import UserDetailsSerializer
+from django.contrib.auth.password_validation import validate_password
 from hosts.serializers import ChallengeHostTeamSerializer
 from rest_framework import serializers
 
@@ -568,9 +569,17 @@ class ChallengeInvitationRegisterSerializer(serializers.Serializer):
     Serializer for completing a pending challenge invitation.
     """
 
-    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
-    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
-    password = serializers.CharField(write_only=True, min_length=8)
+    first_name = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    last_name = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    password = serializers.CharField(write_only=True)
+
+    def validate_password(self, value):
+        validate_password(value, self.context.get("user"))
+        return value
 
 
 class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
