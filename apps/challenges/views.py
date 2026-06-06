@@ -5536,7 +5536,7 @@ def _authenticate_lambda_request(request):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_autoscale_meta(request, challenge_pk):
@@ -5584,7 +5584,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_pending_submission_count(request, challenge_pk):
