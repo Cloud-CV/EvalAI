@@ -1,5 +1,6 @@
 import logging
 
+from accounts.authentication import ExpiringTokenAuthentication
 from base.utils import send_slack_notification
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -14,7 +15,6 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from accounts.authentication import ExpiringTokenAuthentication
 
 from .models import Subscribers, Team
 from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
@@ -119,10 +119,9 @@ def subscribe(request):
         if serializer.is_valid():
             serializer.save()
             response_data = {
-                "message",
-                "You will be notified about our latest updates at {}.".format(
-                    email
-                ),
+                "message": (
+                    "You will be notified about our latest updates at {}."
+                ).format(email)
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -146,8 +145,9 @@ def our_team(request):
 @permission_classes((permissions.IsAdminUser,))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def add_team_member(request):
-    request.data["team_type"] = request.data.get("team_type", Team.CONTRIBUTOR)
-    serializer = TeamSerializer(data=request.data)
+    data = request.data.copy()
+    data.setdefault("team_type", Team.CONTRIBUTOR)
+    serializer = TeamSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         response_data = {"message": "Successfully added the contributor."}
