@@ -62,13 +62,16 @@ def parse_invite_email_list(emails):
         raise ValueError("Invalid format for users email")
 
     normalized_emails = []
+    seen = set()
     for email in email_list:
         if not isinstance(email, str):
             raise ValueError("Invalid format for users email")
         email = email.strip()
         if not email or not EMAIL_LIST_PATTERN.match(email):
             raise ValueError("Invalid format for users email")
-        normalized_emails.append(email)
+        if email not in seen:
+            normalized_emails.append(email)
+            seen.add(email)
 
     if not normalized_emails:
         raise ValueError("Users email can't be blank")
