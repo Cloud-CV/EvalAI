@@ -38,16 +38,16 @@ from challenges.utils import (
     add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
+    get_challenge_host_required_error,
     get_challenge_model,
+    get_challenge_modification_error,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_leaderboard_modification_error,
     get_participant_model,
     get_participants_with_incomplete_profiles,
-    get_challenge_host_required_error,
-    get_challenge_modification_error,
-    get_leaderboard_modification_error,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
@@ -2859,7 +2859,9 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
-        host_error = get_leaderboard_modification_error(request, leaderboard_pk)
+        host_error = get_leaderboard_modification_error(
+            request, leaderboard_pk
+        )
         if host_error:
             return host_error
 
