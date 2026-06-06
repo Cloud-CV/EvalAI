@@ -8054,13 +8054,31 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "title": "Updated Title",
                 "description": "Updated Description",
-                "approved_by_admin": True,
                 "ephemeral_storage": 25,
             },
         )
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_attributes_rejects_sensitive_fields(self):
+        self.url = reverse_lazy("challenges:update_challenge_attributes")
+        self.user.is_staff = True
+        self.user.save()
+
+        for field in ("approved_by_admin", "is_frozen"):
+            with self.subTest(field=field):
+                response = self.client.post(
+                    self.url,
+                    {"challenge_pk": self.challenge.pk, field: True},
+                )
+                self.assertEqual(
+                    response.status_code, status.HTTP_400_BAD_REQUEST
+                )
+                self.assertEqual(
+                    response.data,
+                    {"error": f"Updating '{field}' is not allowed."},
+                )
 
     def test_update_challenge_attributes_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
@@ -8076,7 +8094,6 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "title": "Updated Title",
                 "description": "Updated Description",
-                "approved_by_admin": True,
                 "ephemeral_storage": 25,
             },
         )

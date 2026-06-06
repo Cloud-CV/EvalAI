@@ -5410,7 +5410,6 @@ def update_challenge_attributes(request):
         "terms_and_conditions",
         "submission_guidelines",
         "evaluation_details",
-        "approved_by_admin",
         "ephemeral_storage",
         "ec2_storage",
         "workers",
@@ -5422,7 +5421,6 @@ def update_challenge_attributes(request):
         "evaluation_module_error",
         "end_date",
         "start_date",
-        "is_frozen",
         "max_concurrent_submission_evaluation",
         "sqs_retention_period",
     }
