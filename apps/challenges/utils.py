@@ -40,7 +40,9 @@ def get_challenge_host_team_membership_error(request, challenge_host_team_pk):
     from rest_framework.response import Response
 
     if not ChallengeHost.objects.filter(
-        user=request.user, team_name_id=challenge_host_team_pk
+        user=request.user,
+        team_name_id=challenge_host_team_pk,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
     ).exists():
         return Response(
             {"error": "Sorry, you do not belong to this Host Team!"},

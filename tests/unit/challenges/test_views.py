@@ -4910,6 +4910,13 @@ class CreateChallengeUsingZipFile(
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.SELF,
+            permissions=ChallengeHost.ADMIN,
+        )
+
         self.path = join(
             settings.BASE_DIR, "examples", "example1", "test_zip_file"
         )
@@ -7751,6 +7758,13 @@ class ValidateChallengeTest(
 
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.SELF,
+            permissions=ChallengeHost.ADMIN,
         )
 
         with open(
