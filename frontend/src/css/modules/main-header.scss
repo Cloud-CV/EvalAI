@@ -42,19 +42,30 @@
 .announcement-banner {
     position: fixed;
     top: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     height: 100px;
-    width: 100%;
+    width: calc(100% - 32px);
+    max-width: 960px;
     z-index: 1000;
     background-color: $dark-gray;
     color: $light-gray;
     text-align: center;
+    padding: 0 16px;
+    box-sizing: border-box;
 
     display: flex;
     justify-content: center;
-    /* horizontally center */
     align-items: center;
-    /* vertically center */
+
+    &__content {
+        margin: 0 auto;
+    }
+
+    &__link {
+        color: inherit;
+        text-decoration: underline;
+    }
 }
 
 @media only screen and (max-width: $med-screen) {
