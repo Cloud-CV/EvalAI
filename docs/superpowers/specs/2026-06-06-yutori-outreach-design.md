@@ -1,17 +1,18 @@
 # Yutori Outreach Email Pipeline — Design
 
-**Date:** 2026-06-06
+**Date:** 2026-06-06 (revised 2026-06-06 to move package to top-level `apps/yutori_scout/` and read challenges from DB models instead of JSON files)
 **Status:** Approved for implementation planning
-**Depends on:** `2026-06-06-yutori-scouting-design.md` (consumes the `challenges.json` it produces)
+**Depends on:** `2026-06-06-yutori-scouting-design.md` (consumes the `Challenge` and `LastOutreachRun` models defined there)
 **Scope:** Daily Celery task that emails benchmark organizers discovered by the Yutori scout, via EvalAI's existing `send_email()` helper, from a dedicated `outreach@eval.ai` SES identity.
 
 ## Goal
 
 Once per day, send a personalized outreach email to each benchmark/challenge
-organizer who first appeared in `challenges.json` during the previous 24h,
-inviting them to host their benchmark on EvalAI. Delivery uses EvalAI's
-existing SES + SendGrid template infrastructure with a dedicated sender
-identity (`outreach@eval.ai`) to isolate reputation from transactional mail.
+organizer who first appeared in the `Challenge` table during the previous
+24h, inviting them to host their benchmark on EvalAI. Delivery uses
+EvalAI's existing SES + SendGrid template infrastructure with a dedicated
+sender identity (`outreach@eval.ai`) to isolate reputation from
+transactional mail.
 
 ## Non-goals
 
@@ -45,43 +46,45 @@ no-op for this pipeline. This is acknowledged and accepted (see Risks).
 Celery beat (10:00 UTC daily)
         │
         ▼
-apps/web/yutori_scout/tasks.py :: send_daily_outreach
+yutori_scout/tasks.py :: send_daily_outreach
         │
-        ├─ Read watermark from data/last_outreach_run.iso
-        │     (default if missing: now - 24h)
+        ├─ Read or create LastOutreachRun (single-row watermark)
+        │     If missing: seed with (now - 24h)
         │
-        ├─ Load apps/web/yutori_scout/data/challenges.json
+        ├─ Query: Challenge.objects.filter(first_seen__gt=watermark.last_run_at)
         │
-        ├─ For each challenge where _first_seen > watermark:
-        │     For each organizer with a non-empty email:
-        │        send_email(
-        │           sender=settings.YUTORI_OUTREACH_FROM_EMAIL,
-        │           recipient=organizer.email,
-        │           template_id=SENDGRID_SETTINGS["TEMPLATES"]
-        │                       ["OUTREACH_BENCHMARK_HOSTING"],
-        │           template_data=build_template_data(challenge, organizer),
-        │        )
+        ├─ For each Challenge in the queryset:
+        │     For each organizer dict in challenge.organizers
+        │           (JSONField — list of {name, role, email, affiliation}):
+        │        if organizer.get("email"):
+        │           send_email(
+        │             sender=settings.YUTORI_OUTREACH_FROM_EMAIL,
+        │             recipient=organizer["email"],
+        │             template_id=SENDGRID_SETTINGS["TEMPLATES"]
+        │                         ["OUTREACH_BENCHMARK_HOSTING"],
+        │             template_data=build_template_data(challenge, organizer),
+        │           )
         │
-        ├─ Write new watermark = run_started_at (atomic temp+rename)
+        ├─ watermark.last_run_at = run_started_at
+        │     watermark.save(update_fields=["last_run_at"])
         └─ Log: sent_count, skipped_count, attempted_count
 ```
 
 ## Files to add
 
-```
-apps/web/yutori_scout/
+```text
+apps/yutori_scout/
 ├── tasks.py                       # @shared_task send_daily_outreach()
 ├── outreach.py                    # iter_new_targets(), build_template_data()
-├── data/
-│   └── last_outreach_run.iso      # watermark; gitignored; atomic write
 └── tests/
     ├── test_outreach.py
     └── test_tasks.py
 ```
 
-The `apps/web/yutori_scout/` package already exists from the Yutori spec.
-`tasks.py`, `outreach.py`, and the watermark file are new additions to it;
-they share the same data directory as the webhook receiver.
+The `apps/yutori_scout/` package and its `models.py` (containing `Challenge`,
+`ScoutRun`, `Scout`, and `LastOutreachRun`) are created by the Yutori
+scouting spec. This spec only adds `tasks.py`, `outreach.py`, and their
+tests inside that same Django app — no new app, no new migration.
 
 ## Settings & env
 
@@ -102,12 +105,13 @@ Add inside the existing `SENDGRID_SETTINGS["TEMPLATES"]` dict:
 ),
 ```
 
-Add to `CELERY_BEAT_SCHEDULE` (or equivalent — confirm the existing
-location in EvalAI's settings during implementation):
+Add to `CELERY_BEAT_SCHEDULE` (locate the existing schedule in EvalAI's
+settings during implementation — `deactivate_stale_bounced_accounts` is
+one existing entry to grep for):
 
 ```python
 "yutori-outreach-daily": {
-    "task": "web.yutori_scout.tasks.send_daily_outreach",
+    "task": "yutori_scout.tasks.send_daily_outreach",
     "schedule": crontab(hour=10, minute=0),    # 10:00 UTC daily
 },
 ```
@@ -116,20 +120,22 @@ location in EvalAI's settings during implementation):
 
 ## Prerequisites (one-time, before first run)
 
-1. **Verify `outreach@eval.ai` as an identity in AWS SES.**
+1. **Yutori scouting spec is deployed.** That spec's migration creates the
+   `Challenge` and `LastOutreachRun` tables this pipeline reads/writes.
+2. **Verify `outreach@eval.ai` as an identity in AWS SES.**
    AWS Console → SES → Verified identities → Create identity → Email address.
    Wait for the verification email, click the link, confirm status = Verified.
-2. **(Recommended)** Create a separate SES configuration set for outreach so
+3. **(Recommended)** Create a separate SES configuration set for outreach so
    bounce/complaint metrics for this sender are visible independently of
    `team@eval.ai`. Wire it via the existing `AWS_SES_CONFIGURATION_SET`
    pattern if you want to keep one global set, or introduce
    `AWS_SES_OUTREACH_CONFIGURATION_SET` for fully separate tracking.
-3. **Create the SendGrid dynamic template `OUTREACH_BENCHMARK_HOSTING`** in
+4. **Create the SendGrid dynamic template `OUTREACH_BENCHMARK_HOSTING`** in
    the SendGrid dashboard with the variable contract below, copy its
    template ID into `SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID`.
-4. **Confirm the Yutori scout has produced at least one `challenges.json`
-   entry.** Without that, the task is a no-op (which is fine — it will log
-   `sent=0` and update the watermark).
+5. **Confirm at least one `Challenge` row exists** (i.e. the Yutori scout
+   has produced at least one webhook delivery). Without that, the task is
+   a no-op (which is fine — it will log `sent=0` and update the watermark).
 
 ## SendGrid template contract
 
@@ -139,7 +145,7 @@ template and may reference any of these variables (e.g. `{{benchmark_name}}`):
 
 | Variable          | Type   | Source                                   | Example                                   |
 |-------------------|--------|------------------------------------------|-------------------------------------------|
-| `organizer_name`  | string | `organizer.name`                         | `"Dr. Jane Doe"`                          |
+| `organizer_name`  | string | `organizer["name"]`                      | `"Dr. Jane Doe"`                          |
 | `benchmark_name`  | string | `challenge.benchmark_name`               | `"ImageNet-21K-P"`                        |
 | `conference`      | string | `challenge.conference`                   | `"NeurIPS"`                               |
 | `year`            | int    | `challenge.year`                         | `2025`                                    |
@@ -151,50 +157,52 @@ template and may reference any of these variables (e.g. `{{benchmark_name}}`):
 
 ## Watermark logic
 
-- File: `apps/web/yutori_scout/data/last_outreach_run.iso`
-  (single line, ISO-8601 UTC timestamp, e.g. `2026-06-05T10:00:00Z`)
+- Model: `LastOutreachRun` (defined in the scouting spec). Single-row
+  pattern via `LastOutreachRun.objects.get_or_create(pk=1, defaults=...)`.
 - On task start:
-  - Capture `run_started_at = now(UTC)`.
-  - Read watermark. If missing or unparseable, default watermark to
-    `run_started_at - 24h` and log a warning.
-- Filter: a challenge is in-scope iff `_first_seen > watermark`. Challenges
-  with malformed or missing `_first_seen` are skipped and logged.
+  - Capture `run_started_at = timezone.now()`.
+  - `watermark, created = LastOutreachRun.objects.get_or_create(pk=1, defaults={"last_run_at": run_started_at - timedelta(hours=24)})`.
+  - If `created`, log a warning ("first run, seeding watermark to now - 24h").
+- Filter: `Challenge.objects.filter(first_seen__gt=watermark.last_run_at)`.
+  The `first_seen` field is indexed at the DB level (see scouting spec).
 - On task end (after the send loop completes, regardless of how many
   individual `send_email()` calls succeeded — that helper swallows its own
   exceptions):
-  - Write `run_started_at` to the watermark file atomically
-    (`tempfile + os.replace`).
-- Rationale: using a watermark instead of a fixed 24h window means a missed
-  run (worker down, deploy, etc.) does not silently drop a day of new
-  challenges. Using `run_started_at` (captured at the start of the run) and
-  not `now()` at the end avoids a race where a challenge whose `_first_seen`
-  falls between start and end gets skipped on the next run.
+  - `watermark.last_run_at = run_started_at`
+  - `watermark.save(update_fields=["last_run_at"])`
+- Rationale: using `run_started_at` (captured at the start) and not
+  `now()` at the end avoids a race where a `Challenge` row whose
+  `first_seen` falls between start and end gets skipped on the next run.
+- A missed run (Celery worker down, deploy, etc.) does not silently drop a
+  day of new challenges — the next run picks up everything since the last
+  successful watermark write.
 
 ## Selection semantics
 
 - One email per (organizer, challenge) pair. If the same organizer appears
   on two newly-discovered challenges in the same day, they get two emails
   (different subjects, different bodies).
-- Organizers with empty-string or missing `email` are skipped silently
-  (logged at DEBUG, not WARNING — missing emails are normal output from the
-  Yutori scout when no public email exists).
-- The pipeline does not deduplicate across days. If a challenge somehow
-  appears in `challenges.json` twice with different `_first_seen` values,
-  organizers get re-emailed. (This should not happen given the Yutori
-  spec's dedup, but the outreach side does not guard against it.)
+- Organizers with empty-string or missing `email` in the JSONField are
+  skipped silently (logged at DEBUG, not WARNING — missing emails are
+  normal output from the Yutori scout when no public email exists).
+- The pipeline does not deduplicate across days at the organizer level.
+  Because dedup at the `Challenge` level is enforced by a unique
+  constraint on `canonical_key` in the scouting spec, the same challenge
+  cannot appear twice with different `first_seen` values; therefore an
+  organizer attached to a given challenge is emailed exactly once.
 
 ## Failure modes
 
 | Scenario                                           | Behavior                                                            |
 |----------------------------------------------------|---------------------------------------------------------------------|
-| `challenges.json` missing or empty                 | Log `sent=0`, update watermark, return                              |
-| `challenges.json` malformed                        | Log exception via Sentry, **do not** update watermark, re-raise     |
-| Watermark file missing / corrupt                   | Default to `now - 24h`, log warning, continue                       |
-| Single challenge missing required fields           | Log warning with what's available, skip that challenge              |
-| Organizer with empty email                         | Skip silently (DEBUG log only)                                      |
+| Zero matching `Challenge` rows                     | Log `sent=0`, update watermark, return                              |
+| DB unreachable                                     | Celery surfaces the exception; watermark not updated; task retried per Celery defaults |
+| `Challenge.organizers` JSONField is empty or missing key | Skip that challenge silently                                  |
+| Organizer dict missing `email` or with empty string | Skip silently (DEBUG log only)                                     |
 | `send_email()` internal failure                    | Already handled inside `send_email()` (Sentry + log); loop continues |
 | SES identity not yet verified                      | `send_email()` raises internally, logs via Sentry, loop continues   |
-| Two task runs overlap (shouldn't, but)             | Both read the same watermark; both update watermark to their start time — last write wins. Duplicate sends possible. Acceptable per Risks. |
+| `LastOutreachRun` table missing                    | Migration not applied; task raises on first query — fix by running migrations |
+| Two task runs overlap (shouldn't, but)             | Both read the same watermark; both update it to their `run_started_at` — last write wins. Duplicate sends possible. Acceptable per Risks. |
 | Celery worker crashes mid-loop                     | Watermark not updated; next run re-processes the same window. Duplicate sends possible. Acceptable per Risks. |
 
 ## Risks accepted (explicit user decision, 2026-06-06)
@@ -234,47 +242,50 @@ second prompt.
 
 ## Testing strategy
 
-### Unit (`pytest`, no network)
+### Unit (`pytest`, no DB)
 
 `test_outreach.py`:
-- `iter_new_targets` returns only `(challenge, organizer)` pairs from
-  challenges with `_first_seen > watermark`.
-- Skips organizers with empty/missing `email`.
-- Skips challenges with missing or malformed `_first_seen`.
-- Handles challenges missing the `organizers` key.
-- `build_template_data` produces the exact key set required by the SendGrid
-  template contract above.
+- `build_template_data` produces the exact key set required by the
+  SendGrid template contract above, given a `Challenge` instance and an
+  organizer dict.
+- Handles `organizer["email"]` missing, empty string, and whitespace-only.
 
-`test_tasks.py` (with `send_email` patched):
-- End-to-end on a synthetic `challenges.json`:
-  - Correct number of `send_email` calls.
+### Integration (`pytest-django`, `@pytest.mark.django_db`)
+
+`test_tasks.py` (with `send_email` patched at the module boundary):
+- End-to-end on a fixture set of `Challenge` rows:
+  - Correct number of `send_email` calls (one per organizer with a
+    non-empty email on a Challenge with `first_seen > watermark`).
   - Each call has correct `sender`, `recipient`, `template_id`,
     `template_data` shape.
-  - Watermark is updated to `run_started_at` after the loop.
-- Watermark is **not** updated when `challenges.json` is malformed (parse
-  error raised before the loop).
+  - `LastOutreachRun.last_run_at` is updated to `run_started_at` after
+    the loop.
+- Watermark is updated even when zero matching rows exist.
 - When `send_email` raises (simulated), loop continues to subsequent
   organizers and watermark still updates (matches real `send_email`
   behavior, which swallows exceptions internally).
-- Run with empty `challenges.json` → zero calls, watermark still updated.
+- A `Challenge` whose `organizers` is an empty list or missing the
+  `email` key produces zero calls but does not break the loop.
 
 ### Manual end-to-end (before declaring done)
 
 1. Verify SES identity `outreach@eval.ai` is `Verified` in AWS Console.
 2. Set `SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID` to a real test
    template ID in the SendGrid dashboard.
-3. Seed `apps/web/yutori_scout/data/challenges.json` with one entry whose
-   single organizer's `email` is a test inbox you control, and whose
-   `_first_seen` is the current time.
-4. Delete `apps/web/yutori_scout/data/last_outreach_run.iso`.
+3. Insert a `Challenge` row via Django shell whose single organizer's
+   `email` is a test inbox you control and whose `first_seen` is the
+   current time (e.g.
+   `Challenge.objects.create(..., organizers=[{"name": "...", "email": "you@example.com"}])`).
+4. Delete the `LastOutreachRun` row (or set its `last_run_at` to
+   `first_seen - 1 minute`).
 5. Run the task directly:
-   `python -c "from web.yutori_scout.tasks import send_daily_outreach; send_daily_outreach()"`
+   `python -c "from yutori_scout.tasks import send_daily_outreach; send_daily_outreach()"`
 6. Confirm:
    - Email arrives at the test inbox, From = `outreach@eval.ai`.
-   - Subject and body render with the seeded variables.
-   - `last_outreach_run.iso` exists and contains the run start time.
+   - Subject and body render with the variables from the Challenge row.
+   - `LastOutreachRun.last_run_at` is updated to the run start time.
 7. Re-run the task → confirm no second email is sent (watermark filter
-   excludes the now-older challenge).
+   excludes the now-older Challenge).
 
 ## Dependencies
 
