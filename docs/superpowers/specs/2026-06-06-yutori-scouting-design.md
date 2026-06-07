@@ -135,15 +135,22 @@ Added to `settings/common.py`. `.env.example` updated with placeholder values.
 ## Database models (`scout/models.py`)
 
 ```python
+from base.models import TimeStampedModel
 from django.db import models
 
-class Scout(models.Model):
-    """The currently-registered Yutori scout. Effectively single-row."""
+class Scout(TimeStampedModel):
+    """The currently-registered Yutori scout. Effectively single-row.
+
+    Inherits ``created_at`` and ``modified_at`` from
+    ``base.models.TimeStampedModel`` (the EvalAI convention also used by
+    ``jobs.Submission`` and other domain models). The inherited
+    ``modified_at`` is useful because ``paused_at`` may flip during the
+    scout's lifetime.
+    """
     scout_id        = models.CharField(max_length=64, unique=True)   # UUID from Yutori
     query_hash      = models.CharField(max_length=64)                # sha256 of prompt at create time
     webhook_url     = models.URLField(max_length=512)
     yutori_view_url = models.URLField(max_length=512, blank=True)
-    created_at      = models.DateTimeField(auto_now_add=True)
     paused_at       = models.DateTimeField(null=True, blank=True)
 
 
