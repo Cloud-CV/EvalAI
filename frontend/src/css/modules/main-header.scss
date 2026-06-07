@@ -10,7 +10,7 @@
         background-color: rgba(255, 255, 255, 0.9);
         box-shadow: 0 0 0 0 #000;
         position: fixed;
-        top: 100px;
+        top: $announcement-banner-height;
         left: 0;
         padding: 0 100px;
         transition: all 0.1s ease-in-out;
@@ -38,32 +38,60 @@
     nav.grad-shadow-1 {
         box-shadow: 0 0 10px $light-black;
     }
+    &.email-bounced nav {
+        top: calc(#{$announcement-banner-height} + #{$email-bounce-height});
+    }
 }
 .announcement-banner {
     position: fixed;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 100px;
-    width: calc(100% - 32px);
-    max-width: 960px;
+    left: 0;
+    width: 100%;
     z-index: 1000;
     background-color: $dark-gray;
     color: $light-gray;
     text-align: center;
+    min-height: $announcement-banner-height;
     padding: 0 16px;
     box-sizing: border-box;
-
+    font-size: 14px;
+    font-weight: $rob-bold;
+    line-height: 1.4;
     display: flex;
     justify-content: center;
     align-items: center;
 
     &__content {
         margin: 0 auto;
+        max-width: 960px;
     }
 
     &__link {
         color: inherit;
+        text-decoration: underline;
+    }
+}
+
+.email-bounce-banner {
+    position: fixed;
+    top: $announcement-banner-height;
+    left: 0;
+    width: 100%;
+    min-height: $email-bounce-height;
+    z-index: 999;
+    background-color: #f8d7da;
+    color: #721c24;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 2px solid #f5c6cb;
+    padding: 12px 16px;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.4;
+
+    &__link {
+        color: #721c24;
         text-decoration: underline;
     }
 }
@@ -73,6 +101,12 @@
         nav {
             padding: 0px 30px;
         }
+        &.email-bounced nav {
+            top: calc(#{$announcement-banner-height} + 96px);
+        }
+    }
+    .email-bounce-banner {
+        min-height: 96px;
     }
     .side-nav .userView{
         padding: 28px;
