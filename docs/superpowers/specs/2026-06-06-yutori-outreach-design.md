@@ -1,6 +1,6 @@
 # Yutori Outreach Email Pipeline — Design
 
-**Date:** 2026-06-06 (revised 2026-06-06 to move package to top-level `apps/yutori_scout/` and read challenges from DB models instead of JSON files)
+**Date:** 2026-06-06 (revised 2026-06-06 to move package to top-level `apps/scout/` and read challenges from DB models instead of JSON files)
 **Status:** Approved for implementation planning
 **Depends on:** `2026-06-06-yutori-scouting-design.md` (consumes the `Challenge` and `LastOutreachRun` models defined there)
 **Scope:** Daily Celery task that emails benchmark organizers discovered by the Yutori scout, via EvalAI's existing `send_email()` helper, from a dedicated `outreach@eval.ai` SES identity.
@@ -46,7 +46,7 @@ no-op for this pipeline. This is acknowledged and accepted (see Risks).
 Celery beat (10:00 UTC daily)
         │
         ▼
-yutori_scout/tasks.py :: send_daily_outreach
+scout/tasks.py :: send_daily_outreach
         │
         ├─ Read or create LastOutreachRun (single-row watermark)
         │     If missing: seed with (now - 24h)
@@ -58,7 +58,7 @@ yutori_scout/tasks.py :: send_daily_outreach
         │           (JSONField — list of {name, role, email, affiliation}):
         │        if organizer.get("email"):
         │           send_email(
-        │             sender=settings.YUTORI_OUTREACH_FROM_EMAIL,
+        │             sender=settings.OUTREACH_FROM_EMAIL,
         │             recipient=organizer["email"],
         │             template_id=SENDGRID_SETTINGS["TEMPLATES"]
         │                         ["OUTREACH_BENCHMARK_HOSTING"],
@@ -73,26 +73,33 @@ yutori_scout/tasks.py :: send_daily_outreach
 ## Files to add
 
 ```text
-apps/yutori_scout/
+apps/scout/
 ├── tasks.py                       # @shared_task send_daily_outreach()
-├── outreach.py                    # iter_new_targets(), build_template_data()
-└── tests/
-    ├── test_outreach.py
-    └── test_tasks.py
+└── outreach.py                    # iter_new_targets(), build_template_data()
 ```
 
-The `apps/yutori_scout/` package and its `models.py` (containing `Challenge`,
+Tests live at the project root under `tests/unit/scout/`, matching the
+existing EvalAI convention:
+
+```text
+tests/unit/scout/
+├── test_outreach.py
+└── test_tasks.py
+```
+
+The `apps/scout/` package and its `models.py` (containing `Challenge`,
 `ScoutRun`, `Scout`, and `LastOutreachRun`) are created by the Yutori
 scouting spec. This spec only adds `tasks.py`, `outreach.py`, and their
-tests inside that same Django app — no new app, no new migration.
+tests in `tests/unit/scout/` inside that same Django app — no new app,
+no new migration.
 
 ## Settings & env
 
 Add to `settings/common.py`:
 
 ```python
-YUTORI_OUTREACH_FROM_EMAIL = os.environ.get(
-    "YUTORI_OUTREACH_FROM_EMAIL",
+OUTREACH_FROM_EMAIL = os.environ.get(
+    "OUTREACH_FROM_EMAIL",
     "EvalAI Team <outreach@eval.ai>",
 )
 ```
@@ -110,8 +117,8 @@ settings during implementation — `deactivate_stale_bounced_accounts` is
 one existing entry to grep for):
 
 ```python
-"yutori-outreach-daily": {
-    "task": "yutori_scout.tasks.send_daily_outreach",
+"scout-outreach-daily": {
+    "task": "scout.tasks.send_daily_outreach",
     "schedule": crontab(hour=10, minute=0),    # 10:00 UTC daily
 },
 ```
@@ -279,7 +286,7 @@ second prompt.
 4. Delete the `LastOutreachRun` row (or set its `last_run_at` to
    `first_seen - 1 minute`).
 5. Run the task directly:
-   `python -c "from yutori_scout.tasks import send_daily_outreach; send_daily_outreach()"`
+   `python -c "from scout.tasks import send_daily_outreach; send_daily_outreach()"`
 6. Confirm:
    - Email arrives at the test inbox, From = `outreach@eval.ai`.
    - Subject and body render with the variables from the Challenge row.
