@@ -10,7 +10,7 @@
         background-color: rgba(255, 255, 255, 0.9);
         box-shadow: 0 0 0 0 #000;
         position: fixed;
-        top: 100px;
+        top: $announcement-banner-height;
         left: 0;
         padding: 0 100px;
         transition: all 0.1s ease-in-out;
@@ -42,17 +42,16 @@
 .announcement-banner {
     position: fixed;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 100px;
-    width: calc(100% - 32px);
-    max-width: 960px;
+    left: 0;
+    width: 100%;
     z-index: 1000;
     background-color: $dark-gray;
     color: $light-gray;
     text-align: center;
-    padding: 0 16px;
+    padding: 10px 16px;
     box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.4;
 
     display: flex;
     justify-content: center;
@@ -60,6 +59,7 @@
 
     &__content {
         margin: 0 auto;
+        max-width: 960px;
     }
 
     &__link {
