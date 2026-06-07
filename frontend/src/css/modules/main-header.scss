@@ -51,9 +51,11 @@
     background-color: $dark-gray;
     color: $light-gray;
     text-align: center;
-    padding: 10px 16px;
+    min-height: $announcement-banner-height;
+    padding: 0 16px;
     box-sizing: border-box;
     font-size: 14px;
+    font-weight: $rob-bold;
     line-height: 1.4;
     display: flex;
     justify-content: center;
