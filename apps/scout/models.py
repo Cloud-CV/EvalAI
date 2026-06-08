@@ -23,6 +23,9 @@ class Scout(TimeStampedModel):
     yutori_view_url = models.URLField(max_length=512, blank=True)
     paused_at = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        app_label = "scout"
+
     def __str__(self):
         return "Scout(name={}, scout_id={}, paused={})".format(
             self.name, self.scout_id, self.paused_at is not None
