@@ -385,6 +385,10 @@ DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
 
 HOSTNAME = os.environ.get("HOSTNAME")
 
+# Yutori scout integration
+YUTORI_API_KEY = os.environ.get("YUTORI_API_KEY", "")
+SCOUT_PUBLIC_BASE_URL = os.environ.get("SCOUT_PUBLIC_BASE_URL", "")
+
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
         "CHALLENGE_INVITATION": os.environ.get(
