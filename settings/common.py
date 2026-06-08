@@ -15,6 +15,8 @@ import os
 import sys
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, "apps")
@@ -244,6 +246,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "accounts.tasks.deactivate_stale_bounced_accounts",
         "schedule": datetime.timedelta(hours=1),
     },
+    "scout-outreach-daily": {
+        "task": "scout.tasks.send_daily_outreach",
+        "schedule": crontab(hour=10, minute=0),  # 10:00 UTC daily
+    },
 }
 
 # CORS Settings
@@ -388,6 +394,10 @@ HOSTNAME = os.environ.get("HOSTNAME")
 # Yutori scout integration
 YUTORI_API_KEY = os.environ.get("YUTORI_API_KEY", "")
 SCOUT_PUBLIC_BASE_URL = os.environ.get("SCOUT_PUBLIC_BASE_URL", "")
+OUTREACH_FROM_EMAIL = os.environ.get(
+    "OUTREACH_FROM_EMAIL",
+    "EvalAI Team <outreach@eval.ai>",
+)
 
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
@@ -408,6 +418,9 @@ SENDGRID_SETTINGS = {
         ),
         "SUBSCRIPTION_PLANS_EMAIL": os.environ.get(
             "SENDGRID_SUBSCRIPTION_PLANS_TEMPLATE_ID"
+        ),
+        "OUTREACH_BENCHMARK_HOSTING": os.environ.get(
+            "SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID"
         ),
     }
 }
