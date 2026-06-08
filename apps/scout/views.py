@@ -8,35 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from scout.dedup import canonical_key
 from scout.models import Scout, ScoutChallenge, ScoutRun
+from scout.serializers import ScoutChallengePayloadSerializer
 
 logger = logging.getLogger(__name__)
-
-
-REQUIRED_FIELDS = [
-    "benchmark_name",
-    "task_area",
-    "conference",
-    "year",
-    "official_url",
-    "organizers",
-    "evalai_suitable",
-    "evalai_reasoning",
-]
-
-
-def _build_defaults(c, run):
-    return {
-        "benchmark_name": c["benchmark_name"],
-        "conference": c["conference"],
-        "year": int(c["year"]),
-        "task_area": c.get("task_area", ""),
-        "official_url": c["official_url"],
-        "dataset_url": c.get("dataset_url", "") or "",
-        "organizers": c.get("organizers", []) or [],
-        "evalai_suitable": bool(c["evalai_suitable"]),
-        "evalai_reasoning": c.get("evalai_reasoning", "") or "",
-        "source_run": run,
-    }
 
 
 @csrf_exempt
@@ -70,26 +44,32 @@ def webhook_receiver(request, name, token):
         else:
             for c in challenges:
                 received += 1
-                missing = [f for f in REQUIRED_FIELDS if f not in c]
-                if missing:
+                serializer = ScoutChallengePayloadSerializer(data=c)
+                if not serializer.is_valid():
                     warnings.append(
-                        "Skipped entry missing fields {}: name={!r}".format(
-                            missing, c.get("benchmark_name", "?")
+                        "Skipped entry name={!r}: {}".format(
+                            (
+                                c.get("benchmark_name", "?")
+                                if isinstance(c, dict)
+                                else "?"
+                            ),
+                            serializer.errors,
                         )
                     )
                     continue
+                data = serializer.validated_data
                 try:
-                    key = canonical_key(c)
+                    key = canonical_key(data)
                 except (KeyError, AttributeError, ValueError) as err:
                     warnings.append(
                         "Could not compute key for entry name={!r}: {}".format(
-                            c.get("benchmark_name", "?"), err
+                            data.get("benchmark_name", "?"), err
                         )
                     )
                     continue
                 _, created = ScoutChallenge.objects.get_or_create(
                     canonical_key=key,
-                    defaults=_build_defaults(c, run),
+                    defaults={**data, "source_run": run},
                 )
                 if created:
                     new_count += 1
