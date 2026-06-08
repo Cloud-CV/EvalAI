@@ -2,17 +2,18 @@
 
 **Date:** 2026-06-06 (revised 2026-06-06 to move package to top-level `apps/scout/` and read challenges from DB models instead of JSON files)
 **Status:** Approved for implementation planning
-**Depends on:** `2026-06-06-yutori-scouting-design.md` (consumes the `ScoutChallenge` and `LastOutreachRun` models defined there)
+**Depends on:** `2026-06-06-yutori-scouting-design.md` (consumes the `ScoutChallenge` model defined there, and the `outreach_sent_at` column on it)
 **Scope:** Daily Celery task that emails benchmark organizers discovered by the Yutori scout, via EvalAI's existing `send_email()` helper, from a dedicated `outreach@eval.ai` SES identity.
 
 ## Goal
 
 Once per day, send a personalized outreach email to each benchmark/challenge
-organizer who first appeared in the `ScoutChallenge` table during the previous
-24h, inviting them to host their benchmark on EvalAI. Delivery uses
-EvalAI's existing SES + SendGrid template infrastructure with a dedicated
-sender identity (`outreach@eval.ai`) to isolate reputation from
-transactional mail.
+organizer whose `ScoutChallenge` row has not yet been emailed about
+(i.e. `outreach_sent_at IS NULL`), inviting them to host their benchmark
+on EvalAI. After successfully attempting sends for a row, the task sets
+`outreach_sent_at = timezone.now()`. Delivery uses EvalAI's existing
+SES + SendGrid template infrastructure with a dedicated sender identity
+(`outreach@eval.ai`) to isolate reputation from transactional mail.
 
 ## Non-goals
 
@@ -48,10 +49,7 @@ Celery beat (10:00 UTC daily)
         ▼
 scout/tasks.py :: send_daily_outreach
         │
-        ├─ Read or create LastOutreachRun (single-row watermark)
-        │     If missing: seed with (now - 24h)
-        │
-        ├─ Query: ScoutChallenge.objects.filter(first_seen__gt=watermark.last_run_at)
+        ├─ Query: ScoutChallenge.objects.filter(outreach_sent_at__isnull=True)
         │
         ├─ For each ScoutChallenge in the queryset:
         │     For each organizer dict in challenge.organizers
@@ -64,11 +62,16 @@ scout/tasks.py :: send_daily_outreach
         │                         ["OUTREACH_BENCHMARK_HOSTING"],
         │             template_data=build_template_data(challenge, organizer),
         │           )
+        │     # After attempting sends for the row:
+        │     challenge.outreach_sent_at = timezone.now()
+        │     challenge.save(update_fields=["outreach_sent_at"])
         │
-        ├─ watermark.last_run_at = run_started_at
-        │     watermark.save(update_fields=["last_run_at"])
         └─ Log: sent_count, skipped_count, attempted_count
 ```
+
+Per-row marking means a partially-completed run (worker crash, deploy
+mid-loop) does not need to be replayed from a watermark. Rows whose
+emails went out are marked; the rest will be picked up next run.
 
 ## Files to add
 
@@ -87,11 +90,12 @@ tests/unit/scout/
 └── test_tasks.py
 ```
 
-The `apps/scout/` package and its `models.py` (containing `ScoutChallenge`,
-`ScoutRun`, `Scout`, and `LastOutreachRun`) are created by the Yutori
-scouting spec. This spec only adds `tasks.py`, `outreach.py`, and their
-tests in `tests/unit/scout/` inside that same Django app — no new app,
-no new migration.
+The `apps/scout/` package and its `models.py` (containing `Scout`,
+`ScoutRun`, `ScoutChallenge`) are created by the Yutori scouting spec,
+including the `ScoutChallenge.outreach_sent_at` column this pipeline
+reads and writes. This spec adds only `tasks.py`, `outreach.py`, and
+their tests in `tests/unit/scout/` inside that same Django app — no new
+app, no new migration.
 
 ## Settings & env
 
@@ -128,7 +132,8 @@ one existing entry to grep for):
 ## Prerequisites (one-time, before first run)
 
 1. **Yutori scouting spec is deployed.** That spec's migration creates the
-   `ScoutChallenge` and `LastOutreachRun` tables this pipeline reads/writes.
+   `ScoutChallenge` table (including the `outreach_sent_at` column this
+   pipeline writes).
 2. **Verify `outreach@eval.ai` as an identity in AWS SES.**
    AWS Console → SES → Verified identities → Create identity → Email address.
    Wait for the verification email, click the link, confirm status = Verified.
@@ -142,7 +147,7 @@ one existing entry to grep for):
    template ID into `SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID`.
 5. **Confirm at least one `ScoutChallenge` row exists** (i.e. the Yutori scout
    has produced at least one webhook delivery). Without that, the task is
-   a no-op (which is fine — it will log `sent=0` and update the watermark).
+   a no-op (which is fine — it will log `sent=0`).
 
 ## SendGrid template contract
 
@@ -162,55 +167,53 @@ template and may reference any of these variables (e.g. `{{benchmark_name}}`):
 `build_template_data(challenge, organizer)` is a small helper in
 `outreach.py` that produces this dict. It does no I/O.
 
-## Watermark logic
+## Per-row tracking (replaces "watermark")
 
-- Model: `LastOutreachRun` (defined in the scouting spec). Single-row
-  pattern via `LastOutreachRun.objects.get_or_create(pk=1, defaults=...)`.
-- On task start:
-  - Capture `run_started_at = timezone.now()`.
-  - `watermark, created = LastOutreachRun.objects.get_or_create(pk=1, defaults={"last_run_at": run_started_at - timedelta(hours=24)})`.
-  - If `created`, log a warning ("first run, seeding watermark to now - 24h").
-- Filter: `ScoutChallenge.objects.filter(first_seen__gt=watermark.last_run_at)`.
-  The `first_seen` field is indexed at the DB level (see scouting spec).
-- On task end (after the send loop completes, regardless of how many
-  individual `send_email()` calls succeeded — that helper swallows its own
-  exceptions):
-  - `watermark.last_run_at = run_started_at`
-  - `watermark.save(update_fields=["last_run_at"])`
-- Rationale: using `run_started_at` (captured at the start) and not
-  `now()` at the end avoids a race where a `ScoutChallenge` row whose
-  `first_seen` falls between start and end gets skipped on the next run.
-- A missed run (Celery worker down, deploy, etc.) does not silently drop a
-  day of new challenges — the next run picks up everything since the last
-  successful watermark write.
+There is no standalone watermark table. The `outreach_sent_at` column on
+`ScoutChallenge` is the durable per-row state.
+
+- **Filter:** `ScoutChallenge.objects.filter(outreach_sent_at__isnull=True)`.
+  The column is indexed at the DB level for cheap filtering.
+- **Mark sent:** after iterating organizers for one row, set
+  `challenge.outreach_sent_at = timezone.now()` and
+  `challenge.save(update_fields=["outreach_sent_at"])`. This commits the
+  row's "I've been processed" flag independently of every other row.
+- **Crash mid-loop semantics:** if the Celery worker dies after marking
+  rows 1–3 but before row 4, the next run picks up at row 4 — no
+  duplicate sends to rows 1–3, no missed sends to row 4 onwards.
+- **First run** has no special seeding step: every row is `null`, so
+  every row is eligible. Subsequent runs only pick up newly-inserted
+  rows (which start `null`) plus any rows the previous run did not get
+  to. This is correct behavior — no missed day, no manual catch-up.
 
 ## Selection semantics
 
 - One email per (organizer, challenge) pair. If the same organizer appears
-  on two newly-discovered challenges in the same day, they get two emails
-  (different subjects, different bodies).
+  on two `ScoutChallenge` rows (different benchmarks), they get two
+  emails — different subjects, different bodies — on the days those rows
+  are first processed.
 - Organizers with empty-string or missing `email` in the JSONField are
   skipped silently (logged at DEBUG, not WARNING — missing emails are
   normal output from the Yutori scout when no public email exists).
-- The pipeline does not deduplicate across days at the organizer level.
+- Per-organizer deduplication across challenges is **not** done here.
   Because dedup at the `ScoutChallenge` level is enforced by a unique
   constraint on `canonical_key` in the scouting spec, the same challenge
-  cannot appear twice with different `first_seen` values; therefore an
-  organizer attached to a given challenge is emailed exactly once.
+  cannot appear twice as separate rows; therefore an organizer attached
+  to a given challenge is emailed exactly once for that challenge.
 
 ## Failure modes
 
 | Scenario                                           | Behavior                                                            |
 |----------------------------------------------------|---------------------------------------------------------------------|
-| Zero matching `ScoutChallenge` rows                     | Log `sent=0`, update watermark, return                              |
-| DB unreachable                                     | Celery surfaces the exception; watermark not updated; task retried per Celery defaults |
-| `ScoutChallenge.organizers` JSONField is empty or missing key | Skip that challenge silently                                  |
+| Zero matching `ScoutChallenge` rows                | Log `sent=0`, return                                                |
+| DB unreachable                                     | Celery surfaces the exception; the row currently being processed is not marked sent; task retried per Celery defaults |
+| `ScoutChallenge.organizers` JSONField is empty or missing key | Skip the loop body but still mark `outreach_sent_at` (no organizers means nothing to send; we don't keep retrying empties) |
 | Organizer dict missing `email` or with empty string | Skip silently (DEBUG log only)                                     |
-| `send_email()` internal failure                    | Already handled inside `send_email()` (Sentry + log); loop continues |
+| `send_email()` internal failure                    | Already handled inside `send_email()` (Sentry + log); loop continues; row still marked sent at the end |
 | SES identity not yet verified                      | `send_email()` raises internally, logs via Sentry, loop continues   |
-| `LastOutreachRun` table missing                    | Migration not applied; task raises on first query — fix by running migrations |
-| Two task runs overlap (shouldn't, but)             | Both read the same watermark; both update it to their `run_started_at` — last write wins. Duplicate sends possible. Acceptable per Risks. |
-| Celery worker crashes mid-loop                     | Watermark not updated; next run re-processes the same window. Duplicate sends possible. Acceptable per Risks. |
+| `ScoutChallenge.outreach_sent_at` column missing   | Scouting-spec migration not applied; task raises on first query — fix by running `migrate scout` |
+| Two task runs overlap (shouldn't, but)             | Both query the same `outreach_sent_at IS NULL` set, both iterate, both send. Possible double-send for rows queried before either run marked them. Acceptable per Risks. |
+| Celery worker crashes mid-loop                     | Rows fully processed are marked sent and not retried; the row mid-flight may have had some organizers emailed without the row marked — those organizers get re-emailed once on the next run. Acceptable per Risks. |
 
 ## Risks accepted (explicit user decision, 2026-06-06)
 
@@ -260,19 +263,24 @@ second prompt.
 ### Integration (`pytest-django`, `@pytest.mark.django_db`)
 
 `test_tasks.py` (with `send_email` patched at the module boundary):
-- End-to-end on a fixture set of `ScoutChallenge` rows:
+- End-to-end on a fixture set of `ScoutChallenge` rows with mixed
+  `outreach_sent_at` values:
   - Correct number of `send_email` calls (one per organizer with a
-    non-empty email on a ScoutChallenge with `first_seen > watermark`).
+    non-empty email on a row whose `outreach_sent_at` is null).
   - Each call has correct `sender`, `recipient`, `template_id`,
     `template_data` shape.
-  - `LastOutreachRun.last_run_at` is updated to `run_started_at` after
-    the loop.
-- Watermark is updated even when zero matching rows exist.
+  - After the task: every previously-null row now has
+    `outreach_sent_at` set to a recent timestamp; previously-set rows
+    are unchanged.
+- Re-running the task immediately performs zero sends and changes no
+  rows (idempotency).
 - When `send_email` raises (simulated), loop continues to subsequent
-  organizers and watermark still updates (matches real `send_email`
-  behavior, which swallows exceptions internally).
+  organizers and the row's `outreach_sent_at` is still set at the end
+  (matches real `send_email` behavior, which swallows exceptions
+  internally).
 - A `ScoutChallenge` whose `organizers` is an empty list or missing the
-  `email` key produces zero calls but does not break the loop.
+  `email` key produces zero calls but is still marked
+  `outreach_sent_at` (we don't want to re-query empty rows every run).
 
 ### Manual end-to-end (before declaring done)
 
@@ -280,19 +288,17 @@ second prompt.
 2. Set `SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID` to a real test
    template ID in the SendGrid dashboard.
 3. Insert a `ScoutChallenge` row via Django shell whose single organizer's
-   `email` is a test inbox you control and whose `first_seen` is the
-   current time (e.g.
-   `ScoutChallenge.objects.create(..., organizers=[{"name": "...", "email": "you@example.com"}])`).
-4. Delete the `LastOutreachRun` row (or set its `last_run_at` to
-   `first_seen - 1 minute`).
-5. Run the task directly:
+   `email` is a test inbox you control and whose `outreach_sent_at` is
+   null (the default on insert):
+   `ScoutChallenge.objects.create(..., organizers=[{"name": "...", "email": "you@example.com"}])`.
+4. Run the task directly:
    `python -c "from scout.tasks import send_daily_outreach; send_daily_outreach()"`
-6. Confirm:
+5. Confirm:
    - Email arrives at the test inbox, From = `outreach@eval.ai`.
    - Subject and body render with the variables from the ScoutChallenge row.
-   - `LastOutreachRun.last_run_at` is updated to the run start time.
-7. Re-run the task → confirm no second email is sent (watermark filter
-   excludes the now-older ScoutChallenge).
+   - The row's `outreach_sent_at` is now set (check via Django shell or admin).
+6. Re-run the task → confirm no second email is sent (the row's
+   `outreach_sent_at` is no longer null).
 
 ## Dependencies
 
