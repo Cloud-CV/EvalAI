@@ -59,6 +59,7 @@ OUR_APPS = [
     "jobs",
     "participants",
     "web",
+    "scout",
 ]
 
 THIRD_PARTY_APPS = [
