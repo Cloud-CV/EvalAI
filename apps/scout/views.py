@@ -6,10 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.crypto import constant_time_compare
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-
 from scout.dedup import canonical_key
 from scout.models import Scout, ScoutChallenge, ScoutRun
-
 
 logger = logging.getLogger(__name__)
 

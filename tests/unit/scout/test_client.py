@@ -2,8 +2,7 @@ import json
 from unittest import TestCase
 
 import responses
-
-from scout.client import YutoriClient, YutoriAPIError
+from scout.client import YutoriAPIError, YutoriClient
 
 
 class YutoriClientTests(TestCase):

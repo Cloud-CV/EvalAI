@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 from django.test import TestCase as DjangoTestCase
-
 from scout.models import ScoutChallenge
 from scout.outreach import build_template_data, iter_pending_targets
 
@@ -70,12 +69,13 @@ class IterPendingTargetsTests(DjangoTestCase):
 
     def test_includes_only_challenges_with_null_outreach_sent_at(self):
         from django.utils import timezone
-        already_sent = self._make(
+
+        self._make(
             "old",
             [{"name": "A", "email": "a@x.com"}],
             outreach_sent_at=timezone.now(),
         )
-        pending = self._make("new", [{"name": "B", "email": "b@x.com"}])
+        self._make("new", [{"name": "B", "email": "b@x.com"}])
         pairs = list(iter_pending_targets())
         names = sorted(c.benchmark_name for c, _ in pairs)
         self.assertEqual(names, ["new"])

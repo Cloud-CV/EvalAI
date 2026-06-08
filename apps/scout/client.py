@@ -1,6 +1,5 @@
 import requests
 
-
 YUTORI_API_BASE = "https://api.yutori.com"
 
 
@@ -53,11 +52,7 @@ class YutoriClient(object):
         )
 
     def pause_scout(self, scout_id):
-        return self._post(
-            "/v1/scouting/tasks/{}/pause".format(scout_id), {}
-        )
+        return self._post("/v1/scouting/tasks/{}/pause".format(scout_id), {})
 
     def resume_scout(self, scout_id):
-        return self._post(
-            "/v1/scouting/tasks/{}/resume".format(scout_id), {}
-        )
+        return self._post("/v1/scouting/tasks/{}/resume".format(scout_id), {})

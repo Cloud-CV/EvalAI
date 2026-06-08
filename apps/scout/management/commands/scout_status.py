@@ -1,9 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-
-from scout.client import YutoriClient, YutoriAPIError
-from scout.models import Scout, ScoutRun
+from scout.client import YutoriAPIError, YutoriClient
+from scout.models import Scout
 
 
 class Command(BaseCommand):
@@ -68,9 +67,7 @@ class Command(BaseCommand):
                         "Resumed Scout(name={}).".format(scout.name)
                     )
             except YutoriAPIError as err:
-                raise CommandError(
-                    "Yutori API call failed: {}".format(err)
-                )
+                raise CommandError("Yutori API call failed: {}".format(err))
             return
 
         if name:
@@ -107,9 +104,7 @@ class Command(BaseCommand):
             "  view_url: {}".format(scout.yutori_view_url or "-")
         )
         recent = list(scout.runs.all()[:recent_runs])
-        self.stdout.write(
-            "  last {} runs:".format(recent_runs)
-        )
+        self.stdout.write("  last {} runs:".format(recent_runs))
         if not recent:
             self.stdout.write("    (none)")
         for run in recent:

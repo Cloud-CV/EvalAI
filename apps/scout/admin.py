@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from scout.models import Scout, ScoutChallenge, ScoutRun
 
 

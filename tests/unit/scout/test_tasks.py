@@ -2,9 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 from django.test.utils import override_settings
-
 from scout.models import ScoutChallenge
-
 
 SENDGRID_TEMPLATES = {"OUTREACH_BENCHMARK_HOSTING": "tmpl-123"}
 
@@ -44,6 +42,7 @@ class SendDailyOutreachTests(TestCase):
         self._seed("beta", [{"name": "C", "email": "c@x.com"}])
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
 
         self.assertEqual(mock_send.call_count, 3)
@@ -61,6 +60,7 @@ class SendDailyOutreachTests(TestCase):
         self._seed("alpha", [{"name": "A", "email": "a@x.com"}])
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
 
         row = ScoutChallenge.objects.get(benchmark_name="alpha")
@@ -69,6 +69,7 @@ class SendDailyOutreachTests(TestCase):
     @mock.patch("scout.tasks.send_email")
     def test_skips_already_sent_rows(self, mock_send):
         from django.utils import timezone
+
         self._seed(
             "old",
             [{"name": "Z", "email": "z@x.com"}],
@@ -77,6 +78,7 @@ class SendDailyOutreachTests(TestCase):
         self._seed("new", [{"name": "Y", "email": "y@x.com"}])
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
 
         self.assertEqual(mock_send.call_count, 1)
@@ -87,6 +89,7 @@ class SendDailyOutreachTests(TestCase):
     @mock.patch("scout.tasks.send_email")
     def test_idempotent_when_no_pending_rows(self, mock_send):
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
         self.assertEqual(mock_send.call_count, 0)
 
@@ -95,6 +98,7 @@ class SendDailyOutreachTests(TestCase):
         self._seed("alpha", [{"name": "A", "email": "a@x.com"}])
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
         self.assertEqual(mock_send.call_count, 1)
 
@@ -106,6 +110,7 @@ class SendDailyOutreachTests(TestCase):
         c = self._seed("empty", [])
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
 
         self.assertEqual(mock_send.call_count, 0)
@@ -126,6 +131,7 @@ class SendDailyOutreachTests(TestCase):
         )
 
         from scout.tasks import send_daily_outreach
+
         send_daily_outreach()
 
         self.assertEqual(mock_send.call_count, 2)

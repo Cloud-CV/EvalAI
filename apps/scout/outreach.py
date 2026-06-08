@@ -22,7 +22,7 @@ def iter_pending_targets():
     """Yield (challenge, organizer_dict) pairs for every pending row's
     organizers that have a usable email."""
     for challenge in pending_challenges().iterator():
-        for organizer in (challenge.organizers or []):
+        for organizer in challenge.organizers or []:
             email = (organizer.get("email") or "").strip()
             if not email:
                 continue

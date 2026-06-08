@@ -9,59 +9,132 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Scout',
+            name="Scout",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(db_index=True, max_length=64, unique=True)),
-                ('webhook_token', models.CharField(max_length=128)),
-                ('scout_id', models.CharField(max_length=64, unique=True)),
-                ('query_hash', models.CharField(max_length=64)),
-                ('webhook_url', models.URLField(max_length=512)),
-                ('yutori_view_url', models.URLField(blank=True, max_length=512)),
-                ('paused_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                (
+                    "name",
+                    models.CharField(
+                        db_index=True, max_length=64, unique=True
+                    ),
+                ),
+                ("webhook_token", models.CharField(max_length=128)),
+                ("scout_id", models.CharField(max_length=64, unique=True)),
+                ("query_hash", models.CharField(max_length=64)),
+                ("webhook_url", models.URLField(max_length=512)),
+                (
+                    "yutori_view_url",
+                    models.URLField(blank=True, max_length=512),
+                ),
+                ("paused_at", models.DateTimeField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='ScoutRun',
+            name="ScoutRun",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('received_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('raw_payload', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('new_challenge_count', models.IntegerField(default=0)),
-                ('parse_warnings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=list)),
-                ('scout', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='runs', to='scout.Scout')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "received_at",
+                    models.DateTimeField(auto_now_add=True, db_index=True),
+                ),
+                (
+                    "raw_payload",
+                    django.contrib.postgres.fields.jsonb.JSONField(),
+                ),
+                ("new_challenge_count", models.IntegerField(default=0)),
+                (
+                    "parse_warnings",
+                    django.contrib.postgres.fields.jsonb.JSONField(
+                        blank=True, default=list
+                    ),
+                ),
+                (
+                    "scout",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="runs",
+                        to="scout.Scout",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-received_at'],
+                "ordering": ["-received_at"],
             },
         ),
         migrations.CreateModel(
-            name='ScoutChallenge',
+            name="ScoutChallenge",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('benchmark_name', models.CharField(max_length=512)),
-                ('conference', models.CharField(max_length=128)),
-                ('year', models.IntegerField()),
-                ('canonical_key', models.CharField(db_index=True, max_length=768, unique=True)),
-                ('task_area', models.CharField(blank=True, max_length=128)),
-                ('official_url', models.URLField(max_length=1024)),
-                ('dataset_url', models.URLField(blank=True, max_length=1024)),
-                ('organizers', django.contrib.postgres.fields.jsonb.JSONField(default=list)),
-                ('evalai_suitable', models.BooleanField()),
-                ('evalai_reasoning', models.TextField(blank=True)),
-                ('first_seen', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('outreach_sent_at', models.DateTimeField(blank=True, db_index=True, null=True)),
-                ('source_run', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='challenges', to='scout.ScoutRun')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("benchmark_name", models.CharField(max_length=512)),
+                ("conference", models.CharField(max_length=128)),
+                ("year", models.IntegerField()),
+                (
+                    "canonical_key",
+                    models.CharField(
+                        db_index=True, max_length=768, unique=True
+                    ),
+                ),
+                ("task_area", models.CharField(blank=True, max_length=128)),
+                ("official_url", models.URLField(max_length=1024)),
+                ("dataset_url", models.URLField(blank=True, max_length=1024)),
+                (
+                    "organizers",
+                    django.contrib.postgres.fields.jsonb.JSONField(
+                        default=list
+                    ),
+                ),
+                ("evalai_suitable", models.BooleanField()),
+                ("evalai_reasoning", models.TextField(blank=True)),
+                (
+                    "first_seen",
+                    models.DateTimeField(auto_now_add=True, db_index=True),
+                ),
+                (
+                    "outreach_sent_at",
+                    models.DateTimeField(blank=True, db_index=True, null=True),
+                ),
+                (
+                    "source_run",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="challenges",
+                        to="scout.ScoutRun",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-first_seen'],
+                "ordering": ["-first_seen"],
             },
         ),
     ]

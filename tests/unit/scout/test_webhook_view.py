@@ -1,9 +1,7 @@
 import json
 
 from django.test import Client, TestCase
-
 from scout.models import Scout, ScoutChallenge, ScoutRun
-
 
 SAMPLE_PAYLOAD = {
     "challenges": [
@@ -93,7 +91,9 @@ class WebhookReceiverTests(TestCase):
     def test_token_for_one_scout_does_not_work_on_another(self):
         other = _make_scout(name="other", token="other-token")
         resp = self._post(
-            "/api/scout/webhook/{}/{}/".format(other.name, self.scout.webhook_token),
+            "/api/scout/webhook/{}/{}/".format(
+                other.name, self.scout.webhook_token
+            ),
             SAMPLE_PAYLOAD,
         )
         self.assertEqual(resp.status_code, 403)
@@ -141,7 +141,9 @@ class WebhookReceiverTests(TestCase):
 
     def test_same_challenge_to_two_scouts_dedupes_globally(self):
         other = _make_scout(name="other", token="other-token")
-        other_url = "/api/scout/webhook/{}/{}/".format(other.name, other.webhook_token)
+        other_url = "/api/scout/webhook/{}/{}/".format(
+            other.name, other.webhook_token
+        )
         self._post(self.url, SAMPLE_PAYLOAD)
         self._post(other_url, SAMPLE_PAYLOAD)
         self.assertEqual(ScoutRun.objects.count(), 2)

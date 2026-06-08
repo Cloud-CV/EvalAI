@@ -1,9 +1,7 @@
 from unittest import TestCase
 
 import jsonschema
-
 from scout.schema import OUTPUT_SCHEMA
-
 
 VALID_PAYLOAD = {
     "challenges": [

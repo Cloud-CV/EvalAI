@@ -3,8 +3,7 @@ import secrets
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-
-from scout.client import YutoriClient, YutoriAPIError
+from scout.client import YutoriAPIError, YutoriClient
 from scout.models import Scout
 from scout.prompt import RESEARCH_PROMPT
 from scout.schema import OUTPUT_SCHEMA

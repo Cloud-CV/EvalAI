@@ -1,12 +1,10 @@
 import logging
 
+from base.utils import send_email
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
-
-from base.utils import send_email
 from scout.outreach import build_template_data, pending_challenges
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ def send_daily_outreach():
 
     for challenge in pending_challenges().iterator():
         rows_processed += 1
-        for organizer in (challenge.organizers or []):
+        for organizer in challenge.organizers or []:
             email = (organizer.get("email") or "").strip()
             if not email:
                 continue
