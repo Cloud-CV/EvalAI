@@ -22,11 +22,14 @@ def send_daily_outreach():
 
     for challenge in pending_challenges().iterator():
         rows_processed += 1
+        row_attempted = 0
+        row_sent = 0
         for organizer in challenge.organizers or []:
             email = (organizer.get("email") or "").strip()
             if not email:
                 continue
             attempted += 1
+            row_attempted += 1
             try:
                 send_email(
                     sender=sender,
@@ -35,13 +38,18 @@ def send_daily_outreach():
                     template_data=build_template_data(challenge, organizer),
                 )
                 sent += 1
+                row_sent += 1
             except Exception:
                 logger.exception(
                     "scout outreach: send_email raised for recipient=%s",
                     email,
                 )
-        challenge.outreach_sent_at = timezone.now()
-        challenge.save(update_fields=["outreach_sent_at"])
+        # Mark the row done only if there was nothing to send, or at least one
+        # send succeeded. If every attempted send failed, leave it unmarked so
+        # the next run retries instead of silently dropping the outreach.
+        if row_attempted == 0 or row_sent > 0:
+            challenge.outreach_sent_at = timezone.now()
+            challenge.save(update_fields=["outreach_sent_at"])
 
     logger.info(
         "scout outreach complete: rows=%d attempted=%d sent=%d",

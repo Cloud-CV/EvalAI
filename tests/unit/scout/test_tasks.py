@@ -137,3 +137,28 @@ class SendDailyOutreachTests(TestCase):
         self.assertEqual(mock_send.call_count, 2)
         row = ScoutChallenge.objects.get(benchmark_name="alpha")
         self.assertIsNotNone(row.outreach_sent_at)
+
+    @mock.patch("scout.tasks.send_email")
+    def test_row_is_not_marked_when_every_send_fails(self, mock_send):
+        mock_send.side_effect = Exception("SES is down")
+        self._seed(
+            "alpha",
+            [
+                {"name": "A", "email": "a@x.com"},
+                {"name": "B", "email": "b@x.com"},
+            ],
+        )
+
+        from scout.tasks import send_daily_outreach
+
+        send_daily_outreach()
+
+        self.assertEqual(mock_send.call_count, 2)
+        row = ScoutChallenge.objects.get(benchmark_name="alpha")
+        self.assertIsNone(row.outreach_sent_at)
+
+        mock_send.side_effect = None
+        send_daily_outreach()
+        self.assertEqual(mock_send.call_count, 4)
+        row.refresh_from_db()
+        self.assertIsNotNone(row.outreach_sent_at)
