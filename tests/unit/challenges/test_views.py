@@ -1503,7 +1503,7 @@ class MapChallengeAndParticipantTeam(
         """Test that participation is blocked when team exceeds the limit."""
         self.challenge2.max_team_members = 1
         self.challenge2.save()
-        self.client.force_authenticate(user=self.participant_team2.created_by)
+        self.client.force_authenticate(user=self.user4)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -1515,6 +1515,11 @@ class MapChallengeAndParticipantTeam(
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("limits teams to 1 member(s)", response.data["error"])
         self.assertIn("Your team has 2 member(s)", response.data["error"])
+        self.assertFalse(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
 
     def test_participation_allowed_when_team_within_max_team_members(
         self,
@@ -1522,7 +1527,7 @@ class MapChallengeAndParticipantTeam(
         """Test participation allowed when team size is within the limit."""
         self.challenge2.max_team_members = 2
         self.challenge2.save()
-        self.client.force_authenticate(user=self.participant_team2.created_by)
+        self.client.force_authenticate(user=self.user4)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -1532,6 +1537,11 @@ class MapChallengeAndParticipantTeam(
         )
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
 
     def test_participation_allowed_when_max_team_members_is_unset(
         self,
@@ -1539,7 +1549,7 @@ class MapChallengeAndParticipantTeam(
         """Test participation allowed when no max team member limit is set."""
         self.challenge2.max_team_members = None
         self.challenge2.save()
-        self.client.force_authenticate(user=self.participant_team2.created_by)
+        self.client.force_authenticate(user=self.user4)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -1549,6 +1559,11 @@ class MapChallengeAndParticipantTeam(
         )
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
 
 
 class DisableChallengeTest(BaseAPITestClass):

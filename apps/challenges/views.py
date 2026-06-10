@@ -633,16 +633,6 @@ def add_participant_team_to_challenge(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-    if team_exceeds_challenge_max_members(participant_team, challenge):
-        member_count = get_participant_team_member_count(participant_team)
-        response_data = {
-            "error": (
-                "This challenge limits teams to {} member(s). Your team has "
-                "{} member(s). Please remove members before participating."
-            ).format(challenge.max_team_members, member_count)
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     # check to disallow the user if he is a Challenge Host for this challenge
     participant_team_user_ids = set(
         Participant.objects.select_related("user")
@@ -671,16 +661,35 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if participant_team.challenge_set.filter(id=challenge_pk).exists():
-        response_data = {
-            "error": "Team already exists",
-            "challenge_id": int(challenge_pk),
-            "participant_team_id": int(participant_team_pk),
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    else:
+    with transaction.atomic():
+        participant_team = ParticipantTeam.objects.select_for_update().get(
+            pk=participant_team.pk
+        )
+        if team_exceeds_challenge_max_members(participant_team, challenge):
+            member_count = get_participant_team_member_count(participant_team)
+            response_data = {
+                "error": (
+                    "This challenge limits teams to {} member(s). Your team "
+                    "has {} member(s). Please remove members before "
+                    "participating."
+                ).format(challenge.max_team_members, member_count)
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if participant_team.challenge_set.filter(id=challenge_pk).exists():
+            response_data = {
+                "error": "Team already exists",
+                "challenge_id": int(challenge_pk),
+                "participant_team_id": int(participant_team_pk),
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         challenge.participant_teams.add(participant_team)
-        return Response(status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])

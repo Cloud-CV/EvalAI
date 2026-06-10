@@ -1,6 +1,7 @@
 # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
 import json
 from datetime import timedelta
+from unittest.mock import patch
 
 from accounts.models import Profile
 from allauth.account.models import EmailAddress
@@ -497,6 +498,37 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    @patch("participants.views.get_list_of_challenges_for_participant_team")
+    def test_invite_blocked_despite_stale_participation_snapshot(
+        self, mock_get_challenges
+    ):
+        """Capacity must be re-checked inside the transaction, not from a
+        stale participation snapshot taken at request start."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        mock_get_challenges.return_value = Challenge.objects.none()
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
 
     def test_invite_allowed_when_team_below_max_members_for_participated_challenge(
         self,
@@ -514,6 +546,11 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
 
     def test_invite_blocked_when_team_at_strictest_limit_across_challenges(
         self,
@@ -538,6 +575,11 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
 
     def test_invite_blocked_when_team_in_require_complete_profile_challenge_and_invitee_profile_incomplete(
         self,
