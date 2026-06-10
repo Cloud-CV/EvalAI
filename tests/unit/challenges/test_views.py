@@ -178,6 +178,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge.require_complete_profile,
+                "max_team_members": self.challenge.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -607,6 +608,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
+            "max_team_members": self.challenge.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -718,6 +720,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
+            "max_team_members": self.challenge.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -854,6 +857,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
+            "max_team_members": self.challenge.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -939,6 +943,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
+            "max_team_members": self.challenge.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -1492,6 +1497,74 @@ class MapChallengeAndParticipantTeam(
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_participation_blocked_when_team_exceeds_max_team_members(
+        self,
+    ):
+        """Test that participation is blocked when team exceeds the limit."""
+        self.challenge2.max_team_members = 1
+        self.challenge2.save()
+        self.client.force_authenticate(user=self.user4)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team2.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("limits teams to 1 member(s)", response.data["error"])
+        self.assertIn("Your team has 2 member(s)", response.data["error"])
+        self.assertFalse(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
+
+    def test_participation_allowed_when_team_within_max_team_members(
+        self,
+    ):
+        """Test participation allowed when team size is within the limit."""
+        self.challenge2.max_team_members = 2
+        self.challenge2.save()
+        self.client.force_authenticate(user=self.user4)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team2.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
+
+    def test_participation_allowed_when_max_team_members_is_unset(
+        self,
+    ):
+        """Test participation allowed when no max team member limit is set."""
+        self.challenge2.max_team_members = None
+        self.challenge2.save()
+        self.client.force_authenticate(user=self.user4)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team2.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            self.challenge2.participant_teams.filter(
+                pk=self.participant_team2.pk
+            ).exists()
+        )
+
 
 class DisableChallengeTest(BaseAPITestClass):
     def setUp(self):
@@ -2022,6 +2095,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
+                "max_team_members": self.challenge3.max_team_members,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2115,6 +2189,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2208,6 +2283,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge4.require_complete_profile,
+                "max_team_members": self.challenge4.max_team_members,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2301,6 +2377,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge4.require_complete_profile,
+                "max_team_members": self.challenge4.max_team_members,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2375,6 +2452,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
+                "max_team_members": self.challenge3.max_team_members,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2449,6 +2527,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2628,6 +2707,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
+                "max_team_members": self.challenge3.max_team_members,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -2878,6 +2958,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
             "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge3.require_complete_profile,
+            "max_team_members": self.challenge3.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2985,6 +3066,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
             "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge4.require_complete_profile,
+            "max_team_members": self.challenge4.max_team_members,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -3153,6 +3235,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3244,6 +3327,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3335,6 +3419,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3424,6 +3509,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge.require_complete_profile,
+                "max_team_members": self.challenge.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3498,6 +3584,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
+                "max_team_members": self.challenge2.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],

@@ -75,6 +75,46 @@ def get_list_of_challenges_participated_by_a_user(user):
     return get_list_of_challenges_for_participant_team(participant_teams)
 
 
+def get_participant_team_member_count(participant_team):
+    """Returns the number of members in a participant team."""
+    return Participant.objects.filter(team=participant_team).count()
+
+
+def get_effective_max_team_members_for_team(participant_team):
+    """
+    Returns the strictest max_team_members limit among challenges the team
+    has joined. Returns None when no limit applies.
+    """
+    challenges = get_list_of_challenges_for_participant_team(
+        [participant_team]
+    )
+    limits = challenges.exclude(max_team_members__isnull=True).values_list(
+        "max_team_members", flat=True
+    )
+    limits = list(limits)
+    if not limits:
+        return None
+    return min(limits)
+
+
+def team_can_add_member(participant_team):
+    """Returns whether the team can invite or accept another member."""
+    limit = get_effective_max_team_members_for_team(participant_team)
+    if limit is None:
+        return True
+    return get_participant_team_member_count(participant_team) < limit
+
+
+def team_exceeds_challenge_max_members(participant_team, challenge):
+    """Returns whether the team exceeds a challenge's max team member limit."""
+    if challenge.max_team_members is None:
+        return False
+    return (
+        get_participant_team_member_count(participant_team)
+        > challenge.max_team_members
+    )
+
+
 def has_participated_in_require_complete_profile_challenge(user):
     """
     Returns True if the user has participated in any active challenge that
