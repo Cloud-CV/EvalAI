@@ -82,11 +82,13 @@ from participants.models import Participant, ParticipantTeam
 from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_member_count,
     get_participant_team_of_user_for_a_challenge,
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
+    team_exceeds_challenge_max_members,
 )
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -630,6 +632,16 @@ def add_participant_team_to_challenge(
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+    if team_exceeds_challenge_max_members(participant_team, challenge):
+        member_count = get_participant_team_member_count(participant_team)
+        response_data = {
+            "error": (
+                "This challenge limits teams to {} member(s). Your team has "
+                "{} member(s). Please remove members before participating."
+            ).format(challenge.max_team_members, member_count)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
     participant_team_user_ids = set(

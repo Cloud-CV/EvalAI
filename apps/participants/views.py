@@ -42,12 +42,14 @@ from .serializers import (
     ParticipantTeamSerializer,
 )
 from .utils import (
+    get_effective_max_team_members_for_team,
     get_list_of_challenges_for_participant_team,
     get_list_of_challenges_participated_by_a_user,
     get_participant_team_of_user_for_a_challenge,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
+    team_can_add_member,
 )
 
 
@@ -303,6 +305,21 @@ def invite_participant_to_team(request, pk):
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
+
+    if len(team_participated_challenges) > 0 and not team_can_add_member(
+        participant_team
+    ):
+        max_team_members = get_effective_max_team_members_for_team(
+            participant_team
+        )
+        response_data = {
+            "error": (
+                "This team has reached the maximum of {} member(s) allowed "
+                "for the challenge(s) it has joined. Please remove members "
+                "or contact the challenge host."
+            ).format(max_team_members)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # If team is in any active challenge that requires complete profile,
     # the invited user must have a complete profile (prevents bypassing

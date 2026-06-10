@@ -482,6 +482,63 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_invite_blocked_when_team_at_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is at capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("maximum of 1 member(s)", response.data["error"])
+
+    def test_invite_allowed_when_team_below_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is below capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=2,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        expected = {"message": "User has been successfully added to the team!"}
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invite_blocked_when_team_at_strictest_limit_across_challenges(
+        self,
+    ):
+        """Inviting is blocked when any joined challenge's limit is reached."""
+        challenge_a = Challenge.objects.create(
+            title="Challenge A",
+            creator=self.challenge_host_team,
+            max_team_members=5,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_b = Challenge.objects.create(
+            title="Challenge B",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_a.participant_teams.add(self.participant_team)
+        challenge_b.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("maximum of 1 member(s)", response.data["error"])
+
     def test_invite_blocked_when_team_in_require_complete_profile_challenge_and_invitee_profile_incomplete(
         self,
     ):
@@ -1128,6 +1185,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                         "manual_participant_approval": self.challenge1.manual_participant_approval,
                         "require_complete_profile": self.challenge1.require_complete_profile,
+                        "max_team_members": self.challenge1.max_team_members,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
@@ -1361,6 +1419,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge1.manual_participant_approval,
                 "require_complete_profile": self.challenge1.require_complete_profile,
+                "max_team_members": self.challenge1.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
