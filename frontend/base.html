@@ -2,20 +2,23 @@
 <html ng-app="evalai" ng-strict-di>
 
 <head>
-    <title ng-bind="pageTitle + ' - EvalAI'"></title>
+    <title ng-bind="ngMeta.title + ngMeta.titleSuffix"></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks.">
+    <meta name="description" ng-attr-content="{{ngMeta.tag_description}}" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks.">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <!--Open Graph Related Stuff-->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="EvalAI: Evaluating state of the art in AI" />
-    <meta property="og:url" content="https://eval.ai" />
-    <meta property="og:image" content="https://eval.ai/dist/images/evalai-cover.png" />
+    <meta property="og:title" ng-attr-content="{{ngMeta.title}}" content="EvalAI: Evaluating state of the art in AI" />
+    <meta property="og:url" ng-attr-content="{{ngMeta.tag_url}}" content="https://eval.ai" />
+    <meta property="og:image" ng-attr-content="{{ngMeta.tag_image}}" content="https://eval.ai/dist/images/evalai-cover.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content="EvalAI" />
-    <meta property="og:description" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks." />
+    <meta property="og:description" ng-attr-content="{{ngMeta.tag_description}}" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks." />
     <!--Twitter Card Stuff-->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" ng-attr-content="{{ngMeta.title}}" content="EvalAI: Evaluating state of the art in AI" />
+    <meta name="twitter:description" ng-attr-content="{{ngMeta.tag_description}}" content="EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks." />
+    <meta name="twitter:image" ng-attr-content="{{ngMeta.tag_image}}" content="https://eval.ai/dist/images/evalai-cover.png" />
     <!-- Favicon -->
     <link rel="shortcut icon" href="dist/images/favicon.ico" type="image/x-icon">
     <link rel="icon" href="dist/images/favicon.ico" type="image/x-icon">
