@@ -1521,6 +1521,41 @@ class MapChallengeAndParticipantTeam(
             ).exists()
         )
 
+    def test_participation_allowed_for_host_participant_team_despite_max_members(
+        self,
+    ):
+        """Hosts participating on an all-host team bypass max_team_members."""
+        self.challenge2.max_team_members = 1
+        self.challenge2.save()
+        host_participant_team = ParticipantTeam.objects.create(
+            team_name="Host Participant Team", created_by=self.user2
+        )
+        Participant.objects.create(
+            user=self.user2,
+            status=Participant.SELF,
+            team=host_participant_team,
+        )
+        Participant.objects.create(
+            user=self.user3,
+            status=Participant.ACCEPTED,
+            team=host_participant_team,
+        )
+        self.client.force_authenticate(user=self.user2)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": host_participant_team.pk,
+            },
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            self.challenge2.participant_teams.filter(
+                pk=host_participant_team.pk
+            ).exists()
+        )
+
     def test_participation_allowed_when_team_within_max_team_members(
         self,
     ):

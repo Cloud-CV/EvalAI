@@ -13,6 +13,7 @@ from participants.utils import (
     get_participant_team_member_count,
     has_participant_team_participated_in_challenge,
     has_participated_in_require_complete_profile_challenge,
+    is_participant_team_exempt_from_max_members_for_challenge,
     team_can_add_member,
     team_exceeds_challenge_max_members,
 )
@@ -365,3 +366,92 @@ class TestMaxTeamMembersUtils(TestCase):
                 self.participant_team, challenge
             )
         )
+
+    def test_host_only_team_exempt_from_own_challenge_limit(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+        self.assertFalse(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+        self.assertTrue(team_can_add_member(self.participant_team))
+        self.assertIsNone(
+            get_effective_max_team_members_for_team(self.participant_team)
+        )
+
+    def test_mixed_team_not_exempt_from_organizer_challenge(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+
+        self.assertFalse(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+        self.assertTrue(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+
+    def test_host_challenge_exempt_but_other_challenge_still_limits(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        host_challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+        other_host_team = ChallengeHostTeam.objects.create(
+            team_name="other_host_team",
+            created_by=self.other_user,
+        )
+        other_challenge = Challenge.objects.create(
+            title="other challenge",
+            creator=other_host_team,
+            max_team_members=2,
+        )
+        host_challenge.participant_teams.add(self.participant_team)
+        other_challenge.participant_teams.add(self.participant_team)
+
+        self.assertEqual(
+            get_effective_max_team_members_for_team(self.participant_team), 2
+        )
+        self.assertFalse(team_can_add_member(self.participant_team))

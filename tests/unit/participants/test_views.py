@@ -530,6 +530,42 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             ).exists()
         )
 
+    def test_invite_allowed_for_host_only_team_at_own_challenge(self):
+        """Hosts can grow their baseline team beyond max_team_members."""
+        ChallengeHost.objects.create(
+            user=self.user1,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        host_participant_team = ParticipantTeam.objects.create(
+            team_name="Host Baseline Team", created_by=self.user1
+        )
+        Participant.objects.create(
+            user=self.user1,
+            status=Participant.SELF,
+            team=host_participant_team,
+        )
+        challenge = Challenge.objects.create(
+            title="Host Own Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(host_participant_team)
+        url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={"pk": host_participant_team.pk},
+        )
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=host_participant_team, user=self.invite_user
+            ).exists()
+        )
+
     def test_invite_allowed_when_team_below_max_members_for_participated_challenge(
         self,
     ):
