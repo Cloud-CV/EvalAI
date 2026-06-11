@@ -498,6 +498,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertIn("Max Team Members Challenge", response.data["error"])
         self.assertFalse(
             Participant.objects.filter(
                 team=self.participant_team, user=self.invite_user
@@ -524,6 +525,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertIn("Max Team Members Challenge", response.data["error"])
         self.assertFalse(
             Participant.objects.filter(
                 team=self.participant_team, user=self.invite_user
@@ -575,6 +577,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("maximum of 1 member(s)", response.data["error"])
+        self.assertIn("Challenge B", response.data["error"])
         self.assertFalse(
             Participant.objects.filter(
                 team=self.participant_team, user=self.invite_user

@@ -11,6 +11,7 @@ from participants.utils import (
     get_effective_max_team_members_for_team,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_member_count,
+    get_team_capacity_blocking_challenge_titles,
     has_participant_team_participated_in_challenge,
     has_participated_in_require_complete_profile_challenge,
     team_can_add_member,
@@ -324,6 +325,25 @@ class TestMaxTeamMembersUtils(TestCase):
         challenge_b.participant_teams.add(self.participant_team)
         self.assertEqual(
             get_effective_max_team_members_for_team(self.participant_team), 3
+        )
+
+    def test_get_team_capacity_blocking_challenge_titles(self):
+        challenge_at_capacity = Challenge.objects.create(
+            title="At Capacity Challenge",
+            creator=self.host_team,
+            max_team_members=2,
+        )
+        challenge_below_capacity = Challenge.objects.create(
+            title="Below Capacity Challenge",
+            creator=self.host_team,
+            max_team_members=5,
+        )
+        challenge_at_capacity.participant_teams.add(self.participant_team)
+        challenge_below_capacity.participant_teams.add(self.participant_team)
+
+        self.assertEqual(
+            get_team_capacity_blocking_challenge_titles(self.participant_team),
+            ["At Capacity Challenge"],
         )
 
     def test_team_can_add_member_when_below_limit(self):

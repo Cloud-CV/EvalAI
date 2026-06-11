@@ -47,6 +47,7 @@ from .utils import (
     get_list_of_challenges_for_participant_team,
     get_list_of_challenges_participated_by_a_user,
     get_participant_team_of_user_for_a_challenge,
+    get_team_capacity_blocking_challenge_titles,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
@@ -345,12 +346,15 @@ def invite_participant_to_team(request, pk):
             max_team_members = get_effective_max_team_members_for_team(
                 participant_team
             )
+            challenge_names = ", ".join(
+                get_team_capacity_blocking_challenge_titles(participant_team)
+            )
             response_data = {
                 "error": (
                     "This team has reached the maximum of {} member(s) "
-                    "allowed for the challenge(s) it has joined. Please "
-                    "remove members or contact the challenge host."
-                ).format(max_team_members)
+                    "allowed for {}. Please remove members or contact the "
+                    "challenge host."
+                ).format(max_team_members, challenge_names)
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE

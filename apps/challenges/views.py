@@ -669,10 +669,14 @@ def add_participant_team_to_challenge(
             member_count = get_participant_team_member_count(participant_team)
             response_data = {
                 "error": (
-                    "This challenge limits teams to {} member(s). Your team "
-                    "has {} member(s). Please remove members before "
+                    "The challenge {} limits teams to {} member(s). Your "
+                    "team has {} member(s). Please remove members before "
                     "participating."
-                ).format(challenge.max_team_members, member_count)
+                ).format(
+                    challenge.title,
+                    challenge.max_team_members,
+                    member_count,
+                )
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE

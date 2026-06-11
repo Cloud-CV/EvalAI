@@ -97,6 +97,20 @@ def get_effective_max_team_members_for_team(participant_team):
     return min(limits)
 
 
+def get_team_capacity_blocking_challenge_titles(participant_team):
+    """
+    Returns titles of joined challenges whose max_team_members limit the team
+    has reached or exceeded.
+    """
+    member_count = get_participant_team_member_count(participant_team)
+    return list(
+        get_list_of_challenges_for_participant_team([participant_team])
+        .exclude(max_team_members__isnull=True)
+        .filter(max_team_members__lte=member_count)
+        .values_list("title", flat=True)
+    )
+
+
 def team_can_add_member(participant_team):
     """Returns whether the team can invite or accept another member."""
     limit = get_effective_max_team_members_for_team(participant_team)
