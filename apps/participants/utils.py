@@ -98,7 +98,8 @@ def is_participant_team_exempt_from_max_members_for_challenge(
 
     host_user_ids = set(
         ChallengeHost.objects.filter(
-            team_name_id=challenge.creator_id
+            team_name_id=challenge.creator_id,
+            status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
         ).values_list("user_id", flat=True)
     )
     return all(user_id in host_user_ids for user_id in member_user_ids)

@@ -423,6 +423,29 @@ class TestMaxTeamMembersUtils(TestCase):
             )
         )
 
+    def test_team_with_denied_host_not_exempt_from_organizer_challenge(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.DENIED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+
+        self.assertFalse(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+
     def test_host_challenge_exempt_but_other_challenge_still_limits(self):
         ChallengeHost.objects.create(
             user=self.user,
