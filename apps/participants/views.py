@@ -351,10 +351,11 @@ def invite_participant_to_team(request, pk):
             )
             response_data = {
                 "error": (
-                    "This team has reached the maximum of {} member(s) "
-                    "allowed for {}. Please remove members or contact the "
+                    "This team has reached the team-member limit for "
+                    "{}. The strictest limit across joined challenges is "
+                    "{} member(s). Please remove members or contact the "
                     "challenge host."
-                ).format(max_team_members, challenge_names)
+                ).format(challenge_names, max_team_members)
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
