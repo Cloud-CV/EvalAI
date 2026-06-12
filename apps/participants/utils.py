@@ -1,5 +1,6 @@
 from base.utils import get_model_object
 from challenges.models import Challenge
+from hosts.models import ChallengeHost
 
 from .models import Participant, ParticipantTeam
 
@@ -80,6 +81,30 @@ def get_participant_team_member_count(participant_team):
     return Participant.objects.filter(team=participant_team).count()
 
 
+def is_participant_team_exempt_from_max_members_for_challenge(
+    participant_team, challenge
+):
+    """
+    Returns True when every member of the participant team is a host of the
+    challenge's organizing team (baseline/testing team exemption).
+    """
+    member_user_ids = list(
+        Participant.objects.filter(team=participant_team).values_list(
+            "user_id", flat=True
+        )
+    )
+    if not member_user_ids:
+        return False
+
+    host_user_ids = set(
+        ChallengeHost.objects.filter(
+            team_name_id=challenge.creator_id,
+            status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+        ).values_list("user_id", flat=True)
+    )
+    return all(user_id in host_user_ids for user_id in member_user_ids)
+
+
 def get_effective_max_team_members_for_team(participant_team):
     """
     Returns the strictest max_team_members limit among challenges the team
@@ -88,9 +113,13 @@ def get_effective_max_team_members_for_team(participant_team):
     challenges = get_list_of_challenges_for_participant_team(
         [participant_team]
     )
-    limits = challenges.exclude(max_team_members__isnull=True).values_list(
-        "max_team_members", flat=True
-    )
+    limits = []
+    for challenge in challenges.exclude(max_team_members__isnull=True):
+        if is_participant_team_exempt_from_max_members_for_challenge(
+            participant_team, challenge
+        ):
+            continue
+        limits.append(challenge.max_team_members)
     limits = list(limits)
     if not limits:
         return None
@@ -122,6 +151,10 @@ def team_can_add_member(participant_team):
 def team_exceeds_challenge_max_members(participant_team, challenge):
     """Returns whether the team exceeds a challenge's max team member limit."""
     if challenge.max_team_members is None:
+        return False
+    if is_participant_team_exempt_from_max_members_for_challenge(
+        participant_team, challenge
+    ):
         return False
     return (
         get_participant_team_member_count(participant_team)
