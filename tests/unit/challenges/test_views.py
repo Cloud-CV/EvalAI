@@ -1514,6 +1514,7 @@ class MapChallengeAndParticipantTeam(
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertIn("limits teams to 1 member(s)", response.data["error"])
+        self.assertIn("Some Test Challenge", response.data["error"])
         self.assertIn("Your team has 2 member(s)", response.data["error"])
         self.assertFalse(
             self.challenge2.participant_teams.filter(
