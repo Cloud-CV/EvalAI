@@ -71,7 +71,14 @@ class CreateContactMessage(BaseAPITestCase):
 
 class CreateTeamMember(APITestCase):
     def setUp(self):
-        self.url = reverse_lazy("web:our_team")
+        self.url = reverse_lazy("web:add_team_member")
+        self.user = User.objects.create(
+            username="adminuser",
+            email="admin@test.com",
+            password="secret_password",
+            is_staff=True,
+            is_superuser=True,
+        )
         self.data = {
             "name": "Test User",
             "email": "test@user.com",
@@ -82,6 +89,7 @@ class CreateTeamMember(APITestCase):
 
     def test_create_team_member_default_team_type(self):
         # TODO add 'Header' and 'Background image' to testing
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.all().count(), 1)
@@ -100,6 +108,7 @@ class CreateTeamMember(APITestCase):
     def test_create_team_member_custom_team_type(self):
         # TODO add 'Header' and 'Background image' to testing
         self.data["team_type"] = Team.CORE_TEAM
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.all().count(), 1)
