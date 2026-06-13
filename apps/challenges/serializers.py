@@ -1,5 +1,8 @@
+import copy
+
 from accounts.serializers import UserDetailsSerializer
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
 from rest_framework import serializers
 
@@ -579,9 +582,18 @@ class ChallengeInvitationRegisterSerializer(serializers.Serializer):
     )
     password = serializers.CharField(write_only=True)
 
-    def validate_password(self, value):
-        validate_password(value, self.context.get("user"))
-        return value
+    def validate(self, attrs):
+        user = self.context.get("user")
+        if user is not None:
+            user = copy.copy(user)
+            user.first_name = attrs.get("first_name", user.first_name)
+            user.last_name = attrs.get("last_name", user.last_name)
+
+        try:
+            validate_password(attrs["password"], user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": exc.messages})
+        return attrs
 
 
 class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
