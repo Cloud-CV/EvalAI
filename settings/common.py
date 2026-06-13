@@ -248,7 +248,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scout-outreach-daily": {
         "task": "scout.tasks.send_daily_outreach",
-        "schedule": crontab(hour=10, minute=0),  # 10:00 UTC daily
+        # 18:30 UTC = 10:30 AM PST (winter) / 11:30 AM PDT (summer).
+        # Beat runs in UTC because TIME_ZONE = "UTC"; set CELERY_TIMEZONE
+        # to "America/Los_Angeles" if year-round 10:30 Pacific is required.
+        "schedule": crontab(hour=18, minute=30),
     },
 }
 
