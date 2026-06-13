@@ -4,7 +4,7 @@ var gulp = require('gulp'),
     fs = require('fs'),
     path = require('path'),
     concat = require('gulp-concat'),
-    sass = require('gulp-sass'),
+    sass = require('gulp-sass')(require('sass')),
     postcss = require('gulp-postcss'),
     cleanCSS = require('gulp-clean-css'),
     sourcemaps = require('gulp-sourcemaps'),
@@ -79,14 +79,14 @@ minify and compress custom css files
 */
 function css() {
     return gulp.src('frontend/src/css/main.scss')
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass({ silenceDeprecations: ['legacy-js-api', 'import'] }).on('error', sass.logError))
         .pipe(sourcemaps.init())
         .pipe(postcss([autoprefixer()]))
         .pipe(gulp_if(production, cleanCSS()))
         .pipe(gulp_if(production, rename({ suffix: '.min' })))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('frontend/dist/css'))
-        pipe(connect.reload());
+        .pipe(connect.reload());
 }
 
 /*
@@ -128,8 +128,8 @@ function js() {
         .pipe(gulp_if(production, rename({ suffix: '.min' })))
         .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'))
-    return merge(app, configs, controllers, directives, filters, services).
-        pipe(connect.reload());
+    return merge(app, configs, controllers, directives, filters, services)
+        .pipe(connect.reload());
 }
 
 /*

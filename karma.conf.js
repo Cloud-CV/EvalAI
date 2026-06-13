@@ -1,28 +1,48 @@
-const puppeteer = require('puppeteer');
-process.env.CHROME_BIN = puppeteer.executablePath();
+// Set CHROME_BIN based on availability
+const isArm = require('os').arch().includes('arm');
 
-// Karma configuration
-// Generated on Thu Apr 18 2019 11:48:30 GMT+0530 (India Standard Time)
-
+// Use system Chrome/Chromium paths (Docker container has Chrome installed)
+process.env.CHROME_BIN = process.env.CHROME_BIN || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
 module.exports = function(config) {
-  var configuration = {
-
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
-
-
-    // frameworks to use
-    // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'],
+    var configuration = {
+  
+      // base path that will be used to resolve all patterns (eg. files, exclude)
+      basePath: '',
+  
+      // frameworks to use
+      // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
+      frameworks: ['jasmine'],
 
     customLaunchers: {
-        ChromeWithNoSandbox: {
-            base: 'ChromeHeadless',
-            flags: ['--no-sandbox'],
+        ChromiumHeadlessNoSandbox: {
+          base: 'ChromiumHeadless',
+          flags: [
+            '--no-sandbox', 
+            '--disable-gpu', 
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+          ]
         },
-    },
-    browsers: ['ChromeWithNoSandbox'],
-
+        ChromeWithNoSandbox: {
+          base: 'ChromeHeadless',
+          flags: [
+            '--no-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            '--disable-ipc-flooding-protection'
+          ],
+        },
+      },
+  
+      browsers: [isArm ? 'ChromiumHeadlessNoSandbox' : 'ChromeWithNoSandbox'],  
     // list of files / patterns to load in the browser
     files: [
         'frontend/dist/vendors/*.js',
@@ -49,14 +69,21 @@ module.exports = function(config) {
         'karma-jasmine',
         'karma-chrome-launcher',
         'karma-coverage',
-        'karma-coveralls',
         'karma-brief-reporter',
+        'karma-junit-reporter',
     ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['coverage', 'brief'],
+    reporters: ['coverage', 'brief', 'junit'],
+
+    // JUnit reporter configuration
+    junitReporter: {
+        outputDir: 'coverage/frontend/',
+        outputFile: 'TEST-frontend.xml',
+        suite: 'frontend'
+    },
 
 
     // web server port
@@ -73,30 +100,45 @@ module.exports = function(config) {
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
+    autoWatch: false,
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: true,
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 1,
+
+    // Browser disconnect timeout
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 3,
+    browserNoActivityTimeout: 30000,
+    
+    // Force process exit after tests complete
+    processKillTimeout: 5000,
+    captureTimeout: 30000,
+    
+    // Ensure Karma exits after single run
+    failOnEmptyTestSuite: false,
 
     coverageReporter: {
         includeAllSources: true,
         dir: 'coverage/',
         reporters: [
-            { type: "lcov" },
+            { type: 'lcovonly', subdir: 'frontend', file: 'lcov.info' },
             { type: 'text-summary' }
         ]
     }
   };
 
-  // Detect if this is TravisCI running the tests and tell it to use chromium
-  if(process.env.TRAVIS){
+  // Detect CI providers and use resilient headless browser settings.
+  if (process.env.TRAVIS || process.env.GITHUB_ACTIONS === 'true') {
       configuration.browsers = ['ChromeWithNoSandbox'];
+      configuration.browserDisconnectTimeout = 20000;
+      configuration.browserDisconnectTolerance = 5;
+      configuration.browserNoActivityTimeout = 120000;
   }
 
   config.set(configuration);

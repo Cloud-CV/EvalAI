@@ -9,14 +9,16 @@ class Command(BaseCommand):
         parser.add_argument(
             "-nc",
             nargs="?",
-            default=20,
+            default=500,
             type=int,
-            help="Number of challenges.",
+            help="Number of challenges. Default: 500 (40% present, 20% future, 40% past)",
         )
 
     def handle(self, *args, **options):
         self.nc = options["nc"]
         self.stdout.write(
-            self.style.SUCCESS("Starting the database seeder. Hang on...")
+            self.style.SUCCESS(
+                f"Starting the database seeder with {self.nc} challenges. Hang on..."
+            )
         )
         call_command("runscript", "seed", "--script-args", self.nc)

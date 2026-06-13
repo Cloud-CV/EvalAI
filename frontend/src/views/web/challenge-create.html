@@ -7,7 +7,7 @@
                     <div class="col">
                         <ol>
                             <li>Use <a href="https://github.com/Cloud-CV/EvalAI-Starters" class="highlight-link" target="_blank">this repository</a> as template. You can read more about templates <a href="https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template"class="highlight-link" target="_blank">here.</a></li>
-                            <li>Generate your <a href="https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token" class="highlight-link" target="_blank">github personal acccess token</a> and copy it in clipboard.</li>
+                            <li>Generate your <a href="https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token" class="highlight-link" target="_blank">github personal access token</a> and copy it in clipboard.</li>
                             <li>Add the github personal access token in the forked repository's <a href="https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository">secrets</a> with the name <b>AUTH_TOKEN</b>.</li>
                             <li> Now, go to <a href="https://eval.ai" class="highlight-link" target="_blank">EvalAI</a> to fetch the following details -</li>
                             <ol>
@@ -19,7 +19,7 @@
                                 <br>
                             <span><strong>Note</strong>: Only changes to <b>challenge</b> branch will be synchronized with challenge on EvalAI.</span></li>
                             <li>Add <b>evalai_user_auth_token</b> and <b>host_team_pk</b> in <b>github/host_config.json</b>.</li>
-                            <li>Read <a href="https://evalai.readthedocs.io/en/latest/configuration.html" class="highlight-link" target="_blank">EvalAI challenge creation documentation</a> to know more about how you want to structure your challenge. Once you are ready, start making changes in the yaml file, HTML templates, evaluation script according to your need.</li>
+                            <li>Read <a href="https://evalai.readthedocs.io/en/latest/02-for-challenge-hosts/configuration/challenge-config.html" class="highlight-link" target="_blank">EvalAI challenge creation documentation</a> to know more about how you want to structure your challenge. Once you are ready, start making changes in the yaml file, HTML templates, evaluation script according to your need.</li>
                             <li>Commit the changes and push the <b>challenge</b> branch in the repository and wait for the build to complete. View the <a href="https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/using-workflow-run-logs#viewing-logs-to-diagnose-failures" class="highlight-link" target="_blank">logs of your build</a>.</li>
                             <li>If challenge config contains errors then a <b>issue</b> will be opened automatically in the repository with the errors otherwise the challenge will be created on EvalAI.</li>
                             <li>Go to <a href="https://eval.ai/web/hosted-challenges" class="highlight-link" target="_blank">Hosted Challenges</a> to view your challenge. The challenge will be publicly available once EvalAI admin approves the challenge.</li>
@@ -60,7 +60,7 @@
         <div class="col s12 m9 offset-m2">
             <i class="fa fa-info-circle"></i>
             To know how to create a challenge using zip file configuration, please see our documentation
-            <a href="https://evalai.readthedocs.io/en/latest/configuration.html#challenge-configuration" class="highlight-link" target="_blank">here.</a>.
+            <a href="https://evalai.readthedocs.io/en/latest/02-for-challenge-hosts/configuration/challenge-config.html#challenge-configuration" class="highlight-link" target="_blank">here.</a>.
         </div>
     </div>
     <div ng-if="challengeCreate.isSyntaxErrorInYamlFile" class="row">

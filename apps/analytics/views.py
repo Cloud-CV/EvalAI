@@ -1,27 +1,11 @@
 import csv
-
 from datetime import timedelta
-
-from django.http import HttpResponse
-from django.utils import timezone
-
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework.throttling import UserRateThrottle
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
+from django.http import HttpResponse
+from django.utils import timezone
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from jobs.serializers import (
@@ -31,14 +15,27 @@ from jobs.serializers import (
     SubmissionCountSerializer,
 )
 from participants.models import Participant
-from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from participants.serializers import (
+    ChallengeParticipantSerializer,
     ParticipantCount,
     ParticipantCountSerializer,
     ParticipantTeamCount,
     ParticipantTeamCountSerializer,
-    ChallengeParticipantSerializer,
 )
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from apps.accounts.authentication import ExpiringTokenAuthentication
+
 from .serializers import (
     ChallengePhaseSubmissionAnalytics,
     ChallengePhaseSubmissionAnalyticsSerializer,
@@ -207,9 +204,8 @@ def get_last_submission_time(
         serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    else:
-        response_data = {"error": "Page not found!"}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    response_data = {"error": "Page not found!"}
+    return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(["GET"])
@@ -331,25 +327,45 @@ def get_challenge_phase_submission_analysis(
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_participants(request, challenge_pk):
     """
-    Returns the List of Participant Teams and its details in csv format
+    Returns the List of Participant Teams and its details.
+
+    Query Parameters:
+        output (optional): Response format - 'json' or 'csv' (default: 'csv').
+
+    Returns:
+        - If output=json: JSON response with participant teams data
+        - If output=csv (default): CSV file download with participant teams data
     """
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
         challenge = get_challenge_model(challenge_pk)
-        participant_teams = challenge.participant_teams.all().order_by(
-            "-team_name"
-        )
+        # Use prefetch_related to avoid N+1 queries when accessing
+        # participants and their user data in the serializer
+        participant_teams = challenge.participant_teams.prefetch_related(
+            "participants__user"
+        ).order_by("-team_name")
         teams = ChallengeParticipantSerializer(
             participant_teams, many=True, context={"request": request}
         )
+
+        response_format = request.query_params.get("output", "csv").lower()
+
+        if response_format == "json":
+            response_data = {
+                "participant_teams": teams.data,
+                "count": len(teams.data),
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        # Default: Return CSV format
         response = HttpResponse(content_type="text/csv")
-        response[
-            "Content-Disposition"
-        ] = "attachment; filename=participant_teams_{0}.csv".format(
-            challenge_pk
+        response["Content-Disposition"] = (
+            "attachment; filename=participant_teams_{0}.csv".format(
+                challenge_pk
+            )
         )
-        writer = csv.writer(response)
+        writer = csv.writer(response, quoting=csv.QUOTE_ALL)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
             writer.writerow(
@@ -360,8 +376,8 @@ def download_all_participants(request, challenge_pk):
                 ]
             )
         return response
-    else:
-        response_data = {
-            "error": "Sorry, you are not authorized to make this request"
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response_data = {
+        "error": "Sorry, you are not authorized to make this request"
+    }
+    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

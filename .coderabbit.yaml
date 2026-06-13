@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# Cloud-CV/EvalAI — CodeRabbit config (repository root).
+# Tuned for an active OSS project: backend Python/Django, frontend AngularJS/JavaScript.
+# Goal: high-signal reviews (bugs, security, logic) without re-flagging formatting
+# that pre-commit (black/flake8/isort) and eslint already handle.
+#
+# This is a public repository. Merge this file to master so CodeRabbit uses it by default;
+# PR branches that include this file also apply it to that PR.
+
+language: en-US
+
+reviews:
+  # Valid values: chill | assertive. chill keeps volume sane for OSS contributors.
+  profile: chill
+
+  # Don't let CodeRabbit auto-block PRs with a "changes requested" gate;
+  # maintainers and CODEOWNERS stay the merge authority.
+  request_changes_workflow: false
+
+  high_level_summary: true
+  review_status: true
+  review_details: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  poem: false
+  prompt_for_ai_agents: true
+  assess_linked_issues: true
+
+  auto_review:
+    enabled: true
+    drafts: true
+    base_branches:
+      - ".*"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+
+  path_filters:
+    # Secrets and env files (public repo)
+    - "!**/.env"
+    - "!**/.env.*"
+    - "!**/*.env"
+    - "!docker/**/*.env"
+    - "!**/secrets/**"
+    - "!**/*credentials*"
+    - "!**/*secret*"
+    # Generated / vendored / build artifacts
+    - "!**/migrations/**"
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/*.svg"
+    - "!**/static/**"
+    - "!docs/_build/**"
+
+  instructions: |
+    EvalAI is a public open-source repository. Treat all review output as public.
+
+    This repository already enforces formatting and linting via pre-commit
+    (black, flake8, isort) for Python and eslint for JavaScript.
+    Do NOT comment on code style, formatting, import ordering, line length,
+    or naming conventions — those are handled automatically.
+    Focus your review on: logic bugs, security issues (auth, injection,
+    unsafe deserialization), race conditions in the submission/worker flow,
+    API contract changes, missing error handling, and missing test coverage.
+
+    Never quote, repeat, or include in output:
+    - API keys, tokens, passwords, secrets, or connection strings
+    - Email addresses, phone numbers, or other PII
+    - AWS credentials, SendGrid keys, Django secret keys, or auth tokens
+    - User IDs, participant IDs, challenge IDs, team IDs, submission IDs,
+      host IDs, primary keys, UUIDs used as identifiers, or database record IDs
+
+    When discussing issues involving sensitive values:
+    - Use placeholders such as [REDACTED] instead of real values
+    - Describe the problem without echoing the literal secret or identifier
+    - Do not suggest committing real credentials or production identifiers
+    - Prefer file and line references over pasting code that contains sensitive literals
+    - Do not include example payloads, logs, or API responses containing real IDs
+
+  path_instructions:
+    - path: "settings/**"
+      instructions: |
+        Django settings may reference secrets via environment variables. Flag hardcoded
+        credentials, but never repeat secret values or production identifiers in comments.
+    - path: "apps/**"
+      instructions: |
+        Django backend. Pay attention to:
+        - Database query efficiency (N+1 queries, missing select_related/prefetch_related)
+        - Permission and authentication checks on DRF views/serializers
+        - Safe handling of user-submitted files and Docker image references
+        - Migrations that could be destructive or lock large tables
+        - Do not repeat database IDs, tokens, or serialized payloads in review comments
+    - path: "frontend/**"
+      instructions: |
+        AngularJS/JavaScript frontend. Pay attention to:
+        - Unsubscribed $scope listeners / potential memory leaks
+        - Unsafe ng-bind-html or unsanitized user content (XSS)
+        - Controller state and digest-cycle correctness
+    - path: "**/test_*.py"
+      instructions: |
+        Test code. Check that tests actually assert behavior, cover edge cases,
+        and are not silently passing. Do not quote fake fixture passwords or emails
+        in review comments. Light touch on style.
+
+  tools:
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    presidio:
+      enabled: true
+
+chat:
+  auto_reply: true

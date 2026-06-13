@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0089_add_challenge_use_host_sqs'),
+        ("challenges", "0089_add_challenge_use_host_sqs"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='allow_resuming_submissions',
+            model_name="challenge",
+            name="allow_resuming_submissions",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0099_challenge_worker_image_url'),
+        ("challenges", "0099_challenge_worker_image_url"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='uses_ec2_worker',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Uses separate EC2 worker instance'),
+            model_name="challenge",
+            name="uses_ec2_worker",
+            field=models.BooleanField(
+                db_index=True,
+                default=False,
+                verbose_name="Uses separate EC2 worker instance",
+            ),
         ),
     ]

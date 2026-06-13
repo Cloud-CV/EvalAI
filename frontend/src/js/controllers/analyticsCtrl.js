@@ -46,9 +46,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    utilities.handlePermissionDeniedError($state, response);
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
@@ -78,9 +76,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    utilities.handlePermissionDeniedError($state, response);
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
@@ -116,11 +112,9 @@
                                 var status = response.status;
                                 var error = response.data;
                                 if (status == 403) {
-                                    vm.error = error;
-
-                                    // navigate to permissions denied page
-                                    $state.go('web.permission-denied');
-                                } else if (status == 401) {
+                    vm.error = error;
+                    utilities.handlePermissionDeniedError($state, response);
+                } else if (status == 401) {
                                     alert("Timeout, Please login again to continue!");
                                     utilities.resetStorage();
                                     $state.go("auth.login");
@@ -158,11 +152,9 @@
                                         var status = response.status;
                                         var error = response.data;
                                         if (status == 403) {
-                                            vm.error = error;
-
-                                            // navigate to permissions denied page
-                                            $state.go('web.permission-denied');
-                                        } else if (status == 401) {
+                    vm.error = error;
+                    utilities.handlePermissionDeniedError($state, response);
+                } else if (status == 401) {
                                             alert("Timeout, Please login again to continue!");
                                             utilities.resetStorage();
                                             $state.go("auth.login");
@@ -197,11 +189,9 @@
                                         var status = response.status;
                                         var error = response.data;
                                         if (status == 403) {
-                                            vm.error = error;
-
-                                            // navigate to permissions denied page
-                                            $state.go('web.permission-denied');
-                                        } else if (status == 401) {
+                    vm.error = error;
+                    utilities.handlePermissionDeniedError($state, response);
+                } else if (status == 401) {
                                             alert("Timeout, Please login again to continue!");
                                             utilities.resetStorage();
                                             $state.go("auth.login");
@@ -219,11 +209,9 @@
                         var status = response.status;
                         var error = response.data;
                         if (status == 403) {
-                            vm.error = error;
-
-                            // navigate to permissions denied page
-                            $state.go('web.permission-denied');
-                        } else if (status == 401) {
+                    vm.error = error;
+                    utilities.handlePermissionDeniedError($state, response);
+                } else if (status == 401) {
                             alert("Timeout, Please login again to continue!");
                             utilities.resetStorage();
                             $state.go("auth.login");

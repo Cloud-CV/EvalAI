@@ -1,15 +1,19 @@
+from allauth.account.admin import EmailAddressAdmin
+from allauth.account.models import EmailAddress
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from allauth.account.models import EmailAddress
-from allauth.account.admin import EmailAddressAdmin
-
 from import_export import resources
 from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
-from .models import Profile, JwtToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
+
+from .models import JwtToken, Profile
 
 
 @admin.register(Profile)
@@ -77,14 +81,72 @@ admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)
 
 
+def _get_outstanding_token_for_jwt(jwt_token):
+    if jwt_token.refresh_token:
+        outstanding_token = OutstandingToken.objects.filter(
+            token=jwt_token.refresh_token
+        ).first()
+        if outstanding_token is not None:
+            return outstanding_token
+
+    return (
+        OutstandingToken.objects.filter(user=jwt_token.user)
+        .order_by("-created_at")
+        .first()
+    )
+
+
 @admin.register(JwtToken)
 class JwtTokenAdmin(ImportExportTimeStampedAdmin):
+    exclude = ()
     list_display = (
         "user",
-        "access_token",
+        "created_at",
+        "modified_at",
+        "jwt_issued_at",
+        "jwt_expires_at",
+        "is_blacklisted",
     )
     list_filter = ("user",)
-    search_fields = ("user__username",)
+    search_fields = ("user__username", "user__email")
+    readonly_fields = (
+        "user",
+        "access_token",
+        "refresh_token",
+        "created_at",
+        "modified_at",
+        "jwt_issued_at",
+        "jwt_expires_at",
+        "is_blacklisted",
+    )
+
+    def jwt_issued_at(self, obj):
+        outstanding_token = _get_outstanding_token_for_jwt(obj)
+        if outstanding_token is None:
+            return "-"
+        return outstanding_token.created_at
+
+    jwt_issued_at.short_description = "JWT issued at"
+    jwt_issued_at.admin_order_field = "modified_at"
+
+    def jwt_expires_at(self, obj):
+        outstanding_token = _get_outstanding_token_for_jwt(obj)
+        if outstanding_token is None:
+            return "-"
+        return outstanding_token.expires_at
+
+    jwt_expires_at.short_description = "JWT expires at"
+
+    def is_blacklisted(self, obj):
+        outstanding_token = _get_outstanding_token_for_jwt(obj)
+        if outstanding_token is None:
+            return None
+        return BlacklistedToken.objects.filter(
+            token=outstanding_token
+        ).exists()
+
+    is_blacklisted.short_description = "Blacklisted"
+    is_blacklisted.boolean = True
 
 
 admin.site.unregister(JwtToken)

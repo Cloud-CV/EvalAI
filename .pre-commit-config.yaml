@@ -1,10 +1,47 @@
 repos:
--   repo: https://github.com/ambv/black
-    rev: stable
+  - repo: local
     hooks:
-    - id: black
-      language_version: python3.7
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+      - id: cleanup-code
+        name: Clean up code (autoflake, autopep8, black, isort)
+        entry: bash scripts/tools/cleanup_code.sh
+        language: system
+        types: [python]
+        pass_filenames: true
+        stages: [commit]
+
+  - repo: https://github.com/ambv/black
+    rev: 24.8.0
     hooks:
-    - id: flake8
+      - id: black
+        language_version: python3.9
+        args: ['--line-length=79', '--check', '--diff', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ['--profile=black', '--line-length=79', '--check', '--diff', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.2
+    hooks:
+      - id: flake8
+        args: ['--config=.flake8', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/pylint
+    rev: v3.3.6
+    hooks:
+      - id: pylint
+        args:
+          [
+            '--rcfile=.pylintrc',
+            '--output-format=colorized',
+            '--score=y',
+            '--fail-under=7.5',
+            '--verbose'
+          ]
+        language_version: python3.9
+        verbose: true

@@ -1,38 +1,32 @@
-import os
 import json
 import logging
+import os
 import random
 import string
 import uuid
 
+from base.utils import (
+    get_boto3_client,
+    get_model_object,
+    mock_if_non_prod_aws,
+    send_email,
+)
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
-
-from base.utils import (
-    get_model_object,
-    get_boto3_client,
-    mock_if_non_prod_aws,
-    send_email,
-)
+from participants.models import ParticipantTeam
 
 from .models import (
     Challenge,
     ChallengePhase,
-    Leaderboard,
-    DatasetSplit,
     ChallengePhaseSplit,
-    ParticipantTeam,
     ChallengePrize,
-    ChallengeSponsor
+    ChallengeSponsor,
+    DatasetSplit,
+    Leaderboard,
 )
-
-from .serializers import (
-    ChallengePrizeSerializer,
-    ChallengeSponsorSerializer
-
-)
+from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +164,7 @@ def generate_presigned_url(file_key_on_s3, challenge_pk):
 
 
 def generate_presigned_url_for_multipart_upload(
-    file_key_on_s3, challenge_pk, num_parts
+    file_key_on_s3, challenge_pk, num_parts, s3_tags=None
 ):
     """
     Function to get the presigned urls to upload a file to s3 in chunks
@@ -187,11 +181,18 @@ def generate_presigned_url_for_multipart_upload(
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
 
         s3 = get_boto3_client("s3", aws_keys)
-        response = s3.create_multipart_upload(
-            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
-            Key=file_key_on_s3,
-            ACL="public-read",
-        )
+        create_multipart_upload_kwargs = {
+            "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+            "Key": file_key_on_s3,
+            "ACL": "public-read",
+        }
+        if s3_tags:
+            from jobs.s3_retention import encode_s3_tagging
+
+            create_multipart_upload_kwargs["Tagging"] = encode_s3_tagging(
+                s3_tags
+            )
+        response = s3.create_multipart_upload(**create_multipart_upload_kwargs)
 
         upload_id = response["UploadId"]
         presigned_urls = []
@@ -380,7 +381,7 @@ def get_aws_credentials_for_submission(challenge, participant_team):
     ecr_repository_name = convert_to_aws_ecr_compatible_format(
         ecr_repository_name
     )
-    repository, created = get_or_create_ecr_repository(
+    repository, _created = get_or_create_ecr_repository(
         ecr_repository_name, aws_keys
     )
     name = str(uuid.uuid4())[:32]
@@ -394,7 +395,7 @@ def get_aws_credentials_for_submission(challenge, participant_team):
 
 def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
-    email_domain = email.split('@')[-1].lower()
+    email_domain = email.split("@")[-1].lower()
     for domain in challenge.allowed_email_domains:
         if email_domain.endswith(domain.lower()):
             return True
@@ -403,11 +404,40 @@ def is_user_in_allowed_email_domains(email, challenge_pk):
 
 def is_user_in_blocked_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
-    email_domain = email.split('@')[-1].lower()
+    email_domain = email.split("@")[-1].lower()
     for domain in challenge.blocked_email_domains:
         if email_domain.endswith(domain.lower()):
             return True
     return False
+
+
+def get_participants_with_incomplete_profiles(participant_team):
+    """
+    Check if all team members have complete profiles.
+
+    Arguments:
+        participant_team {ParticipantTeam} -- The participant team to check
+
+    Returns:
+        list -- List of usernames of team members with incomplete profiles
+    """
+    from accounts.models import Profile
+    from participants.models import Participant
+
+    incomplete_profiles = []
+    participants = Participant.objects.filter(
+        team=participant_team
+    ).select_related("user", "user__profile")
+
+    for participant in participants:
+        try:
+            profile = participant.user.profile
+            if not profile.is_complete:
+                incomplete_profiles.append(participant.user.username)
+        except Profile.DoesNotExist:
+            incomplete_profiles.append(participant.user.username)
+
+    return incomplete_profiles
 
 
 def get_unique_alpha_numeric_key(length):
@@ -458,7 +488,48 @@ def send_emails(emails, template_id, template_data):
     """
     for email in emails:
         send_email(
-            sender=settings.CLOUDCV_TEAM_EMAIL,
+            sender=settings.DEFAULT_FROM_EMAIL,
+            recipient=email,
+            template_id=template_id,
+            template_data=template_data,
+        )
+
+
+def send_subscription_plans_email(challenge):
+    """
+    Sends email with subscription plan details to challenge hosts
+    via SendGrid when they request approval.
+
+    Arguments:
+        challenge {Class Object} -- Challenge model object
+    """
+    if settings.DEBUG:
+        return
+
+    challenge_url = "{}/web/challenges/challenge-page/{}".format(
+        settings.EVALAI_API_SERVER, challenge.pk
+    )
+    challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
+        settings.EVALAI_API_SERVER, challenge.pk
+    )
+
+    template_data = {
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_URL": challenge_url,
+        "CHALLENGE_MANAGE_URL": challenge_manage_url,
+        "HOST_TEAM_NAME": challenge.creator.team_name,
+    }
+    if challenge.image:
+        template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
+
+    template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+        "SUBSCRIPTION_PLANS_EMAIL"
+    )
+
+    emails = challenge.creator.get_all_challenge_host_email()
+    for email in emails:
+        send_email(
+            sender=settings.DEFAULT_FROM_EMAIL,
             recipient=email,
             template_id=template_id,
             template_data=template_data,
@@ -478,13 +549,13 @@ def parse_submission_meta_attributes(submission):
         return {}
     for meta_attribute in submission["submission_metadata"]:
         if meta_attribute["type"] == "checkbox":
-            submission_meta_attributes[
-                meta_attribute["name"]
-            ] = meta_attribute.get("values")
+            submission_meta_attributes[meta_attribute["name"]] = (
+                meta_attribute.get("values")
+            )
         else:
-            submission_meta_attributes[
-                meta_attribute["name"]
-            ] = meta_attribute.get("value")
+            submission_meta_attributes[meta_attribute["name"]] = (
+                meta_attribute.get("value")
+            )
     return submission_meta_attributes
 
 
@@ -493,7 +564,9 @@ def add_tags_to_challenge(yaml_file_data, challenge):
         tags_data = yaml_file_data["tags"]
         new_tags = set(tags_data)
         # Remove tags not present in the YAML file
-        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        challenge.list_tags = [
+            tag for tag in challenge.list_tags if tag in new_tags
+        ]
 
         # Add new tags to the challenge
         for tag_name in new_tags:
@@ -522,38 +595,41 @@ def add_domain_to_challenge(yaml_file_data, challenge):
 
 def add_prizes_to_challenge(yaml_file_data, challenge):
     if "prizes" in yaml_file_data:
-        prizes_data = yaml_file_data['prizes']
+        prizes_data = yaml_file_data["prizes"]
         rank_set = set()
         for prize in prizes_data:
-            if 'rank' not in prize or 'amount' not in prize:
+            if "rank" not in prize or "amount" not in prize:
                 message = "Prize rank or amount not found in YAML data."
                 response_data = {"error": message}
                 return response_data
 
             # Check for duplicate rank.
-            rank = prize['rank']
+            rank = prize["rank"]
             if rank in rank_set:
                 message = f"Duplicate rank {rank} found in YAML data."
                 response_data = {"error": message}
                 return response_data
             rank_set.add(rank)
 
-            rank = prize['rank']
+            rank = prize["rank"]
             amount = prize["amount"]
             description = prize["description"]
 
-            prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
+            prize_obj = ChallengePrize.objects.filter(
+                rank=rank, challenge=challenge
+            ).first()
             if prize_obj:
                 data = {
                     "amount": amount,
                     "description": description,
                 }
                 serializer = ChallengePrizeSerializer(
-                    prize_obj, data=data,
+                    prize_obj,
+                    data=data,
                     context={
                         "challenge": challenge,
                     },
-                    partial=True
+                    partial=True,
                 )
             else:
                 data = {
@@ -566,7 +642,7 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
                     data=data,
                     context={
                         "challenge": challenge,
-                    }
+                    },
                 )
             if serializer.is_valid():
                 challenge.has_prize = True
@@ -583,27 +659,29 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
 
 def add_sponsors_to_challenge(yaml_file_data, challenge):
     if "sponsors" in yaml_file_data:
-        sponsors_data = yaml_file_data['sponsors']
+        sponsors_data = yaml_file_data["sponsors"]
         sponsor_name_set = set()
 
         for sponsor in sponsors_data:
             # Checking if the sponsors already exists in the database.
-            sponsor_name_set.add(sponsor['name'])
-            check_sponsor_status = ChallengeSponsor.objects.filter(name=sponsor['name'], challenge=challenge).exists()
+            sponsor_name_set.add(sponsor["name"])
+            check_sponsor_status = ChallengeSponsor.objects.filter(
+                name=sponsor["name"], challenge=challenge
+            ).exists()
             if not check_sponsor_status:
-                if 'name' not in sponsor or 'website' not in sponsor:
+                if "name" not in sponsor or "website" not in sponsor:
                     message = "Sponsor name or url not found in YAML data."
                     response_data = {"error": message}
                     return response_data
                 data = {
-                    "name": sponsor['name'],
-                    "website": sponsor['website'],
+                    "name": sponsor["name"],
+                    "website": sponsor["website"],
                 }
                 serializer = ChallengeSponsorSerializer(
                     data=data,
                     context={
                         "challenge": challenge,
-                    }
+                    },
                 )
             if serializer.is_valid():
                 serializer.save()
@@ -616,12 +694,67 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
                 raise response_data
 
         # Check if the sponsor exist in database. but not in the YAML file.
-        existing_sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
-        existing_sponsors_names = [sponsor.name for sponsor in existing_sponsors]
+        existing_sponsors = ChallengeSponsor.objects.filter(
+            challenge=challenge
+        )
+        existing_sponsors_names = [
+            sponsor.name for sponsor in existing_sponsors
+        ]
         for existing_sponsor in existing_sponsors_names:
-            if existing_sponsor is not None and existing_sponsor not in sponsor_name_set:
-                ChallengeSponsor.objects.filter(challenge=challenge, name=existing_sponsor).delete()
+            if (
+                existing_sponsor is not None
+                and existing_sponsor not in sponsor_name_set
+            ):
+                ChallengeSponsor.objects.filter(
+                    challenge=challenge, name=existing_sponsor
+                ).delete()
 
     else:
         challenge.has_sponsors = False
         challenge.save()
+
+
+def get_submissions_csv_filename(challenge, challenge_phase):
+    """
+    Generate CSV filename for submissions export with challenge and phase information
+
+    Args:
+        challenge: Challenge instance
+        challenge_phase: ChallengePhase instance
+
+    Returns:
+        str: Formatted filename in format: all_submissions_{challenge_name}_{challenge_id}_{phase_name}_{phase_id}.csv
+    """
+    challenge_name = challenge.title.replace(" ", "_").replace("/", "_")
+    phase_name = challenge_phase.name.replace(" ", "_").replace("/", "_")
+    return f"all_submissions_{challenge_name}_{challenge.pk}_{phase_name}_{challenge_phase.pk}.csv"
+
+
+def extract_team_member_info(submission):
+    """
+    Extract team member information from a submission efficiently using prefetched data
+
+    Args:
+        submission: Submission instance with prefetched participant team data
+
+    Returns:
+        tuple: (team_members, team_emails, team_affiliations) as lists
+            - team_members: List of team member usernames
+            - team_emails: List of team member email addresses
+            - team_affiliations: List of team member affiliations
+    """
+    participants = submission.participant_team.participants.all()
+    team_members = []
+    team_emails = []
+    team_affiliations = []
+
+    for participant in participants:
+        team_members.append(participant.user.username)
+        team_emails.append(participant.user.email)
+        team_affiliations.append(
+            participant.user.profile.affiliation
+            if hasattr(participant.user, "profile")
+            else ""
+        )
+
+    return team_members, team_emails, team_affiliations

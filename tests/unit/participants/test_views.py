@@ -1,19 +1,28 @@
+# pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
+import json
 from datetime import timedelta
-
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from unittest.mock import patch
 
 from accounts.models import Profile
+from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse_lazy
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import ParticipantTeam, Participant
+from participants.models import Participant, ParticipantTeam
+from participants.views import invite_participant_to_team
+from rest_framework import status
+from rest_framework.test import (
+    APIClient,
+    APIRequestFactory,
+    APITestCase,
+    force_authenticate,
+)
 
 
 class BaseAPITestClass(APITestCase):
@@ -54,7 +63,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
-        super(GetParticipantTeamTest, self).setUp()
+        super().setUp()
 
         self.user2 = User.objects.create(
             username="user2",
@@ -96,6 +105,11 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "github_url": self.participant_profile.github_url,
                             "google_scholar_url": self.participant_profile.google_scholar_url,
                             "linkedin_url": self.participant_profile.linkedin_url,
+                            "address_street": self.participant_profile.address_street,
+                            "address_city": self.participant_profile.address_city,
+                            "address_state": self.participant_profile.address_state,
+                            "address_country": self.participant_profile.address_country,
+                            "university": self.participant_profile.university,
                         },
                     },
                     {
@@ -109,6 +123,11 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "github_url": self.participant2_profile.github_url,
                             "google_scholar_url": self.participant2_profile.google_scholar_url,
                             "linkedin_url": self.participant2_profile.linkedin_url,
+                            "address_street": self.participant2_profile.address_street,
+                            "address_city": self.participant2_profile.address_city,
+                            "address_state": self.participant2_profile.address_state,
+                            "address_country": self.participant2_profile.address_country,
+                            "university": self.participant2_profile.university,
                         },
                     },
                 ],
@@ -116,8 +135,117 @@ class GetParticipantTeamTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"], default=str)),
+            json.loads(json.dumps(expected, default=str)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_n_plus_one_queries_for_participant_teams(self):
+        """
+        Test that the participant_team_list endpoint doesn't have N+1 query issues.
+        The number of queries should remain bounded regardless of:
+        - Number of participant teams
+        - Number of participants per team
+        - Number of user profiles
+
+        Before the fix, queries grew as:
+        - 1 query per team for participants
+        - 1 query per participant for user
+        - 1 query per participant for profile
+
+        After the fix using prefetch_related with select_related:
+        - 1 query for teams
+        - 1 query for participants with users and profiles (prefetched)
+        """
+        # Create additional teams with multiple participants
+        additional_teams = []
+        for i in range(3):
+            # Create a new user for each team
+            team_creator = User.objects.create(
+                username=f"team_creator_{i}",
+                email=f"team_creator_{i}@platform.com",
+                password="password",
+            )
+            EmailAddress.objects.create(
+                user=team_creator,
+                email=f"team_creator_{i}@platform.com",
+                primary=True,
+                verified=True,
+            )
+
+            # Create the team
+            team = ParticipantTeam.objects.create(
+                team_name=f"Test Team {i}",
+                created_by=team_creator,
+            )
+            additional_teams.append(team)
+
+            # Add the creator as a participant
+            Participant.objects.create(
+                user=team_creator,
+                status=Participant.SELF,
+                team=team,
+            )
+
+            # Add the main user to each team (so they show up in the response)
+            Participant.objects.create(
+                user=self.user,
+                status=Participant.ACCEPTED,
+                team=team,
+            )
+
+            # Add additional participants to each team
+            for j in range(2):
+                member = User.objects.create(
+                    username=f"team_{i}_member_{j}",
+                    email=f"team_{i}_member_{j}@platform.com",
+                    password="password",
+                )
+                EmailAddress.objects.create(
+                    user=member,
+                    email=f"team_{i}_member_{j}@platform.com",
+                    primary=True,
+                    verified=True,
+                )
+                Participant.objects.create(
+                    user=member,
+                    status=Participant.ACCEPTED,
+                    team=team,
+                )
+
+        # Now we have:
+        # - 1 original team with 2 participants
+        # - 3 additional teams with 4 participants each (creator + main user + 2 members)
+        # Total: 4 teams, 14 participants
+
+        # Capture queries during the request
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        query_count = len(context)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Should return 4 teams (original + 3 new ones where user is a
+        # participant)
+        self.assertEqual(len(response.data["results"]), 4)
+
+        # With the N+1 fix using prefetch_related and select_related:
+        # - Queries should be bounded regardless of team/participant count
+        # - Without the fix, we'd have: 4 (teams) + 14 (users) + 14 (profiles) = 32+ queries
+        # - With the fix, we expect roughly:
+        #   - 1 for participant IDs
+        #   - 1 for teams
+        #   - 1 for participants with users and profiles (prefetched)
+        #   - Plus auth/session overhead (~5-10 queries)
+        # Total should be under 20 queries
+        self.assertLessEqual(
+            query_count,
+            20,
+            f"Too many queries ({query_count}) - possible N+1 issue. "
+            f"Queries: {[q['sql'][:100] for q in context.captured_queries]}",
+        )
 
 
 class CreateParticipantTeamTest(BaseAPITestClass):
@@ -125,7 +253,7 @@ class CreateParticipantTeamTest(BaseAPITestClass):
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
-        super(CreateParticipantTeamTest, self).setUp()
+        super().setUp()
         self.data = {"team_name": "New Participant Team"}
 
     def test_create_participant_team_with_all_data(self):
@@ -157,7 +285,7 @@ class CreateParticipantTeamTest(BaseAPITestClass):
 
 class GetParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(GetParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -202,6 +330,11 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "github_url": self.participant_profile.github_url,
                         "google_scholar_url": self.participant_profile.google_scholar_url,
                         "linkedin_url": self.participant_profile.linkedin_url,
+                        "address_street": self.participant_profile.address_street,
+                        "address_city": self.participant_profile.address_city,
+                        "address_state": self.participant_profile.address_state,
+                        "address_country": self.participant_profile.address_country,
+                        "university": self.participant_profile.university,
                     },
                 },
                 {
@@ -215,13 +348,21 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "github_url": self.participant2_profile.github_url,
                         "google_scholar_url": self.participant2_profile.google_scholar_url,
                         "linkedin_url": self.participant2_profile.linkedin_url,
+                        "address_street": self.participant2_profile.address_street,
+                        "address_city": self.participant2_profile.address_city,
+                        "address_state": self.participant2_profile.address_state,
+                        "address_country": self.participant2_profile.address_country,
+                        "university": self.participant2_profile.university,
                     },
                 },
             ],
         }
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data, default=str)),
+            json.loads(json.dumps(expected, default=str)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_participant_team_does_not_exist(self):
@@ -237,7 +378,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
 
 class UpdateParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(UpdateParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -282,7 +423,7 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
 
 class DeleteParticularParticipantTeam(BaseAPITestClass):
     def setUp(self):
-        super(DeleteParticularParticipantTeam, self).setUp()
+        super().setUp()
         self.url = reverse_lazy(
             "participants:get_participant_team_details",
             kwargs={"pk": self.participant_team.pk},
@@ -296,7 +437,7 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
 
 class InviteParticipantToTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(InviteParticipantToTeamTest, self).setUp()
+        super().setUp()
 
         self.user1 = User.objects.create(
             username="user1",
@@ -341,6 +482,176 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         del self.data["email"]
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invite_blocked_when_team_at_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is at capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Max Team Members Challenge", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    @patch("participants.views.get_list_of_challenges_for_participant_team")
+    def test_invite_blocked_despite_stale_participation_snapshot(
+        self, mock_get_challenges
+    ):
+        """Capacity must be re-checked inside the transaction, not from a
+        stale participation snapshot taken at request start."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        mock_get_challenges.return_value = Challenge.objects.none()
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Max Team Members Challenge", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_allowed_for_host_only_team_at_own_challenge(self):
+        """Hosts can grow their baseline team beyond max_team_members."""
+        ChallengeHost.objects.create(
+            user=self.user1,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        host_participant_team = ParticipantTeam.objects.create(
+            team_name="Host Baseline Team", created_by=self.user1
+        )
+        Participant.objects.create(
+            user=self.user1,
+            status=Participant.SELF,
+            team=host_participant_team,
+        )
+        challenge = Challenge.objects.create(
+            title="Host Own Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(host_participant_team)
+        url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={"pk": host_participant_team.pk},
+        )
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=host_participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_allowed_when_team_below_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is below capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=2,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        expected = {"message": "User has been successfully added to the team!"}
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_blocked_when_team_at_strictest_limit_across_challenges(
+        self,
+    ):
+        """Inviting is blocked when any joined challenge's limit is reached."""
+        challenge_a = Challenge.objects.create(
+            title="Challenge A",
+            creator=self.challenge_host_team,
+            max_team_members=5,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_b = Challenge.objects.create(
+            title="Challenge B",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_a.participant_teams.add(self.participant_team)
+        challenge_b.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Challenge B", response.data["error"])
+        self.assertNotIn("Challenge A", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_blocked_when_team_in_require_complete_profile_challenge_and_invitee_profile_incomplete(
+        self,
+    ):
+        """Inviting a user with incomplete profile to a team that is in an
+        active require_complete_profile challenge must be rejected."""
+        host_team = ChallengeHostTeam.objects.create(
+            team_name="Host Team", created_by=self.user
+        )
+        challenge = Challenge.objects.create(
+            title="Require Profile Challenge",
+            creator=host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        # invite_user has no first_name/last_name/address, so profile
+        # incomplete
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("error", response.data)
+        self.assertIn("complete profile", response.data["error"])
 
     def test_invite_self_to_team(self):
         self.data = {"email": self.user.email}
@@ -412,9 +723,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as you're a part of {} team and it has been banned "
-        "from this challenge. Please contact the challenge host."
-        expected = {"error": message.format(self.participant_team1.team_name)}
+        message = (
+            f"You cannot invite as you're a part of {self.participant_team1.team_name} "
+            "team and it has been banned from this challenge. Please contact the "
+            "challenge host."
+        )
+        expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -443,8 +757,10 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             kwargs={"pk": self.participant_team1.pk},
         )
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as the invited user has been banned "
-        "from this challenge. Please contact the challenge host."
+        message = (
+            "You cannot invite as the invited user has been banned "
+            "from this challenge. Please contact the challenge host."
+        )
         expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -475,8 +791,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        expected = {"error": message.format("platform.com")}
+        expected = {
+            "error": (
+                "Sorry, users with platform.com email domain(s) are not allowed "
+                "to participate in this challenge."
+            )
+        }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -506,8 +826,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
-        expected = {"error": message.format("example1")}
+        expected = {
+            "error": (
+                "Sorry, users with example1 email domain(s) are only allowed "
+                "to participate in this challenge."
+            )
+        }
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -607,9 +931,106 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
+class InviteParticipantRequireProfileGuardTest(APITestCase):
+    """Focused tests for require_complete_profile invite guard."""
+
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.inviter = User.objects.create_user(
+            username="invite_guard_inviter",
+            email="invite_guard_inviter@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.inviter,
+            email=self.inviter.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.invitee = User.objects.create_user(
+            username="invite_guard_invitee",
+            email="invite_guard_invitee@example.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=self.invitee,
+            email=self.invitee.email,
+            primary=True,
+            verified=True,
+        )
+
+        self.team = ParticipantTeam.objects.create(
+            team_name="Invite Guard Team", created_by=self.inviter
+        )
+        Participant.objects.create(
+            user=self.inviter, status=Participant.SELF, team=self.team
+        )
+
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="Invite Guard Host Team", created_by=self.inviter
+        )
+
+    def _invite(self):
+        request = self.factory.post(
+            "/api/participants/participant_team/{}/invite".format(
+                self.team.pk
+            ),
+            {"email": self.invitee.email},
+            format="json",
+        )
+        force_authenticate(request, user=self.inviter)
+        return invite_participant_to_team(request, self.team.pk)
+
+    def test_invite_blocked_for_incomplete_invitee_when_active_require_profile_challenge(
+        self,
+    ):
+        Challenge.objects.create(
+            title="Require Profile Active",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
+        ).participant_teams.add(self.team)
+
+        response = self._invite()
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn("complete profile", response.data["error"])
+
+    def test_invite_allowed_for_complete_invitee_when_active_require_profile_challenge(
+        self,
+    ):
+        self.invitee.first_name = "First"
+        self.invitee.last_name = "Last"
+        self.invitee.save()
+        self.invitee.profile.address_street = "123 Street"
+        self.invitee.profile.address_city = "City"
+        self.invitee.profile.address_state = "State"
+        self.invitee.profile.address_country = "Country"
+        self.invitee.profile.university = "University"
+        self.invitee.profile.save()
+
+        Challenge.objects.create(
+            title="Require Profile Active 2",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
+        ).participant_teams.add(self.team)
+
+        response = self._invite()
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(
+            response.data["message"],
+            "User has been successfully added to the team!",
+        )
+
+
 class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(DeleteParticipantFromTeamTest, self).setUp()
+        super().setUp()
 
         self.participant = Participant.objects.create(
             user=self.user, status=Participant.SELF, team=self.participant_team
@@ -736,7 +1157,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
 class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
     def setUp(self):
-        super(GetTeamsAndCorrespondingChallengesForAParticipant, self).setUp()
+        super().setUp()
 
         self.user2 = User.objects.create(
             username="user2",
@@ -782,9 +1203,11 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            github_repository="challenge1/github_repo",
         )
-        self.challenge1.slug = "{}-{}".format(
-            self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
+        self.challenge1.slug = (
+            f"{self.challenge1.title.replace(' ', '-').lower()}-"
+            f"{self.challenge1.pk}"
         )[:199]
         self.challenge1.save()
 
@@ -826,12 +1249,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,
-                        "image": self.challenge1.image,
-                        "start_date": "{0}{1}".format(
-                            self.challenge1.start_date.isoformat(), "Z"
+                        "image": None,
+                        "start_date": (
+                            f"{self.challenge1.start_date.isoformat()}Z"
                         ).replace("+00:00", ""),
-                        "end_date": "{0}{1}".format(
-                            self.challenge1.end_date.isoformat(), "Z"
+                        "end_date": (
+                            f"{self.challenge1.end_date.isoformat()}Z"
                         ).replace("+00:00", ""),
                         "creator": {
                             "id": self.challenge_host_team.id,
@@ -840,7 +1263,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "team_url": self.challenge_host_team.team_url,
                         },
                         "domain": self.challenge1.domain,
-                        "domain_name": 'Computer Vision',
+                        "domain_name": "Computer Vision",
+                        "challenge_usage_type": self.challenge1.challenge_usage_type,
                         "list_tags": self.challenge1.list_tags,
                         "has_prize": self.challenge1.has_prize,
                         "has_sponsors": self.challenge1.has_sponsors,
@@ -851,11 +1275,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "leaderboard_description": self.challenge1.leaderboard_description,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                         "manual_participant_approval": self.challenge1.manual_participant_approval,
+                        "require_complete_profile": self.challenge1.require_complete_profile,
+                        "max_team_members": self.challenge1.max_team_members,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
                         "banned_email_ids": [],
                         "approved_by_admin": False,
+                        "is_approval_requested": False,
                         "forum_url": self.challenge1.forum_url,
                         "is_docker_based": self.challenge1.is_docker_based,
                         "is_static_dataset_code_upload": self.challenge1.is_static_dataset_code_upload,
@@ -868,8 +1295,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                         "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
                         "workers": self.challenge1.workers,
-                        "created_at": "{0}{1}".format(
-                            self.challenge1.created_at.isoformat(), "Z"
+                        "created_at": (
+                            f"{self.challenge1.created_at.isoformat()}Z"
                         ).replace("+00:00", ""),
                         "queue": self.challenge1.queue,
                         "worker_cpu_cores": 512,
@@ -884,6 +1311,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_image_url": self.challenge1.worker_image_url,
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
+                        "github_repository": self.challenge1.github_repository,
+                        "github_branch": self.challenge1.github_branch,
+                        "is_frozen": False,
+                        "is_submission_paused": False,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -896,15 +1327,147 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False,
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
-        self.assertEqual(response.data, expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data, default=str)),
+            json.loads(json.dumps(expected, default=str)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant_with_no_teams(
+        self,
+    ):
+        """User with no participant teams returns empty list."""
+        user_no_teams = User.objects.create(
+            username="user_no_teams",
+            email="user_no_teams@platform.com",
+            password="password",
+        )
+        EmailAddress.objects.create(
+            user=user_no_teams,
+            email="user_no_teams@platform.com",
+            primary=True,
+            verified=True,
+        )
+        self.client.force_authenticate(user=user_no_teams)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["challenge_participant_team_list"], [])
+        self.assertIn("is_challenge_host", response.data)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant_team_with_no_challenges(  # noqa: E501
+        self,
+    ):
+        """Participant team with no challenges returns (null, team) entry."""
+        # Create a second team for the user that has no challenges
+        participant_team_no_challenges = ParticipantTeam.objects.create(
+            team_name="Team No Challenges", created_by=self.user
+        )
+        Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=participant_team_no_challenges,
+        )
+
+        # participant_team has challenge1; participant_team_no_challenges has
+        # none
+        self.challenge1.participant_teams.add(self.participant_team)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        items = response.data["challenge_participant_team_list"]
+        self.assertEqual(len(items), 2)
+
+        # One entry with challenge, one with null challenge
+        challenges = [item["challenge"] for item in items]
+        participant_teams = [item["participant_team"] for item in items]
+        self.assertIn(None, challenges)
+        self.assertEqual(
+            len([c for c in challenges if c is not None]),
+            1,
+        )
+        team_names = [pt["team_name"] for pt in participant_teams]
+        self.assertIn("Participant Team", team_names)
+        self.assertIn("Team No Challenges", team_names)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant_multiple_teams(
+        self,
+    ):
+        """User in multiple teams gets correct challenge-team pairs."""
+        # Add user to participant_team2 (second team)
+        Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2,
+        )
+        self.challenge1.participant_teams.add(self.participant_team)
+        self.challenge2.participant_teams.add(self.participant_team2)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        items = response.data["challenge_participant_team_list"]
+        self.assertEqual(len(items), 2)
+
+        challenge_ids = [
+            item["challenge"]["id"] if item["challenge"] else None
+            for item in items
+        ]
+        team_ids = [item["participant_team"]["id"] for item in items]
+        self.assertIn(self.challenge1.id, challenge_ids)
+        self.assertIn(self.challenge2.id, challenge_ids)
+        self.assertIn(self.participant_team.id, team_ids)
+        self.assertIn(self.participant_team2.id, team_ids)
+
+    def test_get_teams_and_corresponding_challenges_no_n_plus_one_multiple_teams(
+        self,
+    ):
+        """Query count stays bounded with multiple participant teams (N+1 fix)."""
+        # Add user to multiple teams
+        for i in range(5):
+            team = ParticipantTeam.objects.create(
+                team_name=f"Team {i}",
+                created_by=self.user,
+            )
+            Participant.objects.create(
+                user=self.user,
+                status=Participant.ACCEPTED,
+                team=team,
+            )
+            challenge = Challenge.objects.create(
+                title=f"Extra Challenge {i}",
+                short_description=f"Short desc {i}",
+                description=f"Desc {i}",
+                creator=self.challenge_host_team,
+                published=False,
+                is_registration_open=True,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+            )
+            challenge.participant_teams.add(team)
+
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # With N+1 fix: queries should not grow with number of teams
+        # (1 participants + 1 is_challenge_host + 1 challenges + 1 prefetch)
+        self.assertLessEqual(
+            len(context),
+            25,
+            f"Too many queries ({len(context)}) - possible N+1 with multiple "
+            "participant teams",
+        )
 
     def test_get_participant_team_challenge_list(self):
         self.url = reverse_lazy(
@@ -920,12 +1483,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "terms_and_conditions": self.challenge1.terms_and_conditions,
                 "submission_guidelines": self.challenge1.submission_guidelines,
                 "evaluation_details": self.challenge1.evaluation_details,
-                "image": self.challenge1.image,
-                "start_date": "{0}{1}".format(
-                    self.challenge1.start_date.isoformat(), "Z"
+                "image": None,
+                "start_date": (
+                    f"{self.challenge1.start_date.isoformat()}Z"
                 ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge1.end_date.isoformat(), "Z"
+                "end_date": (
+                    f"{self.challenge1.end_date.isoformat()}Z"
                 ).replace("+00:00", ""),
                 "creator": {
                     "id": self.challenge_host_team.id,
@@ -934,7 +1497,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "team_url": self.challenge_host_team.team_url,
                 },
                 "domain": self.challenge1.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
+                "challenge_usage_type": self.challenge1.challenge_usage_type,
                 "list_tags": self.challenge1.list_tags,
                 "has_prize": self.challenge1.has_prize,
                 "has_sponsors": self.challenge1.has_sponsors,
@@ -945,11 +1509,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "leaderboard_description": self.challenge1.leaderboard_description,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge1.manual_participant_approval,
+                "require_complete_profile": self.challenge1.require_complete_profile,
+                "max_team_members": self.challenge1.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "banned_email_ids": [],
                 "approved_by_admin": False,
+                "is_approval_requested": False,
                 "forum_url": self.challenge1.forum_url,
                 "is_docker_based": self.challenge1.is_docker_based,
                 "is_static_dataset_code_upload": self.challenge1.is_static_dataset_code_upload,
@@ -962,8 +1529,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                 "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
                 "workers": self.challenge1.workers,
-                "created_at": "{0}{1}".format(
-                    self.challenge1.created_at.isoformat(), "Z"
+                "created_at": (
+                    f"{self.challenge1.created_at.isoformat()}Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge1.queue,
                 "worker_cpu_cores": 512,
@@ -978,6 +1545,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_image_url": self.challenge1.worker_image_url,
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
+                "github_repository": self.challenge1.github_repository,
+                "github_branch": self.challenge1.github_branch,
+                "is_frozen": False,
+                "is_submission_paused": False,
             }
         ]
 
@@ -985,7 +1556,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.save()
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(
+            json.loads(json.dumps(response.data["results"], default=str)),
+            json.loads(json.dumps(expected, default=str)),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_when_participant_team_hasnot_participated_in_any_challenge(self):
@@ -1005,12 +1579,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False,
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1025,20 +1601,78 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_no_n_plus_one_queries_with_multiple_challenges(self):
+        """
+        Test that the endpoint doesn't have N+1 query issues when a single
+        participant team is part of many challenges.
+        The number of queries should remain constant regardless of
+        the number of challenges the participant team is part of.
+        """
+        # Create additional challenges and add participant team to them
+        challenges = [self.challenge1]
+        for i in range(5):
+            challenge = Challenge.objects.create(
+                title=f"Test Challenge {i + 3}",
+                short_description=f"Short description for test challenge {i + 3}",
+                description=f"Description for test challenge {i + 3}",
+                terms_and_conditions=f"Terms for test challenge {i + 3}",
+                submission_guidelines=f"Guidelines for test challenge {i + 3}",
+                creator=self.challenge_host_team,
+                published=False,
+                is_registration_open=True,
+                enable_forum=True,
+                anonymous_leaderboard=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+            )
+            challenges.append(challenge)
+
+        # Add participant team to all challenges
+        for challenge in challenges:
+            challenge.participant_teams.add(self.participant_team)
+            challenge.save()
+
+        # The query count should be bounded (not grow with number of challenges)
+        # With the N+1 fix: 1 participants + 1 is_challenge_host + 1 challenges
+        # + 1 prefetch participant_teams (bounded, not O(n))
+
+        # Capture queries during the request
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(self.url, {})
+
+        query_count = len(context)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            len(response.data["challenge_participant_team_list"]),
+            len(challenges),
+        )
+
+        # With the N+1 fix, we expect a bounded number of queries
+        # Without the fix, this would be 2*N queries (COUNT + SELECT per team)
+        # We use 25 as a reasonable upper bound (includes auth, session, etc.)
+        self.assertLessEqual(
+            query_count,
+            25,
+            f"Too many queries ({query_count}) - possible N+1 issue",
+        )
+
 
 class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
     def setUp(self):
-        super(RemoveSelfFromParticipantTeamTest, self).setUp()
+        super().setUp()
 
         # user who create a challenge host team
         self.user2 = User.objects.create(
@@ -1121,7 +1755,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
 
 class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
     def setUp(self):
-        super(RemoveParticipantTeamFromChallengeTest, self).setUp()
+        super().setUp()
         self.user1 = User.objects.create(
             username="user1",
             email="user1@platform.com",
@@ -1155,8 +1789,9 @@ class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge.slug = "{}-{}".format(
-            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        self.challenge.slug = (
+            f"{self.challenge.title.replace(' ', '-').lower()}-"
+            f"{self.challenge.pk}"
         )[:199]
         self.challenge.save()
 

@@ -4,6 +4,10 @@
             <form name="editChallengeDateForm"
                 ng-submit="challenge.editChallengeDate(editChallengeDateForm.$valid)">
                 <div class="pass-title font-size-16">Edit Challenge Start and End Date</div>
+                <div ng-if="challenge.isFrozen" class="align-left" style="margin-bottom: 10px; padding: 8px 12px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
+                    <i class="fa fa-info-circle" style="color: #856404;"></i>
+                    <span style="color: #856404;"> Challenge dates are frozen. Please email at <a href="mailto:team@eval.ai">team@eval.ai</a> with your challenge link to unfreeze your challenge.</span>
+                </div>
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">Start date and time</span>
                     <input id="start_date" name="start_date" autocomplete="off"
@@ -11,6 +15,7 @@
                         value="{{ challenge.challengeStartDate }}" ng-model="challenge.challengeStartDate"
                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
                         moment-picker="challenge.challengeStartDate"
+                        ng-disabled="challenge.isFrozen"
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
@@ -21,6 +26,7 @@
                         value="{{ challenge.challengeEndDate }}" ng-model="challenge.challengeEndDate"
                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
                         moment-picker="challenge.challengeEndDate"
+                        ng-disabled="challenge.isFrozen"
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
@@ -32,6 +38,7 @@
                         </li>
                         <li>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                                ng-disabled="challenge.isFrozen"
                                 type="submit" value="submit">Submit
                             </button>
                         </li>

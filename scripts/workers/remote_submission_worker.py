@@ -1,23 +1,25 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import contextlib
 import importlib
 import json
 import logging
 import os
-import requests
-import signal
 import shutil
+import signal
 import sys
 import tempfile
 import time
 import traceback
 import zipfile
-
 from os.path import join
+
+import requests
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -42,6 +44,10 @@ SUBMISSION_DATA_DIR = join(
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, "{input_file}")
 CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 EVALUATION_SCRIPTS = {}
+
+# PUT ``update_submission_data`` → ``jobs.urls`` name ``jobs:update_submission``
+# (views.update_submission). Persists stdout/result blobs with the same Django
+# ``SubmissionArtifactFileName`` as in-container submission_worker uploads.
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
     "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",
@@ -158,7 +164,7 @@ def create_dir_as_python_package(directory):
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
+    with open(init_file_path, "w") as _init_file:  # noqa
         # to create empty file
         pass
 

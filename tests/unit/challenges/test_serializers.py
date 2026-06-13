@@ -1,18 +1,28 @@
 import os
-
 from datetime import timedelta
+from unittest import TestCase
+from unittest.mock import MagicMock, Mock
+from unittest.mock import patch as mockpatch
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
-from django.utils import timezone
-
+import pytest
 from allauth.account.models import EmailAddress
-from rest_framework.test import APITestCase, APIClient
-
-from challenges.models import Challenge, ChallengePhase
-from challenges.serializers import ChallengePhaseCreateSerializer
-from participants.models import ParticipantTeam
+from challenges.models import Challenge, ChallengeConfiguration, ChallengePhase
+from challenges.serializers import (
+    ChallengeConfigSerializer,
+    ChallengePhaseCreateSerializer,
+    ChallengePhaseSerializer,
+    ChallengeSerializer,
+    PWCChallengeLeaderboardSerializer,
+    UserInvitationSerializer,
+)
+from challenges.utils import add_sponsors_to_challenge
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import RequestFactory
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from participants.models import ParticipantTeam
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseTestCase(APITestCase):
@@ -59,6 +69,43 @@ class BaseTestCase(APITestCase):
         )
 
         self.client.force_authenticate(user=self.user)
+
+
+class ChallengeSerializerTest(BaseTestCase):
+    """Tests for ChallengeSerializer, including is_approval_requested field."""
+
+    def test_is_approval_requested_in_serialized_data_default_false(self):
+        """ChallengeSerializer output includes is_approval_requested and defaults to False."""
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("is_approval_requested", serializer.data)
+        self.assertFalse(serializer.data["is_approval_requested"])
+
+    def test_is_approval_requested_in_serialized_data_true_when_set(self):
+        """ChallengeSerializer output reflects is_approval_requested=True when set."""
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("is_approval_requested", serializer.data)
+        self.assertTrue(serializer.data["is_approval_requested"])
+
+    def test_challenge_usage_type_in_serialized_data(self):
+        request = RequestFactory().get("/")
+        request.user = self.user
+        serializer = ChallengeSerializer(
+            self.challenge, context={"request": request}
+        )
+        self.assertIn("challenge_usage_type", serializer.data)
+        self.assertEqual(
+            Challenge.PAID, serializer.data["challenge_usage_type"]
+        )
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
@@ -121,7 +168,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -152,7 +201,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -182,7 +233,9 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
-                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_partial_submission_evaluation_enabled": (
+                    self.challenge_phase.is_partial_submission_evaluation_enabled
+                ),
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -191,8 +244,44 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 instance=self.challenge_phase
             )
 
-    def test_challenge_phase_create_serializer(self):
+    def test_phase_retention_policy_in_serialized_data(self):
+        serializer = ChallengePhaseSerializer(self.challenge_phase)
+        self.assertIn("submission_artifact_retention_policy", serializer.data)
+        self.assertEqual(
+            ChallengePhase.KEEP_FOREVER,
+            serializer.data["submission_artifact_retention_policy"],
+        )
 
+    def test_internal_challenge_defaults_created_phase_to_days_14(self):
+        self.challenge.challenge_usage_type = Challenge.INTERNAL
+        self.challenge.save()
+        request = RequestFactory().post("/")
+        request.user = self.user
+        serializer = ChallengePhaseCreateSerializer(
+            data={
+                "name": "Internal Phase",
+                "description": "Internal phase",
+                "leaderboard_public": False,
+                "is_public": False,
+                "start_date": timezone.now() - timedelta(days=1),
+                "end_date": timezone.now() + timedelta(days=1),
+                "max_submissions_per_day": 100000,
+                "max_submissions": 100000,
+                "max_submissions_per_month": 100000,
+                "codename": "internal-phase",
+            },
+            context={"challenge": self.challenge, "request": request},
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        challenge_phase = serializer.save()
+
+        self.assertEqual(
+            ChallengePhase.DAYS_14,
+            challenge_phase.submission_artifact_retention_policy,
+        )
+
+    def test_challenge_phase_create_serializer(self):
         data = self.challenge_phase_create_serializer.data
 
         self.assertEqual(
@@ -209,6 +298,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions_per_month",
                     "max_submissions",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",
@@ -226,6 +316,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_submission_paused",
                 ]
             ),
         )
@@ -275,7 +366,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
         self,
     ):
-
         data = (
             self.challenge_phase_create_serializer_without_max_submissions_per_month.data
         )
@@ -294,6 +384,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions",
                     "max_submissions_per_month",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",
@@ -311,6 +402,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_submission_paused",
                 ]
             ),
         )
@@ -356,7 +448,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def test_challenge_phase_create_serializer_without_max_concurrent_submissions_allowed(
         self,
     ):
-
         data = (
             self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed.data
         )
@@ -375,6 +466,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_submissions_per_day",
                     "max_submissions_per_month",
                     "max_submissions",
+                    "submission_artifact_retention_policy",
                     "is_public",
                     "is_active",
                     "codename",
@@ -392,6 +484,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_submission_paused",
                 ]
             ),
         )
@@ -434,9 +527,281 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
-
         serializer = ChallengePhaseCreateSerializer(data=self.serializer_data)
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
             set(serializer.errors), set(["test_annotation", "slug"])
         )
+
+
+class ChallengeLeaderboardSerializerTests(TestCase):
+    def setUp(self):
+        self.obj = MagicMock()
+        self.serializer = PWCChallengeLeaderboardSerializer()
+
+    def test_get_challenge_id(self):
+        """Test case for get_challenge_id function."""
+        self.obj.phase_split.challenge_phase.challenge.id = 1
+        result = self.serializer.get_challenge_id(self.obj)
+        self.assertEqual(result, 1)
+
+    def test_get_leaderboard_decimal_precision(self):
+        """Test case for get_leaderboard_decimal_precision function."""
+        self.obj.phase_split.leaderboard_decimal_precision = 2
+        result = self.serializer.get_leaderboard_decimal_precision(self.obj)
+        self.assertEqual(result, 2)
+
+    def test_get_is_leaderboard_order_descending(self):
+        """Test case for get_is_leaderboard_order_descending function."""
+        self.obj.phase_split.is_leaderboard_order_descending = True
+        result = self.serializer.get_is_leaderboard_order_descending(self.obj)
+        self.assertTrue(result)
+
+    def test_get_leaderboard(self):
+        """Test case for get_leaderboard function."""
+        leaderboard_schema = {
+            "default_order_by": "accuracy",
+            "labels": ["accuracy", "loss", "f1_score"],
+        }
+        self.obj.phase_split.leaderboard.schema = leaderboard_schema
+
+        result = self.serializer.get_leaderboard(self.obj)
+        self.assertEqual(result, ["accuracy", "loss", "f1_score"])
+
+
+@pytest.mark.django_db
+class UserInvitationSerializerTests(TestCase):
+    def setUp(self):
+        # Set up any common objects you need
+        self.user = User.objects.create(username="testuser")
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(
+            team_name="Test Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            creator=self.challengeHostTeam,
+        )
+        self.obj = Mock(challenge=self.challenge, user=self.user)
+        self.serializer = UserInvitationSerializer()
+
+    def test_get_challenge_title(self):
+        result = self.serializer.get_challenge_title(self.obj)
+        self.assertEqual(result, "Test Challenge")
+
+    def test_get_challenge_host_team_name(self):
+        # Assuming creator has a team_name attribute
+        self.user.team_name = "Test Team"
+        result = self.serializer.get_challenge_host_team_name(self.obj)
+        self.assertEqual(result, "Test Team")
+
+    def test_get_user_details(self):
+        # Mock the serializer output
+        with mockpatch(
+            "challenges.serializers.UserDetailsSerializer"
+        ) as mock_serializer:
+            mock_serializer.return_value.data = {"username": "testuser"}
+            result = self.serializer.get_user_details(self.obj)
+            self.assertEqual(result, {"username": "testuser"})
+
+
+@pytest.mark.django_db
+class AddSponsorsToChallengeTests(TestCase):
+    def setUp(self):
+        self.User = User.objects.create(username="testuser")
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(
+            team_name="Test Team", created_by=self.User
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge", creator=self.challengeHostTeam
+        )
+        self.yaml_file_data = {
+            "sponsors": [
+                {"name": "Test Sponsor", "website": "https://testsponsor.com"}
+            ]
+        }
+
+    @mockpatch(
+        "challenges.utils.ChallengeSponsorSerializer"
+    )  # Mock the serializer
+    def test_serializer_valid(self, MockChallengeSponsorSerializer):
+        # Mocking the serializer instance and its methods
+        mock_serializer = MockChallengeSponsorSerializer.return_value
+        mock_serializer.is_valid.return_value = (
+            True  # Simulate a valid serializer
+        )
+
+        # Call the function with the real challenge object
+        result = add_sponsors_to_challenge(self.yaml_file_data, self.challenge)
+
+        # Assertions
+        # Ensure save is called on the serializer
+        mock_serializer.save.assert_called_once()
+        self.assertTrue(
+            self.challenge.has_sponsors
+        )  # Ensure has_sponsors is set to True
+        # Refresh the challenge instance from the database
+        self.challenge.refresh_from_db()
+        self.assertTrue(
+            self.challenge.has_sponsors
+        )  # Check again after refreshing
+
+        # Ensure the function does not return any error response (meaning it
+        # worked correctly)
+        self.assertIsNone(result)
+
+
+class TestChallengePhaseSerializer(TestCase):
+    def test_challenge_phase_serializer_sets_challenge_in_data(self):
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 123
+
+        context = {"challenge": mock_challenge}
+        data = {}
+
+        serializer = ChallengePhaseSerializer(data=data, context=context)
+        assert serializer.initial_data["challenge"] == 123
+
+
+@pytest.mark.django_db
+class TestChallengeConfigSerializerGetConfig(APITestCase):
+    """Tests for ChallengeConfigSerializer.get_config class method."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser",
+            email="testuser@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email="testuser@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            github_repository="testuser/test-repo",
+        )
+
+        self.mock_request = MagicMock()
+        self.mock_request.user = self.user
+
+        self.mock_data = {
+            "zip_configuration": SimpleUploadedFile(
+                "test.zip",
+                b"test content",
+                content_type="application/zip",
+            ),
+            "user": self.user.pk,
+        }
+
+    def test_get_config_returns_create_serializer_when_no_challenge(self):
+        """Test that get_config returns a create serializer when challenge_queryset is empty."""
+        empty_queryset = Challenge.objects.none()
+
+        serializer = ChallengeConfigSerializer.get_config(
+            empty_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have no instance (create mode)
+        self.assertIsNone(serializer.instance)
+
+    def test_get_config_returns_create_serializer_when_no_existing_config(
+        self,
+    ):
+        """Test that get_config returns a create serializer when challenge exists but no config."""
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        # Ensure no ChallengeConfiguration exists for this challenge
+        ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).delete()
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have no instance (create mode)
+        self.assertIsNone(serializer.instance)
+
+    def test_get_config_returns_update_serializer_when_config_exists(self):
+        """Test that get_config returns an update serializer when config exists."""
+        # Create an existing ChallengeConfiguration
+        existing_config = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                "existing.zip",
+                b"existing content",
+                content_type="application/zip",
+            ),
+        )
+
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, self.mock_data, self.mock_request
+        )
+
+        # Serializer should have the existing instance (update mode)
+        self.assertIsNotNone(serializer.instance)
+        self.assertEqual(serializer.instance.pk, existing_config.pk)
+
+    def test_get_config_updates_existing_config_on_save(self):
+        """Test that saving the serializer updates existing config instead of creating new."""
+        # Create an existing ChallengeConfiguration
+        existing_config = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                "existing.zip",
+                b"existing content",
+                content_type="application/zip",
+            ),
+        )
+        initial_config_count = ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).count()
+
+        challenge_queryset = Challenge.objects.filter(pk=self.challenge.pk)
+
+        new_zip_data = {
+            "zip_configuration": SimpleUploadedFile(
+                "updated.zip",
+                b"updated content",
+                content_type="application/zip",
+            ),
+            "user": self.user.pk,
+        }
+
+        serializer = ChallengeConfigSerializer.get_config(
+            challenge_queryset, new_zip_data, self.mock_request
+        )
+
+        self.assertTrue(serializer.is_valid())
+        saved_config = serializer.save()
+
+        # Should be the same config object (updated, not new)
+        self.assertEqual(saved_config.pk, existing_config.pk)
+
+        # Count should remain the same
+        final_config_count = ChallengeConfiguration.objects.filter(
+            challenge=self.challenge
+        ).count()
+        self.assertEqual(initial_config_count, final_config_count)

@@ -1,7 +1,6 @@
-from rest_framework import serializers
-
 from accounts.serializers import UserDetailsSerializer
 from hosts.serializers import ChallengeHostTeamSerializer
+from rest_framework import serializers
 
 from .models import (
     Challenge,
@@ -9,6 +8,8 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
@@ -16,8 +17,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 
 
@@ -54,6 +53,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "creator",
             "domain",
             "domain_name",
+            "challenge_usage_type",
             "list_tags",
             "has_prize",
             "has_sponsors",
@@ -68,7 +68,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
+            "max_team_members",
             "approved_by_admin",
+            "is_approval_requested",
             "forum_url",
             "is_docker_based",
             "is_static_dataset_code_upload",
@@ -94,7 +97,11 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "evaluation_module_error",
             "worker_image_url",
             "worker_instance_type",
-            "sqs_retention_period"
+            "sqs_retention_period",
+            "github_repository",
+            "github_branch",
+            "is_frozen",
+            "is_submission_paused",
         )
 
 
@@ -123,6 +130,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "max_submissions_per_day",
             "max_submissions_per_month",
             "max_submissions",
+            "submission_artifact_retention_policy",
             "is_public",
             "is_active",
             "codename",
@@ -136,6 +144,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_email_ids",
             "is_submission_public",
             "disable_logs",
+            "is_submission_paused",
         )
 
 
@@ -188,6 +197,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
             "leaderboard_schema",
             "is_multi_metric_leaderboard",
         )
@@ -213,6 +223,38 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
         if context:
             request = context.get("request")
             kwargs["data"]["user"] = request.user.pk
+
+    @classmethod
+    def get_config(cls, challenge_queryset, data, request):
+        """
+        Get a serializer for creating or updating a ChallengeConfiguration.
+
+        If a challenge exists in the queryset and has an existing ChallengeConfiguration,
+        returns a serializer for updating. Otherwise, returns a serializer for creating.
+
+        Arguments:
+            challenge_queryset {QuerySet} -- QuerySet of challenges (filtered by github_repository)
+            data {dict} -- Request data containing zip_configuration
+            request {Request} -- The HTTP request object
+
+        Returns:
+            ChallengeConfigSerializer -- Serializer instance configured for create or update
+        """
+        existing_challenge_config = None
+        if challenge_queryset:
+            challenge = challenge_queryset[0]
+            existing_challenge_config = ChallengeConfiguration.objects.filter(
+                challenge=challenge.pk
+            ).first()
+
+        if existing_challenge_config:
+            return cls(
+                existing_challenge_config,
+                data=data,
+                context={"request": request},
+            )
+        else:
+            return cls(data=data, context={"request": request})
 
     class Meta:
         model = ChallengeConfiguration
@@ -256,6 +298,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
+            github_branch = context.get("github_branch")
+            if github_branch:
+                kwargs["data"]["github_branch"] = github_branch
 
     class Meta:
         model = Challenge
@@ -271,6 +316,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "challenge_usage_type",
             "submission_time_limit",
             "is_registration_open",
             "enable_forum",
@@ -282,6 +328,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",
+            "require_complete_profile",
+            "max_team_members",
             "forum_url",
             "remote_evaluation",
             "allow_resuming_submissions",
@@ -294,6 +342,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "github_branch",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",
@@ -311,7 +360,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
-            "sqs_retention_period"
+            "sqs_retention_period",
         )
 
 
@@ -345,6 +394,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "show_scores_on_leaderboard",
         )
 
 
@@ -373,6 +423,20 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             if config_id:
                 kwargs["data"]["config_id"] = config_id
 
+    def create(self, validated_data):
+        challenge = validated_data.get("challenge")
+        if (
+            challenge
+            and challenge.challenge_usage_type == Challenge.INTERNAL
+            and "submission_artifact_retention_policy" not in validated_data
+        ):
+            validated_data["submission_artifact_retention_policy"] = (
+                ChallengePhase.DAYS_14
+            )
+        return super(ChallengePhaseCreateSerializer, self).create(
+            validated_data
+        )
+
     class Meta:
         model = ChallengePhase
         fields = (
@@ -386,6 +450,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "max_submissions_per_day",
             "max_submissions_per_month",
             "max_submissions",
+            "submission_artifact_retention_policy",
             "is_public",
             "is_active",
             "is_submission_public",
@@ -403,6 +468,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "disable_logs",
+            "is_submission_paused",
         )
 
 
@@ -541,7 +607,8 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         default_order_by = leaderboard_schema["default_order_by"]
         labels = leaderboard_schema["labels"]
         default_order_by_index = labels.index(default_order_by)
-        # PWC requires the default sorted by metric at the index "0" of the array
+        # PWC requires the default sorted by metric at the index "0" of the
+        # array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
 
@@ -557,7 +624,9 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
         if context:
             challenge_phase_split = context.get("challenge_phase_split")
             if challenge_phase_split:
-                kwargs["data"]["challenge_phase_split"] = challenge_phase_split.pk
+                kwargs["data"][
+                    "challenge_phase_split"
+                ] = challenge_phase_split.pk
             submission = context.get("submission")
             if submission:
                 kwargs["data"]["submission"] = submission.pk
@@ -589,12 +658,7 @@ class ChallengePrizeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePrize
-        fields = (
-            "challenge",
-            "amount",
-            "rank",
-            "description"
-        )
+        fields = ("challenge", "amount", "rank", "description")
 
 
 class ChallengeSponsorSerializer(serializers.ModelSerializer):
@@ -612,8 +676,4 @@ class ChallengeSponsorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengeSponsor
-        fields = (
-            "challenge",
-            "name",
-            "website"
-        )
+        fields = ("challenge", "name", "website")

@@ -1,10 +1,9 @@
+from base.admin import ImportExportTimeStampedAdmin
 from django import forms
 from django.contrib import admin, messages
-
 from django.contrib.admin.helpers import ActionForm
 
-from base.admin import ImportExportTimeStampedAdmin
-
+from .admin_filters import ChallengeFilter
 from .aws_utils import (
     delete_workers,
     restart_workers,
@@ -12,15 +11,14 @@ from .aws_utils import (
     start_workers,
     stop_workers,
 )
-
-from .admin_filters import ChallengeFilter
-
 from .models import (
     Challenge,
     ChallengeConfiguration,
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
@@ -28,8 +26,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengeSponsor,
-    ChallengePrize,
 )
 
 
@@ -41,34 +37,41 @@ class UpdateNumOfWorkersForm(ActionForm):
 @admin.register(Challenge)
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ("created_at",)
+    raw_id_fields = (
+        "creator",
+        "participant_teams",
+        "approved_participant_teams",
+    )
+    ordering = ["-id"]
     list_display = (
         "id",
         "title",
         "start_date",
         "end_date",
         "creator",
+        "challenge_usage_type",
         "published",
-        "is_registration_open",
-        "enable_forum",
-        "anonymous_leaderboard",
-        "featured",
+        "approved_by_admin",
+        "is_frozen",
+        "is_submission_paused",
+        "remote_evaluation",
         "created_at",
-        "is_docker_based",
-        "is_static_dataset_code_upload",
-        "slug",
-        "submission_time_limit",
-        "banned_email_ids",
         "workers",
+        "use_fargate_spot",
         "task_def_arn",
         "github_repository",
     )
     list_filter = (
         ChallengeFilter,
+        "challenge_usage_type",
         "published",
+        "is_frozen",
+        "is_submission_paused",
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
-        "featured",
+        "remote_evaluation",
+        "use_fargate_spot",
         "start_date",
         "end_date",
     )
@@ -76,8 +79,10 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "id",
         "title",
         "creator__team_name",
+        "creator__created_by__email",
         "slug",
         "github_repository",
+        "github_branch",
     )
     actions = [
         "start_selected_workers",
@@ -85,6 +90,10 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "freeze_selected_challenges",
+        "unfreeze_selected_challenges",
+        "pause_selected_challenge_submissions",
+        "unpause_selected_challenge_submissions",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -215,6 +224,48 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
+    def freeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=True)
+        messages.success(
+            request,
+            "{} challenge(s) successfully frozen.".format(updated),
+        )
+
+    freeze_selected_challenges.short_description = "Freeze selected challenges (prevent hosts from changing start/end dates)."
+
+    def unfreeze_selected_challenges(self, request, queryset):
+        updated = queryset.update(is_frozen=False)
+        messages.success(
+            request,
+            "{} challenge(s) successfully unfrozen.".format(updated),
+        )
+
+    unfreeze_selected_challenges.short_description = (
+        "Unfreeze selected challenges (allow hosts to change start/end dates)."
+    )
+
+    def pause_selected_challenge_submissions(self, request, queryset):
+        updated = queryset.update(is_submission_paused=True)
+        messages.success(
+            request,
+            "{} challenge(s) submissions paused.".format(updated),
+        )
+
+    pause_selected_challenge_submissions.short_description = (
+        "Pause submissions for selected challenges."
+    )
+
+    def unpause_selected_challenge_submissions(self, request, queryset):
+        updated = queryset.update(is_submission_paused=False)
+        messages.success(
+            request,
+            "{} challenge(s) submissions unpaused.".format(updated),
+        )
+
+    unpause_selected_challenge_submissions.short_description = (
+        "Unpause submissions for selected challenges."
+    )
+
 
 @admin.register(ChallengeConfiguration)
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
@@ -239,11 +290,17 @@ class ChallengePhaseAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
         "test_annotation",
+        "submission_artifact_retention_policy",
         "is_public",
         "is_submission_public",
         "leaderboard_public",
     )
-    list_filter = ("leaderboard_public", "start_date", "end_date")
+    list_filter = (
+        "submission_artifact_retention_policy",
+        "leaderboard_public",
+        "start_date",
+        "end_date",
+    )
     search_fields = ("name", "challenge__title")
 
     def get_challenge_name_and_id(self, obj):
@@ -267,6 +324,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
         "show_execution_time",
+        "show_scores_on_leaderboard",
     )
     list_filter = ("visibility",)
     search_fields = (

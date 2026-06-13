@@ -1,12 +1,31 @@
 import os
-import unittest
 import random
 import string
+import unittest
+from unittest.mock import MagicMock
+from unittest.mock import patch
+from unittest.mock import patch as mockpatch
 
-from django.conf import settings
-
-from challenges.utils import get_file_content
+import pytest
 from base.utils import get_queue_name
+from challenges.models import Challenge, ChallengePrize
+from challenges.utils import (
+    add_domain_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
+    add_tags_to_challenge,
+    generate_presigned_url,
+    generate_presigned_url_for_multipart_upload,
+    get_file_content,
+    get_participants_with_incomplete_profiles,
+    parse_submission_meta_attributes,
+    send_emails,
+    send_subscription_plans_email,
+)
+from django.conf import settings
+from django.contrib.auth.models import User
+from hosts.models import ChallengeHostTeam
+from participants.models import Participant, ParticipantTeam
 
 
 class BaseTestCase(unittest.TestCase):
@@ -58,3 +77,600 @@ class BaseTestCase(unittest.TestCase):
         sqs_queue_name = get_queue_name(title, challenge_pk)
         self.assertNotRegex(sqs_queue_name, "[^a-zA-Z0-9_-]")
         self.assertLessEqual(len(sqs_queue_name), 80)
+
+
+class TestGeneratePresignedUrl(unittest.TestCase):
+    @mockpatch("challenges.utils.settings")
+    def test_debug_or_test_mode(self, mock_settings):
+        mock_settings.DEBUG = True
+        mock_settings.TEST = False
+        result = generate_presigned_url("file_key", 1)
+        self.assertIsNone(result)
+
+        mock_settings.DEBUG = False
+        mock_settings.TEST = True
+        result = generate_presigned_url("file_key", 1)
+        self.assertIsNone(result)
+
+    @mockpatch("challenges.utils.get_boto3_client")
+    @mockpatch("challenges.utils.get_aws_credentials_for_challenge")
+    @mockpatch("challenges.utils.settings")
+    def test_generate_presigned_url_success(
+        self, mock_settings, mock_get_aws_credentials, mock_get_boto3_client
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_settings.PRESIGNED_URL_EXPIRY_TIME = 3600
+
+        mock_get_aws_credentials.return_value = {
+            "AWS_ACCESS_KEY_ID": "fake_access_key",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
+            "AWS_STORAGE_BUCKET_NAME": "fake_bucket",
+        }
+
+        mock_s3_client = MagicMock()
+        mock_s3_client.generate_presigned_url.return_value = (
+            "http://fake_presigned_url"
+        )
+        mock_get_boto3_client.return_value = mock_s3_client
+
+        result = generate_presigned_url("file_key", 1)
+        self.assertEqual(
+            result, {"presigned_url": "http://fake_presigned_url"}
+        )
+        mock_s3_client.generate_presigned_url.assert_called_once_with(
+            "put_object",
+            Params={"Bucket": "fake_bucket", "Key": "file_key"},
+            ExpiresIn=3600,
+            HttpMethod="PUT",
+        )
+
+    @patch("challenges.utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.logger")
+    @patch("challenges.utils.settings")
+    def test_generate_presigned_url_exception(
+        self,
+        mock_settings,
+        mock_logger,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_settings.PRESIGNED_URL_EXPIRY_TIME = 3600
+
+        mock_get_aws_credentials.return_value = {
+            "AWS_ACCESS_KEY_ID": "fake_access_key",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
+            "AWS_STORAGE_BUCKET_NAME": "fake_bucket",
+        }
+
+        mock_s3_client = MagicMock()
+
+        mock_s3_client.generate_presigned_url.side_effect = Exception(
+            "S3 error"
+        )
+        mock_get_boto3_client.return_value = mock_s3_client
+
+        result = generate_presigned_url("file_key", 1)
+        assert result == {"error": "Could not fetch presigned url."}
+        mock_logger.exception.assert_called_once()
+
+    @patch("challenges.utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.utils.logger")
+    @patch("challenges.utils.settings")
+    def test_generate_presigned_url_for_multipart_upload_exception(
+        self,
+        mock_settings,
+        mock_logger,
+        mock_get_aws_credentials,
+        mock_get_boto3_client,
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.PRESIGNED_URL_EXPIRY_TIME = 3600
+
+        mock_get_aws_credentials.return_value = {
+            "AWS_ACCESS_KEY_ID": "fake_access_key",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_key",
+            "AWS_STORAGE_BUCKET_NAME": "fake_bucket",
+        }
+
+        mock_s3_client = MagicMock()
+        # Simulate exception when calling create_multipart_upload
+        mock_s3_client.create_multipart_upload.side_effect = Exception(
+            "S3 error"
+        )
+        mock_get_boto3_client.return_value = mock_s3_client
+
+        result = generate_presigned_url_for_multipart_upload("file_key", 1, 2)
+        assert result == {"error": "Could not fetch presigned urls."}
+        mock_logger.exception.assert_called_once()
+
+
+class TestChallengeUtils(unittest.TestCase):
+    def test_parse_submission_meta_attributes(self):
+        # Test with submission_metadata as None
+        submission = {"submission_metadata": None}
+        result = parse_submission_meta_attributes(submission)
+        self.assertEqual(result, {})
+
+        # Test with submission_metadata containing different types of
+        # attributes
+        submission = {
+            "submission_metadata": [
+                {
+                    "type": "checkbox",
+                    "name": "attr1",
+                    "values": ["val1", "val2"],
+                },
+                {"type": "text", "name": "attr2", "value": "val3"},
+            ]
+        }
+        result = parse_submission_meta_attributes(submission)
+        self.assertEqual(result, {"attr1": ["val1", "val2"], "attr2": "val3"})
+
+    @mockpatch("challenges.models.Challenge")
+    def test_add_tags_to_challenge(self, MockChallenge):
+        challenge = MockChallenge()
+        challenge.list_tags = ["tag1", "tag2"]
+
+        # Test with tags present in yaml_file_data
+        yaml_file_data = {"tags": ["tag2", "tag3"]}
+        add_tags_to_challenge(yaml_file_data, challenge)
+        self.assertEqual(challenge.list_tags, ["tag2", "tag3"])
+
+        # Test with tags not present in yaml_file_data
+        yaml_file_data = {}
+        add_tags_to_challenge(yaml_file_data, challenge)
+        self.assertEqual(challenge.list_tags, [])
+
+    @mockpatch("challenges.models.Challenge")
+    def test_add_domain_to_challenge(self, MockChallenge):
+        challenge = MockChallenge()
+        challenge.DOMAIN_OPTIONS = [
+            ("domain1", "Domain 1"),
+            ("domain2", "Domain 2"),
+        ]
+
+        # Test with valid domain in yaml_file_data
+        yaml_file_data = {"domain": "domain1"}
+        response = add_domain_to_challenge(yaml_file_data, challenge)
+        self.assertIsNone(response)
+        self.assertEqual(challenge.domain, "domain1")
+
+        # Test with invalid domain in yaml_file_data
+        yaml_file_data = {"domain": "invalid_domain"}
+        response = add_domain_to_challenge(yaml_file_data, challenge)
+        self.assertEqual(
+            response,
+            {
+                "error": "Invalid domain value: invalid_domain, valid values "
+                "are: ['domain1', 'domain2']"
+            },
+        )
+
+        # Test with domain not present in yaml_file_data
+        yaml_file_data = {}
+        response = add_domain_to_challenge(yaml_file_data, challenge)
+        self.assertIsNone(response)
+        self.assertIsNone(challenge.domain)
+
+
+class TestAddSponsorsToChallenge(unittest.TestCase):
+    @mockpatch("challenges.utils.ChallengeSponsor")
+    @mockpatch("challenges.utils.ChallengeSponsorSerializer")
+    def test_add_sponsors_with_valid_data(
+        self, MockChallengeSponsorSerializer, MockChallengeSponsor
+    ):
+        yaml_file_data = {
+            "sponsors": [
+                {"name": "Sponsor1", "website": "http://sponsor1.com"},
+                {"name": "Sponsor2", "website": "http://sponsor2.com"},
+            ]
+        }
+        challenge = MagicMock()
+        mock_queryset = MagicMock()
+        mock_queryset.exists.return_value = False
+        MockChallengeSponsor.objects.filter.return_value = mock_queryset
+        mock_serializer = MockChallengeSponsorSerializer.return_value
+        mock_serializer.is_valid.return_value = True
+
+        response = add_sponsors_to_challenge(yaml_file_data, challenge)
+
+        self.assertIsNone(response)
+        self.assertTrue(challenge.has_sponsors)
+        self.assertEqual(mock_serializer.save.call_count, 2)
+
+    @mockpatch("challenges.utils.ChallengeSponsor")
+    @mockpatch("challenges.utils.ChallengeSponsorSerializer")
+    def test_add_sponsors_with_invalid_data(
+        self, MockChallengeSponsorSerializer, MockChallengeSponsor
+    ):
+        yaml_file_data = {
+            "sponsors": [
+                {"name": "Sponsor1", "website": "http://sponsor1.com"},
+                {"name": "Sponsor2"},  # Missing website
+            ]
+        }
+        challenge = MagicMock()
+        mock_queryset = MagicMock()
+        mock_queryset.exists.return_value = False
+        MockChallengeSponsor.objects.filter.return_value = mock_queryset
+
+        response = add_sponsors_to_challenge(yaml_file_data, challenge)
+
+        self.assertEqual(
+            response, {"error": "Sponsor name or url not found in YAML data."}
+        )
+
+    @mockpatch("challenges.utils.ChallengeSponsor")
+    @mockpatch("challenges.utils.ChallengeSponsorSerializer")
+    def test_add_sponsors_existing_in_database(
+        self, MockChallengeSponsorSerializer, MockChallengeSponsor
+    ):
+        yaml_file_data = {
+            "ponsors": [{"name": "Sponsor1", "website": "http://sponsor1.com"}]
+        }
+        challenge = MagicMock()
+        mock_queryset = MagicMock()
+        mock_queryset.exists.return_value = True
+        MockChallengeSponsor.objects.filter.return_value = mock_queryset
+
+        response = add_sponsors_to_challenge(yaml_file_data, challenge)
+
+        self.assertIsNone(response)
+        self.assertFalse(MockChallengeSponsorSerializer.called)
+        self.assertFalse(challenge.has_sponsors)
+
+
+@pytest.mark.django_db
+class AddPrizesToChallengeTests(unittest.TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", password="12345"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short Description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            published=False,
+        )
+
+    def test_no_prizes_in_yaml(self):
+        yaml_file_data = {}
+        result = add_prizes_to_challenge(yaml_file_data, self.challenge)
+        self.assertIsNone(result)
+        self.assertFalse(self.challenge.has_prize)
+
+    def test_missing_rank_or_amount_in_prize_data(self):
+        yaml_file_data = {"prizes": [{"rank": 1}]}  # Missing 'amount'
+        result = add_prizes_to_challenge(yaml_file_data, self.challenge)
+        self.assertEqual(
+            result, {"error": "Prize rank or amount not found in YAML data."}
+        )
+        self.assertFalse(self.challenge.has_prize)
+
+    def test_duplicate_rank_in_prize_data(self):
+        yaml_file_data = {
+            "prizes": [
+                {"rank": 1, "amount": 100, "description": "First Prize"},
+                {
+                    "rank": 1,
+                    "amount": 200,
+                    "description": "Duplicate First Prize",
+                },
+            ]
+        }
+        result = add_prizes_to_challenge(yaml_file_data, self.challenge)
+        self.assertEqual(
+            result, {"error": "Duplicate rank 1 found in YAML data."}
+        )
+        self.assertTrue(self.challenge.has_prize)
+
+    @mockpatch(
+        "challenges.serializers.ChallengePrizeSerializer.is_valid",
+        return_value=True,
+    )
+    @mockpatch("challenges.serializers.ChallengePrizeSerializer.save")
+    def test_valid_prize_data_new_prize(self, mock_save, mock_is_valid):
+        yaml_file_data = {
+            "prizes": [
+                {"rank": 1, "amount": 100, "description": "First Prize"}
+            ]
+        }
+        result = add_prizes_to_challenge(yaml_file_data, self.challenge)
+        self.assertIsNone(result)
+        mock_save.assert_called_once()
+        self.assertTrue(self.challenge.has_prize)
+
+    @mockpatch(
+        "challenges.serializers.ChallengePrizeSerializer.is_valid",
+        return_value=True,
+    )
+    @mockpatch("challenges.serializers.ChallengePrizeSerializer.save")
+    def test_valid_prize_data_existing_prize(self, mock_save, mock_is_valid):
+        prize = ChallengePrize.objects.create(
+            rank=1,
+            amount=100,
+            description="Old Prize",
+            challenge=self.challenge,
+        )
+
+        yaml_file_data = {
+            "prizes": [
+                {"rank": 1, "amount": 100, "description": "Updated Prize"}
+            ]
+        }
+        result = add_prizes_to_challenge(yaml_file_data, self.challenge)
+        self.assertIsNone(result)
+        mock_save.assert_called_once()
+        self.assertTrue(self.challenge.has_prize)
+        prize.refresh_from_db()
+        self.assertEqual(prize.amount, "100")
+
+
+class SendEmailsTests(unittest.TestCase):
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_emails_to_multiple_recipients(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
+        emails = ["user1@example.com", "user2@example.com"]
+        template_id = "template-id"
+        template_data = {"key": "value"}
+
+        send_emails(emails, template_id, template_data)
+
+        # Check if send_email was called for each email
+        self.assertEqual(mock_send_email.call_count, len(emails))
+
+        # Check that send_email was called with correct arguments for the first
+        # email
+        mock_send_email.assert_any_call(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="user1@example.com",
+            template_id=template_id,
+            template_data=template_data,
+        )
+
+        # Check that send_email was called with correct arguments for the
+        # second email
+        mock_send_email.assert_any_call(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="user2@example.com",
+            template_id=template_id,
+            template_data=template_data,
+        )
+
+
+class SendSubscriptionPlansEmailTests(unittest.TestCase):
+    """Test cases for send_subscription_plans_email function (SendGrid)"""
+
+    def setUp(self):
+        self.mock_challenge = MagicMock()
+        self.mock_challenge.pk = 123
+        self.mock_challenge.title = "Test Challenge"
+        self.mock_challenge.creator.team_name = "Test Host Team"
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "host1@example.com",
+            "host2@example.com",
+        ]
+        self.mock_challenge.image = None
+
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_success(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "http://testserver"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"SUBSCRIPTION_PLANS_EMAIL": "template-id"}
+        }
+
+        send_subscription_plans_email(self.mock_challenge)
+
+        self.assertEqual(mock_send_email.call_count, 2)
+        expected_data = {
+            "CHALLENGE_NAME": "Test Challenge",
+            "CHALLENGE_URL": "http://testserver/web/challenges/challenge-page/123",
+            "CHALLENGE_MANAGE_URL": "http://testserver/web/challenges/challenge-page/123/manage",
+            "HOST_TEAM_NAME": "Test Host Team",
+        }
+        mock_send_email.assert_any_call(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="host1@example.com",
+            template_id="template-id",
+            template_data=expected_data,
+        )
+        mock_send_email.assert_any_call(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="host2@example.com",
+            template_id="template-id",
+            template_data=expected_data,
+        )
+
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_debug_mode(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEBUG = True
+
+        send_subscription_plans_email(self.mock_challenge)
+
+        mock_send_email.assert_not_called()
+
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_no_host_emails(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "http://testserver"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"SUBSCRIPTION_PLANS_EMAIL": "template-id"}
+        }
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = (
+            []
+        )
+
+        send_subscription_plans_email(self.mock_challenge)
+
+        mock_send_email.assert_not_called()
+
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_with_challenge_image(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "http://testserver"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"SUBSCRIPTION_PLANS_EMAIL": "template-id"}
+        }
+
+        mock_image = MagicMock()
+        mock_image.url = "https://example.com/challenge-image.jpg"
+        self.mock_challenge.image = mock_image
+
+        send_subscription_plans_email(self.mock_challenge)
+
+        expected_data = {
+            "CHALLENGE_NAME": "Test Challenge",
+            "CHALLENGE_URL": "http://testserver/web/challenges/challenge-page/123",
+            "CHALLENGE_MANAGE_URL": "http://testserver/web/challenges/challenge-page/123/manage",
+            "HOST_TEAM_NAME": "Test Host Team",
+            "CHALLENGE_IMAGE_URL": "https://example.com/challenge-image.jpg",
+        }
+        mock_send_email.assert_any_call(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="host1@example.com",
+            template_id="template-id",
+            template_data=expected_data,
+        )
+
+    @mockpatch("challenges.utils.send_email")
+    @mockpatch("challenges.utils.settings")
+    def test_send_subscription_plans_email_single_host(
+        self, mock_settings, mock_send_email
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.EVALAI_API_SERVER = "http://testserver"
+        mock_settings.DEFAULT_FROM_EMAIL = "EvalAI Team <team@eval.ai>"
+        mock_settings.SENDGRID_SETTINGS = {
+            "TEMPLATES": {"SUBSCRIPTION_PLANS_EMAIL": "template-id"}
+        }
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = [
+            "singlehost@example.com"
+        ]
+
+        send_subscription_plans_email(self.mock_challenge)
+
+        mock_send_email.assert_called_once_with(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="singlehost@example.com",
+            template_id="template-id",
+            template_data={
+                "CHALLENGE_NAME": "Test Challenge",
+                "CHALLENGE_URL": "http://testserver/web/challenges/challenge-page/123",
+                "CHALLENGE_MANAGE_URL": "http://testserver/web/challenges/challenge-page/123/manage",
+                "HOST_TEAM_NAME": "Test Host Team",
+            },
+        )
+
+
+@pytest.mark.django_db
+class GetParticipantsWithIncompleteProfilesTests(unittest.TestCase):
+    """Tests for the get_participants_with_incomplete_profiles utility function."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create users with various profile completion states
+        self.user_complete = User.objects.create_user(
+            username="completeuser",
+            email="complete@test.com",
+            password="12345",
+            first_name="John",
+            last_name="Doe",
+        )
+        # Complete the profile (is_complete requires university + address)
+        profile = self.user_complete.profile
+        profile.address_street = "123 Main St"
+        profile.address_city = "Springfield"
+        profile.address_state = "IL"
+        profile.address_country = "USA"
+        profile.university = "Test University"
+        profile.save()
+
+        self.user_incomplete = User.objects.create_user(
+            username="incompleteuser",
+            email="incomplete@test.com",
+            password="12345",
+        )
+        # Profile is automatically created but incomplete
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="Test Participant Team", created_by=self.user_complete
+        )
+
+    def test_all_profiles_complete(self):
+        """Test returns empty list when all profiles are complete."""
+        Participant.objects.create(
+            user=self.user_complete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, [])
+
+    def test_all_profiles_incomplete(self):
+        """Test returns all usernames when all profiles are incomplete."""
+        Participant.objects.create(
+            user=self.user_incomplete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, ["incompleteuser"])
+
+    def test_mixed_profiles(self):
+        """Test returns only incomplete profile usernames."""
+        Participant.objects.create(
+            user=self.user_complete,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        Participant.objects.create(
+            user=self.user_incomplete,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+        result = get_participants_with_incomplete_profiles(
+            self.participant_team
+        )
+        self.assertEqual(result, ["incompleteuser"])
+
+    def test_empty_team(self):
+        """Test returns empty list for team with no participants."""
+        empty_team = ParticipantTeam.objects.create(
+            team_name="Empty Team", created_by=self.user_complete
+        )
+        result = get_participants_with_incomplete_profiles(empty_team)
+        self.assertEqual(result, [])

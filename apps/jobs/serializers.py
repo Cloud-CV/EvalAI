@@ -1,10 +1,9 @@
-from django.contrib.auth.models import User
-
-from rest_framework import serializers
-
+from accounts.models import Profile
 from challenges.models import ChallengePhase, LeaderboardData
+from django.contrib.auth.models import User
 from hosts.models import ChallengeHost
 from participants.models import Participant, ParticipantTeam
+from rest_framework import serializers
 
 from .models import Submission
 
@@ -71,12 +70,29 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "from_cli",
         )
 
+    # Cache for challenge_hosts_pk to avoid repeated queries within same
+    # serialization context
+    _challenge_hosts_cache = {}
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"]).challenge.creator
-        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
-            "user__pk", flat=True
-        )
+        # Use the already-loaded relationship from select_related instead of a
+        # new query
+        challenge_host_team = instance.challenge_phase.challenge.creator
+
+        # Cache the challenge_hosts_pk lookup since it's the same for all
+        # submissions in a request
+        cache_key = challenge_host_team.id if challenge_host_team else None
+        if cache_key not in SubmissionSerializer._challenge_hosts_cache:
+            SubmissionSerializer._challenge_hosts_cache[cache_key] = list(
+                ChallengeHost.objects.filter(
+                    team_name=challenge_host_team
+                ).values_list("user__pk", flat=True)
+            )
+
+        challenge_hosts_pk = SubmissionSerializer._challenge_hosts_cache[
+            cache_key
+        ]
         if self.created_by and self.created_by.pk not in challenge_hosts_pk:
             ret.pop("environment_log_file", None)
         return ret
@@ -215,7 +231,10 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             team=participant_team
         ).values_list("user_id", flat=True)
         users = User.objects.filter(id__in=participant_ids)
-        return [user.profile.affiliation for user in users]
+        return [
+            Profile.objects.get_or_create(user=user)[0].affiliation
+            for user in users
+        ]
 
 
 class SubmissionCount(object):

@@ -2,17 +2,20 @@ import logging
 import os
 import shutil
 
+from challenges.aws_utils import trigger_eks_node_autoscale
 from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpRequest
-from evalai.celery import app
 from participants.models import ParticipantTeam
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
+
+from evalai.celery import app
+
 from .models import Submission
+from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
 from .utils import get_file_from_url
-from .sender import publish_submission_message
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,17 @@ def download_file_and_publish_submission_message(
     """
     user = User.objects.get(pk=user_pk)
     challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_id)
+    if (
+        challenge_phase.challenge.is_submission_paused
+        or challenge_phase.is_submission_paused
+    ):
+        logger.warning(
+            "Skipping URL-based submission task: submissions paused for "
+            "challenge_pk=%s phase_pk=%s",
+            challenge_phase.challenge.pk,
+            challenge_phase.pk,
+        )
+        return
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_phase.challenge.pk
     )
@@ -66,6 +80,13 @@ def download_file_and_publish_submission_message(
         if serializer.is_valid():
             serializer.save()
             submission = serializer.instance
+            from .s3_retention import (
+                enqueue_submission_artifact_retention_tagging,
+            )
+
+            enqueue_submission_artifact_retention_tagging(
+                submission, [submission.input_file.name]
+            )
 
             # publish messages in the submission worker queue
             publish_submission_message(
@@ -74,6 +95,12 @@ def download_file_and_publish_submission_message(
                     "phase_pk": challenge_phase.pk,
                     "submission_pk": submission.pk,
                 }
+            )
+            trigger_eks_node_autoscale(
+                challenge_phase.challenge.pk,
+                trigger_source="submission_created",
+                submission_pk=submission.pk,
+                submission_status=Submission.SUBMITTED,
             )
             logger.info("Message published to submission worker successfully!")
         shutil.rmtree(file_download_temp_dir_path)
@@ -85,3 +112,16 @@ def download_file_and_publish_submission_message(
                 e
             )
         )
+
+
+@app.task
+def tag_submission_artifact_retention_tags(submission_pk, artifact_paths):
+    from .s3_retention import tag_submission_artifacts_for_retention
+
+    try:
+        submission = Submission.objects.select_related(
+            "challenge_phase", "challenge_phase__challenge"
+        ).get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        return
+    tag_submission_artifacts_for_retention(submission, artifact_paths)

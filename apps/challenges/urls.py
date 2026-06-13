@@ -29,6 +29,16 @@ urlpatterns = [
         name="disable_challenge",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/pause_submissions/$",
+        views.pause_challenge_submissions,
+        name="pause_challenge_submissions",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/pause_submissions/$",
+        views.pause_challenge_phase_submissions,
+        name="pause_challenge_phase_submissions",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase$",
         views.challenge_phase_list,
         name="get_challenge_phase_list",
@@ -313,7 +323,22 @@ urlpatterns = [
         r"^challenge/modify_leaderboard_data/$",
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
-    )
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/autoscale_meta/$",
+        views.get_challenge_autoscale_meta,
+        name="get_challenge_autoscale_meta",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/pending_submission_count/$",
+        views.get_challenge_pending_submission_count,
+        name="get_challenge_pending_submission_count",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/update_evaluation_module_error/$",
+        views.update_evaluation_module_error,
+        name="update_evaluation_module_error",
+    ),
 ]
 
 app_name = "challenges"

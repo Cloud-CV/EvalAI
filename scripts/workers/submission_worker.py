@@ -1,5 +1,9 @@
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import contextlib
 import importlib
@@ -21,15 +25,34 @@ import botocore
 import django
 import requests
 import yaml
-from django.core.files.base import ContentFile
-from django.utils import timezone
 
-from settings.common import SQS_RETENTION_PERIOD
+# fmt: off
+django.setup()  # isort:skip noqa:E402
+# fmt: on
 
-from .statsd_utils import increment_and_push_metrics_to_statsd
+from challenges.aws_utils import trigger_eks_node_autoscale  # noqa:E402
+from challenges.models import ChallengePhase  # noqa:E402
+from challenges.models import (  # noqa:E402
+    Challenge,
+    ChallengePhaseSplit,
+    LeaderboardData,
+)
+
+# Load django app settings
+from django.conf import settings  # noqa:E402
+from django.core.files.base import ContentFile  # noqa:E402
+from django.utils import timezone  # noqa:E402
+from jobs.models import Submission  # noqa:E402
+from jobs.s3_retention import (  # noqa:E402
+    enqueue_submission_artifact_retention_tagging,
+    log_submission_artifact_upload_context,
+)
+from jobs.serializers import SubmissionSerializer  # noqa:E402
+
+from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
 
 # all challenge and submission will be stored in temp directory
-BASE_TEMP_DIR = tempfile.mkdtemp(prefix='tmp')
+BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 formatter = logging.Formatter(
@@ -43,14 +66,6 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-django.setup()
-
-from challenges.models import (Challenge, ChallengePhase,  # noqa:E402
-                               ChallengePhaseSplit, LeaderboardData)
-# Load django app settings
-from django.conf import settings  # noqa
-from jobs.models import Submission  # noqa:E402
-from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
     "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
@@ -201,12 +216,12 @@ def delete_submission_data_directory(location):
         )
 
 
-def delete_old_temp_directories(prefix='tmp'):
+def delete_old_temp_directories(prefix="tmp"):
     temp_dir = tempfile.gettempdir()
 
     dir_creation_times = {}
 
-    for root, dirs, files in os.walk(temp_dir):
+    for root, dirs, _files in os.walk(temp_dir):
         for directory in dirs:
             if directory.startswith(prefix):
                 dir_path = os.path.join(root, directory)
@@ -215,9 +230,13 @@ def delete_old_temp_directories(prefix='tmp'):
                     creation_time = os.path.getctime(dir_path)
                     dir_creation_times[dir_path] = creation_time
                 except Exception as e:
-                    logger.info(f"Error getting creation time for directory {dir_path}: {e}")
+                    logger.info(
+                        f"Error getting creation time for directory {dir_path}: {e}"
+                    )
 
-    latest_dir = max(dir_creation_times, key=dir_creation_times.get, default=None)
+    latest_dir = max(
+        dir_creation_times, key=dir_creation_times.get, default=None
+    )
 
     for dir_path in dir_creation_times:
         if dir_path != latest_dir:
@@ -269,7 +288,7 @@ def create_dir_as_python_package(directory):
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
+    with open(init_file_path, "w") as _init_file:  # noqa
         # to create empty file
         pass
 
@@ -315,11 +334,24 @@ def extract_challenge_data(challenge, phases):
     )
 
     try:
-        requirements_location = join(challenge_data_directory, "requirements.txt")
+        requirements_location = join(
+            challenge_data_directory, "requirements.txt"
+        )
         if os.path.isfile(requirements_location):
-            subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
+            subprocess.check_output(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    requirements_location,
+                ]
+            )
         else:
-            logger.info("No custom requirements for challenge {}".format(challenge.id))
+            logger.info(
+                "No custom requirements for challenge {}".format(challenge.id)
+            )
     except Exception as e:
         logger.error(e)
 
@@ -359,7 +391,8 @@ def extract_challenge_data(challenge, phases):
         challenge.evaluation_module_error = None
         challenge.save()
     except Exception:
-        # Catch the exception and save the traceback in the Challenge object's errors attribute
+        # Catch the exception and save the traceback in the Challenge object's
+        # errors attribute
         traceback_msg = traceback.format_exc()
         challenge.evaluation_module_error = traceback_msg
         challenge.save()
@@ -385,10 +418,17 @@ def load_challenge(challenge):
 def extract_submission_data(submission_id):
     """
     * Expects submission id and extracts input file for it.
+
+    Subsequent ``run_submission`` persistence uses Django ``FileField.save`` /
+    ``SubmissionArtifactFileName`` — same ``UploadTo`` as the API multipart flow.
     """
 
     try:
-        submission = Submission.objects.get(id=submission_id)
+        # Preload FKs used during evaluation and for FileField(upload_to).
+        submission = Submission.objects.select_related(
+            "challenge_phase",
+            "challenge_phase__challenge",
+        ).get(id=submission_id)
     except Submission.DoesNotExist:
         logger.critical(
             "{} Submission {} does not exist".format(
@@ -480,6 +520,9 @@ def run_submission(
     stderr = open(stderr_file, "a+")
 
     remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+    log_submission_artifact_upload_context(
+        submission, "submission_worker.run_submission.before_eval"
+    )
 
     if remote_evaluation:
         try:
@@ -490,9 +533,9 @@ def run_submission(
             )
             with stdout_redirect(
                 MultiOut(stdout, sys.__stdout__)
-            ) as new_stdout, stderr_redirect(  # noqa
+            ) as _new_stdout, stderr_redirect(  # noqa
                 MultiOut(stderr, sys.__stderr__)
-            ) as new_stderr:  # noqa
+            ) as _new_stderr:  # noqa
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
@@ -508,6 +551,10 @@ def run_submission(
             submission.completed_at = timezone.now()
             submission.save()
             if not challenge_phase.disable_logs:
+                log_submission_artifact_upload_context(
+                    submission,
+                    "submission_worker.run_submission.remote_eval_failed_logs",
+                )
                 with open(stdout_file, "r") as stdout:
                     stdout_content = stdout.read()
                     submission.stdout_file.save(
@@ -518,19 +565,24 @@ def run_submission(
                     submission.stderr_file.save(
                         "stderr.txt", ContentFile(stderr_content)
                     )
+                enqueue_submission_artifact_retention_tagging(
+                    submission,
+                    [submission.stdout_file.name, submission.stderr_file.name],
+                )
 
             # delete the complete temp run directory
             shutil.rmtree(temp_run_dir)
             return
 
-    # call `main` from globals and set `status` to running and hence `started_at`
+    # call `main` from globals and set `status` to running and hence
+    # `started_at`
     try:
         successful_submission_flag = True
         with stdout_redirect(
             MultiOut(stdout, sys.__stdout__)
-        ) as new_stdout, stderr_redirect(  # noqa
+        ) as _new_stdout, stderr_redirect(  # noqa
             MultiOut(stderr, sys.__stderr__)
-        ) as new_stderr:  # noqa
+        ) as _new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -578,7 +630,8 @@ def run_submission(
                 # get split_code_name that is the key of the result
                 split_code_name = list(split_result.keys())[0]
 
-                # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
+                # Check if the challenge_phase_split exists for the
+                # challenge_phase and dataset_split
                 try:
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase=challenge_phase,
@@ -593,7 +646,8 @@ def run_submission(
                     successful_submission_flag = False
                     break
 
-                # Check if the dataset_split exists for the codename in the result
+                # Check if the dataset_split exists for the codename in the
+                # result
                 try:
                     dataset_split = challenge_phase_split.dataset_split
                 except Exception:
@@ -626,7 +680,8 @@ def run_submission(
             if successful_submission_flag:
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
 
-        # Once the submission_output is processed, then save the submission object with appropriate status
+        # Once the submission_output is processed, then save the submission
+        # object with appropriate status
         else:
             successful_submission_flag = False
 
@@ -634,7 +689,8 @@ def run_submission(
         stderr.write(traceback.format_exc())
         successful_submission_flag = False
         # Set submission_output to None to handle case when evaluation script throws exception
-        # In case of exception from evaluation script submission_output is assigned exception object
+        # In case of exception from evaluation script submission_output is
+        # assigned exception object
         submission_output = None
 
     submission_status = (
@@ -646,8 +702,13 @@ def run_submission(
     submission.completed_at = timezone.now()
     submission.save()
 
-    # after the execution is finished, set `status` to finished and hence `completed_at`
+    # after the execution is finished, set `status` to finished and hence
+    # `completed_at`
     if submission_output and successful_submission_flag:
+        log_submission_artifact_upload_context(
+            submission,
+            "submission_worker.run_submission.before_result_files",
+        )
         output = {}
         output["result"] = submission_output.get("result", "")
         submission.output = output
@@ -665,6 +726,13 @@ def run_submission(
             "submission_metadata.json", ContentFile(submission_metadata)
         )
         submission.save()
+        enqueue_submission_artifact_retention_tagging(
+            submission,
+            [
+                submission.submission_result_file.name,
+                submission.submission_metadata_file.name,
+            ],
+        )
 
     stderr.close()
     stdout.close()
@@ -673,15 +741,26 @@ def run_submission(
 
     # TODO :: see if two updates can be combine into a single update.
     if not challenge_phase.disable_logs:
+        log_submission_artifact_upload_context(
+            submission, "submission_worker.run_submission.before_stdout_stderr"
+        )
         with open(stdout_file, "r") as stdout:
             stdout_content = stdout.read()
-            submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+            submission.stdout_file.save(
+                "stdout.txt", ContentFile(stdout_content)
+            )
         if submission_status is Submission.FAILED:
             with open(stderr_file, "r") as stderr:
                 stderr_content = stderr.read().encode("utf-8")
                 submission.stderr_file.save(
                     "stderr.txt", ContentFile(stderr_content)
                 )
+        artifact_paths = [submission.stdout_file.name]
+        if submission.stderr_file.name:
+            artifact_paths.append(submission.stderr_file.name)
+        enqueue_submission_artifact_retention_tagging(
+            submission, artifact_paths
+        )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
@@ -696,6 +775,9 @@ def process_submission_message(message):
     phase_id = message.get("phase_pk")
     submission_id = message.get("submission_pk")
     submission_instance = extract_submission_data(submission_id)
+    previous_submission_status = (
+        submission_instance.status if submission_instance else None
+    )
 
     # so that the further execution does not happen
     if not submission_instance:
@@ -726,6 +808,14 @@ def process_submission_message(message):
         challenge_phase,
         submission_instance,
         user_annotation_file_path,
+    )
+    submission_instance.refresh_from_db()
+    trigger_eks_node_autoscale(
+        challenge_id,
+        trigger_source="submission_status_changed",
+        submission_pk=submission_id,
+        submission_status=submission_instance.status,
+        previous_submission_status=previous_submission_status,
     )
     # Delete submission data after processing submission
     delete_submission_data_directory(
@@ -806,7 +896,11 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
+        sqs_retention_period = (
+            SQS_RETENTION_PERIOD
+            if challenge is None
+            else str(challenge.sqs_retention_period)
+        )
         queue = sqs.create_queue(
             QueueName=queue_name,
             Attributes={"MessageRetentionPeriod": sqs_retention_period},
@@ -834,6 +928,13 @@ def load_challenge_and_return_max_submissions(q_params):
 def main():
     killer = GracefulKiller()
     logger.info(
+        "{} Submission worker revision {} "
+        "(set EVALAI_GIT_REVISION at image build to match Django API)".format(
+            WORKER_LOGS_PREFIX,
+            os.environ.get("EVALAI_GIT_REVISION", "unknown"),
+        )
+    )
+    logger.info(
         "{} Using {} as temp directory to store data".format(
             WORKER_LOGS_PREFIX, BASE_TEMP_DIR
         )
@@ -843,7 +944,7 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {}
-    q_params["end_date__gt"] = timezone.now()
+    q_params["end_date__gte"] = timezone.now()
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
     if challenge_pk:
@@ -876,9 +977,8 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name, challenge)
-    is_remote = int(challenge.remote_evaluation)
     while True:
-        for message in queue.receive_messages():
+        for message in queue.receive_messages(WaitTimeSeconds=20):
             if json.loads(message.body).get(
                 "is_static_dataset_code_upload_submission"
             ):
@@ -905,7 +1005,6 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(queue_name, is_remote)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -915,7 +1014,6 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -934,10 +1032,9 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
         if killer.kill_now:
             break
-        time.sleep(0.1)
+        time.sleep(60)
 
 
 if __name__ == "__main__":

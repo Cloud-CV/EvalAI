@@ -27,8 +27,8 @@ class ChallengeFilter(SimpleListFilter):
             return challenges
 
         elif self.value() == "present":
-            q_params["start_date__lt"] = timezone.now()
-            q_params["end_date__gt"] = timezone.now()
+            q_params["start_date__lte"] = timezone.now()
+            q_params["end_date__gte"] = timezone.now()
             challenges = queryset.filter(**q_params)
             return challenges
 

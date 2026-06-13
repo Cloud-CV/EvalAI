@@ -1,9 +1,16 @@
 import logging
 
+from base.admin import ImportExportTimeStampedAdmin
+from challenges.aws_utils import (
+    ensure_workers_for_submission,
+    trigger_eks_node_autoscale,
+)
 from django.contrib import admin
 
-from base.admin import ImportExportTimeStampedAdmin
-
+from .admin_filters import (
+    ActiveChallengePhaseFilter,
+    TopActiveChallengesFilter,
+)
 from .models import Submission
 from .sender import publish_submission_message
 from .utils import handle_submission_rerun
@@ -40,8 +47,8 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "job_name",
     )
     list_filter = (
-        "challenge_phase__challenge",
-        "challenge_phase",
+        TopActiveChallengesFilter,
+        ActiveChallengePhaseFilter,
         "status",
         "is_public",
     )
@@ -64,9 +71,20 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
 
     def submit_job_to_worker(self, request, queryset):
+        challenges_checked = set()
         for submission in queryset:
+            challenge = submission.challenge_phase.challenge
+            if challenge.pk not in challenges_checked:
+                ensure_workers_for_submission(challenge)
+                challenges_checked.add(challenge.pk)
             message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
+            trigger_eks_node_autoscale(
+                challenge.pk,
+                trigger_source="submission_created",
+                submission_pk=message.get("submission_pk"),
+                submission_status=Submission.SUBMITTED,
+            )
 
     submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
 

@@ -1,19 +1,14 @@
 import responses
-
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
-
+from django.test import Client, TestCase
+from django.urls import reverse_lazy
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
+from rest_framework.test import APIClient, APITestCase
 from web.models import Contact, Team
+from web.views import internal_server_error, page_not_found
 
-from django.test import Client
-from django.test import TestCase
-
-from web.views import page_not_found, internal_server_error
 from evalai.urls import handler404, handler500
 
 
@@ -76,7 +71,14 @@ class CreateContactMessage(BaseAPITestCase):
 
 class CreateTeamMember(APITestCase):
     def setUp(self):
-        self.url = reverse_lazy("web:our_team")
+        self.url = reverse_lazy("web:add_team_member")
+        self.user = User.objects.create(
+            username="adminuser",
+            email="admin@test.com",
+            password="secret_password",
+            is_staff=True,
+            is_superuser=True,
+        )
         self.data = {
             "name": "Test User",
             "email": "test@user.com",
@@ -87,6 +89,7 @@ class CreateTeamMember(APITestCase):
 
     def test_create_team_member_default_team_type(self):
         # TODO add 'Header' and 'Background image' to testing
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.all().count(), 1)
@@ -105,6 +108,7 @@ class CreateTeamMember(APITestCase):
     def test_create_team_member_custom_team_type(self):
         # TODO add 'Header' and 'Background image' to testing
         self.data["team_type"] = Team.CORE_TEAM
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.all().count(), 1)
@@ -181,99 +185,9 @@ class TestErrorPages(TestCase):
 class TestNotifyUsersAboutChallenge(TestCase):
     def setUp(self):
         self.client = Client()
-
-        self.superuser = User.objects.create_superuser(
-            "superuser", "superuser@test.com", "secret_password"
-        )
-
-        self.user = User.objects.create(
-            username="someuser",
-            email="user@test.com",
-            password="secret_password",
-        )
-
         self.url = reverse_lazy("web:notify_users_about_challenge")
 
-        self.email_data = {
-            "subject": "Subject of the Email",
-            "body": "Body of the Email",
-        }
-
-    def test_if_user_isnt_authenticated(self):
+    def test_notify_users_returns_404_page(self):
         response = self.client.get(self.url)
-        html = response.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
         self.assertEqual(response.status_code, 200)
-
-    def test_if_user_is_authenticated_but_not_superuser(self):
-        self.data = {
-            "username": self.user.username,
-            "password": self.user.password,
-        }
-        response = self.client.post(self.url, self.data)
-        html = response.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
-        self.assertEqual(response.status_code, 200)
-
-    def test_if_user_is_authenticated_and_superuser(self):
-        request = self.client.get("/api/admin/", follow=True)
-        response = self.client.login(
-            username="superuser", password="secret_password"
-        )
-        self.assertEqual(request.status_code, 200)
-        self.assertTrue(response)
-
-    def test_notification_email_data_page(self):
-        request = self.client.get("/api/admin/", follow=True)
-        response = self.client.login(
-            username="superuser", password="secret_password", follow=True
-        )
-        request = self.client.get(self.url)
-        html = request.content.decode("utf8")
-        self.assertTrue(html.startswith(""))
-        self.assertTrue(html.endswith(""))
-        self.assertEqual(request.status_code, 200)
-        self.assertTrue(response)
-
-    def test_notification_email_without_challenge_image(self):
-        request = self.client.get("/api/admin/", follow=True)
-        response = self.client.login(
-            username="superuser", password="secret_password", follow=True
-        )
-        request = self.client.post(self.url, self.email_data)
-        html = request.content.decode("utf8")
-        self.assertTrue(html.startswith(""))
-        self.assertTrue(html.endswith(""))
-        self.assertEqual(request.status_code, 200)
-        self.assertTrue(response)
-
-    def test_notification_email_with_challenge_image(self):
-        request = self.client.get("/api/admin/", follow=True)
-        response = self.client.login(
-            username="superuser", password="secret_password", follow=True
-        )
-        self.email_data["challenge_image"] = SimpleUploadedFile(
-            name="test_background_image.jpg",
-            content=open("frontend/src/images/rocket.png", "rb").read(),
-            content_type="image/jpg",
-        )
-        request = self.client.post(self.url, self.email_data)
-        html = request.content.decode("utf8")
-        self.assertTrue(html.startswith(""))
-        self.assertTrue(html.endswith(""))
-        self.assertTrue(response)
-        self.assertEqual(request.status_code, 200)
-
-    def test_notification_with_put_request(self):
-        request = self.client.get("/api/admin/", follow=True)
-        response = self.client.login(
-            username="superuser", password="secret_password", follow=True
-        )
-        request = self.client.put(self.url, self.email_data)
-        html = request.content.decode("utf8")
-        self.assertTrue(html.startswith("<!DOCTYPE html>"))
-        self.assertTrue(html.endswith(""))
-        self.assertTrue(response)
-        self.assertEqual(request.status_code, 200)
+        self.assertTemplateUsed(response, "error404.html")

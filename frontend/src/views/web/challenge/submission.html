@@ -406,34 +406,44 @@
             </div>
             <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                 <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
-                    <div class="row">
-                        <span class="color-black">
-                            <strong>
-                                Today's remaining submissions:
-                            </strong>
+            
+                    <!-- Highlighted Title Section -->
+                    <div class="row" style="margin-bottom: 1rem; border-bottom: 2px solid #ccc; padding-bottom: 0.5rem;">
+                        <span class="color-black" style="font-size: 18px; color: #2c3e50;">
+                            Remaining Submissions:
+                        </span>
+                    </div>
+            
+                    <!-- Today Count -->
+                    <div class="row" style="margin-bottom: 1rem;">
+                        <span class="color-black"; style = "color:#4d4d4d;">
+                            <strong>Today (Resets at 12:00 AM UTC):</strong>
                             <span class="fs-16 w-300">
                                 {{challenge.remainingSubmissions.remaining_submissions_today_count}}
                             </span>
+                        </span>
                     </div>
+            
+                    <!-- Monthly Count -->
+                    <div class="row" style="margin-bottom: 1rem;">
+                        <span class="color-black"; style = "color:#4d4d4d;">
+                            <strong>Monthly:</strong>
+                            <span class="fs-16 w-300">
+                                {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                            </span>
+                        </span>
+                    </div>
+            
+                    <!-- Total Count -->
                     <div class="row">
-                        <div class="row">
-                            <span class="color-black">
-                                <strong>
-                                    Monthly remaining submissions:
-                                </strong>
-                                <span class="fs-16 w-300">
-                                    {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
-                                </span>
-                        </div>
-                        <span class="color-black">
-                            <strong>
-                                Total remaining submissions:
-                            </strong>
-                        </span>
-                        <span class="fs-16 w-300">
-                            {{challenge.remainingSubmissions.remaining_submissions_count}}
+                        <span class="color-black"; style = "color:#4d4d4d;">
+                            <strong>Total:</strong>
+                            <span class="fs-16 w-300">
+                                {{challenge.remainingSubmissions.remaining_submissions_count}}
+                            </span>
                         </span>
                     </div>
+            
                 </div>
             </div>
             <div ng-if="challenge.showClock" class="col s12 m5 fs-16 w-300">

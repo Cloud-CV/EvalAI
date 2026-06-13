@@ -1,9 +1,12 @@
-version: "3"
 services:
   db:
-    image: postgres:10.4
+    image: postgres:17.10
     ports:
       - "5432:5432"
+    env_file:
+      - docker/dev/docker.env
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
 
   sqs:
     image: softwaremill/elasticmq
@@ -23,31 +26,47 @@ services:
     depends_on:
       - db
       - sqs
-      - statsd-exporter
     volumes:
       - .:/code
 
-  worker:
+  worker_py3_7:
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/worker/Dockerfile
+      dockerfile: docker/dev/worker_py3_7/Dockerfile
     depends_on:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker_py3_7 # Only built when this profile is specified
 
   worker_py3_8:
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/worker_py3.8/Dockerfile
+      dockerfile: docker/dev/worker_py3_8/Dockerfile
     depends_on:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker_py3_8 # Only built when this profile is specified
+
+  worker_py3_9:
+    env_file:
+      - docker/dev/docker.env
+    build:
+      context: ./
+      dockerfile: docker/dev/worker_py3_9/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - .:/code
+    profiles:
+      - worker_py3_9 # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
@@ -56,6 +75,8 @@ services:
       dockerfile: docker/dev/nodejs/Dockerfile
     environment:
       NODE_ENV: development
+      CHROME_BIN: /usr/bin/google-chrome
+      DISPLAY: :99.0
     ports:
       - "8888:8888"
       - "35729:35729"
@@ -63,13 +84,11 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
 
-  statsd-exporter:
-    hostname: statsd
-    image: prom/statsd-exporter:latest
-    command:
-      - '--log.level=info'
-      - '--web.telemetry-path=/statsd/metrics'
-    ports:
-      - '9125:9125'
-      - '9102:9102'

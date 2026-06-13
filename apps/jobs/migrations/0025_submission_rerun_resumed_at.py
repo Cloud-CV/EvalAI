@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0024_submission_add_resuming_status_code'),
+        ("jobs", "0024_submission_add_resuming_status_code"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='submission',
-            name='rerun_resumed_at',
+            model_name="submission",
+            name="rerun_resumed_at",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
     ]

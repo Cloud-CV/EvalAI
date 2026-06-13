@@ -22,6 +22,7 @@ URLS = {
     "get_challenge_submission_metrics_by_pk": "/api/challenges/challenge/get_submission_metrics_by_pk/{}/",
     "manage_ec2_instance": "/api/challenges/{}/manage_ec2_instance/{}",
     "get_ec2_instance_details": "/api/challenges/{}/get_ec2_instance_details/",
+    "update_challenge_attributes": "/api/challenges/challenge/update_challenge_attributes/",
 }
 
 
@@ -30,12 +31,14 @@ class EvalAI_Interface:
         self.AUTH_TOKEN = AUTH_TOKEN
         self.EVALAI_API_SERVER = EVALAI_API_SERVER
 
-    def get_request_headers(self):
+    def get_request_headers(self, include_json_content=False):
         headers = {"Authorization": "Bearer {}".format(self.AUTH_TOKEN)}
+        if include_json_content:
+            headers["Content-Type"] = "application/json"
         return headers
 
-    def make_request(self, url, method, data=None):
-        headers = self.get_request_headers()
+    def make_request(self, url, method, data=None, include_json_content=False):
+        headers = self.get_request_headers(include_json_content)
         try:
             response = requests.request(
                 method=method, url=url, headers=headers, data=data
@@ -171,4 +174,12 @@ class EvalAI_Interface:
         url = url_template.format(challenge_pk, "stop")
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "PUT")
+        return response
+
+    def update_challenge_attributes(self, data):
+        url = URLS.get("update_challenge_attributes")
+        url = self.return_url_per_environment(url)
+        response = self.make_request(
+            url, "POST", data=data, include_json_content=True
+        )
         return response

@@ -1,13 +1,8 @@
 import json
 import os
 import shutil
-
 from datetime import timedelta
-
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.utils import timezone
+from unittest.mock import patch
 
 from challenges.models import (
     Challenge,
@@ -17,6 +12,10 @@ from challenges.models import (
     Leaderboard,
     LeaderboardData,
 )
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam
@@ -124,6 +123,28 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.save()
         self.assertEqual(False, self.challenge.is_active)
 
+    def test_is_approval_requested_defaults_to_false(self):
+        """New challenges have is_approval_requested=False by default."""
+        self.assertFalse(self.challenge.is_approval_requested)
+
+    def test_is_approval_requested_can_be_set_to_true(self):
+        """is_approval_requested can be set to True after approval request."""
+        self.challenge.is_approval_requested = True
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_approval_requested)
+
+    def test_challenge_usage_type_defaults_to_paid(self):
+        self.assertEqual(Challenge.PAID, self.challenge.challenge_usage_type)
+
+    def test_challenge_usage_type_can_be_internal(self):
+        self.challenge.challenge_usage_type = Challenge.INTERNAL
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertEqual(
+            Challenge.INTERNAL, self.challenge.challenge_usage_type
+        )
+
     def test_get_evaluation_script_path(self):
         self.assertEqual(
             self.challenge.evaluation_script.url,
@@ -153,6 +174,24 @@ class ChallengeTestCase(BaseTestCase):
     def test_get_end_date(self):
         self.assertEqual(
             self.challenge.end_date, self.challenge.get_end_date()
+        )
+
+    @patch("challenges.aws_utils.trigger_eks_node_autoscale")
+    def test_end_date_change_triggers_eks_autoscale_for_docker_challenge(
+        self, mock_trigger_eks_node_autoscale
+    ):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        self.challenge.uses_ec2_worker = False
+        self.challenge.save()
+
+        mock_trigger_eks_node_autoscale.reset_mock()
+        self.challenge.end_date = timezone.now() - timedelta(days=3)
+        self.challenge.save()
+
+        mock_trigger_eks_node_autoscale.assert_called_once_with(
+            self.challenge.pk,
+            trigger_source="challenge_end_date_changed",
         )
 
 
@@ -203,6 +242,34 @@ class ChallengePhaseTestCase(BaseTestCase):
             True, self.challenge_phase.is_restricted_to_select_one_submission
         )
 
+    def test_submission_artifact_retention_policy_defaults_to_keep_forever(
+        self,
+    ):
+        self.assertEqual(
+            ChallengePhase.KEEP_FOREVER,
+            self.challenge_phase.submission_artifact_retention_policy,
+        )
+
+    def test_submission_artifact_retention_policy_includes_supported_windows(
+        self,
+    ):
+        retention_policies = [
+            choice[0]
+            for choice in ChallengePhase.SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS
+        ]
+
+        self.assertEqual(
+            [
+                ChallengePhase.KEEP_FOREVER,
+                ChallengePhase.DAYS_14,
+                ChallengePhase.DAYS_30,
+                ChallengePhase.MONTHS_3,
+                ChallengePhase.MONTHS_6,
+                ChallengePhase.MONTHS_12,
+            ],
+            retention_policies,
+        )
+
 
 class LeaderboardTestCase(BaseTestCase):
     def setUp(self):
@@ -233,6 +300,17 @@ class ChallengePhaseSplitTestCase(BaseTestCase):
             string_to_compare, self.challenge_phase_split.__str__()
         )
 
+    def test_show_scores_on_leaderboard_default(self):
+        """Test that show_scores_on_leaderboard defaults to True."""
+        self.assertTrue(self.challenge_phase_split.show_scores_on_leaderboard)
+
+    def test_show_scores_on_leaderboard_can_be_false(self):
+        """Test that show_scores_on_leaderboard can be set to False."""
+        self.challenge_phase_split.show_scores_on_leaderboard = False
+        self.challenge_phase_split.save()
+        self.challenge_phase_split.refresh_from_db()
+        self.assertFalse(self.challenge_phase_split.show_scores_on_leaderboard)
+
 
 class LeaderboardDataTestCase(BaseTestCase):
     def setUp(self):
@@ -262,4 +340,27 @@ class LeaderboardDataTestCase(BaseTestCase):
         self.assertEqual(
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
+        )
+
+    def test_leaderboard_query_index_exists(self):
+        """
+        Verify LeaderboardData has the composite index for leaderboard query
+        optimization (EVALAI-HY8). The index supports filtering by
+        challenge_phase_split, is_disabled and ordering by created_at DESC.
+        """
+        index_names = [idx.name for idx in LeaderboardData._meta.indexes]
+        self.assertIn(
+            "ld_chphase_isdisc_created_idx",
+            index_names,
+            "LeaderboardData should have ld_chphase_isdisc_created_idx index",
+        )
+        index = next(
+            idx
+            for idx in LeaderboardData._meta.indexes
+            if idx.name == "ld_chphase_isdisc_created_idx"
+        )
+        self.assertEqual(
+            index.fields,
+            ["challenge_phase_split", "is_disabled", "-created_at"],
+            "Index should cover challenge_phase_split, is_disabled, created_at DESC",
         )

@@ -5,20 +5,41 @@ import os
 import re
 import uuid
 from contextlib import contextmanager
+from email.utils import formataddr, parseaddr
 
 import boto3
 import botocore
 import requests
 import sendgrid
+import sentry_sdk
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.mail import EmailMultiAlternatives
 from django.utils.deconstruct import deconstructible
+from pybars import Compiler
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
-from sendgrid.helpers.mail import Email, Mail, Personalization
 
 from settings.common import SQS_RETENTION_PERIOD
 
 logger = logging.getLogger(__name__)
+
+
+def get_user_by_email(email):
+    """Return a single User for the given email, or raise User.DoesNotExist.
+
+    If duplicate-email users still exist (pre-merge), the oldest account
+    (earliest date_joined) is returned deterministically.
+    """
+    user = (
+        User.objects.filter(email__iexact=email)
+        .order_by("date_joined")
+        .first()
+    )
+    if user is None:
+        raise User.DoesNotExist("User matching query does not exist.")
+    return user
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -27,32 +48,36 @@ class StandardResultSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-def paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+def paginated_queryset(queryset, request, pagination_class=None):
     """
     Return a paginated result for a queryset
     """
-    paginator = pagination_class
+    # Create a new paginator instance for each request to avoid shared state
+    if pagination_class is None:
+        paginator = PageNumberPagination()
+    else:
+        paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
     result_page = paginator.paginate_queryset(queryset, request)
     return (paginator, result_page)
 
 
-def team_paginated_queryset(
-    queryset, request, pagination_class=PageNumberPagination()
-):
+def team_paginated_queryset(queryset, request, pagination_class=None):
     """
     Return a paginated result for a queryset
     """
-    paginator = pagination_class
+    # Create a new paginator instance for each request to avoid shared state
+    if pagination_class is None:
+        paginator = PageNumberPagination()
+    else:
+        paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["TEAM_PAGE_SIZE"]
     result_page = paginator.paginate_queryset(queryset, request)
     return (paginator, result_page)
 
 
 @deconstructible
-class RandomFileName(object):
+class RandomFileName:
     def __init__(self, path):
         self.path = path
 
@@ -61,9 +86,67 @@ class RandomFileName(object):
         path = self.path
         if "id" in self.path and instance.pk:
             path = self.path.format(id=instance.pk)
-        filename = "{}{}".format(uuid.uuid4(), extension)
+        filename = f"{uuid.uuid4()}{extension}"
         filename = os.path.join(path, filename)
         return filename
+
+
+@deconstructible
+class SubmissionArtifactFileName:
+    """Build S3-relative paths under ``media/submission_files/``.
+
+    Uses ``challenge_phase_id`` when present so the nested layout is stable
+    even if the cached ``challenge_phase`` relation is not populated (some
+    querysets omit or defer the FK cache). Resolved ``(challenge_id, phase_id)``
+    is memoized per instance across multiple ``FileField`` saves.
+    """
+
+    _phase_ctx_attr = "_submission_artifact_challenge_phase_ctx"
+
+    def __call__(self, instance, filename):
+        extension = os.path.splitext(filename)[1]
+        submission_id = instance.pk or "pending"
+        phase_id = getattr(instance, "challenge_phase_id", None)
+        challenge_id = None
+
+        if phase_id:
+            ctx = getattr(instance, self._phase_ctx_attr, None)
+            if isinstance(ctx, tuple) and ctx[1] == phase_id:
+                challenge_id = ctx[0]
+            else:
+                from challenges.models import ChallengePhase
+
+                challenge_id = (
+                    ChallengePhase.objects.filter(pk=phase_id)
+                    .values_list("challenge_id", flat=True)
+                    .first()
+                )
+                setattr(
+                    instance, self._phase_ctx_attr, (challenge_id, phase_id)
+                )
+
+        if challenge_id and phase_id:
+            path = "/".join(
+                [
+                    "submission_files",
+                    f"challenge_{challenge_id}",
+                    f"phase_{phase_id}",
+                    f"submission_{submission_id}",
+                ]
+            )
+        else:
+            if phase_id and not challenge_id:
+                logger.warning(
+                    "Submission artifact flat path: ChallengePhase id=%s has no "
+                    "challenge_id row (submission pk=%s); check DB integrity.",
+                    phase_id,
+                    getattr(instance, "pk", None),
+                )
+            path = "/".join(
+                ["submission_files", f"submission_{submission_id}"]
+            )
+
+        return f"{path}/{uuid.uuid4()}{extension}"
 
 
 def get_model_object(model_name):
@@ -71,20 +154,19 @@ def get_model_object(model_name):
         try:
             model_object = model_name.objects.get(pk=pk)
             return model_object
-        except model_name.DoesNotExist:
+        except model_name.DoesNotExist as exc:
             raise NotFound(
-                "{} {} does not exist".format(model_name.__name__, pk)
-            )
+                f"{model_name.__name__} {pk} does not exist"
+            ) from exc
 
-    get_model_by_pk.__name__ = "get_{}_object".format(
-        model_name.__name__.lower()
-    )
+    get_model_by_pk.__name__ = f"get_{model_name.__name__.lower()}_object"
     return get_model_by_pk
 
 
 def encode_data(data):
     """
-    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    Turn `data` into a hash and an encoded string,
+    suitable for use with `decode_data`.
     """
     encoded = []
     for i in data:
@@ -102,39 +184,131 @@ def decode_data(data):
     return decoded
 
 
+def _fetch_sendgrid_template(api_key, template_id):
+    """Fetch the active version's HTML and subject from a SendGrid dynamic template.
+
+    Arguments:
+        api_key {string} -- SendGrid API key
+        template_id {string} -- SendGrid dynamic template ID (e.g. d-xxxx)
+
+    Returns:
+        tuple -- (html_content, subject) with Handlebars placeholders
+    """
+    sg = sendgrid.SendGridAPIClient(api_key=api_key)
+    response = sg.client.templates._(template_id).get()
+    template = json.loads(response.body)
+    for version in template.get("versions", []):
+        if version.get("active"):
+            return version["html_content"], version.get("subject", "")
+    raise ValueError(
+        "No active version found for template {}".format(template_id)
+    )
+
+
+def _render_handlebars(template_str, data):
+    """Compile and render a Handlebars template string with the given data."""
+    compiler = Compiler()
+    template = compiler.compile(template_str)
+    return template(data)
+
+
 def send_email(
-    sender=settings.CLOUDCV_TEAM_EMAIL,
+    sender=settings.DEFAULT_FROM_EMAIL,
     recipient=None,
     template_id=None,
-    template_data={},
+    template_data=None,
 ):
-    """Function to send email
+    """Fetch a SendGrid dynamic template, render it, and send via Django email backend (SES in prod).
 
     Keyword Arguments:
-        sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
+        sender {string} -- Email of sender (default: {settings.DEFAULT_FROM_EMAIL})
         recipient {string} -- Recipient email address
-        template_id {string} -- Sendgrid template id
-        template_data {dict} -- Dictionary to substitute values in subject and email body
+        template_id {string} -- SendGrid dynamic template id
+        template_data {dict} -- Dictionary to substitute Handlebars
+            placeholders in subject and email body
     """
-    try:
-        sg = sendgrid.SendGridAPIClient(
-            api_key=os.environ.get("SENDGRID_API_KEY")
+    if template_data is None:
+        template_data = {}
+    if not recipient or not template_id:
+        error = ValueError(
+            "send_email called with missing recipient={!r} or template_id={!r}".format(
+                recipient, template_id
+            )
         )
-        sender = Email(sender)
-        mail = Mail()
-        mail.from_email = sender
-        mail.template_id = template_id
-        to_list = Personalization()
-        to_list.dynamic_template_data = template_data
-        to_email = Email(recipient)
-        to_list.add_to(to_email)
-        mail.add_personalization(to_list)
-        sg.client.mail.send.post(request_body=mail.get())
-    except Exception:
+        sentry_sdk.capture_exception(error)
+        return
+
+    from accounts.models import Profile
+
+    if Profile.objects.filter(
+        user__email__iexact=recipient, email_bounced=True
+    ).exists():
+        logger.info(
+            "Suppressed email to bounced address %s (template=%s).",
+            recipient,
+            template_id,
+        )
+        return
+
+    max_per_minute = getattr(
+        settings, "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10
+    )
+    cache_key = f"email_rate:{recipient}"
+    current = cache.get(cache_key, 0)
+    if current >= max_per_minute:
         logger.warning(
-            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+            "Email rate limit exceeded for recipient=%s (limit=%d/min)",
+            recipient,
+            max_per_minute,
         )
-    return
+        sentry_sdk.capture_message(
+            f"Email rate limit exceeded for {recipient}",
+            level="warning",
+        )
+        return
+    cache.set(cache_key, current + 1, timeout=60)
+
+    try:
+        api_key = os.environ.get("SENDGRID_API_KEY")
+        if not api_key:
+            raise EnvironmentError("SENDGRID_API_KEY is not set")
+
+        html_content, subject_template = _fetch_sendgrid_template(
+            api_key, template_id
+        )
+        rendered_html = _render_handlebars(html_content, template_data)
+        rendered_subject = _render_handlebars(subject_template, template_data)
+
+        sender_name, sender_addr = parseaddr(str(sender))
+        if not sender_addr:
+            sender_addr = sender
+        from_header = (
+            formataddr((sender_name, sender_addr))
+            if sender_name
+            else sender_addr
+        )
+
+        msg = EmailMultiAlternatives(
+            subject=rendered_subject,
+            body="",
+            from_email=from_header,
+            to=[recipient],
+        )
+        msg.attach_alternative(rendered_html, "text/html")
+        msg.send()
+        logger.info(
+            "Email sent successfully via %s to=%s, subject=%r",
+            settings.EMAIL_BACKEND,
+            recipient,
+            rendered_subject,
+        )
+    except Exception:
+        sentry_sdk.capture_exception()
+        logger.exception(
+            "Email send failed for recipient=%s, template=%s",
+            recipient,
+            template_id,
+        )
 
 
 def get_url_from_hostname(hostname):
@@ -142,7 +316,7 @@ def get_url_from_hostname(hostname):
         scheme = "http"
     else:
         scheme = "https"
-    url = "{}://{}".format(scheme, hostname)
+    url = f"{scheme}://{hostname}"
     return url
 
 
@@ -150,7 +324,8 @@ def get_boto3_client(resource, aws_keys):
     """
     Returns the boto3 client for a resource in AWS
     Arguments:
-        resource {str} -- Name of the resource for which client is to be created
+        resource {str} -- Name of the resource for which
+            client is to be created
         aws_keys {dict} -- AWS keys which are to be used
     Returns:
         Boto3 client object for the resource
@@ -163,8 +338,9 @@ def get_boto3_client(resource, aws_keys):
             aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
         )
         return client
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception(e)
+    return None
 
 
 def get_or_create_sqs_queue(queue_name, challenge=None):
@@ -200,8 +376,12 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            logger.exception("Cannot get queue: {}".format(queue_name))
-        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
+            logger.exception("Cannot get queue: %s", queue_name)
+        sqs_retention_period = (
+            SQS_RETENTION_PERIOD
+            if challenge is None
+            else str(challenge.sqs_retention_period)
+        )
         queue = sqs.create_queue(
             QueueName=queue_name,
             Attributes={"MessageRetentionPeriod": sqs_retention_period},
@@ -212,9 +392,8 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
 def get_slug(param):
     slug = param.replace(" ", "-").lower()
     slug = re.sub(r"\W+", "-", slug)
-    slug = slug[
-        :180
-    ]  # The max-length for slug is 200, but 180 is used here so as to append pk
+    # The max-length for slug is 200, but 180 is used here so as to append pk
+    slug = slug[:180]
     return slug
 
 
@@ -237,9 +416,7 @@ def get_queue_name(param, challenge_pk):
     queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
     queue_name = re.sub(r"\W+", "-", queue_name)
 
-    queue_name = "{}-{}-{}-{}".format(
-        queue_name, challenge_pk, env, uuid.uuid4()
-    )[:max_len]
+    queue_name = f"{queue_name}-{challenge_pk}-{env}-{uuid.uuid4()}"[:max_len]
     return queue_name
 
 
@@ -247,7 +424,8 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     Send slack notification to any workspace
     Keyword Arguments:
-        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
+        webhook {string} -- slack webhook URL
+            (default: {settings.SLACK_WEB_HOOK_URL})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
     try:
@@ -262,12 +440,13 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
             data=json.dumps(data),
             headers={"Content-Type": "application/json"},
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(
-                e
-            )
+            "Exception raised while sending slack notification. "
+            "Exception message: %s",
+            e,
         )
+    return None
 
 
 def mock_if_non_prod_aws(aws_mocker):
@@ -282,6 +461,7 @@ def mock_if_non_prod_aws(aws_mocker):
 @contextmanager
 def suppress_autotime(model, fields):
     _original_values = {}
+    # pylint: disable=protected-access
     for field in model._meta.local_fields:
         if field.name in fields:
             _original_values[field.name] = {
@@ -312,8 +492,8 @@ def is_model_field_changed(model_obj, field_name):
     Return:
         {bool} : True/False if the model is changed or not
     """
-    prev = getattr(model_obj, "_original_{}".format(field_name))
-    curr = getattr(model_obj, "{}".format(field_name))
+    prev = getattr(model_obj, f"_original_{field_name}")
+    curr = getattr(model_obj, field_name)
     if prev != curr:
         return True
     return False

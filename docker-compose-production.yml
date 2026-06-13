@@ -30,6 +30,13 @@ services:
       dockerfile: docker/prod/celery/Dockerfile
     depends_on:
       - django
+    deploy:
+      resources:
+        limits:
+          memory: 1200M
+          cpus: '1.0'
+        reservations:
+          memory: 800M
     logging:
       driver: awslogs
       options:
@@ -37,19 +44,27 @@ services:
         awslogs-group: celery_production
         awslogs-create-group: "true"
 
-  worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker:${COMMIT_ID}
+  worker_py3_7:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.7:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker/Dockerfile
+      dockerfile: docker/prod/worker_py3_7/Dockerfile
     env_file:
       - docker/prod/docker_production.env
 
-  worker_py3.8:
+  worker_py3_8:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.8:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker_py3.8/Dockerfile
+      dockerfile: docker/prod/worker_py3_8/Dockerfile
+    env_file:
+      - docker/prod/docker_production.env
+
+  worker_py3_9:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker_py3_9/Dockerfile
     env_file:
       - docker/prod/docker_production.env
 
@@ -77,8 +92,8 @@ services:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-remote-worker:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/worker/Dockerfile
-    command: ["python", "-m", "scripts.workers.remote_submission_worker"]
+      dockerfile: docker/prod/worker_py3_7/Dockerfile
+    command: [ "python", "-m", "scripts.workers.remote_submission_worker" ]
     env_file:
       - docker/prod/docker_remote_worker.env
 
@@ -89,81 +104,4 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/code-upload-worker/Dockerfile
-
-  prometheus:
-    hostname: prometheus
-    image: prom/prometheus:latest
-    user: "1000"
-    volumes:
-      - ./monitoring/prometheus/prometheus_production.yml:/etc/prometheus/prometheus.yml
-      - ./monitoring/prometheus/rules.yml:/etc/rules/rules.yml
-      - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
-      - ./monitoring/prometheus/prometheus_db:/prometheus
-      - ./monitoring/prometheus/prometheus_db:/etc/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--web.external-url=http://localhost:9090/prometheus'
-    ports:
-      - '9090:9090'
-
-  grafana:
-    hostname: grafana
-    image: grafana/grafana:latest
-    user: "1000"
-    env_file:
-      - docker/prod/docker_production.env
-    volumes:
-      - ./monitoring/grafana/grafana_db:/var/lib/grafana
-    depends_on:
-      - prometheus
-    ports:
-      - '3000:3000'
-
-  statsd-exporter:
-    hostname: statsd
-    image: prom/statsd-exporter:latest
-    command:
-      - '--log.level=info'
-      - '--web.telemetry-path=/statsd/metrics'
-    ports:
-      - '9125:9125/udp'
-      - '9125:9125/tcp'
-      - '9102:9102'
-
-  node_exporter:
-    hostname: node_exporter
-    image: prom/node-exporter
-    ports:
-      - '9100:9100'
-
-  nginx-ingress:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-nginx-ingress:${COMMIT_ID}
-    build:
-      context: ./
-      dockerfile: docker/prod/nginx-ingress/Dockerfile
-      args:
-        MONITORING_ENV: production
-    depends_on:
-      - prometheus
-      - grafana
-      - statsd-exporter
-      - alert-manager
-    ports:
-      - '80:80'
-      - '443:443'
-
-  alert-manager:
-    hostname: alert_manager
-    image: prom/alertmanager:v0.24.0
-    user: "1000"
-    volumes:
-      - ./monitoring/prometheus:/prometheus
-      - ./monitoring/alertmanager/data:/data
-      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
-    command:
-      - '--config.file=/prometheus/alert_manager.yml'
-      - '--storage.path=/data'
-      - '--web.external-url=http://localhost:9093/alert_manager'
-    ports:
-      - '9093:9093'
 

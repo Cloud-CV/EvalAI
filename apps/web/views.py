@@ -1,23 +1,23 @@
 import logging
-import traceback
+
+from accounts.authentication import ExpiringTokenAuthentication
 from base.utils import send_slack_notification
-from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 from django.shortcuts import render
-
-from smtplib import SMTPException
-from .models import Subscribers, Team
-from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
+    authentication_classes,
     permission_classes,
     throttle_classes,
 )
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from .models import Subscribers, Team
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -43,47 +43,9 @@ def internal_server_error(request):
 
 def notify_users_about_challenge(request):
     """
-    Email New Challenge Details to EvalAI Users
+    Email New Challenge Details to EvalAI Users (disabled).
     """
-    if request.user.is_authenticated and request.user.is_superuser:
-        if request.method == "GET":
-            template_name = "notification_email_data.html"
-            return render(request, template_name)
-
-        elif request.method == "POST":
-            users = User.objects.exclude(email__exact="").values_list(
-                "email", flat=True
-            )
-            subject = request.POST.get("subject")
-            body_html = request.POST.get("body")
-
-            sender = settings.CLOUDCV_TEAM_EMAIL
-
-            email = EmailMessage(
-                subject,
-                body_html,
-                sender,
-                [settings.CLOUDCV_TEAM_EMAIL],
-                bcc=users,
-            )
-            email.content_subtype = "html"
-
-            try:
-                email.send()
-                return render(
-                    request,
-                    "notification_email_conformation.html",
-                    {"message": "All the emails are sent successfully!"},
-                )
-            except SMTPException:
-                logger.exception(traceback.format_exc())
-                return render(
-                    request, "notification_email_data.html", {"errors": 1}
-                )
-        else:
-            return render(request, "error404.html")
-    else:
-        return render(request, "error404.html")
+    return render(request, "error404.html")
 
 
 @api_view(["GET", "POST"])
@@ -140,18 +102,11 @@ def contact_us(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET", "POST"])
+@api_view(["POST"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def subscribe(request):
-    if request.method == "GET":
-        subscribers = Subscribers.objects.all().order_by("-pk")
-        serializer = SubscribeSerializer(
-            subscribers, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    elif request.method == "POST":
+    if request.method == "POST":
         email = request.data.get("email")
         # When user has already subscribed
         if Subscribers.objects.filter(email=email).exists():
@@ -164,16 +119,15 @@ def subscribe(request):
         if serializer.is_valid():
             serializer.save()
             response_data = {
-                "message",
-                "You will be notified about our latest updates at {}.".format(
-                    email
-                ),
+                "message": (
+                    "You will be notified about our latest updates at {}."
+                ).format(email)
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
@@ -184,14 +138,18 @@ def our_team(request):
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    elif request.method == "POST":
-        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
-        request.data["team_type"] = request.data.get(
-            "team_type", Team.CONTRIBUTOR
-        )
-        serializer = TeamSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response_data = {"message", "Successfully added the contributor."}
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAdminUser,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def add_team_member(request):
+    data = request.data.copy()
+    data.setdefault("team_type", Team.CONTRIBUTOR)
+    serializer = TeamSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        response_data = {"message": "Successfully added the contributor."}
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

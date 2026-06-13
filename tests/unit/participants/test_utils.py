@@ -1,0 +1,500 @@
+from datetime import timedelta
+
+from challenges.models import Challenge
+from django.contrib.auth.models import User
+from django.core.exceptions import FieldError
+from django.test import TestCase
+from django.utils import timezone
+from hosts.models import ChallengeHost, ChallengeHostTeam
+from participants.models import Participant, ParticipantTeam
+from participants.utils import (
+    get_effective_max_team_members_for_team,
+    get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_member_count,
+    get_team_capacity_blocking_challenge_titles,
+    has_participant_team_participated_in_challenge,
+    has_participated_in_require_complete_profile_challenge,
+    is_participant_team_exempt_from_max_members_for_challenge,
+    team_can_add_member,
+    team_exceeds_challenge_max_members,
+)
+
+
+class TestHasParticipantTeamParticipatedInChallenge(TestCase):
+    def test_field_error_for_wrong_related_name(self):
+        user = User.objects.create(
+            username="testuser", email="test@example.com"
+        )
+        team = ParticipantTeam.objects.create(
+            team_name="team1", created_by=user
+        )
+        host_team = ChallengeHostTeam.objects.create(
+            team_name="hostteam1", created_by=user
+        )
+        challenge = Challenge.objects.create(
+            title="challenge1", creator=host_team
+        )
+
+        with self.assertRaises(FieldError):
+            has_participant_team_participated_in_challenge(
+                team.id, challenge.id
+            )
+
+
+class TestGetParticipantTeamIdOfUserForAChallenge(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser", email="test@example.com"
+        )
+        self.other_user = User.objects.create(
+            username="otheruser", email="other@example.com"
+        )
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="hostteam1", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="challenge1", creator=self.host_team
+        )
+        self.team = ParticipantTeam.objects.create(
+            team_name="team1", created_by=self.user
+        )
+
+    def test_returns_team_id_when_user_participated_in_challenge(self):
+        """Test that the function returns the team ID when user is part of a team that participated"""
+        # Add user to participant team
+        Participant.objects.create(
+            user=self.user, team=self.team, status=Participant.ACCEPTED
+        )
+        # Add team to challenge
+        self.challenge.participant_teams.add(self.team)
+
+        result = get_participant_team_id_of_user_for_a_challenge(
+            self.user, self.challenge.id
+        )
+
+        self.assertEqual(result, self.team.id)
+
+    def test_returns_none_when_user_team_not_in_challenge(self):
+        """Test that the function returns None when user's team did not participate"""
+        # Add user to participant team but don't add team to challenge
+        Participant.objects.create(
+            user=self.user, team=self.team, status=Participant.ACCEPTED
+        )
+
+        result = get_participant_team_id_of_user_for_a_challenge(
+            self.user, self.challenge.id
+        )
+
+        self.assertIsNone(result)
+
+    def test_returns_none_when_user_has_no_teams(self):
+        """Test that the function returns None when user is not part of any team"""
+        result = get_participant_team_id_of_user_for_a_challenge(
+            self.user, self.challenge.id
+        )
+
+        self.assertIsNone(result)
+
+    def test_returns_correct_team_when_user_has_multiple_teams(self):
+        """Test that the function returns the correct team when user has multiple teams"""
+        # Create another team
+        team2 = ParticipantTeam.objects.create(
+            team_name="team2", created_by=self.user
+        )
+
+        # Add user to both teams
+        Participant.objects.create(
+            user=self.user, team=self.team, status=Participant.ACCEPTED
+        )
+        Participant.objects.create(
+            user=self.user, team=team2, status=Participant.ACCEPTED
+        )
+
+        # Only add team2 to challenge
+        self.challenge.participant_teams.add(team2)
+
+        result = get_participant_team_id_of_user_for_a_challenge(
+            self.user, self.challenge.id
+        )
+
+        self.assertEqual(result, team2.id)
+
+    def test_returns_none_for_different_user(self):
+        """Test that function returns None for a user who didn't participate"""
+        # Add original user to team and challenge
+        Participant.objects.create(
+            user=self.user, team=self.team, status=Participant.ACCEPTED
+        )
+        self.challenge.participant_teams.add(self.team)
+
+        # Query for different user
+        result = get_participant_team_id_of_user_for_a_challenge(
+            self.other_user, self.challenge.id
+        )
+
+        self.assertIsNone(result)
+
+    def test_uses_single_query(self):
+        """Test that the function uses a single database query (N+1 fix verification)"""
+        # Create multiple teams for the user
+        teams = []
+        for i in range(5):
+            team = ParticipantTeam.objects.create(
+                team_name=f"team_{i}", created_by=self.user
+            )
+            Participant.objects.create(
+                user=self.user, team=team, status=Participant.ACCEPTED
+            )
+            teams.append(team)
+
+        # Add only the last team to challenge
+        self.challenge.participant_teams.add(teams[-1])
+
+        # Verify single query is used
+        with self.assertNumQueries(1):
+            result = get_participant_team_id_of_user_for_a_challenge(
+                self.user, self.challenge.id
+            )
+
+        self.assertEqual(result, teams[-1].id)
+
+
+class TestHasParticipatedInRequireCompleteProfileChallenge(TestCase):
+    """Tests for has_participated_in_require_complete_profile_challenge."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser", email="test@example.com"
+        )
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="hostteam1", created_by=self.user
+        )
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="team1", created_by=self.user
+        )
+        Participant.objects.create(
+            user=self.user,
+            team=self.participant_team,
+            status=Participant.SELF,
+        )
+
+    def test_returns_true_when_participated_in_active_require_complete_profile_challenge(
+        self,
+    ):
+        """Returns True when user participated in an active challenge with require_complete_profile."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_challenge_has_ended(self):
+        """Returns False when the require_complete_profile challenge has ended,
+        allowing the user to edit profile fields again."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=30),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_true_when_one_active_and_one_ended(self):
+        """Returns True if at least one active require_complete_profile challenge exists."""
+        ended_challenge = Challenge.objects.create(
+            title="ended_challenge",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=60),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+        ended_challenge.participant_teams.add(self.participant_team)
+
+        active_challenge = Challenge.objects.create(
+            title="active_challenge",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        active_challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_participated_in_normal_challenge(self):
+        """Returns False when user participated in challenge without require_complete_profile."""
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=False,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+    def test_returns_false_when_not_participated(self):
+        """Returns False when user has not participated in any challenge."""
+        Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            require_complete_profile=True,
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() + timedelta(days=30),
+        )
+        # Don't add participant_team to challenge
+
+        self.assertFalse(
+            has_participated_in_require_complete_profile_challenge(self.user)
+        )
+
+
+class TestMaxTeamMembersUtils(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="testuser", email="test@example.com"
+        )
+        self.other_user = User.objects.create(
+            username="otheruser", email="other@example.com"
+        )
+        self.host_team = ChallengeHostTeam.objects.create(
+            team_name="hostteam1", created_by=self.user
+        )
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="team1", created_by=self.user
+        )
+        Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.participant_team,
+        )
+        Participant.objects.create(
+            user=self.other_user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+    def test_get_participant_team_member_count(self):
+        self.assertEqual(
+            get_participant_team_member_count(self.participant_team), 2
+        )
+
+    def test_get_effective_max_team_members_returns_none_without_limits(self):
+        challenge = Challenge.objects.create(
+            title="challenge1", creator=self.host_team
+        )
+        challenge.participant_teams.add(self.participant_team)
+        self.assertIsNone(
+            get_effective_max_team_members_for_team(self.participant_team)
+        )
+
+    def test_get_effective_max_team_members_returns_strictest_limit(self):
+        challenge_a = Challenge.objects.create(
+            title="challenge_a",
+            creator=self.host_team,
+            max_team_members=5,
+        )
+        challenge_b = Challenge.objects.create(
+            title="challenge_b",
+            creator=self.host_team,
+            max_team_members=3,
+        )
+        challenge_a.participant_teams.add(self.participant_team)
+        challenge_b.participant_teams.add(self.participant_team)
+        self.assertEqual(
+            get_effective_max_team_members_for_team(self.participant_team), 3
+        )
+
+    def test_get_team_capacity_blocking_challenge_titles(self):
+        challenge_at_capacity = Challenge.objects.create(
+            title="At Capacity Challenge",
+            creator=self.host_team,
+            max_team_members=2,
+        )
+        challenge_below_capacity = Challenge.objects.create(
+            title="Below Capacity Challenge",
+            creator=self.host_team,
+            max_team_members=5,
+        )
+        challenge_at_capacity.participant_teams.add(self.participant_team)
+        challenge_below_capacity.participant_teams.add(self.participant_team)
+
+        self.assertEqual(
+            get_team_capacity_blocking_challenge_titles(self.participant_team),
+            ["At Capacity Challenge"],
+        )
+
+    def test_team_can_add_member_when_below_limit(self):
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            max_team_members=3,
+        )
+        challenge.participant_teams.add(self.participant_team)
+        self.assertTrue(team_can_add_member(self.participant_team))
+
+    def test_team_can_add_member_when_at_limit(self):
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            max_team_members=2,
+        )
+        challenge.participant_teams.add(self.participant_team)
+        self.assertFalse(team_can_add_member(self.participant_team))
+
+    def test_team_exceeds_challenge_max_members(self):
+        challenge = Challenge.objects.create(
+            title="challenge1",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+        self.assertTrue(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+
+    def test_team_does_not_exceed_challenge_when_limit_unset(self):
+        challenge = Challenge.objects.create(
+            title="challenge1", creator=self.host_team
+        )
+        self.assertFalse(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+
+    def test_host_only_team_exempt_from_own_challenge_limit(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+        challenge.participant_teams.add(self.participant_team)
+
+        self.assertTrue(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+        self.assertFalse(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+        self.assertTrue(team_can_add_member(self.participant_team))
+        self.assertIsNone(
+            get_effective_max_team_members_for_team(self.participant_team)
+        )
+
+    def test_mixed_team_not_exempt_from_organizer_challenge(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+
+        self.assertFalse(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+        self.assertTrue(
+            team_exceeds_challenge_max_members(
+                self.participant_team, challenge
+            )
+        )
+
+    def test_team_with_denied_host_not_exempt_from_organizer_challenge(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.DENIED,
+        )
+        challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+
+        self.assertFalse(
+            is_participant_team_exempt_from_max_members_for_challenge(
+                self.participant_team, challenge
+            )
+        )
+
+    def test_host_challenge_exempt_but_other_challenge_still_limits(self):
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_user,
+            team_name=self.host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        host_challenge = Challenge.objects.create(
+            title="host challenge",
+            creator=self.host_team,
+            max_team_members=1,
+        )
+        other_host_team = ChallengeHostTeam.objects.create(
+            team_name="other_host_team",
+            created_by=self.other_user,
+        )
+        other_challenge = Challenge.objects.create(
+            title="other challenge",
+            creator=other_host_team,
+            max_team_members=2,
+        )
+        host_challenge.participant_teams.add(self.participant_team)
+        other_challenge.participant_teams.add(self.participant_team)
+
+        self.assertEqual(
+            get_effective_max_team_members_for_team(self.participant_team), 2
+        )
+        self.assertFalse(team_can_add_member(self.participant_team))

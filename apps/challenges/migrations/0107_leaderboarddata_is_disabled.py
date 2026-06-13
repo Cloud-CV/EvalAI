@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0106_challenge_worker_image_url_alter'),
+        ("challenges", "0106_challenge_worker_image_url_alter"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='leaderboarddata',
-            name='is_disabled',
+            model_name="leaderboarddata",
+            name="is_disabled",
             field=models.BooleanField(default=False),
         ),
     ]

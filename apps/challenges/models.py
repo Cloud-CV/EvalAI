@@ -1,20 +1,17 @@
 from __future__ import unicode_literals
 
+from base.models import TimeStampedModel, model_field_name
+from base.utils import RandomFileName, get_slug, is_model_field_changed
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
+from django.db import models
+from django.db.models import signals
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.db import models
-from django.db.models import signals
-
-from base.models import TimeStampedModel, model_field_name
-from base.utils import RandomFileName, get_slug, is_model_field_changed
-
-
-from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+from participants.models import ParticipantTeam
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -28,7 +25,6 @@ def get_default_eval_metric():
 
 
 class Challenge(TimeStampedModel):
-
     """Model representing a hosted Challenge"""
 
     def __init__(self, *args, **kwargs):
@@ -36,6 +32,7 @@ class Challenge(TimeStampedModel):
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
+        self._original_end_date = self.end_date
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -68,8 +65,24 @@ class Challenge(TimeStampedModel):
         ("AUD", "Audio"),
         ("TAB", "Tabular"),
     )
-    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
-    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
+    PAID = "paid"
+    INTERNAL = "internal"
+    CHALLENGE_USAGE_TYPE_OPTIONS = (
+        (PAID, "Paid"),
+        (INTERNAL, "Internal"),
+    )
+    domain = models.CharField(
+        max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+    )
+    challenge_usage_type = models.CharField(
+        max_length=20,
+        choices=CHALLENGE_USAGE_TYPE_OPTIONS,
+        default=PAID,
+        db_index=True,
+    )
+    list_tags = ArrayField(
+        models.TextField(null=True, blank=True), default=list, blank=True
+    )
     has_prize = models.BooleanField(default=False)
     has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
@@ -83,13 +96,36 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
-    approved_participant_teams = models.ManyToManyField(ParticipantTeam, blank=True, related_name="approved_challenge_participant_teams")
+    require_complete_profile = models.BooleanField(
+        default=False,
+        verbose_name="Require Complete Profile",
+        help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
+    )
+    max_team_members = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Maximum Team Members",
+        help_text="Maximum number of members allowed per participant team. "
+        "Leave blank for no limit.",
+    )
+    approved_participant_teams = models.ManyToManyField(
+        ParticipantTeam,
+        blank=True,
+        related_name="approved_challenge_participant_teams",
+    )
     is_disabled = models.BooleanField(default=False, db_index=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
     )  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
+    )
+    is_approval_requested = models.BooleanField(
+        default=False,
+        verbose_name="Is Approval Requested",
+        db_index=True,
+        help_text="Set to True once a challenge host submits an approval request. "
+        "Prevents duplicate subscription plan emails from being sent.",
     )
     uses_ec2_worker = models.BooleanField(
         default=False, verbose_name="Uses EC2 worker instance", db_index=True
@@ -128,8 +164,7 @@ class Challenge(TimeStampedModel):
         db_index=True,
     )
     sqs_retention_period = models.PositiveIntegerField(
-        default=345600,
-        verbose_name="SQS Retention Period"
+        default=345600, verbose_name="SQS Retention Period"
     )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
@@ -172,19 +207,52 @@ class Challenge(TimeStampedModel):
     )
     # The number of active workers on Fargate of the challenge.
     workers = models.IntegerField(null=True, blank=True, default=None)
-    # The task definition ARN for the challenge, used for updating and creating service.
+    # The task definition ARN for the challenge, used for updating and
+    # creating service.
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
-    # Identifier for the github repository of a challenge in format: account_name/repository_name
+    # Identifier for the github repository of a challenge in format:
+    # account_name/repository_name
     github_repository = models.CharField(
         max_length=1000, null=True, blank=True, default=""
     )
-    # The number of vCPU for a Fargate worker for the challenge. Default value is 0.25 vCPU.
+    # The github branch name used to create/update the challenge
+    github_branch = models.CharField(
+        max_length=200, null=True, blank=True, default=""
+    )
+    # The number of vCPU for a Fargate worker for the challenge. Default value
+    # is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
-    # Memory size of a Fargate worker for the challenge. Default value is 0.5 GB memory.
+    # Memory size of a Fargate worker for the challenge. Default value is 0.5
+    # GB memory.
     worker_memory = models.IntegerField(null=True, blank=True, default=1024)
+    use_fargate_spot = models.BooleanField(
+        default=True,
+        verbose_name="Use Fargate Spot",
+        help_text="If True, use capacityProviderStrategy (Spot). If False, use launchType FARGATE.",
+    )
+    fargate_spot_weight = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name="Fargate Spot Weight",
+        help_text="Weight for FARGATE_SPOT in capacity provider strategy. 0 excludes Spot.",
+    )
+    fargate_spot_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Spot Base",
+        help_text="Minimum number of tasks placed on FARGATE_SPOT before weights apply.",
+    )
+    fargate_weight = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Weight",
+        help_text="Weight for FARGATE in capacity provider strategy. 0 = Spot only.",
+    )
+    fargate_base = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Fargate Base",
+        help_text="Minimum number of tasks placed on FARGATE before weights apply.",
+    )
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
     # VPC and subnet CIDRs for code upload challenge
@@ -213,15 +281,30 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, default=1
     )
     cpu_only_jobs = models.BooleanField(default=False)
-    # The number of vCPU for a code upload submission kubernetes job. Default value is 2 vCPU.
+    # The number of vCPU for a code upload submission kubernetes job. Default
+    # value is 2 vCPU.
     job_cpu_cores = models.CharField(
         max_length=256, null=True, blank=True, default="2000m"
     )
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
-    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
+    worker_image_url = models.CharField(
+        max_length=200, blank=True, null=True, default=""
+    )
     evaluation_module_error = models.TextField(null=True, blank=True)
+    is_frozen = models.BooleanField(
+        default=False,
+        verbose_name="Is Frozen",
+        db_index=True,
+        help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
+    )
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for all phases of this challenge. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -261,7 +344,9 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -283,7 +368,9 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
+def update_sqs_retention_period_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "sqs_retention_period"
     import challenges.aws_utils as aws
 
@@ -297,10 +384,67 @@ def update_sqs_retention_period_for_challenge(sender, instance, created, **kwarg
         challenge.save()
 
 
+@receiver(signals.post_save, sender="challenges.Challenge")
+def handle_end_date_change_for_challenge(sender, instance, created, **kwargs):
+    """
+    When a challenge's end_date changes, update or recreate the EventBridge
+    cleanup schedule and, if needed, recreate the full worker infrastructure.
+    """
+    field_name = "end_date"
+    import challenges.aws_utils as aws
+
+    if not created and is_model_field_changed(instance, field_name):
+        challenge = instance
+        new_end_date = challenge.end_date
+
+        # For docker-based EKS challenges, trigger an autoscale check when
+        # end_date changes (for example, if moved into the past).
+        if (
+            challenge.is_docker_based
+            and not challenge.remote_evaluation
+            and not challenge.uses_ec2_worker
+        ):
+            aws.trigger_eks_node_autoscale(
+                challenge.pk,
+                trigger_source="challenge_end_date_changed",
+            )
+            challenge._original_end_date = new_end_date
+            return
+
+        challenge._original_end_date = new_end_date
+
+        # Skip if not a Fargate-managed challenge
+        if (
+            challenge.is_docker_based
+            or challenge.uses_ec2_worker
+            or challenge.remote_evaluation
+        ):
+            return
+
+        # Skip if the challenge was never approved and has no workers
+        # (workers may exist from host testing before approval)
+        if not challenge.approved_by_admin and challenge.workers is None:
+            return
+
+        if new_end_date and new_end_date > timezone.now():
+            if challenge.workers is None:
+                # Resources were cleaned up (Lambda already fired).
+                # Recreate everything: service + auto-scaling + schedule.
+                aws.start_workers([challenge])
+            else:
+                # Resources still exist; just reschedule the cleanup.
+                aws.update_challenge_cleanup_schedule(challenge)
+        else:
+            # New end_date is in the past; trigger cleanup if resources exist.
+            if challenge.workers is not None:
+                aws.delete_workers([challenge])
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
@@ -312,7 +456,6 @@ class DatasetSplit(TimeStampedModel):
 
 
 class ChallengePhase(TimeStampedModel):
-
     """Model representing a Challenge Phase"""
 
     def __init__(self, *args, **kwargs):
@@ -329,6 +472,26 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    KEEP_FOREVER = "keep_forever"
+    DAYS_14 = "days_14"
+    DAYS_30 = "days_30"
+    MONTHS_3 = "months_3"
+    MONTHS_6 = "months_6"
+    MONTHS_12 = "months_12"
+    SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS = (
+        (KEEP_FOREVER, "Keep forever"),
+        (DAYS_14, "14 days"),
+        (DAYS_30, "30 days"),
+        (MONTHS_3, "3 months"),
+        (MONTHS_6, "6 months"),
+        (MONTHS_12, "12 months"),
+    )
+    submission_artifact_retention_policy = models.CharField(
+        max_length=20,
+        choices=SUBMISSION_ARTIFACT_RETENTION_POLICY_OPTIONS,
+        default=KEEP_FOREVER,
+        db_index=True,
+    )
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     annotations_uploaded_using_cli = models.BooleanField(default=False)
@@ -364,19 +527,28 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
-    # Store the schema for the submission meta attributes of this challenge phase.
+    # Store the schema for the submission meta attributes of this challenge
+    # phase.
     submission_meta_attributes = JSONField(default=None, blank=True, null=True)
     # Flag to allow reporting partial metrics for submission evaluation
     is_partial_submission_evaluation_enabled = models.BooleanField(
         default=False
     )
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
-    # Store the default metadata for a submission meta attributes of a challenge phase.
+    # Store the default metadata for a submission meta attributes of a
+    # challenge phase.
     default_submission_meta_attributes = JSONField(
         default=None, blank=True, null=True
     )
     disable_logs = models.BooleanField(default=False)
+    is_submission_paused = models.BooleanField(
+        default=False,
+        verbose_name="Submissions Paused",
+        db_index=True,
+        help_text="When True, new submissions are rejected for this phase. Already-queued submissions continue processing normally.",
+    )
 
     class Meta:
         app_label = "challenges"
@@ -404,7 +576,8 @@ class ChallengePhase(TimeStampedModel):
 
     def save(self, *args, **kwargs):
 
-        # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
+        # If the max_submissions_per_day is less than the
+        # max_concurrent_submissions_allowed.
         if (
             self.max_submissions_per_day
             < self.max_concurrent_submissions_allowed
@@ -438,7 +611,8 @@ post_save_connect("test_annotation", ChallengePhase)
 class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
-    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    # Id in the challenge config file. Needed to map the object to the value
+    # in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
@@ -474,6 +648,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
     show_execution_time = models.BooleanField(default=False)
+    show_scores_on_leaderboard = models.BooleanField(default=True)
     # Allow ordering leaderboard by all metrics
     is_multi_metric_leaderboard = models.BooleanField(default=True)
 
@@ -544,6 +719,12 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "leaderboard_data"
+        indexes = [
+            models.Index(
+                fields=["challenge_phase_split", "is_disabled", "-created_at"],
+                name="ld_chphase_isdisc_created_idx",
+            ),
+        ]
 
 
 class ChallengeConfiguration(TimeStampedModel):
@@ -587,6 +768,7 @@ class StarChallenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "starred_challenge"
+        unique_together = (("user", "challenge"),)
 
 
 class UserInvitation(TimeStampedModel):

@@ -3,8 +3,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):

@@ -1,0 +1,73 @@
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+
+python:
+  install:
+    - requirements: requirements/readthedocs.txt
+
+sphinx:
+  configuration: docs/source/conf.py
+
+formats:
+  - epub
+  - pdf
+
+redirects:
+  - type: page
+    from_url: /configuration.html
+    to_url: /02-for-challenge-hosts/configuration/challenge-config.html
+  - type: page
+    from_url: /evaluation_scripts.html
+    to_url: /02-for-challenge-hosts/evaluation/evaluation-scripts.html
+  - type: page
+    from_url: /participate.html
+    to_url: /03-for-participants/participation-guide/getting-started.html
+  - type: page
+    from_url: /submission.html
+    to_url: /03-for-participants/submissions/submission-types.html
+  - type: page
+    from_url: /architecture.html
+    to_url: /04-development/architecture/technology-stack.html
+  - type: page
+    from_url: /directory_structure.html
+    to_url: /04-development/architecture/directory-structure.html
+  - type: page
+    from_url: /github_based_challenge_setup.html
+    to_url: /02-for-challenge-hosts/hosting-guide/getting-started.html
+  - type: page
+    from_url: /edit_evaluation_script.html
+    to_url: /02-for-challenge-hosts/evaluation/prediction-upload.html
+  - type: page
+    from_url: /glossary.html
+    to_url: /08-reference/glossary.html
+  - type: page
+    from_url: /faq(developers).html
+    to_url: /07-troubleshooting/support/faq.html
+  - type: page
+    from_url: /migrations.html
+    to_url: /04-development/maintenance/migrations.html
+  - type: page
+    from_url: /approve_challenge.html
+    to_url: /02-for-challenge-hosts/hosting-guide/approval-process.html
+  - type: page
+    from_url: /architecture_decisions.html
+    to_url: /04-development/architecture/architectural-decisions.html
+  - type: page
+    from_url: /cite.html
+    to_url: /08-reference/cite.html
+  - type: page
+    from_url: /make_submission_public_private_baseline.html
+    to_url: /03-for-participants/visibility/baseline-submissions.html
+  - type: page
+    from_url: /pull_request.html
+    to_url: /04-development/contributing/pull-requests.html
+  - type: page
+    from_url: /contribution.html
+    to_url: /04-development/contributing/contribution-guide.html
+  - type: page
+    from_url: /host_challenge.html
+    to_url: /02-for-challenge-hosts/hosting-guide/host-challenge.html

@@ -1,25 +1,41 @@
+import json
 import os
+import unittest
+from datetime import timedelta
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
+
+import botocore
 import requests
 import responses
-
-from datetime import timedelta
-
+from allauth.account.models import EmailAddress
+from base.utils import (
+    RandomFileName,
+    SubmissionArtifactFileName,
+    decode_data,
+    encode_data,
+    get_boto3_client,
+    get_or_create_sqs_queue,
+    get_url_from_hostname,
+    is_user_a_staff,
+    mock_if_non_prod_aws,
+    send_email,
+    send_slack_notification,
+)
+from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase as DjangoTestCase
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from base.utils import RandomFileName, send_slack_notification, is_user_a_staff
-from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 from scripts import seed
+from settings.common import SQS_RETENTION_PERIOD
 
 
 class BaseAPITestClass(APITestCase):
@@ -118,6 +134,50 @@ class TestRandomFileName(BaseAPITestClass):
         self.assertEqual(filepath, expected)
 
 
+class TestSubmissionArtifactFileName(BaseAPITestClass):
+    def test_nested_path_matches_challenge_phase(self):
+        naming = SubmissionArtifactFileName()
+
+        filename = naming(self.submission, "submission.json")
+
+        self.assertIn(
+            f"submission_files/challenge_{self.challenge.pk}", filename
+        )
+        self.assertIn(f"phase_{self.challenge_phase.pk}", filename)
+        self.assertIn(f"submission_{self.submission.pk}", filename)
+
+    def test_fallback_path_when_no_challenge_phase(self):
+        naming = SubmissionArtifactFileName()
+
+        class Obj:
+            pk = 101
+
+        filename = naming(Obj(), "data.bin")
+
+        self.assertRegex(
+            filename,
+            r"submission_files/submission_101/[0-9a-f\-]{36}\.bin",
+        )
+
+    def test_nested_path_uses_challenge_phase_id_without_relation_loaded(self):
+        naming = SubmissionArtifactFileName()
+
+        class StubSubmission:
+            pass
+
+        stub = StubSubmission()
+        stub.pk = self.submission.pk
+        stub.challenge_phase_id = self.challenge_phase.pk
+
+        filename = naming(stub, "stdout.txt")
+
+        self.assertIn(
+            f"submission_files/challenge_{self.challenge.pk}",
+            filename,
+        )
+        self.assertIn(f"phase_{self.challenge_phase.pk}", filename)
+
+
 class TestSeeding(BaseAPITestClass):
     def test_if_seeding_works(self):
         seed.run(1)
@@ -137,11 +197,10 @@ class TestSlackNotification(BaseAPITestClass):
 
 
 class TestUserIsStaff(BaseAPITestClass):
-
     def test_if_user_is_staff(self):
         self.user = User.objects.create(
             username="someuser1",
-            email="user@test.com",
+            email="staffuser@test.com",
             password="secret_password",
             is_staff=True,
         )
@@ -150,10 +209,724 @@ class TestUserIsStaff(BaseAPITestClass):
     def test_if_user_is_not_staff(self):
         self.user = User.objects.create(
             username="someuser2",
-            email="user@test.com",
+            email="nonstaffuser@test.com",
             password="secret_password",
             is_staff=False,
         )
         self.user.is_staff = False
         self.user.save()
         self.assertFalse(is_user_a_staff(self.user))
+
+
+class TestGetUrlFromHostname(TestCase):
+    def test_debug_mode(self):
+        settings.DEBUG = True
+        hostname = "example.com"
+        expected_url = "http://example.com"
+        self.assertEqual(get_url_from_hostname(hostname), expected_url)
+
+    def test_test_mode(self):
+        settings.TEST = True
+        hostname = "example.com"
+        expected_url = "http://example.com"
+        self.assertEqual(get_url_from_hostname(hostname), expected_url)
+
+    def test_production_mode(self):
+        settings.DEBUG = False
+        settings.TEST = False
+        hostname = "example.com"
+        expected_url = "https://example.com"
+        self.assertEqual(get_url_from_hostname(hostname), expected_url)
+
+
+class TestAwsReturnFunc(BaseAPITestClass):
+    def test_mock_if_non_prod_aws_returns_original_func_when_not_debug_or_test(
+        self,
+    ):
+        with patch("django.conf.settings.DEBUG", False):
+            with patch("django.conf.settings.TEST", False):
+                aws_mocker = MagicMock()
+                func = MagicMock(return_value="mocked_value")
+                decorated_func = mock_if_non_prod_aws(aws_mocker)(func)
+                result = decorated_func()
+                self.assertEqual(result, "mocked_value")
+                aws_mocker.assert_not_called()
+
+
+class TestGetOrCreateSqsQueue(BaseAPITestClass):
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", True)
+    @patch("base.utils.settings.TEST", False)
+    def test_debug_mode_queue_name(self, mock_boto3):
+        mock_sqs = MagicMock()
+        mock_boto3.return_value = mock_sqs
+        queue_name = "test_queue"
+
+        get_or_create_sqs_queue(queue_name)
+
+        mock_boto3.assert_called_with(
+            "sqs",
+            endpoint_url="http://sqs:9324",
+            region_name="us-east-1",
+            aws_secret_access_key="x",
+            aws_access_key_id="x",
+        )
+        mock_sqs.get_queue_by_name.assert_called_with(
+            QueueName="evalai_submission_queue"
+        )
+
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", False)
+    @patch("base.utils.settings.TEST", False)
+    def test_non_debug_non_test_mode_with_challenge(self, mock_boto3):
+        mock_sqs = MagicMock()
+        mock_boto3.return_value = mock_sqs
+        queue_name = "test_queue"
+        challenge = MagicMock()
+        challenge.use_host_sqs = True
+        challenge.queue_aws_region = "us-west-2"
+        challenge.aws_secret_access_key = "challenge_secret"
+        challenge.aws_access_key_id = "challenge_key"
+
+        get_or_create_sqs_queue(queue_name, challenge)
+
+        mock_boto3.assert_called_with(
+            "sqs",
+            region_name="us-west-2",
+            aws_secret_access_key="challenge_secret",
+            aws_access_key_id="challenge_key",
+        )
+        mock_sqs.get_queue_by_name.assert_called_with(QueueName=queue_name)
+
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", False)
+    @patch("base.utils.settings.TEST", False)
+    def test_non_debug_non_test_mode_without_challenge(self, mock_boto3):
+        mock_sqs = MagicMock()
+        mock_boto3.return_value = mock_sqs
+        queue_name = "test_queue"
+
+        with patch.dict(
+            "os.environ",
+            {
+                "AWS_DEFAULT_REGION": "us-east-1",
+                "AWS_SECRET_ACCESS_KEY": "env_secret",
+                "AWS_ACCESS_KEY_ID": "env_key",
+            },
+        ):
+            get_or_create_sqs_queue(queue_name)
+
+        mock_boto3.assert_called_with(
+            "sqs",
+            region_name="us-east-1",
+            aws_secret_access_key="env_secret",
+            aws_access_key_id="env_key",
+        )
+        mock_sqs.get_queue_by_name.assert_called_with(QueueName=queue_name)
+
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.logger")
+    @patch("base.utils.settings")
+    def test_get_or_create_sqs_queue_exception_logging(
+        self, mock_settings, mock_logger, mock_boto3_resource
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_sqs = MagicMock()
+        mock_boto3_resource.return_value = mock_sqs
+
+        error_response = {
+            "Error": {"Code": "SomeOtherError", "Message": "An error occurred"}
+        }
+        client_error = botocore.exceptions.ClientError(
+            error_response, "GetQueueUrl"
+        )
+
+        mock_sqs.get_queue_by_name.side_effect = client_error
+
+        queue_name = "test_queue"
+        get_or_create_sqs_queue(queue_name)
+
+        mock_logger.exception.assert_called_once_with(
+            "Cannot get queue: %s", queue_name
+        )
+
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", False)
+    @patch("base.utils.settings.TEST", False)
+    @patch("base.utils.logger")
+    def test_queue_creation_on_non_existent_queue(
+        self, mock_logger, mock_boto3
+    ):
+        mock_sqs = MagicMock()
+        mock_boto3.return_value = mock_sqs
+        queue_name = "test_queue"
+        challenge = None
+        mock_sqs.get_queue_by_name.side_effect = (
+            botocore.exceptions.ClientError(
+                {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+                "GetQueueUrl",
+            )
+        )
+
+        get_or_create_sqs_queue(queue_name, challenge)
+
+        mock_sqs.create_queue.assert_called_with(
+            QueueName=queue_name,
+            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+        )
+        mock_logger.exception.assert_not_called()
+
+
+class TestSendEmail(unittest.TestCase):
+
+    def setUp(self):
+        self._profile_patcher = patch(
+            "accounts.models.Profile.objects.filter",
+            return_value=MagicMock(exists=MagicMock(return_value=False)),
+        )
+        self._profile_patcher.start()
+
+    def tearDown(self):
+        self._profile_patcher.stop()
+
+    def _mock_sendgrid_template_response(
+        self,
+        html_content="<h1>Hello {{NAME}}</h1>",
+        subject="Subject {{NAME}}",
+    ):
+        """Build a mock SendGrid template API response with one active version."""
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": True,
+                        "html_content": html_content,
+                        "subject": subject,
+                    }
+                ]
+            }
+        )
+        return mock_response
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_send_email_success(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={"NAME": "World"},
+        )
+
+        mock_sendgrid_client.assert_called_once_with(api_key="fake_api_key")
+        mock_sg.client.templates._("tid").get.assert_called_once()
+        mock_email_cls.assert_called_once_with(
+            subject="Subject World",
+            body="",
+            from_email="sender@example.com",
+            to=["recipient@example.com"],
+        )
+        mock_msg.attach_alternative.assert_called_once_with(
+            "<h1>Hello World</h1>", "text/html"
+        )
+        mock_msg.send.assert_called_once()
+        mock_sentry.capture_exception.assert_not_called()
+        mock_logger.exception.assert_not_called()
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_send_email_success_with_display_name_sender(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="EvalAI Team <team@eval.ai>",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={"NAME": "World"},
+        )
+
+        call_kwargs = mock_email_cls.call_args[1]
+        self.assertEqual(call_kwargs["to"], ["recipient@example.com"])
+        self.assertIn("team@eval.ai", call_kwargs["from_email"])
+        self.assertIn("EvalAI Team", call_kwargs["from_email"])
+        mock_msg.send.assert_called_once()
+        mock_sentry.capture_exception.assert_not_called()
+
+    @patch("base.utils._fetch_sendgrid_template")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_send_email_template_fetch_exception(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_get_env,
+        mock_fetch,
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_fetch.side_effect = Exception("SendGrid API error")
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={"NAME": "World"},
+        )
+
+        mock_sentry.capture_exception.assert_called_once()
+        mock_logger.exception.assert_called_once_with(
+            "Email send failed for recipient=%s, template=%s",
+            "recipient@example.com",
+            "tid",
+        )
+
+    @patch("base.utils.sentry_sdk")
+    def test_send_email_missing_recipient(self, mock_sentry):
+        send_email(
+            sender="sender@example.com",
+            recipient=None,
+            template_id="template_id",
+        )
+
+        mock_sentry.capture_exception.assert_called_once()
+        captured_error = mock_sentry.capture_exception.call_args[0][0]
+        self.assertIsInstance(captured_error, ValueError)
+        self.assertIn("recipient", str(captured_error))
+
+    @patch("base.utils.sentry_sdk")
+    def test_send_email_missing_template_id(self, mock_sentry):
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id=None,
+        )
+
+        mock_sentry.capture_exception.assert_called_once()
+        captured_error = mock_sentry.capture_exception.call_args[0][0]
+        self.assertIsInstance(captured_error, ValueError)
+        self.assertIn("template_id", str(captured_error))
+
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_send_email_missing_api_key(self, mock_logger, mock_sentry):
+        with patch.dict("os.environ", {}, clear=True):
+            send_email(
+                sender="sender@example.com",
+                recipient="recipient@example.com",
+                template_id="template_id",
+            )
+
+        mock_sentry.capture_exception.assert_called_once()
+        mock_logger.exception.assert_called_once_with(
+            "Email send failed for recipient=%s, template=%s",
+            "recipient@example.com",
+            "template_id",
+        )
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils._fetch_sendgrid_template")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_send_email_django_send_exception(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_get_env,
+        mock_fetch,
+        mock_email_cls,
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_fetch.return_value = ("<p>Hi</p>", "Subject")
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+        mock_msg.send.side_effect = Exception("SES connection error")
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+        )
+
+        mock_sentry.capture_exception.assert_called_once()
+        mock_logger.exception.assert_called_once()
+
+
+class TestSendEmailRateLimit(unittest.TestCase):
+
+    def setUp(self):
+        self._profile_patcher = patch(
+            "accounts.models.Profile.objects.filter",
+            return_value=MagicMock(exists=MagicMock(return_value=False)),
+        )
+        self._profile_patcher.start()
+
+    def tearDown(self):
+        self._profile_patcher.stop()
+
+    def _mock_sendgrid_template_response(self):
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": True,
+                        "html_content": "<p>Hi</p>",
+                        "subject": "Subj",
+                    }
+                ]
+            }
+        )
+        return mock_response
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_email_sent_when_under_rate_limit(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 0
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 1, timeout=60
+        )
+        mock_msg.send.assert_called_once()
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sentry_sdk")
+    @patch("base.utils.logger")
+    def test_email_blocked_when_rate_limit_exceeded(
+        self,
+        mock_logger,
+        mock_sentry,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 10
+
+        with patch.object(
+            settings,
+            "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE",
+            10,
+        ):
+            send_email(
+                sender="sender@example.com",
+                recipient="recipient@example.com",
+                template_id="tid",
+                template_data={},
+            )
+
+        mock_email_cls.assert_not_called()
+        mock_logger.warning.assert_called_once()
+        mock_sentry.capture_message.assert_called_once()
+        self.assertIn(
+            "recipient@example.com",
+            mock_sentry.capture_message.call_args[0][0],
+        )
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_rate_limit_counter_increments(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        mock_cache.get.return_value = 5
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="recipient@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 6, timeout=60
+        )
+        mock_msg.send.assert_called_once()
+
+    @patch("base.utils.cache")
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.sentry_sdk")
+    def test_rate_limit_allows_after_cache_expiry(
+        self,
+        mock_sentry,
+        mock_get_env,
+        mock_sendgrid_client,
+        mock_email_cls,
+        mock_cache,
+    ):
+        """Simulate cache expiry (returns 0) so emails flow again."""
+        mock_cache.get.return_value = 0
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        with patch.object(
+            settings,
+            "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE",
+            10,
+        ):
+            send_email(
+                sender="sender@example.com",
+                recipient="recipient@example.com",
+                template_id="tid",
+                template_data={},
+            )
+
+        mock_msg.send.assert_called_once()
+        mock_cache.set.assert_called_once_with(
+            "email_rate:recipient@example.com", 1, timeout=60
+        )
+
+
+class TestSendEmailBounceGuard(DjangoTestCase):
+    """Tests for the email_bounced suppression guard in send_email()."""
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="bouncetest",
+            email="bounced@example.com",
+            password="password",
+        )
+
+    def _mock_sendgrid_template_response(self):
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": True,
+                        "html_content": "<h1>Hi</h1>",
+                        "subject": "Test",
+                    }
+                ]
+            }
+        )
+        return mock_response
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    @patch("base.utils.logger")
+    def test_send_email_skips_bounced_user(
+        self, mock_logger, mock_get_env, mock_sendgrid_client, mock_email_cls
+    ):
+        self.user.profile.email_bounced = True
+        self.user.profile.save()
+
+        send_email(
+            sender="sender@example.com",
+            recipient="bounced@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_email_cls.assert_not_called()
+        mock_logger.info.assert_called()
+
+    @patch("base.utils.EmailMultiAlternatives")
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    @patch("base.utils.os.environ.get")
+    def test_send_email_sends_to_non_bounced_user(
+        self, mock_get_env, mock_sendgrid_client, mock_email_cls
+    ):
+        mock_get_env.return_value = "fake_api_key"
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_sg.client.templates._("tid").get.return_value = (
+            self._mock_sendgrid_template_response()
+        )
+        mock_msg = MagicMock()
+        mock_email_cls.return_value = mock_msg
+
+        send_email(
+            sender="sender@example.com",
+            recipient="bounced@example.com",
+            template_id="tid",
+            template_data={},
+        )
+
+        mock_msg.send.assert_called_once()
+
+
+class TestFetchSendgridTemplate(unittest.TestCase):
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    def test_fetch_returns_active_version(self, mock_sendgrid_client):
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": False,
+                        "html_content": "<p>old</p>",
+                        "subject": "Old",
+                    },
+                    {
+                        "active": True,
+                        "html_content": "<p>new</p>",
+                        "subject": "New",
+                    },
+                ]
+            }
+        )
+        mock_sg.client.templates._("tid").get.return_value = mock_response
+
+        from base.utils import _fetch_sendgrid_template
+
+        html, subject = _fetch_sendgrid_template("key", "tid")
+        self.assertEqual(html, "<p>new</p>")
+        self.assertEqual(subject, "New")
+
+    @patch("base.utils.sendgrid.SendGridAPIClient")
+    def test_fetch_raises_when_no_active_version(self, mock_sendgrid_client):
+        mock_sg = MagicMock()
+        mock_sendgrid_client.return_value = mock_sg
+        mock_response = MagicMock()
+        mock_response.body = json.dumps(
+            {
+                "versions": [
+                    {
+                        "active": False,
+                        "html_content": "<p>old</p>",
+                        "subject": "Old",
+                    },
+                ]
+            }
+        )
+        mock_sg.client.templates._("tid").get.return_value = mock_response
+
+        from base.utils import _fetch_sendgrid_template
+
+        with self.assertRaises(ValueError):
+            _fetch_sendgrid_template("key", "tid")
+
+
+class TestRenderHandlebars(unittest.TestCase):
+    def test_render_simple_template(self):
+        from base.utils import _render_handlebars
+
+        result = _render_handlebars(
+            "Hello {{NAME}}, welcome to {{SITE}}!",
+            {"NAME": "Alice", "SITE": "EvalAI"},
+        )
+        self.assertEqual(result, "Hello Alice, welcome to EvalAI!")
+
+    def test_render_empty_data(self):
+        from base.utils import _render_handlebars
+
+        result = _render_handlebars("No placeholders here.", {})
+        self.assertEqual(result, "No placeholders here.")
+
+
+class TestGetBoto3Client(unittest.TestCase):
+    @patch("base.utils.boto3.client")
+    @patch("base.utils.logger")
+    def test_get_boto3_client_exception(self, mock_logger, mock_boto3_client):
+        mock_boto3_client.side_effect = Exception("Boto3 error")
+
+        aws_keys = {
+            "AWS_REGION": "us-west-2",
+            "AWS_ACCESS_KEY_ID": "fake_access_key_id",
+            "AWS_SECRET_ACCESS_KEY": "fake_secret_access_key",
+        }
+
+        get_boto3_client("s3", aws_keys)
+        mock_logger.exception.assert_called_once()
+        args, kwargs = mock_logger.exception.call_args
+        self.assertIsInstance(args[0], Exception)
+        self.assertEqual(str(args[0]), "Boto3 error")
+
+
+class TestDataEncoding(unittest.TestCase):
+    def test_encode_data_empty_list(self):
+        data = []
+        self.assertEqual(encode_data(data), [])
+
+    def test_decode_data_empty_list(self):
+        data = []
+        self.assertEqual(decode_data(data), [])
