@@ -139,6 +139,53 @@ class WebhookReceiverTests(TestCase):
         second_run = ScoutRun.objects.order_by("-received_at").first()
         self.assertEqual(second_run.new_challenge_count, 0)
 
+    def test_non_object_json_root_returns_400(self):
+        resp = self.client.post(
+            self.url, data="[]", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(ScoutRun.objects.count(), 0)
+        self.assertEqual(ScoutChallenge.objects.count(), 0)
+
+    def test_non_dict_challenge_entry_is_skipped_and_warned(self):
+        payload = {
+            "challenges": [
+                SAMPLE_PAYLOAD["challenges"][0],
+                "i-am-a-string-not-a-dict",
+            ]
+        }
+        resp = self._post(self.url, payload)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(ScoutChallenge.objects.count(), 1)
+        run = ScoutRun.objects.first()
+        self.assertEqual(run.new_challenge_count, 1)
+        self.assertEqual(len(run.parse_warnings), 1)
+
+    def test_concurrent_insert_race_is_treated_as_duplicate(self):
+        # Simulate the loser of a get_or_create race: another worker has
+        # already inserted the canonical_key between our get() and create().
+        # The view must catch IntegrityError, treat the row as not-new, and
+        # still return 200 with the run persisted.
+        from unittest import mock
+
+        from django.db import IntegrityError
+
+        existing_payload = {"challenges": [SAMPLE_PAYLOAD["challenges"][0]]}
+        # Pre-create the row so the second insert would normally collide.
+        self._post(self.url, existing_payload)
+        self.assertEqual(ScoutChallenge.objects.count(), 1)
+
+        with mock.patch(
+            "scout.views.ScoutChallenge.objects.get_or_create",
+            side_effect=IntegrityError("duplicate key"),
+        ):
+            resp = self._post(self.url, existing_payload)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(ScoutChallenge.objects.count(), 1)
+        latest_run = ScoutRun.objects.order_by("-received_at").first()
+        self.assertEqual(latest_run.new_challenge_count, 0)
+
     def test_same_challenge_to_two_scouts_dedupes_globally(self):
         other = _make_scout(name="other", token="other-token")
         other_url = "/api/scout/webhook/{}/{}/".format(

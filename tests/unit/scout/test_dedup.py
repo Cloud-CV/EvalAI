@@ -35,3 +35,25 @@ class CanonicalKeyTests(TestCase):
             "year": 2025,
         }
         self.assertTrue(canonical_key(c).endswith("|2025"))
+
+    def test_pipe_in_fields_does_not_cause_collision(self):
+        # Without escaping, ("a|b", "c") and ("a", "b|c") would both join to
+        # "a|b|c|2025" and collide. The escaped form keeps them distinct.
+        a = canonical_key(
+            {"benchmark_name": "a|b", "conference": "c", "year": 2025}
+        )
+        b = canonical_key(
+            {"benchmark_name": "a", "conference": "b|c", "year": 2025}
+        )
+        self.assertNotEqual(a, b)
+
+    def test_backslash_in_fields_does_not_create_collision(self):
+        # The escape itself must also be injective: a literal backslash in
+        # one field can't be confused with the escape sequence for `|`.
+        a = canonical_key(
+            {"benchmark_name": "a\\", "conference": "|b", "year": 2025}
+        )
+        b = canonical_key(
+            {"benchmark_name": "a", "conference": "\\|b", "year": 2025}
+        )
+        self.assertNotEqual(a, b)

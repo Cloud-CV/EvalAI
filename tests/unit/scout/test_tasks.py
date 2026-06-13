@@ -121,7 +121,7 @@ class SendDailyOutreachTests(TestCase):
     def test_send_email_exception_does_not_stop_loop_and_row_is_marked(
         self, mock_send
     ):
-        mock_send.side_effect = [Exception("first send blew up"), None]
+        mock_send.side_effect = [Exception("first send blew up"), True]
         self._seed(
             "alpha",
             [
@@ -158,7 +158,23 @@ class SendDailyOutreachTests(TestCase):
         self.assertIsNone(row.outreach_sent_at)
 
         mock_send.side_effect = None
+        mock_send.return_value = True
         send_daily_outreach()
         self.assertEqual(mock_send.call_count, 4)
         row.refresh_from_db()
         self.assertIsNotNone(row.outreach_sent_at)
+
+    @mock.patch("scout.tasks.send_email")
+    def test_row_is_not_marked_when_send_email_returns_false(self, mock_send):
+        # send_email swallows failures internally (bounce list, rate limit,
+        # SES error) and returns False. Those rows must not be marked done.
+        mock_send.return_value = False
+        self._seed("alpha", [{"name": "A", "email": "a@x.com"}])
+
+        from scout.tasks import send_daily_outreach
+
+        send_daily_outreach()
+
+        self.assertEqual(mock_send.call_count, 1)
+        row = ScoutChallenge.objects.get(benchmark_name="alpha")
+        self.assertIsNone(row.outreach_sent_at)

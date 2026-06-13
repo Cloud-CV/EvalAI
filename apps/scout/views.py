@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse, JsonResponse
 from django.utils.crypto import constant_time_compare
 from django.views.decorators.csrf import csrf_exempt
@@ -27,6 +27,9 @@ def webhook_receiver(request, name, token):
     except (ValueError, UnicodeDecodeError):
         return HttpResponse(status=400)
 
+    if not isinstance(body, dict):
+        return HttpResponse(status=400)
+
     with transaction.atomic():
         run = ScoutRun.objects.create(scout=scout, raw_payload=body)
 
@@ -38,21 +41,24 @@ def webhook_receiver(request, name, token):
         if not isinstance(challenges, list):
             warnings.append(
                 "Payload is missing 'challenges' list (got {!r})".format(
-                    type(body.get("challenges")).__name__
+                    type(challenges).__name__
                 )
             )
         else:
             for c in challenges:
                 received += 1
+                if not isinstance(c, dict):
+                    warnings.append(
+                        "Skipped non-object challenge entry (got {!r})".format(
+                            type(c).__name__
+                        )
+                    )
+                    continue
                 serializer = ScoutChallengePayloadSerializer(data=c)
                 if not serializer.is_valid():
                     warnings.append(
                         "Skipped entry name={!r}: {}".format(
-                            (
-                                c.get("benchmark_name", "?")
-                                if isinstance(c, dict)
-                                else "?"
-                            ),
+                            c.get("benchmark_name", "?"),
                             serializer.errors,
                         )
                     )
@@ -67,10 +73,18 @@ def webhook_receiver(request, name, token):
                         )
                     )
                     continue
-                _, created = ScoutChallenge.objects.get_or_create(
-                    canonical_key=key,
-                    defaults={**data, "source_run": run},
-                )
+                # Nested atomic so a race on the unique canonical_key only
+                # rolls back this one insert (not the whole webhook run).
+                # Without it, IntegrityError would poison the outer
+                # transaction and the entire delivery would 500.
+                try:
+                    with transaction.atomic():
+                        _, created = ScoutChallenge.objects.get_or_create(
+                            canonical_key=key,
+                            defaults={**data, "source_run": run},
+                        )
+                except IntegrityError:
+                    created = False
                 if created:
                     new_count += 1
 

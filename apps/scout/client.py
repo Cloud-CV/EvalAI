@@ -1,6 +1,7 @@
 import requests
 
 YUTORI_API_BASE = "https://api.yutori.com"
+DEFAULT_TIMEOUT_SECONDS = 30
 
 
 class YutoriAPIError(Exception):
@@ -15,9 +16,12 @@ class YutoriAPIError(Exception):
 
 
 class YutoriClient(object):
-    def __init__(self, api_key, base_url=YUTORI_API_BASE):
+    def __init__(
+        self, api_key, base_url=YUTORI_API_BASE, timeout=DEFAULT_TIMEOUT_SECONDS
+    ):
         self.api_key = api_key
         self.base_url = base_url
+        self.timeout = timeout
 
     def _headers(self):
         return {
@@ -27,7 +31,9 @@ class YutoriClient(object):
 
     def _post(self, path, payload):
         url = "{}{}".format(self.base_url, path)
-        resp = requests.post(url, json=payload, headers=self._headers())
+        resp = requests.post(
+            url, json=payload, headers=self._headers(), timeout=self.timeout
+        )
         if not (200 <= resp.status_code < 300):
             raise YutoriAPIError(resp.status_code, resp.text)
         return resp.json()

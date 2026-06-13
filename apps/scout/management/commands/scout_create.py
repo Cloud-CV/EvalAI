@@ -1,4 +1,5 @@
 import hashlib
+import re
 import secrets
 
 from django.conf import settings
@@ -7,6 +8,17 @@ from scout.client import YutoriAPIError, YutoriClient
 from scout.models import Scout
 from scout.prompt import RESEARCH_PROMPT
 from scout.schema import OUTPUT_SCHEMA
+
+# Names appear in the webhook URL path; restrict to characters that don't
+# need percent-encoding so the path matches the URL regex and can't be used
+# to inject path separators or query strings.
+NAME_RE = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+
+
+def _redact_token(token):
+    if len(token) <= 8:
+        return "***"
+    return "{}...{}".format(token[:4], token[-4:])
 
 
 class Command(BaseCommand):
@@ -28,6 +40,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         name = options["name"]
+        if not NAME_RE.match(name):
+            raise CommandError(
+                "Invalid --name {!r}: must be 1-64 chars of [a-zA-Z0-9_-]. "
+                "The value is interpolated into a URL path.".format(name)
+            )
         api_key = getattr(settings, "YUTORI_API_KEY", "")
         public_base = getattr(settings, "SCOUT_PUBLIC_BASE_URL", "")
 
@@ -85,7 +102,17 @@ class Command(BaseCommand):
                 scout.name, scout.scout_id
             )
         )
-        self.stdout.write("Webhook URL: {}".format(scout.webhook_url))
+        # The webhook URL embeds the auth token. Printing it in full leaks
+        # the secret into shell history, CI logs, and screenshots. Show a
+        # redacted form here; recover the full URL from the DB if needed.
+        redacted_url = "{}/api/scout/webhook/{}/{}/".format(
+            public_base.rstrip("/"), name, _redact_token(webhook_token)
+        )
+        self.stdout.write("Webhook URL (token redacted): {}".format(redacted_url))
+        self.stdout.write(
+            "Full URL is stored on the Scout row (Scout.webhook_url) and "
+            "was sent to Yutori; retrieve it from the DB / admin if needed."
+        )
         self.stdout.write(
             "View at: {}".format(scout.yutori_view_url or "(no view_url)")
         )

@@ -226,6 +226,11 @@ def send_email(
         template_id {string} -- SendGrid dynamic template id
         template_data {dict} -- Dictionary to substitute Handlebars
             placeholders in subject and email body
+
+    Returns:
+        bool -- True if the message was handed to the backend, False if it
+        was suppressed (bounce list, rate limit, missing args) or the send
+        raised. Callers that need delivery confirmation must check this.
     """
     if template_data is None:
         template_data = {}
@@ -236,7 +241,7 @@ def send_email(
             )
         )
         sentry_sdk.capture_exception(error)
-        return
+        return False
 
     from accounts.models import Profile
 
@@ -248,7 +253,7 @@ def send_email(
             recipient,
             template_id,
         )
-        return
+        return False
 
     max_per_minute = getattr(
         settings, "EMAIL_RATE_LIMIT_PER_RECIPIENT_PER_MINUTE", 10
@@ -265,7 +270,7 @@ def send_email(
             f"Email rate limit exceeded for {recipient}",
             level="warning",
         )
-        return
+        return False
     cache.set(cache_key, current + 1, timeout=60)
 
     try:
@@ -302,6 +307,7 @@ def send_email(
             recipient,
             rendered_subject,
         )
+        return True
     except Exception:
         sentry_sdk.capture_exception()
         logger.exception(
@@ -309,6 +315,7 @@ def send_email(
             recipient,
             template_id,
         )
+        return False
 
 
 def get_url_from_hostname(hostname):
