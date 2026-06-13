@@ -108,7 +108,9 @@ class Command(BaseCommand):
         redacted_url = "{}/api/scout/webhook/{}/{}/".format(
             public_base.rstrip("/"), name, _redact_token(webhook_token)
         )
-        self.stdout.write("Webhook URL (token redacted): {}".format(redacted_url))
+        self.stdout.write(
+            "Webhook URL (token redacted): {}".format(redacted_url)
+        )
         self.stdout.write(
             "Full URL is stored on the Scout row (Scout.webhook_url) and "
             "was sent to Yutori; retrieve it from the DB / admin if needed."

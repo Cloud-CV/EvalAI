@@ -17,7 +17,10 @@ class YutoriAPIError(Exception):
 
 class YutoriClient(object):
     def __init__(
-        self, api_key, base_url=YUTORI_API_BASE, timeout=DEFAULT_TIMEOUT_SECONDS
+        self,
+        api_key,
+        base_url=YUTORI_API_BASE,
+        timeout=DEFAULT_TIMEOUT_SECONDS,
     ):
         self.api_key = api_key
         self.base_url = base_url
