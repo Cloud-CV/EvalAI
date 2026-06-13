@@ -38,11 +38,14 @@ from challenges.utils import (
     add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
+    get_challenge_host_required_error,
     get_challenge_model,
+    get_challenge_modification_error,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_leaderboard_modification_error,
     get_participant_model,
     get_participants_with_incomplete_profiles,
     get_unique_alpha_numeric_key,
@@ -2856,6 +2859,10 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = LeaderboardSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2877,6 +2884,12 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        host_error = get_leaderboard_modification_error(
+            request, leaderboard_pk
+        )
+        if host_error:
+            return host_error
+
         if "schema" in request.data.keys():
             request.data["schema"] = json.loads(request.data["schema"])
         serializer = LeaderboardSerializer(
@@ -2903,6 +2916,10 @@ def create_dataset_split(request):
     """
     Creates a dataset split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = DatasetSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2925,6 +2942,10 @@ def get_or_update_dataset_split(request, dataset_split_pk):
     """
     dataset_split = get_dataset_split_model(dataset_split_pk)
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = DatasetSplitSerializer(
             dataset_split, data=request.data, partial=True
         )
@@ -2950,6 +2971,10 @@ def create_challenge_phase_split(request):
     """
     Create Challenge Phase Split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = ZipChallengePhaseSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2975,6 +3000,10 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     )
 
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = ZipChallengePhaseSplitSerializer(
             challenge_phase_split, data=request.data, partial=True
         )
@@ -2992,7 +3021,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_challenge_tags_and_domain(request, challenge_pk):
     """
@@ -3001,6 +3030,10 @@ def update_challenge_tags_and_domain(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
 
     if request.method == "PATCH":
+        host_error = get_challenge_modification_error(request, challenge_pk)
+        if host_error:
+            return host_error
+
         new_tags = request.data.get("list_tags", [])
         domain_value = request.data.get("domain")
         # Remove tags not present in the YAML file
