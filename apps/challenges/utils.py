@@ -30,6 +30,85 @@ from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
 
+
+def get_challenge_host_required_error(request):
+    """
+    Return a 401 Response if the user is not a member of any challenge host team.
+    """
+    from hosts.models import ChallengeHost
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
+def get_challenge_modification_error(request, challenge_pk):
+    """
+    Return a 401 Response if the user is not a host of the given challenge.
+    """
+    from hosts.utils import is_user_a_host_of_challenge
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
+def get_leaderboard_modification_error(request, leaderboard_pk):
+    """
+    Return a 401 Response if the user cannot modify the given leaderboard.
+    """
+    from hosts.models import ChallengeHost
+    from hosts.utils import is_user_a_host_of_challenge
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    challenge_ids = (
+        ChallengePhaseSplit.objects.filter(leaderboard_id=leaderboard_pk)
+        .values_list("challenge_phase__challenge_id", flat=True)
+        .distinct()
+    )
+
+    if not challenge_ids:
+        return None
+
+    for challenge_id in challenge_ids:
+        if is_user_a_host_of_challenge(request.user, challenge_id):
+            return None
+
+    return Response(
+        {"error": "Sorry, you are not authorized to perform this operation!"},
+        status=status.HTTP_401_UNAUTHORIZED,
+    )
+
+
 get_challenge_model = get_model_object(Challenge)
 
 get_challenge_phase_model = get_model_object(ChallengePhase)

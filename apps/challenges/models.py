@@ -101,6 +101,13 @@ class Challenge(TimeStampedModel):
         verbose_name="Require Complete Profile",
         help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
     )
+    max_team_members = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Maximum Team Members",
+        help_text="Maximum number of members allowed per participant team. "
+        "Leave blank for no limit.",
+    )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
         blank=True,

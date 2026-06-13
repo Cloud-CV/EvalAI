@@ -37,11 +37,14 @@ from challenges.utils import (
     add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
+    get_challenge_host_required_error,
     get_challenge_model,
+    get_challenge_modification_error,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_leaderboard_modification_error,
     get_participant_model,
     get_participants_with_incomplete_profiles,
     get_unique_alpha_numeric_key,
@@ -81,11 +84,13 @@ from participants.models import Participant, ParticipantTeam
 from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_member_count,
     get_participant_team_of_user_for_a_challenge,
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
+    team_exceeds_challenge_max_members,
 )
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -660,16 +665,39 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if participant_team.challenge_set.filter(id=challenge_pk).exists():
-        response_data = {
-            "error": "Team already exists",
-            "challenge_id": int(challenge_pk),
-            "participant_team_id": int(participant_team_pk),
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    else:
+    with transaction.atomic():
+        participant_team = ParticipantTeam.objects.select_for_update().get(
+            pk=participant_team.pk
+        )
+        if team_exceeds_challenge_max_members(participant_team, challenge):
+            member_count = get_participant_team_member_count(participant_team)
+            response_data = {
+                "error": (
+                    "The challenge {} limits teams to {} member(s). Your "
+                    "team has {} member(s). Please remove members before "
+                    "participating."
+                ).format(
+                    challenge.title,
+                    challenge.max_team_members,
+                    member_count,
+                )
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if participant_team.challenge_set.filter(id=challenge_pk).exists():
+            response_data = {
+                "error": "Team already exists",
+                "challenge_id": int(challenge_pk),
+                "participant_team_id": int(participant_team_pk),
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         challenge.participant_teams.add(participant_team)
-        return Response(status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
@@ -2832,6 +2860,10 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = LeaderboardSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2853,6 +2885,12 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        host_error = get_leaderboard_modification_error(
+            request, leaderboard_pk
+        )
+        if host_error:
+            return host_error
+
         if "schema" in request.data.keys():
             request.data["schema"] = json.loads(request.data["schema"])
         serializer = LeaderboardSerializer(
@@ -2879,6 +2917,10 @@ def create_dataset_split(request):
     """
     Creates a dataset split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = DatasetSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2901,6 +2943,10 @@ def get_or_update_dataset_split(request, dataset_split_pk):
     """
     dataset_split = get_dataset_split_model(dataset_split_pk)
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = DatasetSplitSerializer(
             dataset_split, data=request.data, partial=True
         )
@@ -2926,6 +2972,10 @@ def create_challenge_phase_split(request):
     """
     Create Challenge Phase Split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = ZipChallengePhaseSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2951,6 +3001,10 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     )
 
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = ZipChallengePhaseSplitSerializer(
             challenge_phase_split, data=request.data, partial=True
         )
@@ -2968,7 +3022,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_challenge_tags_and_domain(request, challenge_pk):
     """
@@ -2977,6 +3031,10 @@ def update_challenge_tags_and_domain(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
 
     if request.method == "PATCH":
+        host_error = get_challenge_modification_error(request, challenge_pk)
+        if host_error:
+            return host_error
+
         new_tags = request.data.get("list_tags", [])
         domain_value = request.data.get("domain")
         # Remove tags not present in the YAML file
@@ -5437,10 +5495,37 @@ def update_challenge_attributes(request):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # Update attributes based on the request data
+    allowed_fields = {
+        "title",
+        "short_description",
+        "description",
+        "terms_and_conditions",
+        "submission_guidelines",
+        "evaluation_details",
+        "ephemeral_storage",
+        "ec2_storage",
+        "workers",
+        "worker_cpu_cores",
+        "worker_memory",
+        "is_disabled",
+        "published",
+        "featured",
+        "evaluation_module_error",
+        "end_date",
+        "start_date",
+        "max_concurrent_submission_evaluation",
+        "sqs_retention_period",
+    }
+
     for key, value in request.data.items():
-        if key != "challenge_pk" and hasattr(challenge, key):
-            setattr(challenge, key, value)
+        if key == "challenge_pk":
+            continue
+        if key not in allowed_fields:
+            return Response(
+                {"error": f"Updating '{key}' is not allowed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        setattr(challenge, key, value)
 
     try:
         challenge.save()
@@ -5541,7 +5626,7 @@ def _authenticate_lambda_request(request):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_autoscale_meta(request, challenge_pk):
@@ -5589,7 +5674,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_pending_submission_count(request, challenge_pk):

@@ -9,6 +9,7 @@ from challenges.utils import (
     is_user_in_blocked_email_domains,
 )
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Prefetch
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -42,12 +43,15 @@ from .serializers import (
     ParticipantTeamSerializer,
 )
 from .utils import (
+    get_effective_max_team_members_for_team,
     get_list_of_challenges_for_participant_team,
     get_list_of_challenges_participated_by_a_user,
     get_participant_team_of_user_for_a_challenge,
+    get_team_capacity_blocking_challenge_titles,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
+    team_can_add_member,
 )
 
 
@@ -334,18 +338,44 @@ def invite_participant_to_team(request, pk):
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
 
-    serializer = InviteParticipantToTeamSerializer(
-        data=request.data,
-        context={"participant_team": participant_team, "request": request},
-    )
+    with transaction.atomic():
+        participant_team = ParticipantTeam.objects.select_for_update().get(
+            pk=participant_team.pk
+        )
+        if not team_can_add_member(participant_team):
+            max_team_members = get_effective_max_team_members_for_team(
+                participant_team
+            )
+            challenge_names = ", ".join(
+                get_team_capacity_blocking_challenge_titles(participant_team)
+            )
+            response_data = {
+                "error": (
+                    "This team has reached the team-member limit for "
+                    "{}. The strictest limit across joined challenges is "
+                    "{} member(s). Please remove members or contact the "
+                    "challenge host."
+                ).format(challenge_names, max_team_members)
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {
-            "message": "User has been successfully added to the team!"
-        }
-        return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = InviteParticipantToTeamSerializer(
+            data=request.data,
+            context={
+                "participant_team": participant_team,
+                "request": request,
+            },
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                "message": "User has been successfully added to the team!"
+            }
+            return Response(response_data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["DELETE"])
