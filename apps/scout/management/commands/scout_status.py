@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Prefetch
 from django.utils import timezone
 from scout.client import YutoriAPIError, YutoriClient
-from scout.models import Scout
+from scout.models import Scout, ScoutRun
 
 
 class Command(BaseCommand):
@@ -80,7 +81,12 @@ class Command(BaseCommand):
             self._print_scout(scout, recent_runs=5)
             return
 
-        scouts = list(Scout.objects.order_by("name"))
+        run_qs = ScoutRun.objects.order_by("-received_at")
+        scouts = list(
+            Scout.objects.order_by("name").prefetch_related(
+                Prefetch("runs", queryset=run_qs, to_attr="prefetched_runs")
+            )
+        )
         if not scouts:
             self.stdout.write(
                 "No scouts registered. Run scout_create to register one."
@@ -103,7 +109,10 @@ class Command(BaseCommand):
         self.stdout.write(
             "  view_url: {}".format(scout.yutori_view_url or "-")
         )
-        recent = list(scout.runs.all()[:recent_runs])
+        runs = getattr(scout, "prefetched_runs", None)
+        if runs is None:
+            runs = list(scout.runs.order_by("-received_at"))
+        recent = list(runs[:recent_runs])
         self.stdout.write("  last {} runs:".format(recent_runs))
         if not recent:
             self.stdout.write("    (none)")

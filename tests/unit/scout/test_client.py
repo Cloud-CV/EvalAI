@@ -1,5 +1,5 @@
 import json
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import responses
 from scout.client import YutoriAPIError, YutoriClient
@@ -72,6 +72,14 @@ class YutoriClientTests(TestCase):
         self.assertEqual(
             responses.calls[0].request.headers["X-API-Key"], "test-key"
         )
+
+    @mock.patch("scout.client.requests.post")
+    def test_post_requests_include_timeout(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {"id": "scout-uuid-123"}
+        client = YutoriClient(api_key="test-key", timeout=7)
+        client.pause_scout("scout-uuid-123")
+        self.assertEqual(mock_post.call_args.kwargs["timeout"], 7)
 
     @responses.activate
     def test_resume_scout_posts_to_resume_endpoint(self):

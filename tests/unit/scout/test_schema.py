@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import jsonschema
-from scout.schema import OUTPUT_SCHEMA
+from scout.schema import OUTPUT_SCHEMA, validate_output_schema
 
 VALID_PAYLOAD = {
     "challenges": [
@@ -29,11 +29,11 @@ VALID_PAYLOAD = {
 
 class OutputSchemaTests(TestCase):
     def test_valid_payload_passes(self):
-        jsonschema.validate(VALID_PAYLOAD, OUTPUT_SCHEMA)
+        validate_output_schema(VALID_PAYLOAD)
 
     def test_missing_required_top_level_key_fails(self):
         with self.assertRaises(jsonschema.ValidationError):
-            jsonschema.validate({}, OUTPUT_SCHEMA)
+            validate_output_schema({})
 
     def test_challenge_missing_required_field_fails(self):
         bad = {
@@ -50,7 +50,7 @@ class OutputSchemaTests(TestCase):
             ]
         }
         with self.assertRaises(jsonschema.ValidationError):
-            jsonschema.validate(bad, OUTPUT_SCHEMA)
+            validate_output_schema(bad)
 
     def test_organizer_only_requires_name(self):
         partial = {
@@ -67,4 +67,36 @@ class OutputSchemaTests(TestCase):
                 }
             ]
         }
-        jsonschema.validate(partial, OUTPUT_SCHEMA)
+        validate_output_schema(partial)
+
+    def test_invalid_official_url_fails(self):
+        bad = {
+            "challenges": [
+                {
+                    **VALID_PAYLOAD["challenges"][0],
+                    "official_url": "not-a-uri",
+                }
+            ]
+        }
+        with self.assertRaises(jsonschema.ValidationError):
+            validate_output_schema(bad)
+
+    def test_invalid_dataset_url_fails(self):
+        bad = {
+            "challenges": [
+                {
+                    **VALID_PAYLOAD["challenges"][0],
+                    "dataset_url": "ftp://bad.example/data",
+                }
+            ]
+        }
+        with self.assertRaises(jsonschema.ValidationError):
+            validate_output_schema(bad)
+
+    def test_output_schema_still_declares_uri_format(self):
+        self.assertEqual(
+            OUTPUT_SCHEMA["properties"]["challenges"]["items"]["properties"][
+                "official_url"
+            ]["format"],
+            "uri",
+        )

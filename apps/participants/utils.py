@@ -132,12 +132,17 @@ def get_team_capacity_blocking_challenge_titles(participant_team):
     has reached or exceeded.
     """
     member_count = get_participant_team_member_count(participant_team)
-    return list(
-        get_list_of_challenges_for_participant_team([participant_team])
-        .exclude(max_team_members__isnull=True)
-        .filter(max_team_members__lte=member_count)
-        .values_list("title", flat=True)
-    )
+    titles = []
+    for challenge in get_list_of_challenges_for_participant_team(
+        [participant_team]
+    ).exclude(max_team_members__isnull=True):
+        if is_participant_team_exempt_from_max_members_for_challenge(
+            participant_team, challenge
+        ):
+            continue
+        if challenge.max_team_members <= member_count:
+            titles.append(challenge.title)
+    return titles
 
 
 def team_can_add_member(participant_team):

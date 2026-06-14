@@ -1,3 +1,7 @@
+from urllib.parse import urlparse
+
+import jsonschema
+
 OUTPUT_SCHEMA = {
     "type": "object",
     "required": ["challenges"],
@@ -70,3 +74,36 @@ OUTPUT_SCHEMA = {
         }
     },
 }
+
+
+def _is_valid_http_url(value):
+    if not isinstance(value, str) or not value:
+        return False
+    parsed = urlparse(value)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def validate_output_schema(payload):
+    """Validate a Yutori scout payload against OUTPUT_SCHEMA.
+
+    jsonschema 3.x does not enforce ``format: uri`` without a custom
+    FormatChecker (and upgrading jsonschema does not fix that). We keep
+    ``format: uri`` in the schema as documentation for Yutori and apply
+    explicit http(s) URL checks here instead of bumping the dependency.
+    """
+    jsonschema.validate(payload, OUTPUT_SCHEMA)
+    for idx, challenge in enumerate(payload.get("challenges", [])):
+        official_url = challenge.get("official_url")
+        if not _is_valid_http_url(official_url):
+            raise jsonschema.ValidationError(
+                "Invalid official_url for challenges[{}]: {!r}".format(
+                    idx, official_url
+                )
+            )
+        dataset_url = challenge.get("dataset_url", "")
+        if dataset_url and not _is_valid_http_url(dataset_url):
+            raise jsonschema.ValidationError(
+                "Invalid dataset_url for challenges[{}]: {!r}".format(
+                    idx, dataset_url
+                )
+            )

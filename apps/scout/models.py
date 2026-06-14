@@ -44,7 +44,7 @@ class ScoutRun(models.Model):
     parse_warnings = JSONField(default=list, blank=True)
 
     class Meta:
-        ordering = ["-received_at"]
+        ordering = ("-received_at",)
 
     def __str__(self):
         return "ScoutRun(received_at={}, new={})".format(
@@ -81,7 +81,7 @@ class ScoutChallenge(models.Model):
     )
 
     class Meta:
-        ordering = ["-first_seen"]
+        ordering = ("-first_seen",)
 
     def __str__(self):
         return "{} @ {} {}".format(
