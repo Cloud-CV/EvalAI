@@ -54,7 +54,7 @@ section.bg-section {
 }
 
 .ev-head {
-    margin-top: 100px;
+    margin-top: $announcement-banner-height;
 }
 
 .ev-head-small {
@@ -354,7 +354,7 @@ section.bg-section {
     width: 200px;
     position: absolute;
     right: 0px;
-    top: 100px;
+    top: $announcement-banner-height;
     animation: spaceman-anim 4s alternate linear infinite;
     img {
         width: 100%;
@@ -364,7 +364,7 @@ section.bg-section {
 @keyframes spaceman-anim {
     0% {
         transform: rotate(0deg);
-        top: 100px;
+        top: $announcement-banner-height;
     }
     30% {
         transform: rotate(20deg);

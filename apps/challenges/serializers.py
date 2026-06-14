@@ -1,4 +1,8 @@
+import copy
+
 from accounts.serializers import UserDetailsSerializer
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
 from rest_framework import serializers
 
@@ -69,6 +73,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "blocked_email_domains",
             "banned_email_ids",
             "require_complete_profile",
+            "max_team_members",
             "approved_by_admin",
             "is_approval_requested",
             "forum_url",
@@ -328,6 +333,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "blocked_email_domains",
             "banned_email_ids",
             "require_complete_profile",
+            "max_team_members",
             "forum_url",
             "remote_evaluation",
             "allow_resuming_submissions",
@@ -531,6 +537,63 @@ class UserInvitationSerializer(serializers.ModelSerializer):
     def get_user_details(self, obj):
         serializer = UserDetailsSerializer(obj.user)
         return serializer.data
+
+
+class ChallengeInvitationAcceptSerializer(serializers.ModelSerializer):
+    """
+    Public serializer for challenge invitation acceptance pages.
+    Does not expose invitation keys or internal user identifiers.
+    """
+
+    challenge_title = serializers.SerializerMethodField()
+    challenge_host_team_name = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserInvitation
+        fields = (
+            "email",
+            "status",
+            "challenge_title",
+            "challenge_host_team_name",
+            "user_details",
+        )
+
+    def get_challenge_title(self, obj):
+        return obj.challenge.title
+
+    def get_challenge_host_team_name(self, obj):
+        return obj.challenge.creator.team_name
+
+    def get_user_details(self, obj):
+        return {"username": obj.user.username}
+
+
+class ChallengeInvitationRegisterSerializer(serializers.Serializer):
+    """
+    Serializer for completing a pending challenge invitation.
+    """
+
+    first_name = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    last_name = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        user = self.context.get("user")
+        if user is not None:
+            user = copy.copy(user)
+            user.first_name = attrs.get("first_name", user.first_name)
+            user.last_name = attrs.get("last_name", user.last_name)
+
+        try:
+            validate_password(attrs["password"], user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": exc.messages})
+        return attrs
 
 
 class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
