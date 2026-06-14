@@ -959,6 +959,9 @@ class ValidateChallengeConfigUtil:
                             "no_test_annotation_file_found"
                         ].format(data["name"])
                         self.error_messages.append(message)
+                        self.files["challenge_test_annotation_files"].append(
+                            None
+                        )
             else:
                 test_annotation_file_path = None
                 self.files["challenge_test_annotation_files"].append(None)

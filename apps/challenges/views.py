@@ -1700,9 +1700,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         or image.endswith(".jpeg")
         or image.endswith(".png")
     ):
-        challenge_image_path = join(
-            BASE_LOCATION, unique_folder_name, extracted_folder_name, image
-        )
+        try:
+            challenge_image_path = safe_join_under_root(
+                challenge_config_root, image
+            )
+        except PathTraversalError:
+            message = "Challenge configuration contains unsafe file paths."
+            response_data = {"error": message}
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
         if isfile(challenge_image_path):
             challenge_image_file = ContentFile(
                 get_file_content(challenge_image_path, "rb"), image
@@ -1965,10 +1972,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         ).decode("utf-8")
                     else:
                         data["description"] = None
-                except PathTraversalError:
-                    raise RuntimeError(
+                except PathTraversalError as exc:
+                    raise PathTraversalError(
                         "Challenge configuration contains unsafe file paths."
-                    )
+                    ) from exc
 
                 data["slug"] = "{}-{}-{}".format(
                     challenge.title.split(" ")[0].lower(),
@@ -1981,10 +1988,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         test_annotation_file_path = safe_join_under_root(
                             challenge_config_root, test_annotation_file
                         )
-                    except PathTraversalError:
-                        raise RuntimeError(
+                    except PathTraversalError as exc:
+                        raise PathTraversalError(
                             "Challenge configuration contains unsafe file paths."
-                        )
+                        ) from exc
                     if isfile(test_annotation_file_path):
                         with open(
                             test_annotation_file_path, "rb"
@@ -2209,6 +2216,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
 
+    except PathTraversalError:
+        response_data = {
+            "error": "Challenge configuration contains unsafe file paths."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     except:  # noqa: E722
         try:
             if response_data:
