@@ -1,6 +1,7 @@
 # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
 import json
 from datetime import timedelta
+from unittest.mock import patch
 
 from accounts.models import Profile
 from allauth.account.models import EmailAddress
@@ -481,6 +482,153 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         del self.data["email"]
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invite_blocked_when_team_at_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is at capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Max Team Members Challenge", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    @patch("participants.views.get_list_of_challenges_for_participant_team")
+    def test_invite_blocked_despite_stale_participation_snapshot(
+        self, mock_get_challenges
+    ):
+        """Capacity must be re-checked inside the transaction, not from a
+        stale participation snapshot taken at request start."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        mock_get_challenges.return_value = Challenge.objects.none()
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Max Team Members Challenge", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_allowed_for_host_only_team_at_own_challenge(self):
+        """Hosts can grow their baseline team beyond max_team_members."""
+        ChallengeHost.objects.create(
+            user=self.user1,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+        )
+        host_participant_team = ParticipantTeam.objects.create(
+            team_name="Host Baseline Team", created_by=self.user1
+        )
+        Participant.objects.create(
+            user=self.user1,
+            status=Participant.SELF,
+            team=host_participant_team,
+        )
+        challenge = Challenge.objects.create(
+            title="Host Own Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(host_participant_team)
+        url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={"pk": host_participant_team.pk},
+        )
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=host_participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_allowed_when_team_below_max_members_for_participated_challenge(
+        self,
+    ):
+        """Inviting a user when the team is below capacity for a joined challenge."""
+        challenge = Challenge.objects.create(
+            title="Max Team Members Challenge",
+            creator=self.challenge_host_team,
+            max_team_members=2,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge.participant_teams.add(self.participant_team)
+        expected = {"message": "User has been successfully added to the team!"}
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
+
+    def test_invite_blocked_when_team_at_strictest_limit_across_challenges(
+        self,
+    ):
+        """Inviting is blocked when any joined challenge's limit is reached."""
+        challenge_a = Challenge.objects.create(
+            title="Challenge A",
+            creator=self.challenge_host_team,
+            max_team_members=5,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_b = Challenge.objects.create(
+            title="Challenge B",
+            creator=self.challenge_host_team,
+            max_team_members=1,
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        challenge_a.participant_teams.add(self.participant_team)
+        challenge_b.participant_teams.add(self.participant_team)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertIn(
+            "strictest limit across joined challenges is 1 member(s)",
+            response.data["error"],
+        )
+        self.assertIn("Challenge B", response.data["error"])
+        self.assertNotIn("Challenge A", response.data["error"])
+        self.assertFalse(
+            Participant.objects.filter(
+                team=self.participant_team, user=self.invite_user
+            ).exists()
+        )
 
     def test_invite_blocked_when_team_in_require_complete_profile_challenge_and_invitee_profile_incomplete(
         self,
@@ -1128,6 +1276,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                         "manual_participant_approval": self.challenge1.manual_participant_approval,
                         "require_complete_profile": self.challenge1.require_complete_profile,
+                        "max_team_members": self.challenge1.max_team_members,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
@@ -1361,6 +1510,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                 "manual_participant_approval": self.challenge1.manual_participant_approval,
                 "require_complete_profile": self.challenge1.require_complete_profile,
+                "max_team_members": self.challenge1.max_team_members,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
