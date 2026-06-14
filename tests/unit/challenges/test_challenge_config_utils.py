@@ -280,6 +280,11 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             Mock()
         )  # Initialize if needed
         self.util.extracted_folder_name = "extracted_folder"
+        self.util.challenge_config_location = join(
+            self.base_location,
+            self.unique_folder_name,
+            self.extracted_folder_name,
+        )
         self.util.error_messages = []
         self.request.data = {"GITHUB_REPOSITORY": "some_repo"}
 
@@ -328,11 +333,11 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
 
         self.util.validate_challenge_logo()
 
-        expected_path = join(
-            self.base_location,
-            self.unique_folder_name,
-            self.extracted_folder_name,
-            "logo.png",
+        expected_path = os.path.realpath(
+            join(
+                self.util.challenge_config_location,
+                "logo.png",
+            )
         )
         self.assertEqual(self.util.challenge_image_path, expected_path)
         self.assertIsNotNone(self.util.challenge_image_file)
