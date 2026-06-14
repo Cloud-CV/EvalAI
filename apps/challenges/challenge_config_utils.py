@@ -7,6 +7,11 @@ from os.path import basename, isfile, join
 
 import requests
 import yaml
+from base.zip_utils import (
+    PathTraversalError,
+    safe_extract_zip_file,
+    safe_join_under_root,
+)
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -94,8 +99,6 @@ def write_file(output_path, mode, file_content):
 
 
 def extract_zip_file(file_path, mode, output_path):
-    from base.zip_utils import safe_extract_zip_file
-
     zip_ref = zipfile.ZipFile(file_path, mode)
     try:
         safe_extract_zip_file(zip_ref, output_path)
@@ -176,10 +179,15 @@ def is_challenge_config_yaml_html_field_valid(
         is_valid {boolean} -- flag for field validation is success
         message {string} -- error message if any
     """
-    value = join(base_location, yaml_file_data.get(key))
+    relative_path = yaml_file_data.get(key)
     message = ""
     is_valid = False
-    if value:
+    if relative_path:
+        try:
+            value = safe_join_under_root(base_location, relative_path)
+        except PathTraversalError:
+            message = "Invalid file path for {}.".format(key)
+            return is_valid, message
         if not isfile(value):
             message = "File at path {} not found. Please specify a valid file path".format(
                 key
@@ -297,7 +305,13 @@ def is_challenge_phase_split_mapping_valid(
 
 
 def get_value_from_field(data, base_location, field_name):
-    file_path = join(base_location, data.get(field_name))
+    relative_path = data.get(field_name)
+    if not relative_path:
+        return None
+    try:
+        file_path = safe_join_under_root(base_location, relative_path)
+    except PathTraversalError:
+        return None
     field_value = None
     if file_path.endswith(".html") and isfile(file_path):
         field_value = get_file_content(file_path, "rb").decode("utf-8")
@@ -468,8 +482,9 @@ class ValidateChallengeConfigUtil:
 
         # YAML Read Error
         try:
-            self.yaml_file_path = join(
-                self.base_location, self.unique_folder_name, self.yaml_file
+            self.yaml_file_path = safe_join_under_root(
+                join(self.base_location, self.unique_folder_name),
+                self.yaml_file,
             )
             self.yaml_file_data = read_yaml_file(self.yaml_file_path, "r")
             return True
@@ -482,6 +497,10 @@ class ValidateChallengeConfigUtil:
             message = self.error_messages_dict.get(
                 "yaml_file_read_error"
             ).format(error_description, line_number, column_number)
+            self.error_messages.append(message)
+            return False
+        except PathTraversalError:
+            message = "Challenge configuration contains unsafe file paths."
             self.error_messages.append(message)
             return False
 
@@ -616,19 +635,18 @@ class ValidateChallengeConfigUtil:
             or image.endswith(".jpeg")
             or image.endswith(".png")
         ):
-            self.challenge_image_path = join(
-                self.base_location,
-                self.unique_folder_name,
-                self.extracted_folder_name,
-                image,
-            )
-
-            if isfile(self.challenge_image_path):
-                self.challenge_image_file = ContentFile(
-                    get_file_content(self.challenge_image_path, "rb"), image
+            self.challenge_image_file = None
+            try:
+                self.challenge_image_path = safe_join_under_root(
+                    self.challenge_config_location, image
                 )
-            else:
-                self.challenge_image_file = None
+                if isfile(self.challenge_image_path):
+                    self.challenge_image_file = ContentFile(
+                        get_file_content(self.challenge_image_path, "rb"),
+                        image,
+                    )
+            except PathTraversalError:
+                pass
         else:
             self.challenge_image_file = None
         self.files["challenge_image_file"] = self.challenge_image_file
@@ -741,26 +759,33 @@ class ValidateChallengeConfigUtil:
                 )
                 self.error_messages.append(message)
             else:
-                evaluation_script_path = join(
-                    self.challenge_config_location, evaluation_script
-                )
-                # Check for evaluation script file in extracted zip folder
-                if isfile(evaluation_script_path):
-                    self.challenge_evaluation_script_file = (
-                        read_file_data_as_content_file(
-                            evaluation_script_path,
-                            "rb",
-                            evaluation_script_path,
-                        )
+                try:
+                    evaluation_script_path = safe_join_under_root(
+                        self.challenge_config_location, evaluation_script
                     )
-                    self.files["challenge_evaluation_script_file"] = (
-                        self.challenge_evaluation_script_file
-                    )
-                else:
+                except PathTraversalError:
                     message = self.error_messages_dict.get(
                         "missing_evaluation_script"
                     )
                     self.error_messages.append(message)
+                else:
+                    # Check for evaluation script file in extracted zip folder
+                    if isfile(evaluation_script_path):
+                        self.challenge_evaluation_script_file = (
+                            read_file_data_as_content_file(
+                                evaluation_script_path,
+                                "rb",
+                                evaluation_script_path,
+                            )
+                        )
+                        self.files["challenge_evaluation_script_file"] = (
+                            self.challenge_evaluation_script_file
+                        )
+                    else:
+                        message = self.error_messages_dict.get(
+                            "missing_evaluation_script"
+                        )
+                        self.error_messages.append(message)
         else:
             message = self.error_messages_dict.get(
                 "missing_evaluation_script_key"
@@ -904,25 +929,33 @@ class ValidateChallengeConfigUtil:
                     self.error_messages.append(message)
             test_annotation_file = data.get("test_annotation_file")
             if test_annotation_file:
-                test_annotation_file_path = join(
-                    self.challenge_config_location, test_annotation_file
-                )
-                if isfile(test_annotation_file_path):
-                    challenge_test_annotation_file = (
-                        read_file_data_as_content_file(
-                            test_annotation_file_path,
-                            "rb",
-                            test_annotation_file_path,
-                        )
+                try:
+                    test_annotation_file_path = safe_join_under_root(
+                        self.challenge_config_location, test_annotation_file
                     )
-                    self.files["challenge_test_annotation_files"].append(
-                        challenge_test_annotation_file
-                    )
-                else:
+                except PathTraversalError:
                     message = self.error_messages_dict[
                         "no_test_annotation_file_found"
                     ].format(data["name"])
                     self.error_messages.append(message)
+                    self.files["challenge_test_annotation_files"].append(None)
+                else:
+                    if isfile(test_annotation_file_path):
+                        challenge_test_annotation_file = (
+                            read_file_data_as_content_file(
+                                test_annotation_file_path,
+                                "rb",
+                                test_annotation_file_path,
+                            )
+                        )
+                        self.files["challenge_test_annotation_files"].append(
+                            challenge_test_annotation_file
+                        )
+                    else:
+                        message = self.error_messages_dict[
+                            "no_test_annotation_file_found"
+                        ].format(data["name"])
+                        self.error_messages.append(message)
             else:
                 test_annotation_file_path = None
                 self.files["challenge_test_annotation_files"].append(None)

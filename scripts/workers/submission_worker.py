@@ -180,8 +180,10 @@ def extract_zip_file(download_location, extract_location):
     from base.zip_utils import safe_extract_zip_file
 
     zip_ref = zipfile.ZipFile(download_location, "r")
-    safe_extract_zip_file(zip_ref, extract_location)
-    zip_ref.close()
+    try:
+        safe_extract_zip_file(zip_ref, extract_location)
+    finally:
+        zip_ref.close()
 
 
 def delete_zip_file(download_location):

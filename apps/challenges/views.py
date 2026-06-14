@@ -26,7 +26,11 @@ from base.utils import (
     paginated_queryset,
     send_slack_notification,
 )
-from base.zip_utils import safe_extract_zip_file
+from base.zip_utils import (
+    PathTraversalError,
+    safe_extract_zip_file,
+    safe_join_under_root,
+)
 from challenges.challenge_config_utils import (
     download_and_write_file,
     extract_zip_file,
@@ -1413,8 +1417,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # Extract zip file
     try:
         zip_ref = zipfile.ZipFile(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "r")
-        safe_extract_zip_file(zip_ref, join(BASE_LOCATION, unique_folder_name))
-        zip_ref.close()
+        try:
+            safe_extract_zip_file(
+                zip_ref, join(BASE_LOCATION, unique_folder_name)
+            )
+        finally:
+            zip_ref.close()
     except zipfile.BadZipfile:
         message = (
             "The zip file contents cannot be extracted. "
@@ -1450,10 +1458,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        with open(
-            join(BASE_LOCATION, unique_folder_name, yaml_file), "r"
-        ) as stream:
+        yaml_file_path = safe_join_under_root(
+            join(BASE_LOCATION, unique_folder_name), yaml_file
+        )
+        with open(yaml_file_path, "r") as stream:
             yaml_file_data = yaml.safe_load(stream)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     except (yaml.YAMLError, ScannerError) as exc:
         # To get the problem description
         if hasattr(exc, "problem"):
@@ -1472,20 +1485,25 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    challenge_config_root = join(
+        BASE_LOCATION, unique_folder_name, extracted_folder_name
+    )
+
     # Check for evaluation script path in yaml file.
     try:
         evaluation_script = yaml_file_data["evaluation_script"]
-        evaluation_script_path = join(
-            BASE_LOCATION,
-            unique_folder_name,
-            extracted_folder_name,
-            evaluation_script,
+        evaluation_script_path = safe_join_under_root(
+            challenge_config_root, evaluation_script
         )
     except KeyError:
         message = (
             "There is no key for evaluation script in YAML file. "
             "Please add it and then try again!"
         )
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1517,12 +1535,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     for data in challenge_phases_data:
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
-            test_annotation_file_path = join(
-                BASE_LOCATION,
-                unique_folder_name,
-                extracted_folder_name,
-                test_annotation_file,
-            )
+            try:
+                test_annotation_file_path = safe_join_under_root(
+                    challenge_config_root, test_annotation_file
+                )
+            except PathTraversalError:
+                message = "Challenge configuration contains unsafe file paths."
+                response_data = {"error": message}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
             if not isfile(test_annotation_file_path):
                 message = (
                     "No test annotation file found in zip file"
@@ -1655,11 +1677,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     # check for challenge description file
     try:
-        challenge_description_file_path = join(
-            BASE_LOCATION,
-            unique_folder_name,
-            extracted_folder_name,
-            yaml_file_data["description"],
+        challenge_description_file_path = safe_join_under_root(
+            challenge_config_root, yaml_file_data["description"]
         )
         if challenge_description_file_path.endswith(".html") and isfile(
             challenge_description_file_path
@@ -1676,14 +1695,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
     try:
-        challenge_evaluation_details_file_path = join(
-            BASE_LOCATION,
-            unique_folder_name,
-            extracted_folder_name,
-            yaml_file_data["evaluation_details"],
+        challenge_evaluation_details_file_path = safe_join_under_root(
+            challenge_config_root, yaml_file_data["evaluation_details"]
         )
 
         if challenge_evaluation_details_file_path.endswith(".html") and isfile(
@@ -1701,14 +1721,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
     try:
-        challenge_terms_and_cond_file_path = join(
-            BASE_LOCATION,
-            unique_folder_name,
-            extracted_folder_name,
-            yaml_file_data["terms_and_conditions"],
+        challenge_terms_and_cond_file_path = safe_join_under_root(
+            challenge_config_root, yaml_file_data["terms_and_conditions"]
         )
         if challenge_terms_and_cond_file_path.endswith(".html") and isfile(
             challenge_terms_and_cond_file_path
@@ -1725,14 +1746,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for submission guidelines file
     try:
-        submission_guidelines_file_path = join(
-            BASE_LOCATION,
-            unique_folder_name,
-            extracted_folder_name,
-            yaml_file_data["submission_guidelines"],
+        submission_guidelines_file_path = safe_join_under_root(
+            challenge_config_root, yaml_file_data["submission_guidelines"]
         )
         if submission_guidelines_file_path.endswith(".html") and isfile(
             submission_guidelines_file_path
@@ -1749,6 +1771,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    except PathTraversalError:
+        message = "Challenge configuration contains unsafe file paths."
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for leaderboard schema in YAML file
     leaderboard_schema = yaml_file_data.get("leaderboard")
@@ -1890,20 +1916,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             challenge_phase_ids = {}
             for data in challenge_phases_data:
                 # Check for challenge phase description file
-                phase_description_file_path = join(
-                    BASE_LOCATION,
-                    unique_folder_name,
-                    extracted_folder_name,
-                    data["description"],
-                )
-                if phase_description_file_path.endswith(".html") and isfile(
-                    phase_description_file_path
-                ):
-                    data["description"] = get_file_content(
-                        phase_description_file_path, "rb"
-                    ).decode("utf-8")
-                else:
-                    data["description"] = None
+                try:
+                    phase_description_file_path = safe_join_under_root(
+                        challenge_config_root, data["description"]
+                    )
+                    if phase_description_file_path.endswith(
+                        ".html"
+                    ) and isfile(phase_description_file_path):
+                        data["description"] = get_file_content(
+                            phase_description_file_path, "rb"
+                        ).decode("utf-8")
+                    else:
+                        data["description"] = None
+                except PathTraversalError:
+                    raise RuntimeError(
+                        "Challenge configuration contains unsafe file paths."
+                    )
 
                 data["slug"] = "{}-{}-{}".format(
                     challenge.title.split(" ")[0].lower(),
@@ -1912,12 +1940,14 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )[:198]
                 test_annotation_file = data.get("test_annotation_file")
                 if test_annotation_file:
-                    test_annotation_file_path = join(
-                        BASE_LOCATION,
-                        unique_folder_name,
-                        extracted_folder_name,
-                        test_annotation_file,
-                    )
+                    try:
+                        test_annotation_file_path = safe_join_under_root(
+                            challenge_config_root, test_annotation_file
+                        )
+                    except PathTraversalError:
+                        raise RuntimeError(
+                            "Challenge configuration contains unsafe file paths."
+                        )
                     if isfile(test_annotation_file_path):
                         with open(
                             test_annotation_file_path, "rb"
