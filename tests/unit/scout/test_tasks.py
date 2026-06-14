@@ -2,6 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 from django.test.utils import override_settings
+from scout.dedup import canonical_key
 from scout.models import ScoutChallenge
 
 SENDGRID_TEMPLATES = {"OUTREACH_BENCHMARK_HOSTING": "tmpl-123"}
@@ -17,7 +18,13 @@ class SendDailyOutreachTests(TestCase):
             benchmark_name=name,
             conference="NeurIPS",
             year=2025,
-            canonical_key="{}|neurips|2025".format(name.lower()),
+            canonical_key=canonical_key(
+                {
+                    "benchmark_name": name,
+                    "conference": "NeurIPS",
+                    "year": 2025,
+                }
+            ),
             official_url="https://x",
             organizers=organizers,
             evalai_suitable=True,

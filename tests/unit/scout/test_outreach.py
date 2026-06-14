@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from django.test import TestCase as DjangoTestCase
+from scout.dedup import canonical_key
 from scout.models import ScoutChallenge
 from scout.outreach import build_template_data, iter_pending_targets
 
@@ -54,7 +55,13 @@ class IterPendingTargetsTests(DjangoTestCase):
             benchmark_name=name,
             conference="NeurIPS",
             year=2025,
-            canonical_key="{}|neurips|2025".format(name.lower()),
+            canonical_key=canonical_key(
+                {
+                    "benchmark_name": name,
+                    "conference": "NeurIPS",
+                    "year": 2025,
+                }
+            ),
             official_url="https://x",
             organizers=organizers,
             evalai_suitable=True,

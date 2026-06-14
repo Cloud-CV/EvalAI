@@ -58,9 +58,7 @@ class ScoutChallenge(models.Model):
     benchmark_name = models.CharField(max_length=512)
     conference = models.CharField(max_length=128)
     year = models.IntegerField()
-    canonical_key = models.CharField(
-        max_length=768, unique=True, db_index=True
-    )
+    canonical_key = models.CharField(max_length=64, unique=True, db_index=True)
 
     task_area = models.CharField(max_length=128, blank=True)
     official_url = models.URLField(max_length=1024)
