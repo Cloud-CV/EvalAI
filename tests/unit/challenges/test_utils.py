@@ -19,6 +19,7 @@ from challenges.models import (
     Leaderboard,
 )
 from challenges.utils import (
+    _is_valid_invite_email,
     add_domain_to_challenge,
     add_prizes_to_challenge,
     add_sponsors_to_challenge,
@@ -30,6 +31,7 @@ from challenges.utils import (
     get_file_content,
     get_leaderboard_modification_error,
     get_participants_with_incomplete_profiles,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
     send_emails,
     send_subscription_plans_email,
@@ -689,6 +691,76 @@ class GetParticipantsWithIncompleteProfilesTests(unittest.TestCase):
         )
         result = get_participants_with_incomplete_profiles(empty_team)
         self.assertEqual(result, [])
+
+
+class ParseInviteEmailListTest(unittest.TestCase):
+    def test_json_array_string(self):
+        emails = '["a@example.com", "b@example.com"]'
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_comma_separated_string(self):
+        emails = "a@example.com, b@example.com"
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_python_list(self):
+        emails = ["a@example.com"]
+        self.assertEqual(parse_invite_email_list(emails), ["a@example.com"])
+
+    def test_deduplicates_while_preserving_order(self):
+        emails = '["a@example.com", "a@example.com", "b@example.com"]'
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_rejects_invalid_email_format(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list('["not-an-email"]')
+
+    def test_rejects_none(self):
+        with self.assertRaises(ValueError) as ctx:
+            parse_invite_email_list(None)
+        self.assertEqual(str(ctx.exception), "Users email can't be blank")
+
+    def test_rejects_empty_string(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list("")
+
+    def test_rejects_non_list_json(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list('"string"')
+
+    def test_rejects_non_string_list_items(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list([1, 2])
+
+    def test_rejects_invalid_input_type(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list(123)
+
+    def test_rejects_empty_email_list(self):
+        with self.assertRaises(ValueError) as ctx:
+            parse_invite_email_list([])
+        self.assertEqual(str(ctx.exception), "Users email can't be blank")
+
+    def test_rejects_malicious_eval_payloads(self):
+        malicious_payloads = [
+            '__import__("os").system("rm -rf /")',
+            "[x for x in ().__class__.__bases__[0].__subclasses__()]",
+        ]
+        for payload in malicious_payloads:
+            with self.assertRaises(ValueError):
+                parse_invite_email_list(payload)
+
+    def test_is_valid_invite_email(self):
+        self.assertTrue(_is_valid_invite_email("a@example.com"))
+        self.assertFalse(_is_valid_invite_email("not-an-email"))
 
 
 @pytest.mark.django_db

@@ -5033,6 +5033,13 @@ class CreateChallengeUsingZipFile(
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.SELF,
+            permissions=ChallengeHost.ADMIN,
+        )
+
         self.path = join(
             settings.BASE_DIR, "examples", "example1", "test_zip_file"
         )
@@ -5243,6 +5250,38 @@ class CreateChallengeUsingZipFile(
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @responses.activate
+    def test_create_challenge_using_zip_file_when_user_is_not_host_team_member(
+        self,
+    ):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        non_member = User.objects.create(
+            username="nonmember",
+            email="nonmember@test.com",
+            password="secret_password",
+        )
+        EmailAddress.objects.create(
+            user=non_member,
+            email="nonmember@test.com",
+            primary=True,
+            verified=True,
+        )
+        self.client.force_authenticate(user=non_member)
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        response = self.client.post(
+            self.url,
+            {"zip_configuration": self.input_zip_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data,
+            {"error": "Sorry, you do not belong to this Host Team!"},
+        )
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(  # noqa: C0301
@@ -7876,6 +7915,13 @@ class ValidateChallengeTest(
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
+        ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.SELF,
+            permissions=ChallengeHost.ADMIN,
+        )
+
         with open(
             join(
                 settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
@@ -7909,6 +7955,39 @@ class ValidateChallengeTest(
         )
 
         self.client.force_authenticate(user=self.user)
+
+    @responses.activate
+    def test_validate_challenge_config_when_user_is_not_host_team_member(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        non_member = User.objects.create(
+            username="nonmember",
+            email="nonmember@test.com",
+            password="secret_password",
+        )
+        EmailAddress.objects.create(
+            user=non_member,
+            email="nonmember@test.com",
+            primary=True,
+            verified=True,
+        )
+        self.client.force_authenticate(user=non_member)
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        response = self.client.post(
+            self.url,
+            {
+                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",  # noqa: C0301
+                "zip_configuration": self.input_zip_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data,
+            {"error": "Sorry, you do not belong to this Host Team!"},
+        )
 
     def test_validate_challenge_using_success(self):
         self.url = reverse_lazy(

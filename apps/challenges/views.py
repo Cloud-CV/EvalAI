@@ -15,7 +15,6 @@ import pytz
 import requests
 import yaml
 from accounts.permissions import HasVerifiedEmail
-from accounts.serializers import UserDetailsSerializer
 from allauth.account.models import EmailAddress
 from base.utils import (
     get_queue_name,
@@ -39,6 +38,7 @@ from challenges.utils import (
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
     get_challenge_host_required_error,
+    get_challenge_host_team_membership_error,
     get_challenge_model,
     get_challenge_modification_error,
     get_challenge_phase_model,
@@ -51,6 +51,7 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
 )
 from django.conf import settings
@@ -141,6 +142,8 @@ from .queryset import get_submissions_queryset
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
+    ChallengeInvitationAcceptSerializer,
+    ChallengeInvitationRegisterSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseSplitSerializer,
@@ -1318,6 +1321,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Creates a challenge using a zip file.
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     if request.data.get("is_challenge_template"):
         is_challenge_template = True
@@ -3300,16 +3309,10 @@ def invite_users_to_challenge(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    users_email = request.data.get("emails")
-
-    if not users_email:
-        response_data = {"error": "Users email can't be blank"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        users_email = eval(users_email)
-    except Exception:
-        response_data = {"error": "Invalid format for users email"}
+        users_email = parse_invite_email_list(request.data.get("emails"))
+    except ValueError as exc:
+        response_data = {"error": str(exc)}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []
@@ -3337,7 +3340,7 @@ def invite_users_to_challenge(request, challenge_pk):
                 except User.DoesNotExist:
                     user = User.objects.create(username=email, email=email)
                     EmailAddress.objects.create(
-                        user=user, email=email, primary=True, verified=True
+                        user=user, email=email, primary=True, verified=False
                     )
                 data["user"] = user.pk
                 valid_emails.append(data)
@@ -3364,7 +3367,7 @@ def invite_users_to_challenge(request, challenge_pk):
 
 
 @api_view(["GET", "PATCH"])
-@throttle_classes([UserRateThrottle])
+@throttle_classes([AnonRateThrottle])
 @permission_classes(())
 def accept_challenge_invitation(request, invitation_key):
     try:
@@ -3378,29 +3381,62 @@ def accept_challenge_invitation(request, invitation_key):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
-        serializer = UserInvitationSerializer(invitation)
+        serializer = ChallengeInvitationAcceptSerializer(invitation)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "PATCH":
-        serializer = UserDetailsSerializer(
-            invitation.user, data=request.data, partial=True
+        serializer = ChallengeInvitationRegisterSerializer(
+            data=request.data,
+            context={"user": invitation.user},
         )
-        if serializer.is_valid():
-            serializer.save()
-            data = {"password": make_password(serializer.data.get("password"))}
-            serializer = UserDetailsSerializer(
-                invitation.user, data=data, partial=True
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-            if serializer.is_valid():
-                serializer.save()
-            data = {"status": UserInvitation.ACCEPTED}
-            serializer = UserInvitationSerializer(
-                invitation, data=data, partial=True
+
+        with transaction.atomic():
+            locked_invitation = (
+                UserInvitation.objects.select_for_update()
+                .select_related("user")
+                .get(pk=invitation.pk)
             )
-            if serializer.is_valid():
-                serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if locked_invitation.status != UserInvitation.PENDING:
+                response_data = {
+                    "error": "This invitation has already been accepted."
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            user = locked_invitation.user
+            user.first_name = serializer.validated_data.get(
+                "first_name", user.first_name
+            )
+            user.last_name = serializer.validated_data.get(
+                "last_name", user.last_name
+            )
+            user.password = make_password(
+                serializer.validated_data["password"]
+            )
+            user.save()
+
+            updated_count = EmailAddress.objects.filter(
+                user=user, email=locked_invitation.email
+            ).update(verified=True)
+            if updated_count == 0:
+                EmailAddress.objects.create(
+                    user=user,
+                    email=locked_invitation.email,
+                    primary=True,
+                    verified=True,
+                )
+
+            locked_invitation.status = UserInvitation.ACCEPTED
+            locked_invitation.save()
+            invitation = locked_invitation
+
+        response_serializer = ChallengeInvitationAcceptSerializer(invitation)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -3597,6 +3633,12 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def validate_challenge_config(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     response_data = {}
 

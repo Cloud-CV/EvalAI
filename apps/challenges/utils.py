@@ -13,7 +13,9 @@ from base.utils import (
 )
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.validators import EmailValidator
 from moto import mock_ecr, mock_sts
 from participants.models import ParticipantTeam
 
@@ -29,6 +31,81 @@ from .models import (
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
+
+_invite_email_validator = EmailValidator()
+
+
+def _is_valid_invite_email(email):
+    try:
+        _invite_email_validator(email)
+        return True
+    except ValidationError:
+        return False
+
+
+def parse_invite_email_list(emails):
+    """
+    Parse invite email payloads without using eval().
+
+    Accepts a JSON array string, a Python list, or a comma-separated string.
+    Returns a list of normalized email strings.
+    """
+    if emails is None:
+        raise ValueError("Users email can't be blank")
+
+    if isinstance(emails, list):
+        email_list = emails
+    elif isinstance(emails, str):
+        emails = emails.strip()
+        if not emails:
+            raise ValueError("Users email can't be blank")
+        try:
+            parsed = json.loads(emails)
+        except json.JSONDecodeError:
+            email_list = [email.strip() for email in emails.split(",")]
+        else:
+            if not isinstance(parsed, list):
+                raise ValueError("Invalid format for users email")
+            email_list = parsed
+    else:
+        raise ValueError("Invalid format for users email")
+
+    normalized_emails = []
+    seen = set()
+    for email in email_list:
+        if not isinstance(email, str):
+            raise ValueError("Invalid format for users email")
+        email = email.strip()
+        if not email or not _is_valid_invite_email(email):
+            raise ValueError("Invalid format for users email")
+        if email not in seen:
+            normalized_emails.append(email)
+            seen.add(email)
+
+    if not normalized_emails:
+        raise ValueError("Users email can't be blank")
+
+    return normalized_emails
+
+
+def get_challenge_host_team_membership_error(request, challenge_host_team_pk):
+    """
+    Return a 401 Response if the user is not a member of the host team.
+    """
+    from hosts.models import ChallengeHost
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        team_name_id=challenge_host_team_pk,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {"error": "Sorry, you do not belong to this Host Team!"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
 
 
 def get_challenge_host_required_error(request):
