@@ -1,8 +1,5 @@
 import requests
 
-YUTORI_API_BASE = "https://api.yutori.com"
-DEFAULT_TIMEOUT_SECONDS = 30
-
 
 class YutoriAPIError(Exception):
     """Raised when the Yutori API returns a non-2xx status."""
@@ -16,12 +13,14 @@ class YutoriAPIError(Exception):
 
 
 class YutoriClient(object):
-    def __init__(
-        self,
-        api_key,
-        base_url=YUTORI_API_BASE,
-        timeout=DEFAULT_TIMEOUT_SECONDS,
-    ):
+    def __init__(self, api_key, base_url=None, timeout=None):
+        if base_url is None or timeout is None:
+            from django.conf import settings
+
+            if base_url is None:
+                base_url = settings.YUTORI_API_BASE
+            if timeout is None:
+                timeout = settings.DEFAULT_TIMEOUT_SECONDS
         self.api_key = api_key
         self.base_url = base_url
         self.timeout = timeout
