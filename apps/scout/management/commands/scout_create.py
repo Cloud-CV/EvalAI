@@ -52,8 +52,8 @@ class Command(BaseCommand):
             raise CommandError("YUTORI_API_KEY env var is not set.")
         if not public_base:
             raise CommandError(
-                "SCOUT_PUBLIC_BASE_URL env var is not set "
-                "(e.g. https://eval.ai or your ngrok URL)."
+                "No public API base URL configured. Set EVALAI_API_SERVER "
+                "(or SCOUT_PUBLIC_BASE_URL when it must differ, e.g. ngrok)."
             )
 
         if Scout.objects.filter(name=name).exists():

@@ -398,7 +398,11 @@ HOSTNAME = os.environ.get("HOSTNAME")
 YUTORI_API_KEY = os.environ.get("YUTORI_API_KEY", "")
 YUTORI_API_BASE = os.environ.get("YUTORI_API_BASE", "https://api.yutori.com")
 DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("DEFAULT_TIMEOUT_SECONDS", "30"))
-SCOUT_PUBLIC_BASE_URL = os.environ.get("SCOUT_PUBLIC_BASE_URL", "")
+# Webhook URL base for Yutori callbacks. Defaults to EVALAI_API_SERVER;
+# set SCOUT_PUBLIC_BASE_URL only when it must differ (e.g. ngrok in local dev).
+SCOUT_PUBLIC_BASE_URL = (
+    os.environ.get("SCOUT_PUBLIC_BASE_URL") or EVALAI_API_SERVER
+)
 OUTREACH_FROM_EMAIL = os.environ.get(
     "OUTREACH_FROM_EMAIL",
     "EvalAI Team <outreach@eval.ai>",
