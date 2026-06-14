@@ -6,6 +6,7 @@ urlpatterns = [
     url(r"^contact/$", views.contact_us, name="contact_us"),
     url(r"^subscribe/$", views.subscribe, name="subscribe"),
     url(r"^team/$", views.our_team, name="our_team"),
+    url(r"^team/add/$", views.add_team_member, name="add_team_member"),
     url(
         r"^notify_users/$",
         views.notify_users_about_challenge,

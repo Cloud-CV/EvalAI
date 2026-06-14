@@ -15,7 +15,6 @@ import pytz
 import requests
 import yaml
 from accounts.permissions import HasVerifiedEmail
-from accounts.serializers import UserDetailsSerializer
 from allauth.account.models import EmailAddress
 from base.utils import (
     get_queue_name,
@@ -43,16 +42,21 @@ from challenges.utils import (
     add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
+    get_challenge_host_required_error,
+    get_challenge_host_team_membership_error,
     get_challenge_model,
+    get_challenge_modification_error,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_leaderboard_modification_error,
     get_participant_model,
     get_participants_with_incomplete_profiles,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
 )
 from django.conf import settings
@@ -87,11 +91,13 @@ from participants.models import Participant, ParticipantTeam
 from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_member_count,
     get_participant_team_of_user_for_a_challenge,
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
     is_user_part_of_participant_team,
+    team_exceeds_challenge_max_members,
 )
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -141,6 +147,8 @@ from .queryset import get_submissions_queryset
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
+    ChallengeInvitationAcceptSerializer,
+    ChallengeInvitationRegisterSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseSplitSerializer,
@@ -664,16 +672,39 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if participant_team.challenge_set.filter(id=challenge_pk).exists():
-        response_data = {
-            "error": "Team already exists",
-            "challenge_id": int(challenge_pk),
-            "participant_team_id": int(participant_team_pk),
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    else:
+    with transaction.atomic():
+        participant_team = ParticipantTeam.objects.select_for_update().get(
+            pk=participant_team.pk
+        )
+        if team_exceeds_challenge_max_members(participant_team, challenge):
+            member_count = get_participant_team_member_count(participant_team)
+            response_data = {
+                "error": (
+                    "The challenge {} limits teams to {} member(s). Your "
+                    "team has {} member(s). Please remove members before "
+                    "participating."
+                ).format(
+                    challenge.title,
+                    challenge.max_team_members,
+                    member_count,
+                )
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if participant_team.challenge_set.filter(id=challenge_pk).exists():
+            response_data = {
+                "error": "Team already exists",
+                "challenge_id": int(challenge_pk),
+                "participant_team_id": int(participant_team_pk),
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
         challenge.participant_teams.add(participant_team)
-        return Response(status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
@@ -1295,6 +1326,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Creates a challenge using a zip file.
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     if request.data.get("is_challenge_template"):
         is_challenge_template = True
@@ -2862,6 +2899,10 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = LeaderboardSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2883,6 +2924,12 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        host_error = get_leaderboard_modification_error(
+            request, leaderboard_pk
+        )
+        if host_error:
+            return host_error
+
         if "schema" in request.data.keys():
             request.data["schema"] = json.loads(request.data["schema"])
         serializer = LeaderboardSerializer(
@@ -2909,6 +2956,10 @@ def create_dataset_split(request):
     """
     Creates a dataset split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = DatasetSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2931,6 +2982,10 @@ def get_or_update_dataset_split(request, dataset_split_pk):
     """
     dataset_split = get_dataset_split_model(dataset_split_pk)
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = DatasetSplitSerializer(
             dataset_split, data=request.data, partial=True
         )
@@ -2956,6 +3011,10 @@ def create_challenge_phase_split(request):
     """
     Create Challenge Phase Split
     """
+    host_error = get_challenge_host_required_error(request)
+    if host_error:
+        return host_error
+
     serializer = ZipChallengePhaseSplitSerializer(
         data=request.data, many=True, allow_empty=False
     )
@@ -2981,6 +3040,10 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     )
 
     if request.method == "PATCH":
+        host_error = get_challenge_host_required_error(request)
+        if host_error:
+            return host_error
+
         serializer = ZipChallengePhaseSplitSerializer(
             challenge_phase_split, data=request.data, partial=True
         )
@@ -2998,7 +3061,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_challenge_tags_and_domain(request, challenge_pk):
     """
@@ -3007,6 +3070,10 @@ def update_challenge_tags_and_domain(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
 
     if request.method == "PATCH":
+        host_error = get_challenge_modification_error(request, challenge_pk)
+        if host_error:
+            return host_error
+
         new_tags = request.data.get("list_tags", [])
         domain_value = request.data.get("domain")
         # Remove tags not present in the YAML file
@@ -3273,16 +3340,10 @@ def invite_users_to_challenge(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    users_email = request.data.get("emails")
-
-    if not users_email:
-        response_data = {"error": "Users email can't be blank"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        users_email = eval(users_email)
-    except Exception:
-        response_data = {"error": "Invalid format for users email"}
+        users_email = parse_invite_email_list(request.data.get("emails"))
+    except ValueError as exc:
+        response_data = {"error": str(exc)}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []
@@ -3310,7 +3371,7 @@ def invite_users_to_challenge(request, challenge_pk):
                 except User.DoesNotExist:
                     user = User.objects.create(username=email, email=email)
                     EmailAddress.objects.create(
-                        user=user, email=email, primary=True, verified=True
+                        user=user, email=email, primary=True, verified=False
                     )
                 data["user"] = user.pk
                 valid_emails.append(data)
@@ -3337,7 +3398,7 @@ def invite_users_to_challenge(request, challenge_pk):
 
 
 @api_view(["GET", "PATCH"])
-@throttle_classes([UserRateThrottle])
+@throttle_classes([AnonRateThrottle])
 @permission_classes(())
 def accept_challenge_invitation(request, invitation_key):
     try:
@@ -3351,29 +3412,62 @@ def accept_challenge_invitation(request, invitation_key):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
-        serializer = UserInvitationSerializer(invitation)
+        serializer = ChallengeInvitationAcceptSerializer(invitation)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "PATCH":
-        serializer = UserDetailsSerializer(
-            invitation.user, data=request.data, partial=True
+        serializer = ChallengeInvitationRegisterSerializer(
+            data=request.data,
+            context={"user": invitation.user},
         )
-        if serializer.is_valid():
-            serializer.save()
-            data = {"password": make_password(serializer.data.get("password"))}
-            serializer = UserDetailsSerializer(
-                invitation.user, data=data, partial=True
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-            if serializer.is_valid():
-                serializer.save()
-            data = {"status": UserInvitation.ACCEPTED}
-            serializer = UserInvitationSerializer(
-                invitation, data=data, partial=True
+
+        with transaction.atomic():
+            locked_invitation = (
+                UserInvitation.objects.select_for_update()
+                .select_related("user")
+                .get(pk=invitation.pk)
             )
-            if serializer.is_valid():
-                serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if locked_invitation.status != UserInvitation.PENDING:
+                response_data = {
+                    "error": "This invitation has already been accepted."
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            user = locked_invitation.user
+            user.first_name = serializer.validated_data.get(
+                "first_name", user.first_name
+            )
+            user.last_name = serializer.validated_data.get(
+                "last_name", user.last_name
+            )
+            user.password = make_password(
+                serializer.validated_data["password"]
+            )
+            user.save()
+
+            updated_count = EmailAddress.objects.filter(
+                user=user, email=locked_invitation.email
+            ).update(verified=True)
+            if updated_count == 0:
+                EmailAddress.objects.create(
+                    user=user,
+                    email=locked_invitation.email,
+                    primary=True,
+                    verified=True,
+                )
+
+            locked_invitation.status = UserInvitation.ACCEPTED
+            locked_invitation.save()
+            invitation = locked_invitation
+
+        response_serializer = ChallengeInvitationAcceptSerializer(invitation)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -3570,6 +3664,12 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def validate_challenge_config(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     response_data = {}
 
@@ -5434,10 +5534,37 @@ def update_challenge_attributes(request):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # Update attributes based on the request data
+    allowed_fields = {
+        "title",
+        "short_description",
+        "description",
+        "terms_and_conditions",
+        "submission_guidelines",
+        "evaluation_details",
+        "ephemeral_storage",
+        "ec2_storage",
+        "workers",
+        "worker_cpu_cores",
+        "worker_memory",
+        "is_disabled",
+        "published",
+        "featured",
+        "evaluation_module_error",
+        "end_date",
+        "start_date",
+        "max_concurrent_submission_evaluation",
+        "sqs_retention_period",
+    }
+
     for key, value in request.data.items():
-        if key != "challenge_pk" and hasattr(challenge, key):
-            setattr(challenge, key, value)
+        if key == "challenge_pk":
+            continue
+        if key not in allowed_fields:
+            return Response(
+                {"error": f"Updating '{key}' is not allowed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        setattr(challenge, key, value)
 
     try:
         challenge.save()
@@ -5538,7 +5665,7 @@ def _authenticate_lambda_request(request):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_autoscale_meta(request, challenge_pk):
@@ -5586,7 +5713,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
 
 
 @api_view(["GET"])
-@throttle_classes([])
+@throttle_classes([UserRateThrottle])
 @permission_classes(())
 @authentication_classes(())
 def get_challenge_pending_submission_count(request, challenge_pk):

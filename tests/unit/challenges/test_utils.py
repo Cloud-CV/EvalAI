@@ -1,31 +1,48 @@
+import json
 import os
 import random
 import string
 import unittest
+from datetime import timedelta
 from unittest.mock import MagicMock
 from unittest.mock import patch
 from unittest.mock import patch as mockpatch
 
 import pytest
 from base.utils import get_queue_name
-from challenges.models import Challenge, ChallengePrize
+from challenges.models import (
+    Challenge,
+    ChallengePhase,
+    ChallengePhaseSplit,
+    ChallengePrize,
+    DatasetSplit,
+    Leaderboard,
+)
 from challenges.utils import (
+    _is_valid_invite_email,
     add_domain_to_challenge,
     add_prizes_to_challenge,
     add_sponsors_to_challenge,
     add_tags_to_challenge,
     generate_presigned_url,
     generate_presigned_url_for_multipart_upload,
+    get_challenge_host_required_error,
+    get_challenge_modification_error,
     get_file_content,
+    get_leaderboard_modification_error,
     get_participants_with_incomplete_profiles,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
     send_emails,
     send_subscription_plans_email,
 )
 from django.conf import settings
 from django.contrib.auth.models import User
-from hosts.models import ChallengeHostTeam
+from django.utils import timezone
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIRequestFactory
 
 
 class BaseTestCase(unittest.TestCase):
@@ -674,3 +691,225 @@ class GetParticipantsWithIncompleteProfilesTests(unittest.TestCase):
         )
         result = get_participants_with_incomplete_profiles(empty_team)
         self.assertEqual(result, [])
+
+
+class ParseInviteEmailListTest(unittest.TestCase):
+    def test_json_array_string(self):
+        emails = '["a@example.com", "b@example.com"]'
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_comma_separated_string(self):
+        emails = "a@example.com, b@example.com"
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_python_list(self):
+        emails = ["a@example.com"]
+        self.assertEqual(parse_invite_email_list(emails), ["a@example.com"])
+
+    def test_deduplicates_while_preserving_order(self):
+        emails = '["a@example.com", "a@example.com", "b@example.com"]'
+        self.assertEqual(
+            parse_invite_email_list(emails),
+            ["a@example.com", "b@example.com"],
+        )
+
+    def test_rejects_invalid_email_format(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list('["not-an-email"]')
+
+    def test_rejects_none(self):
+        with self.assertRaises(ValueError) as ctx:
+            parse_invite_email_list(None)
+        self.assertEqual(str(ctx.exception), "Users email can't be blank")
+
+    def test_rejects_empty_string(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list("")
+
+    def test_rejects_non_list_json(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list('"string"')
+
+    def test_rejects_non_string_list_items(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list([1, 2])
+
+    def test_rejects_invalid_input_type(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list(123)
+
+    def test_rejects_empty_email_list(self):
+        with self.assertRaises(ValueError) as ctx:
+            parse_invite_email_list([])
+        self.assertEqual(str(ctx.exception), "Users email can't be blank")
+
+    def test_rejects_malicious_eval_payloads(self):
+        malicious_payloads = [
+            '__import__("os").system("rm -rf /")',
+            "[x for x in ().__class__.__bases__[0].__subclasses__()]",
+        ]
+        for payload in malicious_payloads:
+            with self.assertRaises(ValueError):
+                parse_invite_email_list(payload)
+
+    def test_is_valid_invite_email(self):
+        self.assertTrue(_is_valid_invite_email("a@example.com"))
+        self.assertFalse(_is_valid_invite_email("not-an-email"))
+
+
+@pytest.mark.django_db
+class ChallengeHostAuthorizationUtilsTests(unittest.TestCase):
+    """Tests for challenge setup authorization helper functions."""
+
+    unauthorized_error = {
+        "error": "Sorry, you are not authorized to perform this operation!"
+    }
+
+    def setUp(self):
+        self.factory = APIRequestFactory()
+
+        self.host_user = User.objects.create_user(
+            username="hostuser",
+            email="host@test.com",
+            password="secret_password",
+        )
+        self.non_host_user = User.objects.create_user(
+            username="nonhostuser",
+            email="nonhost@test.com",
+            password="secret_password",
+        )
+        self.other_host_user = User.objects.create_user(
+            username="otherhostuser",
+            email="otherhost@test.com",
+            password="secret_password",
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team",
+            created_by=self.host_user,
+        )
+        self.other_host_team = ChallengeHostTeam.objects.create(
+            team_name="Other Challenge Host Team",
+            created_by=self.other_host_user,
+        )
+
+        ChallengeHost.objects.create(
+            user=self.host_user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+        ChallengeHost.objects.create(
+            user=self.other_host_user,
+            team_name=self.other_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description",
+            description="Description",
+            terms_and_conditions="Terms",
+            submission_guidelines="Guidelines",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Challenge Phase",
+            description="Description for Challenge Phase",
+            leaderboard_public=False,
+            is_public=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+        )
+
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Test Dataset Split",
+            codename="test-split",
+        )
+        self.linked_leaderboard = Leaderboard.objects.create(
+            schema=json.dumps({"labels": ["overall"]})
+        )
+        self.standalone_leaderboard = Leaderboard.objects.create(
+            schema=json.dumps({"labels": ["overall"]})
+        )
+
+        ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.linked_leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC,
+        )
+
+    def _make_request(self, user):
+        request = self.factory.post("/")
+        request.user = user
+        return request
+
+    def test_get_challenge_host_required_error_for_host(self):
+        request = self._make_request(self.host_user)
+        self.assertIsNone(get_challenge_host_required_error(request))
+
+    def test_get_challenge_host_required_error_for_non_host(self):
+        request = self._make_request(self.non_host_user)
+        response = get_challenge_host_required_error(request)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, self.unauthorized_error)
+
+    def test_get_challenge_modification_error_for_host(self):
+        request = self._make_request(self.host_user)
+        self.assertIsNone(
+            get_challenge_modification_error(request, self.challenge.pk)
+        )
+
+    def test_get_challenge_modification_error_for_non_host(self):
+        request = self._make_request(self.non_host_user)
+        response = get_challenge_modification_error(request, self.challenge.pk)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, self.unauthorized_error)
+
+    def test_get_leaderboard_modification_error_for_non_host(self):
+        request = self._make_request(self.non_host_user)
+        response = get_leaderboard_modification_error(
+            request, self.linked_leaderboard.pk
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, self.unauthorized_error)
+
+    def test_get_leaderboard_modification_error_for_unlinked_leaderboard(
+        self,
+    ):
+        request = self._make_request(self.host_user)
+        self.assertIsNone(
+            get_leaderboard_modification_error(
+                request, self.standalone_leaderboard.pk
+            )
+        )
+
+    def test_get_leaderboard_modification_error_for_linked_leaderboard_host(
+        self,
+    ):
+        request = self._make_request(self.host_user)
+        self.assertIsNone(
+            get_leaderboard_modification_error(
+                request, self.linked_leaderboard.pk
+            )
+        )
+
+    def test_get_leaderboard_modification_error_for_unrelated_host(self):
+        request = self._make_request(self.other_host_user)
+        response = get_leaderboard_modification_error(
+            request, self.linked_leaderboard.pk
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, self.unauthorized_error)

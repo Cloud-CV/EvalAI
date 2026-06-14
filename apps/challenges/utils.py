@@ -13,7 +13,9 @@ from base.utils import (
 )
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.validators import EmailValidator
 from moto import mock_ecr, mock_sts
 from participants.models import ParticipantTeam
 
@@ -29,6 +31,160 @@ from .models import (
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)
+
+_invite_email_validator = EmailValidator()
+
+
+def _is_valid_invite_email(email):
+    try:
+        _invite_email_validator(email)
+        return True
+    except ValidationError:
+        return False
+
+
+def parse_invite_email_list(emails):
+    """
+    Parse invite email payloads without using eval().
+
+    Accepts a JSON array string, a Python list, or a comma-separated string.
+    Returns a list of normalized email strings.
+    """
+    if emails is None:
+        raise ValueError("Users email can't be blank")
+
+    if isinstance(emails, list):
+        email_list = emails
+    elif isinstance(emails, str):
+        emails = emails.strip()
+        if not emails:
+            raise ValueError("Users email can't be blank")
+        try:
+            parsed = json.loads(emails)
+        except json.JSONDecodeError:
+            email_list = [email.strip() for email in emails.split(",")]
+        else:
+            if not isinstance(parsed, list):
+                raise ValueError("Invalid format for users email")
+            email_list = parsed
+    else:
+        raise ValueError("Invalid format for users email")
+
+    normalized_emails = []
+    seen = set()
+    for email in email_list:
+        if not isinstance(email, str):
+            raise ValueError("Invalid format for users email")
+        email = email.strip()
+        if not email or not _is_valid_invite_email(email):
+            raise ValueError("Invalid format for users email")
+        if email not in seen:
+            normalized_emails.append(email)
+            seen.add(email)
+
+    if not normalized_emails:
+        raise ValueError("Users email can't be blank")
+
+    return normalized_emails
+
+
+def get_challenge_host_team_membership_error(request, challenge_host_team_pk):
+    """
+    Return a 401 Response if the user is not a member of the host team.
+    """
+    from hosts.models import ChallengeHost
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        team_name_id=challenge_host_team_pk,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {"error": "Sorry, you do not belong to this Host Team!"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
+def get_challenge_host_required_error(request):
+    """
+    Return a 401 Response if the user is not a member of any challenge host team.
+    """
+    from hosts.models import ChallengeHost
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
+def get_challenge_modification_error(request, challenge_pk):
+    """
+    Return a 401 Response if the user is not a host of the given challenge.
+    """
+    from hosts.utils import is_user_a_host_of_challenge
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    return None
+
+
+def get_leaderboard_modification_error(request, leaderboard_pk):
+    """
+    Return a 401 Response if the user cannot modify the given leaderboard.
+    """
+    from hosts.models import ChallengeHost
+    from hosts.utils import is_user_a_host_of_challenge
+    from rest_framework import status
+    from rest_framework.response import Response
+
+    if not ChallengeHost.objects.filter(
+        user=request.user,
+        status__in=[ChallengeHost.ACCEPTED, ChallengeHost.SELF],
+    ).exists():
+        return Response(
+            {
+                "error": "Sorry, you are not authorized to perform this operation!"
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    challenge_ids = (
+        ChallengePhaseSplit.objects.filter(leaderboard_id=leaderboard_pk)
+        .values_list("challenge_phase__challenge_id", flat=True)
+        .distinct()
+    )
+
+    if not challenge_ids:
+        return None
+
+    for challenge_id in challenge_ids:
+        if is_user_a_host_of_challenge(request.user, challenge_id):
+            return None
+
+    return Response(
+        {"error": "Sorry, you are not authorized to perform this operation!"},
+        status=status.HTTP_401_UNAUTHORIZED,
+    )
+
 
 get_challenge_model = get_model_object(Challenge)
 

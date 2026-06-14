@@ -6,9 +6,16 @@ from unittest.mock import patch as mockpatch
 
 import pytest
 from allauth.account.models import EmailAddress
-from challenges.models import Challenge, ChallengeConfiguration, ChallengePhase
+from challenges.models import (
+    Challenge,
+    ChallengeConfiguration,
+    ChallengePhase,
+    UserInvitation,
+)
 from challenges.serializers import (
     ChallengeConfigSerializer,
+    ChallengeInvitationAcceptSerializer,
+    ChallengeInvitationRegisterSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     ChallengeSerializer,
@@ -602,6 +609,81 @@ class UserInvitationSerializerTests(TestCase):
             mock_serializer.return_value.data = {"username": "testuser"}
             result = self.serializer.get_user_details(self.obj)
             self.assertEqual(result, {"username": "testuser"})
+
+
+@pytest.mark.django_db
+class ChallengeInvitationAcceptSerializerTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="inviteuser", email="invite@test.com"
+        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Invite Challenge",
+            creator=self.challenge_host_team,
+        )
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+        self.invitation = UserInvitation.objects.create(
+            email="invite@test.com",
+            invitation_key="test-invitation-key",
+            status=UserInvitation.PENDING,
+            challenge=self.challenge,
+            user=self.user,
+            invited_by=self.challenge_host,
+        )
+        self.serializer = ChallengeInvitationAcceptSerializer()
+
+    def test_get_challenge_title(self):
+        result = self.serializer.get_challenge_title(self.invitation)
+        self.assertEqual(result, "Invite Challenge")
+
+    def test_get_challenge_host_team_name(self):
+        result = self.serializer.get_challenge_host_team_name(self.invitation)
+        self.assertEqual(result, "Host Team")
+
+    def test_get_user_details(self):
+        result = self.serializer.get_user_details(self.invitation)
+        self.assertEqual(result, {"username": "inviteuser"})
+
+
+@pytest.mark.django_db
+class ChallengeInvitationRegisterSerializerTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username="registeruser",
+            email="register@test.com",
+            first_name="",
+            last_name="",
+        )
+
+    def test_validate_accepts_strong_password(self):
+        serializer = ChallengeInvitationRegisterSerializer(
+            data={
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "password": "CompletelyUnrelatedPass9!",
+            },
+            context={"user": self.user},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_validate_rejects_password_similar_to_submitted_first_name(self):
+        serializer = ChallengeInvitationRegisterSerializer(
+            data={
+                "first_name": "Similarname",
+                "password": "Similarname123!",
+            },
+            context={"user": self.user},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
 
 
 @pytest.mark.django_db
