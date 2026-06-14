@@ -50,6 +50,7 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    parse_invite_email_list,
     parse_submission_meta_attributes,
 )
 from django.conf import settings
@@ -3301,16 +3302,10 @@ def invite_users_to_challenge(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    users_email = request.data.get("emails")
-
-    if not users_email:
-        response_data = {"error": "Users email can't be blank"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        users_email = eval(users_email)
-    except Exception:
-        response_data = {"error": "Invalid format for users email"}
+        users_email = parse_invite_email_list(request.data.get("emails"))
+    except ValueError as exc:
+        response_data = {"error": str(exc)}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []
