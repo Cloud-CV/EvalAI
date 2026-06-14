@@ -19,6 +19,7 @@ from challenges.models import (
     Leaderboard,
 )
 from challenges.utils import (
+    _is_valid_invite_email,
     add_domain_to_challenge,
     add_prizes_to_challenge,
     add_sponsors_to_challenge,
@@ -739,6 +740,15 @@ class ParseInviteEmailListTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_invite_email_list([1, 2])
 
+    def test_rejects_invalid_input_type(self):
+        with self.assertRaises(ValueError):
+            parse_invite_email_list(123)
+
+    def test_rejects_empty_email_list(self):
+        with self.assertRaises(ValueError) as ctx:
+            parse_invite_email_list([])
+        self.assertEqual(str(ctx.exception), "Users email can't be blank")
+
     def test_rejects_malicious_eval_payloads(self):
         malicious_payloads = [
             '__import__("os").system("rm -rf /")',
@@ -747,6 +757,10 @@ class ParseInviteEmailListTest(unittest.TestCase):
         for payload in malicious_payloads:
             with self.assertRaises(ValueError):
                 parse_invite_email_list(payload)
+
+    def test_is_valid_invite_email(self):
+        self.assertTrue(_is_valid_invite_email("a@example.com"))
+        self.assertFalse(_is_valid_invite_email("not-an-email"))
 
 
 @pytest.mark.django_db
