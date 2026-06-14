@@ -38,6 +38,7 @@ from challenges.utils import (
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
     get_challenge_host_required_error,
+    get_challenge_host_team_membership_error,
     get_challenge_model,
     get_challenge_modification_error,
     get_challenge_phase_model,
@@ -1320,6 +1321,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Creates a challenge using a zip file.
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     if request.data.get("is_challenge_template"):
         is_challenge_template = True
@@ -3626,6 +3633,12 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def validate_challenge_config(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    membership_error = get_challenge_host_team_membership_error(
+        request, challenge_host_team_pk
+    )
+    if membership_error:
+        return membership_error
 
     response_data = {}
 
