@@ -646,7 +646,10 @@ class ValidateChallengeConfigUtil:
                         image,
                     )
             except PathTraversalError:
-                pass
+                logger.warning(
+                    "Challenge logo path rejected due to path traversal risk: %s",
+                    image,
+                )
         else:
             self.challenge_image_file = None
         self.files["challenge_image_file"] = self.challenge_image_file
