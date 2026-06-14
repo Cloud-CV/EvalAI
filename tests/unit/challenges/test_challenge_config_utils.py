@@ -134,6 +134,15 @@ class TestIsChallengeConfigYamlHtmlFieldValid(unittest.TestCase):
             "File html_field is not a HTML file. Please specify a valid HTML file",
         )
 
+    def test_unsafe_path_rejected(self):
+        yaml_file_data = {"html_field": "../../../etc/passwd.html"}
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "html_field", self.base_location
+        )
+
+        self.assertFalse(is_valid)
+        self.assertEqual(message, "Invalid file path for html_field.")
+
 
 class TestIsChallengePhaseSplitMappingValid(unittest.TestCase):
     def test_invalid_dataset_split_id(self):
@@ -322,6 +331,18 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             self.util.error_messages,
         )
 
+    def test_read_and_validate_yaml_unsafe_yaml_path(self):
+        self.util.yaml_file_count = 1
+        self.util.yaml_file = "../../etc/passwd.yaml"
+
+        result = self.util.read_and_validate_yaml()
+
+        self.assertFalse(result)
+        self.assertIn(
+            "Challenge configuration contains unsafe file paths.",
+            self.util.error_messages,
+        )
+
     @mockpatch("challenges.challenge_config_utils.isfile")
     @mockpatch("challenges.challenge_config_utils.get_file_content")
     def test_validate_challenge_logo_valid_image(
@@ -362,6 +383,36 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
 
         self.assertIsNone(self.util.challenge_image_file)
         self.assertIsNone(self.util.files["challenge_image_file"])
+
+    @mockpatch("challenges.challenge_config_utils.logger")
+    def test_validate_challenge_logo_unsafe_path(self, mock_logger):
+        self.util.yaml_file_data = {"image": "../../../etc/passwd.png"}
+
+        self.util.validate_challenge_logo()
+
+        self.assertIsNone(self.util.challenge_image_file)
+        self.assertIsNone(self.util.files["challenge_image_file"])
+        mock_logger.warning.assert_called_once()
+
+    def test_validate_evaluation_script_file_unsafe_path(self):
+        self.util.yaml_file_data = {
+            "evaluation_script": "../../../etc/passwd.zip"
+        }
+
+        self.util.validate_evaluation_script_file()
+
+        self.assertIn(
+            "Evaluation script file is missing.", self.util.error_messages
+        )
+
+    def test_validate_challenge_description_unsafe_path(self):
+        self.util.yaml_file_data = {"description": "../../../etc/passwd.html"}
+
+        self.util.validate_challenge_description()
+
+        self.assertIn(
+            "Invalid file path for description.", self.util.error_messages
+        )
 
     @pytest.mark.django_db
     @mockpatch("challenges.challenge_config_utils.ValidateChallengeConfigUtil")
@@ -874,6 +925,11 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         val = get_value_from_field(data, "/tmp", "desc")
         self.assertIsNone(val)
 
+    def test_get_value_from_field_unsafe_path(self):
+        data = {"desc": "../../../etc/passwd.html"}
+        val = get_value_from_field(data, "/tmp", "desc")
+        self.assertIsNone(val)
+
 
 @pytest.mark.django_db
 class TestValidateChallengeConfigUtil(unittest.TestCase):
@@ -1158,6 +1214,29 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.assertEqual(
             self.util.error_messages[0],
             "No test annotation file found for phase 'Phase 1'.",
+        )
+        self.assertEqual(
+            self.util.files["challenge_test_annotation_files"], [None]
+        )
+
+    def test_unsafe_test_annotation_file_path(self):
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "test_annotation_file": "../../../etc/passwd",
+                    "id": 1,
+                }
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertEqual(
+            self.util.error_messages[0],
+            "No test annotation file found for phase 'Phase 1'.",
+        )
+        self.assertEqual(
+            self.util.files["challenge_test_annotation_files"], [None]
         )
 
     def test_is_submission_public_restricted(self):

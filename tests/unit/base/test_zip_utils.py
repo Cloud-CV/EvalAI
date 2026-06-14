@@ -2,9 +2,11 @@ import os
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 
 from base.zip_utils import (
     PathTraversalError,
+    _is_path_under_root,
     safe_extract_zip_file,
     safe_join_under_root,
 )
@@ -24,6 +26,13 @@ class SafeJoinUnderRootTest(unittest.TestCase):
     def test_rejects_parent_directory_traversal(self):
         with self.assertRaises(PathTraversalError):
             safe_join_under_root(self.root, "..", "etc", "passwd")
+
+    @patch("base.zip_utils.os.path.commonpath", side_effect=ValueError)
+    def test_is_path_under_root_handles_commonpath_value_error(
+        self, mock_commonpath
+    ):
+        self.assertFalse(_is_path_under_root("/tmp/root", "/other/path"))
+        mock_commonpath.assert_called_once()
 
 
 class SafeExtractZipFileTest(unittest.TestCase):
