@@ -918,6 +918,7 @@ class ValidateChallengeConfigUtil:
         phase_codenames = []
         self.files["challenge_test_annotation_files"] = []
         for data in challenge_phases_data:
+            test_annotation_file_path = None
             if "codename" not in data:
                 self.error_messages.append(
                     self.error_messages_dict["no_codename_for_challenge_phase"]
