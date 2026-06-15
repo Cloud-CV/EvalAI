@@ -15,6 +15,8 @@ import os
 import sys
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, "apps")
@@ -59,6 +61,7 @@ OUR_APPS = [
     "jobs",
     "participants",
     "web",
+    "scout",
 ]
 
 THIRD_PARTY_APPS = [
@@ -243,6 +246,13 @@ CELERY_BEAT_SCHEDULE = {
         "task": "accounts.tasks.deactivate_stale_bounced_accounts",
         "schedule": datetime.timedelta(hours=1),
     },
+    "scout-outreach-daily": {
+        "task": "scout.tasks.send_daily_outreach",
+        # 18:30 UTC = 10:30 AM PST (winter) / 11:30 AM PDT (summer).
+        # Beat runs in UTC because TIME_ZONE = "UTC"; set CELERY_TIMEZONE
+        # to "America/Los_Angeles" if year-round 10:30 Pacific is required.
+        "schedule": crontab(hour=18, minute=30),
+    },
 }
 
 # CORS Settings
@@ -384,6 +394,20 @@ DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
 
 HOSTNAME = os.environ.get("HOSTNAME")
 
+# Yutori scout integration
+YUTORI_API_KEY = os.environ.get("YUTORI_API_KEY", "")
+YUTORI_API_BASE = os.environ.get("YUTORI_API_BASE", "https://api.yutori.com")
+DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("DEFAULT_TIMEOUT_SECONDS", "30"))
+# Webhook URL base for Yutori callbacks. Defaults to EVALAI_API_SERVER;
+# set SCOUT_PUBLIC_BASE_URL only when it must differ (e.g. ngrok in local dev).
+SCOUT_PUBLIC_BASE_URL = (
+    os.environ.get("SCOUT_PUBLIC_BASE_URL") or EVALAI_API_SERVER
+)
+OUTREACH_FROM_EMAIL = os.environ.get(
+    "OUTREACH_FROM_EMAIL",
+    "EvalAI Team <outreach@eval.ai>",
+)
+
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
         "CHALLENGE_INVITATION": os.environ.get(
@@ -403,6 +427,9 @@ SENDGRID_SETTINGS = {
         ),
         "SUBSCRIPTION_PLANS_EMAIL": os.environ.get(
             "SENDGRID_SUBSCRIPTION_PLANS_TEMPLATE_ID"
+        ),
+        "OUTREACH_BENCHMARK_HOSTING": os.environ.get(
+            "SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID"
         ),
     }
 }

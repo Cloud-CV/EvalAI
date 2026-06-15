@@ -419,6 +419,10 @@ class TestMaxTeamMembersUtils(TestCase):
         self.assertIsNone(
             get_effective_max_team_members_for_team(self.participant_team)
         )
+        self.assertEqual(
+            get_team_capacity_blocking_challenge_titles(self.participant_team),
+            [],
+        )
 
     def test_mixed_team_not_exempt_from_organizer_challenge(self):
         ChallengeHost.objects.create(
