@@ -172,6 +172,10 @@ fi
 
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs celery memcached
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
+docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
+  -e DJANGO_SETTINGS_MODULE=settings.prod \
+  django python manage.py refresh_worker_task_definitions \
+  --commit-id "\${COMMIT_ID}"
 ENDSSH
 }
 

@@ -100,6 +100,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
+            "worker_python_version",
             "worker_instance_type",
             "sqs_retention_period",
             "github_repository",
@@ -364,6 +365,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
+            "worker_python_version",
             "sqs_retention_period",
         )
 

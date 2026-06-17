@@ -42,9 +42,17 @@ aws s3 cp s3://cloudcv-secrets/evalai/${ENVIRONMENT}/docker_${ENVIRONMENT}.env .
 
 if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
+    WORKER_COMPOSE_SERVICE="worker_py3_9"
+    if [ -n "${WORKER_PYTHON_VERSION}" ]; then
+        case "${WORKER_PYTHON_VERSION}" in
+            3.7) WORKER_COMPOSE_SERVICE="worker_py3_7" ;;
+            3.8) WORKER_COMPOSE_SERVICE="worker_py3_8" ;;
+            3.9) WORKER_COMPOSE_SERVICE="worker_py3_9" ;;
+        esac
+    fi
     # Step 8: Pulling worker Docker image
     echo "Step 8/10: Pulling worker Docker image"
-    docker compose -f docker-compose-${ENVIRONMENT}.yml pull worker
+    docker compose -f docker-compose-${ENVIRONMENT}.yml pull ${WORKER_COMPOSE_SERVICE}
 else
     # if using custom image from worker_image_url
     echo "Step 8/10: Pulling worker Docker image"
@@ -57,7 +65,11 @@ echo "Step 9/10: Running worker Docker container"
 if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
     # If using default image from Step 8
-    docker compose -f docker-compose-${ENVIRONMENT}.yml run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d worker
+    docker compose -f docker-compose-${ENVIRONMENT}.yml run \
+        --name=worker_${QUEUE} \
+        -e CHALLENGE_QUEUE=${QUEUE} \
+        -e CHALLENGE_PK=${PK} \
+        -d ${WORKER_COMPOSE_SERVICE}
 else
     # If using custom image from worker_image_url
     docker run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d ${CUSTOM_WORKER_IMAGE}

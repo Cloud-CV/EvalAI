@@ -8,6 +8,7 @@ import pytest
 from botocore.exceptions import ClientError, NoCredentialsError
 from challenges.aws_utils import (
     _file_content_changed,
+    build_task_definition_dict,
     challenge_approval_callback,
     cleanup_auto_scaling_for_service,
     create_ec2_instance,
@@ -23,7 +24,14 @@ from challenges.aws_utils import (
     ensure_workers_for_submission,
     get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
+    get_deployed_worker_image_urls,
+    get_evalai_submission_worker_ecr_image,
+    get_image_settings_for_challenge,
     get_logs_from_cloudwatch,
+    get_worker_image_for_challenge,
+    is_evalai_managed_submission_worker_image,
+    refresh_task_definition_for_challenge,
+    refresh_worker_task_definitions,
     register_task_def_by_challenge_pk,
     restart_ec2_instance,
     restart_workers,
@@ -2179,19 +2187,15 @@ class TestScaleResources(unittest.TestCase):
         challenge.worker_memory = 4096
         # Mock other dependencies
         with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
-            mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            "challenges.aws_utils.get_image_settings_for_challenge"
+        ) as mock_get_image_settings, patch(
+            "challenges.aws_utils.build_task_definition_dict"
+        ) as mock_build_task_definition:
+            mock_get_image_settings.return_value = {}
+            mock_build_task_definition.return_value = (
+                {"some_key": "some_value"},
+                None,
+            )
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -2271,19 +2275,15 @@ class TestScaleResources(unittest.TestCase):
 
         # Mock other dependencies
         with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
-            mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            "challenges.aws_utils.get_image_settings_for_challenge"
+        ) as mock_get_image_settings, patch(
+            "challenges.aws_utils.build_task_definition_dict"
+        ) as mock_build_task_definition:
+            mock_get_image_settings.return_value = {}
+            mock_build_task_definition.return_value = (
+                {"some_key": "some_value"},
+                None,
+            )
 
             # Mock register_task_definition response
             mock_client.register_task_definition.return_value = {
@@ -2332,19 +2332,15 @@ class TestScaleResources(unittest.TestCase):
 
         # Mock other dependencies
         with patch(
-            "challenges.utils.get_aws_credentials_for_challenge"
-        ) as mock_get_aws_credentials_for_challenge, patch(
-            "challenges.aws_utils.task_definition", new_callable=MagicMock
-        ) as mock_task_definition, patch(
-            "challenges.aws_utils.eval"
-        ) as mock_eval:
-            mock_get_aws_credentials_for_challenge.return_value = {}
-            mock_task_definition.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
-            mock_eval.return_value = {
-                "some_key": "some_value"
-            }  # Use a dictionary here
+            "challenges.aws_utils.get_image_settings_for_challenge"
+        ) as mock_get_image_settings, patch(
+            "challenges.aws_utils.build_task_definition_dict"
+        ) as mock_build_task_definition:
+            mock_get_image_settings.return_value = {}
+            mock_build_task_definition.return_value = (
+                {"some_key": "some_value"},
+                None,
+            )
 
             # Mock register_task_definition response with error
             mock_client.register_task_definition.return_value = {
@@ -2539,31 +2535,32 @@ class TestRestartWorkers(TestCase):
         mock_service_manager.assert_not_called()
 
     @patch("challenges.aws_utils.get_boto3_client")
-    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_restart_workers_docker_based_challenge(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
     ):
-        # Mock a Docker-based challenge queryset
         challenge_docker_based = MagicMock(
-            pk=1, is_docker_based=True, is_static_dataset_code_upload=False
+            pk=1,
+            workers=2,
+            is_docker_based=True,
+            is_static_dataset_code_upload=False,
         )
         mock_queryset = [challenge_docker_based]
+        mock_refresh_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
 
-        # Call the function
         result = restart_workers(mock_queryset)
 
-        # Assertions
-        expected_failures = [
-            {
-                "message": "Sorry. This feature is not available for code upload/docker based challenges.",
-                "challenge_pk": 1,
-            }
-        ]
-        self.assertEqual(result, {"count": 0, "failures": expected_failures})
-
-        # Ensure the service_manager method was never called
-        mock_service_manager.assert_not_called()
+        self.assertEqual(result, {"count": 1, "failures": []})
+        mock_refresh_task_definition.assert_called_once_with(
+            challenge_docker_based,
+            client=mock_get_boto3_client.return_value,
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.service_manager")
@@ -2597,10 +2594,13 @@ class TestRestartWorkers(TestCase):
         self.assertEqual(result, expected_result)
 
     @patch("challenges.aws_utils.get_boto3_client")
-    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_restart_workers_success(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
     ):
         # Mock a challenge with active workers
         challenge_with_workers = MagicMock(
@@ -2611,30 +2611,26 @@ class TestRestartWorkers(TestCase):
         )
         mock_queryset = [challenge_with_workers]
 
-        # Mock the service_manager response
-        mock_service_manager.return_value = {
+        mock_refresh_task_definition.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
-        # Call the function
         result = restart_workers(mock_queryset)
 
-        # Assertions
         self.assertEqual(result, {"count": 1, "failures": []})
-
-        # Ensure the service_manager method was called
-        mock_service_manager.assert_called_once_with(
-            mock_get_boto3_client.return_value,
-            challenge=challenge_with_workers,
-            num_of_tasks=challenge_with_workers.workers,
-            force_new_deployment=True,
+        mock_refresh_task_definition.assert_called_once_with(
+            challenge_with_workers,
+            client=mock_get_boto3_client.return_value,
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
-    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_restart_workers_clears_evaluation_module_error(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
     ):
         # Mock a challenge with active workers and an OOM error
         challenge_with_workers = MagicMock(
@@ -2648,12 +2644,10 @@ class TestRestartWorkers(TestCase):
         )
         mock_queryset = [challenge_with_workers]
 
-        # Mock the service_manager response
-        mock_service_manager.return_value = {
+        mock_refresh_task_definition.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
-        # Call the function
         result = restart_workers(mock_queryset)
 
         # Assert the error was cleared
@@ -2662,12 +2656,14 @@ class TestRestartWorkers(TestCase):
         self.assertEqual(result, {"count": 1, "failures": []})
 
     @patch("challenges.aws_utils.get_boto3_client")
-    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_restart_workers_failure(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
     ):
-        # Mock a challenge with active workers
         challenge_with_workers = MagicMock(
             pk=1,
             workers=2,
@@ -2676,27 +2672,20 @@ class TestRestartWorkers(TestCase):
         )
         mock_queryset = [challenge_with_workers]
 
-        # Mock the service_manager response to simulate a failure
-        mock_service_manager.return_value = {
+        mock_refresh_task_definition.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
             "Error": "An error occurred",
         }
 
-        # Call the function
         result = restart_workers(mock_queryset)
 
-        # Assertions
         expected_failures = [
             {"message": "An error occurred", "challenge_pk": 1}
         ]
         self.assertEqual(result, {"count": 0, "failures": expected_failures})
-
-        # Ensure the service_manager method was called
-        mock_service_manager.assert_called_once_with(
-            mock_get_boto3_client.return_value,
-            challenge=challenge_with_workers,
-            num_of_tasks=challenge_with_workers.workers,
-            force_new_deployment=True,
+        mock_refresh_task_definition.assert_called_once_with(
+            challenge_with_workers,
+            client=mock_get_boto3_client.return_value,
         )
 
 
@@ -5313,3 +5302,417 @@ class TestTriggerEksNodeAutoscale:
             previous_submission_status="submitting",
         )
         mock_get_boto3_client.assert_not_called()
+
+
+class TestWorkerImageHelpers(TestCase):
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_evalai_submission_worker_ecr_image_defaults_to_py39(self):
+        image = get_evalai_submission_worker_ecr_image()
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:latest",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_uses_python_version(self):
+        challenge = MagicMock(
+            worker_image_url=None,
+            worker_python_version="3.8",
+        )
+        image = get_worker_image_for_challenge(challenge, commit_id="abc123")
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.8:abc123",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_updates_evalai_managed_tag(self):
+        challenge = MagicMock(
+            worker_image_url=(
+                "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+                "evalai-production-worker-py3.7:oldsha"
+            ),
+        )
+        self.assertTrue(
+            is_evalai_managed_submission_worker_image(
+                challenge.worker_image_url
+            )
+        )
+        image = get_worker_image_for_challenge(challenge, commit_id="newsha")
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.7:newsha",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_preserves_custom_image_url(self):
+        custom_image = "myregistry.example.com/custom-worker:v1.2.3"
+        challenge = MagicMock(worker_image_url=custom_image)
+        self.assertFalse(
+            is_evalai_managed_submission_worker_image(custom_image)
+        )
+
+        image = get_worker_image_for_challenge(challenge, commit_id="newsha")
+
+        self.assertEqual(image, custom_image)
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_defaults_to_py39(self):
+        challenge = MagicMock(
+            worker_image_url=None,
+            worker_python_version=None,
+        )
+        image = get_worker_image_for_challenge(challenge, commit_id="abc123")
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:abc123",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_image_settings_for_challenge_preserves_custom_worker_image(
+        self,
+    ):
+        custom_image = "myregistry.example.com/custom-worker:stable"
+        challenge = MagicMock(
+            worker_image_url=custom_image,
+            worker_python_version="3.8",
+        )
+        settings_dict = get_image_settings_for_challenge(
+            challenge, commit_id="newsha"
+        )
+        self.assertEqual(settings_dict["WORKER_IMAGE"], custom_image)
+        self.assertTrue(
+            settings_dict["CODE_UPLOAD_WORKER_IMAGE"].endswith(
+                "code-upload-worker:newsha"
+            )
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_preserves_custom_worker_image(
+        self,
+        mock_update_service,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        custom_image = "myregistry.example.com/custom-worker:stable"
+        challenge = MagicMock(
+            pk=1,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+            worker_image_url=custom_image,
+            worker_python_version="3.8",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        refresh_task_definition_for_challenge(
+            challenge, commit_id="newsha", client=mock_client
+        )
+
+        image_settings = mock_build_task_definition.call_args.kwargs[
+            "image_settings"
+        ]
+        self.assertEqual(image_settings["WORKER_IMAGE"], custom_image)
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_image_settings_for_challenge(self):
+        challenge = MagicMock(
+            worker_image_url=None,
+            worker_python_version="3.9",
+        )
+        settings_dict = get_image_settings_for_challenge(
+            challenge, commit_id="abc123"
+        )
+        self.assertIn("WORKER_IMAGE", settings_dict)
+        self.assertIn("CODE_UPLOAD_WORKER_IMAGE", settings_dict)
+        self.assertTrue(
+            settings_dict["WORKER_IMAGE"].endswith("worker-py3.9:abc123")
+        )
+        self.assertTrue(
+            settings_dict["CODE_UPLOAD_WORKER_IMAGE"].endswith(
+                "code-upload-worker:abc123"
+            )
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge(
+        self,
+        mock_update_service,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=1,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id="abc123", client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_update_service.assert_called_once()
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_deployed_worker_image_urls(self):
+        urls = get_deployed_worker_image_urls(
+            commit_id="abc123", python_version="3.8"
+        )
+        self.assertTrue(urls["WORKER_IMAGE"].endswith("worker-py3.8:abc123"))
+        self.assertTrue(
+            urls["CODE_UPLOAD_WORKER_IMAGE"].endswith(
+                "code-upload-worker:abc123"
+            )
+        )
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition")
+    def test_build_task_definition_dict_normal_challenge(
+        self,
+        mock_task_definition,
+        mock_get_aws_credentials,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        challenge = MagicMock(
+            pk=1,
+            is_docker_based=False,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+        )
+        mock_get_aws_credentials.return_value = {}
+        mock_task_definition.format.return_value = "{'family': 'queue'}"
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda value: {"family": "queue"},
+        ):
+            task_def, error = build_task_definition_dict(challenge, "queue")
+        self.assertIsNone(error)
+        self.assertEqual(task_def, {"family": "queue"})
+        mock_task_definition.format.assert_called_once()
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition_code_upload_worker")
+    def test_build_task_definition_dict_code_upload_challenge(
+        self,
+        mock_task_definition,
+        mock_get_aws_credentials,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        challenge = MagicMock(
+            pk=1,
+            is_docker_based=True,
+            is_static_dataset_code_upload=False,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+            creator=MagicMock(created_by=MagicMock()),
+        )
+        mock_cluster_get.return_value = MagicMock(
+            name="cluster",
+            cluster_endpoint="endpoint",
+            cluster_ssl="ssl",
+            efs_id="efs",
+        )
+        mock_jwt_get.return_value = MagicMock(refresh_token="token")
+        mock_get_aws_credentials.return_value = {}
+        mock_task_definition.format.return_value = "{'family': 'queue'}"
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda value: {"family": "queue"},
+        ):
+            task_def, error = build_task_definition_dict(challenge, "queue")
+        self.assertIsNone(error)
+        self.assertEqual(task_def, {"family": "queue"})
+
+    @patch("challenges.aws_utils.JwtToken.objects.get")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition_static_code_upload_worker")
+    @patch("challenges.aws_utils.container_definition_submission_worker")
+    @patch("challenges.aws_utils.container_definition_code_upload_worker")
+    def test_build_task_definition_dict_static_code_upload_challenge(
+        self,
+        mock_code_upload_container,
+        mock_submission_container,
+        mock_task_definition,
+        mock_get_aws_credentials,
+        mock_cluster_get,
+        mock_jwt_get,
+    ):
+        challenge = MagicMock(
+            pk=1,
+            is_docker_based=True,
+            is_static_dataset_code_upload=True,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+            creator=MagicMock(created_by=MagicMock()),
+        )
+        mock_cluster_get.return_value = MagicMock(
+            name="cluster",
+            cluster_endpoint="endpoint",
+            cluster_ssl="ssl",
+            efs_id="efs",
+        )
+        mock_jwt_get.return_value = MagicMock(refresh_token="token")
+        mock_get_aws_credentials.return_value = {}
+        mock_code_upload_container.format.return_value = "{}"
+        mock_submission_container.format.return_value = "{}"
+        mock_task_definition.format.return_value = "{'family': 'queue'}"
+        with patch(
+            "challenges.aws_utils.eval",
+            side_effect=lambda value: {"family": "queue"},
+        ):
+            task_def, error = build_task_definition_dict(challenge, "queue")
+        self.assertIsNone(error)
+        self.assertEqual(task_def, {"family": "queue"})
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_refresh_worker_task_definitions_partial_failure(
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge_ok = MagicMock(pk=1)
+        challenge_fail = MagicMock(pk=2)
+        mock_refresh_task_definition.side_effect = [
+            {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}},
+            {
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+                "Error": "refresh failed",
+            },
+        ]
+
+        response = refresh_worker_task_definitions(
+            queryset=[challenge_ok, challenge_fail], commit_id="abc123"
+        )
+
+        self.assertEqual(response["count"], 1)
+        self.assertEqual(len(response["failures"]), 1)
+        self.assertEqual(response["failures"][0]["challenge_pk"], 2)

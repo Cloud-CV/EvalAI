@@ -66,13 +66,13 @@ COMMON_SETTINGS_DICT = {
     ),
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
-        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker-py3.7:latest".format(
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker-py3.9:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
     ),
     "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
         "CODE_UPLOAD_WORKER_IMAGE",
-        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-code-upload-worker:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
     ),
@@ -101,6 +101,247 @@ VPC_DICT = {
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
+
+SUPPORTED_WORKER_PYTHON_VERSIONS = ("3.7", "3.8", "3.9")
+DEFAULT_WORKER_PYTHON_VERSION = "3.9"
+
+
+def get_evalai_submission_worker_ecr_image(
+    python_version=None, commit_id=None
+):
+    """
+    Return the EvalAI-managed submission worker image URI for a Python version.
+    """
+    python_version = python_version or DEFAULT_WORKER_PYTHON_VERSION
+    if python_version not in SUPPORTED_WORKER_PYTHON_VERSIONS:
+        python_version = DEFAULT_WORKER_PYTHON_VERSION
+    image_tag = commit_id or "latest"
+    return "{account}.dkr.ecr.{region}.amazonaws.com/evalai-{env}-worker-py{version}:{tag}".format(
+        account=aws_keys["AWS_ACCOUNT_ID"],
+        region=aws_keys["AWS_REGION"],
+        env=ENV,
+        version=python_version,
+        tag=image_tag,
+    )
+
+
+def get_evalai_code_upload_worker_ecr_image(commit_id=None):
+    """
+    Return the EvalAI-managed code-upload worker image URI.
+    """
+    image_tag = commit_id or "latest"
+    return "{account}.dkr.ecr.{region}.amazonaws.com/evalai-{env}-code-upload-worker:{tag}".format(
+        account=aws_keys["AWS_ACCOUNT_ID"],
+        region=aws_keys["AWS_REGION"],
+        env=ENV,
+        tag=image_tag,
+    )
+
+
+def get_deployed_worker_image_urls(commit_id=None, python_version=None):
+    """
+    Build canonical WORKER_IMAGE and CODE_UPLOAD_WORKER_IMAGE URLs for deploys.
+    """
+    python_version = python_version or DEFAULT_WORKER_PYTHON_VERSION
+    return {
+        "WORKER_IMAGE": get_evalai_submission_worker_ecr_image(
+            python_version, commit_id
+        ),
+        "CODE_UPLOAD_WORKER_IMAGE": get_evalai_code_upload_worker_ecr_image(
+            commit_id
+        ),
+    }
+
+
+def is_evalai_managed_submission_worker_image(image_url):
+    """
+    Return True when image_url points at an EvalAI submission worker ECR repo.
+    """
+    if not image_url:
+        return False
+    account_id = aws_keys["AWS_ACCOUNT_ID"]
+    region = aws_keys["AWS_REGION"]
+    prefix = (
+        f"{account_id}.dkr.ecr.{region}.amazonaws.com/evalai-{ENV}-worker-py"
+    )
+    return image_url.startswith(prefix)
+
+
+def update_evalai_worker_image_tag(image_url, commit_id):
+    """
+    Replace the tag on an EvalAI-managed worker image URL.
+    """
+    if not image_url or not commit_id or ":" not in image_url:
+        return image_url
+    repository, _ = image_url.rsplit(":", 1)
+    return f"{repository}:{commit_id}"
+
+
+def get_worker_image_for_challenge(challenge, commit_id=None):
+    """
+    Resolve the submission worker image for a challenge.
+    """
+    if challenge.worker_image_url:
+        if commit_id and is_evalai_managed_submission_worker_image(
+            challenge.worker_image_url
+        ):
+            return update_evalai_worker_image_tag(
+                challenge.worker_image_url, commit_id
+            )
+        return challenge.worker_image_url
+
+    python_version = (
+        getattr(challenge, "worker_python_version", None)
+        or DEFAULT_WORKER_PYTHON_VERSION
+    )
+    return get_evalai_submission_worker_ecr_image(python_version, commit_id)
+
+
+def get_image_settings_for_challenge(challenge, commit_id=None):
+    """
+    Build WORKER_IMAGE and CODE_UPLOAD_WORKER_IMAGE settings for task defs.
+    """
+    return {
+        **COMMON_SETTINGS_DICT,
+        "WORKER_IMAGE": get_worker_image_for_challenge(challenge, commit_id),
+        "CODE_UPLOAD_WORKER_IMAGE": get_evalai_code_upload_worker_ecr_image(
+            commit_id
+        ),
+    }
+
+
+def build_task_definition_dict(
+    challenge,
+    queue_name,
+    image_settings=None,
+    worker_cpu_cores=None,
+    worker_memory=None,
+):
+    """
+    Build the ECS task definition dict for a challenge worker service.
+
+    Returns:
+        tuple: (task_definition_dict, error_response). error_response is None
+        when successful.
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    container_name = f"worker_{queue_name}"
+    code_upload_container_name = f"code_upload_worker_{queue_name}"
+    worker_cpu_cores = (
+        worker_cpu_cores
+        if worker_cpu_cores is not None
+        else challenge.worker_cpu_cores
+    )
+    worker_memory = (
+        worker_memory if worker_memory is not None else challenge.worker_memory
+    )
+    ephemeral_storage = challenge.ephemeral_storage
+    log_group_name = get_log_group_name(challenge.pk)
+    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
+    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
+    updated_settings = image_settings or get_image_settings_for_challenge(
+        challenge
+    )
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+
+    if challenge.is_docker_based:
+        from .models import ChallengeEvaluationCluster
+
+        try:
+            cluster_details = ChallengeEvaluationCluster.objects.get(
+                challenge=challenge
+            )
+        except ChallengeEvaluationCluster.DoesNotExist:
+            message = (
+                "Error. Evaluation cluster not configured for challenge "
+                f"{challenge.pk}."
+            )
+            return None, {
+                "Error": message,
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            }
+
+        cluster_name = cluster_details.name
+        cluster_endpoint = cluster_details.cluster_endpoint
+        cluster_certificate = cluster_details.cluster_ssl
+        efs_id = cluster_details.efs_id
+        token = JwtToken.objects.get(user=challenge.creator.created_by)
+
+        if challenge.is_static_dataset_code_upload:
+            code_upload_container = (
+                container_definition_code_upload_worker.format(
+                    queue_name=queue_name,
+                    code_upload_container_name=code_upload_container_name,
+                    auth_token=token.refresh_token,
+                    cluster_name=cluster_name,
+                    cluster_endpoint=cluster_endpoint,
+                    certificate=cluster_certificate,
+                    log_group_name=log_group_name,
+                    EVALAI_DNS=EVALAI_DNS,
+                    EFS_ID=efs_id,
+                    **updated_settings,
+                    **challenge_aws_keys,
+                )
+            )
+            submission_container = (
+                container_definition_submission_worker.format(
+                    queue_name=queue_name,
+                    container_name=container_name,
+                    ENV=ENV,
+                    challenge_pk=challenge.pk,
+                    log_group_name=log_group_name,
+                    AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+                    AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+                    **updated_settings,
+                    **aws_keys,
+                )
+            )
+            definition = task_definition_static_code_upload_worker.format(
+                queue_name=queue_name,
+                code_upload_container=code_upload_container,
+                submission_container=submission_container,
+                CPU=worker_cpu_cores,
+                MEMORY=worker_memory,
+                ephemeral_storage=ephemeral_storage,
+                **updated_settings,
+            )
+        else:
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                code_upload_container_name=code_upload_container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                auth_token=token.refresh_token,
+                cluster_name=cluster_name,
+                cluster_endpoint=cluster_endpoint,
+                certificate=cluster_certificate,
+                CPU=worker_cpu_cores,
+                MEMORY=worker_memory,
+                ephemeral_storage=ephemeral_storage,
+                log_group_name=log_group_name,
+                EVALAI_DNS=EVALAI_DNS,
+                EFS_ID=efs_id,
+                **updated_settings,
+                **challenge_aws_keys,
+            )
+    else:
+        definition = task_definition.format(
+            queue_name=queue_name,
+            container_name=container_name,
+            ENV=ENV,
+            challenge_pk=challenge.pk,
+            CPU=worker_cpu_cores,
+            MEMORY=worker_memory,
+            ephemeral_storage=ephemeral_storage,
+            log_group_name=log_group_name,
+            AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+            AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+            **updated_settings,
+            **challenge_aws_keys,
+        )
+
+    return eval(definition), None
 
 
 def get_capacity_provider_strategy(challenge):
@@ -687,141 +928,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and its ARN if successful,
         and an error dictionary if not
     """
-    container_name = f"worker_{queue_name}"
-    code_upload_container_name = f"code_upload_worker_{queue_name}"
-    worker_cpu_cores = challenge.worker_cpu_cores
-    worker_memory = challenge.worker_memory
-    ephemeral_storage = challenge.ephemeral_storage
-    log_group_name = get_log_group_name(challenge.pk)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
-    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
-    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
-    if challenge.worker_image_url:
-        updated_settings = {
-            **COMMON_SETTINGS_DICT,
-            "WORKER_IMAGE": challenge.worker_image_url,
-        }
-    else:
-        updated_settings = COMMON_SETTINGS_DICT
-
-    if execution_role_arn:
-        from .utils import get_aws_credentials_for_challenge
-
-        challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-        if challenge.is_docker_based:
-            from .models import ChallengeEvaluationCluster
-
-            # Cluster detail to be used by code-upload-worker
-            try:
-                cluster_details = ChallengeEvaluationCluster.objects.get(
-                    challenge=challenge
-                )
-                cluster_name = cluster_details.name
-                cluster_endpoint = cluster_details.cluster_endpoint
-                cluster_certificate = cluster_details.cluster_ssl
-                efs_id = cluster_details.efs_id
-            except ClientError as e:
-                logger.exception(e)
-                return e.response
-            # challenge host auth token to be used by code-upload-worker
-            token = JwtToken.objects.get(user=challenge.creator.created_by)
-            if challenge.is_static_dataset_code_upload:
-                code_upload_container = (
-                    container_definition_code_upload_worker.format(
-                        queue_name=queue_name,
-                        code_upload_container_name=code_upload_container_name,
-                        auth_token=token.refresh_token,
-                        cluster_name=cluster_name,
-                        cluster_endpoint=cluster_endpoint,
-                        certificate=cluster_certificate,
-                        log_group_name=log_group_name,
-                        EVALAI_DNS=EVALAI_DNS,
-                        EFS_ID=efs_id,
-                        **updated_settings,
-                        **challenge_aws_keys,
-                    )
-                )
-                submission_container = (
-                    container_definition_submission_worker.format(
-                        queue_name=queue_name,
-                        container_name=container_name,
-                        ENV=ENV,
-                        challenge_pk=challenge.pk,
-                        log_group_name=log_group_name,
-                        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
-                        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                        **updated_settings,
-                        **aws_keys,
-                    )
-                )
-                definition = task_definition_static_code_upload_worker.format(
-                    queue_name=queue_name,
-                    code_upload_container=code_upload_container,
-                    submission_container=submission_container,
-                    CPU=worker_cpu_cores,
-                    MEMORY=worker_memory,
-                    ephemeral_storage=ephemeral_storage,
-                    **updated_settings,
-                )
-            else:
-                definition = task_definition_code_upload_worker.format(
-                    queue_name=queue_name,
-                    code_upload_container_name=code_upload_container_name,
-                    ENV=ENV,
-                    challenge_pk=challenge.pk,
-                    auth_token=token.refresh_token,
-                    cluster_name=cluster_name,
-                    cluster_endpoint=cluster_endpoint,
-                    certificate=cluster_certificate,
-                    CPU=worker_cpu_cores,
-                    MEMORY=worker_memory,
-                    ephemeral_storage=ephemeral_storage,
-                    log_group_name=log_group_name,
-                    EVALAI_DNS=EVALAI_DNS,
-                    EFS_ID=efs_id,
-                    **updated_settings,
-                    **challenge_aws_keys,
-                )
-        else:
-            definition = task_definition.format(
-                queue_name=queue_name,
-                container_name=container_name,
-                ENV=ENV,
-                challenge_pk=challenge.pk,
-                CPU=worker_cpu_cores,
-                MEMORY=worker_memory,
-                ephemeral_storage=ephemeral_storage,
-                log_group_name=log_group_name,
-                AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
-                AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                **updated_settings,
-                **challenge_aws_keys,
-            )
-        definition = eval(definition)
-        if not challenge.task_def_arn:
-            try:
-                response = client.register_task_definition(**definition)
-                if (
-                    response["ResponseMetadata"]["HTTPStatusCode"]
-                    == HTTPStatus.OK
-                ):
-                    task_def_arn = response["taskDefinition"][
-                        "taskDefinitionArn"
-                    ]
-                    challenge.task_def_arn = task_def_arn
-                    challenge.save()
-                return response
-            except ClientError as e:
-                logger.exception(e)
-                return e.response
-        else:
-            message = f"Error. Task definition already registered for challenge {challenge.pk}."
-            return {
-                "Error": message,
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-            }
-    else:
+    if not execution_role_arn:
         message = (
             "Please ensure that the "
             "TASK_EXECUTION_ROLE_ARN is appropriately passed as an environment varible."
@@ -830,6 +939,162 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
+
+    if challenge.task_def_arn:
+        message = f"Error. Task definition already registered for challenge {challenge.pk}."
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
+    definition, error_response = build_task_definition_dict(
+        challenge, queue_name
+    )
+    if error_response:
+        return error_response
+
+    try:
+        response = client.register_task_definition(**definition)
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+            challenge.task_def_arn = task_def_arn
+            challenge.save()
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+
+def refresh_task_definition_for_challenge(
+    challenge, commit_id=None, force_redeploy=True, client=None
+):
+    """
+    Re-register the ECS task definition for a challenge with updated images.
+
+    Deregisters the previous task definition revision, registers a new one,
+    and optionally forces the ECS service to redeploy.
+    """
+    if challenge.uses_ec2_worker or challenge.remote_evaluation:
+        return {
+            "skipped": True,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+        }
+
+    if not challenge.task_def_arn:
+        message = (
+            f"Error. No active task definition registered for challenge "
+            f"{challenge.pk}."
+        )
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
+    if client is None:
+        client = get_boto3_client("ecs", aws_keys)
+
+    try:
+        response = client.deregister_task_definition(
+            taskDefinition=challenge.task_def_arn
+        )
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            return response
+        challenge.task_def_arn = None
+        challenge.save()
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+    image_settings = get_image_settings_for_challenge(challenge, commit_id)
+    definition, error_response = build_task_definition_dict(
+        challenge, challenge.queue, image_settings=image_settings
+    )
+    if error_response:
+        return error_response
+
+    try:
+        response = client.register_task_definition(**definition)
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            return response
+
+        task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+        challenge.task_def_arn = task_def_arn
+        challenge.save()
+
+        if force_redeploy and challenge.workers and challenge.workers > 0:
+            return update_service_by_challenge_pk(
+                client,
+                challenge,
+                challenge.workers,
+                force_new_deployment=True,
+            )
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+
+def refresh_worker_task_definitions(
+    queryset=None, commit_id=None, dry_run=False
+):
+    """
+    Refresh ECS task definitions for active Fargate-managed challenges.
+    """
+    from django.utils import timezone
+
+    from .models import Challenge
+
+    if queryset is None:
+        queryset = Challenge.objects.filter(
+            approved_by_admin=True,
+            task_def_arn__isnull=False,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            end_date__gt=timezone.now(),
+        ).exclude(task_def_arn="")
+
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": (
+                        "Worker task definitions cannot be refreshed on AWS "
+                        "ECS in development environment"
+                    ),
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    client = get_boto3_client("ecs", aws_keys)
+    count = 0
+    failures = []
+
+    for challenge in queryset:
+        if dry_run:
+            count += 1
+            continue
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id=commit_id, client=client
+        )
+        if response.get("skipped"):
+            continue
+
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            failures.append(
+                {
+                    "message": response.get(
+                        "Error", "Failed to refresh worker task definition."
+                    ),
+                    "challenge_pk": challenge.pk,
+                }
+            )
+            continue
+        count += 1
+
+    return {"count": count, "failures": failures}
 
 
 def create_service_by_challenge_pk(client, challenge, client_token):
@@ -937,7 +1202,9 @@ def update_service_by_challenge_pk(
     client (boto3.client): the client used for making requests to ECS
     challenge (<class 'challenges.models.Challenge'>): The challenge object  for whom the task definition is being registered.
     num_of_tasks (int): Number of workers to scale to for the challenge.
-    force_new_deployment (bool): Set True (mainly for restarting) to specify if you want to redploy with the latest image from ECR. Default is False.
+    force_new_deployment (bool): Set True (mainly for restarting) to force ECS to
+        redeploy tasks using the current task definition revision. This does not
+        change the container image unless the task definition was updated.
 
     Returns:
     dict: The response returned by the update_service method from boto3. If unsuccesful, returns an error dictionary
@@ -1360,6 +1627,7 @@ def create_ec2_instance(
         "QUEUE": challenge.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
         "CUSTOM_WORKER_IMAGE": challenge.worker_image_url,
+        "WORKER_PYTHON_VERSION": challenge.worker_python_version or "3.9",
     }
 
     for key, value in variables.items():
@@ -1610,8 +1878,6 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
 
-    from .utils import get_aws_credentials_for_challenge
-
     client = get_boto3_client("ecs", aws_keys)
 
     if (
@@ -1644,33 +1910,16 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         logger.exception(e)
         return e.response
 
-    if challenge.worker_image_url:
-        updated_settings = {
-            **COMMON_SETTINGS_DICT,
-            "WORKER_IMAGE": challenge.worker_image_url,
-        }
-    else:
-        updated_settings = COMMON_SETTINGS_DICT
-
-    queue_name = challenge.queue
-    container_name = f"worker_{queue_name}"
-    log_group_name = get_log_group_name(challenge.pk)
-    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    task_def = task_definition.format(
-        queue_name=queue_name,
-        container_name=container_name,
-        ENV=ENV,
-        challenge_pk=challenge.pk,
-        CPU=worker_cpu_cores,
-        MEMORY=worker_memory,
-        ephemeral_storage=challenge.ephemeral_storage,
-        log_group_name=log_group_name,
-        AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
-        AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
-        **updated_settings,
-        **challenge_aws_keys,
+    image_settings = get_image_settings_for_challenge(challenge)
+    task_def, error_response = build_task_definition_dict(
+        challenge,
+        challenge.queue,
+        image_settings=image_settings,
+        worker_cpu_cores=worker_cpu_cores,
+        worker_memory=worker_memory,
     )
-    task_def = eval(task_def)
+    if error_response:
+        return error_response
 
     try:
         response = client.register_task_definition(**task_def)
@@ -1682,7 +1931,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             challenge.task_def_arn = task_def_arn
             challenge.save()
             force_new_deployment = False
-            service_name = f"{queue_name}_service"
+            service_name = f"{challenge.queue}_service"
             num_of_tasks = challenge.workers
             kwargs = update_service_args.format(
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
@@ -1775,25 +2024,27 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (
-            challenge.is_docker_based
-            and not challenge.is_static_dataset_code_upload
-        ):
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
+        if (challenge.workers is not None) and (challenge.workers > 0):
+            response = refresh_task_definition_for_challenge(
+                challenge, client=client
             )
-        elif (challenge.workers is not None) and (challenge.workers > 0):
-            response = service_manager(
-                client,
-                challenge=challenge,
-                num_of_tasks=challenge.workers,
-                force_new_deployment=True,
-            )
+            if response.get("skipped"):
+                failures.append(
+                    {
+                        "message": (
+                            "Worker task definition refresh is not supported "
+                            "for this challenge type."
+                        ),
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
                     {
-                        "message": response["Error"],
+                        "message": response.get(
+                            "Error", "Failed to restart worker."
+                        ),
                         "challenge_pk": challenge.pk,
                     }
                 )

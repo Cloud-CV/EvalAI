@@ -292,6 +292,13 @@ class Challenge(TimeStampedModel):
     worker_image_url = models.CharField(
         max_length=200, blank=True, null=True, default=""
     )
+    worker_python_version = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        default="3.9",
+        help_text="Python version for the Fargate submission worker image (3.7, 3.8, or 3.9).",
+    )
     evaluation_module_error = models.TextField(null=True, blank=True)
     is_frozen = models.BooleanField(
         default=False,

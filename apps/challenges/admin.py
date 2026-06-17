@@ -6,6 +6,7 @@ from django.contrib.admin.helpers import ActionForm
 from .admin_filters import ChallengeFilter
 from .aws_utils import (
     delete_workers,
+    refresh_worker_task_definitions,
     restart_workers,
     scale_workers,
     start_workers,
@@ -89,6 +90,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "stop_selected_workers",
         "scale_selected_workers",
         "restart_selected_workers",
+        "refresh_selected_worker_task_definitions",
         "delete_selected_workers",
         "freeze_selected_challenges",
         "unfreeze_selected_challenges",
@@ -199,6 +201,40 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     restart_selected_workers.short_description = (
         "Restart all selected challenge workers."
+    )
+
+    def refresh_selected_worker_task_definitions(self, request, queryset):
+        response = refresh_worker_task_definitions(queryset=queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count and not failures:
+            messages.success(
+                request,
+                "All selected challenge worker task definitions were refreshed.",
+            )
+        elif count:
+            messages.success(
+                request,
+                "{} challenge worker task definitions were refreshed.".format(
+                    count
+                ),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+        else:
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    refresh_selected_worker_task_definitions.short_description = (
+        "Refresh worker task definitions for selected challenges."
     )
 
     def delete_selected_workers(self, request, queryset):
