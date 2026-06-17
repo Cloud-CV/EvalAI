@@ -21,6 +21,10 @@ from .challenge_notification_util import (
     construct_and_send_eks_cluster_creation_mail,
     construct_and_send_worker_start_mail,
 )
+from .constants import (
+    DEFAULT_WORKER_PYTHON_VERSION,
+    SUPPORTED_WORKER_PYTHON_VERSIONS,
+)
 from .task_definitions import (
     container_definition_code_upload_worker,
     container_definition_submission_worker,
@@ -30,6 +34,10 @@ from .task_definitions import (
     task_definition_code_upload_worker,
     task_definition_static_code_upload_worker,
     update_service_args,
+)
+from .worker_utils import (
+    ensure_challenge_worker_python_version,
+    normalize_worker_python_version,
 )
 
 logger = logging.getLogger(__name__)
@@ -101,9 +109,6 @@ VPC_DICT = {
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
-
-SUPPORTED_WORKER_PYTHON_VERSIONS = ("3.7", "3.8", "3.9")
-DEFAULT_WORKER_PYTHON_VERSION = "3.9"
 
 
 def get_evalai_submission_worker_ecr_image(
@@ -190,9 +195,8 @@ def get_worker_image_for_challenge(challenge, commit_id=None):
             )
         return challenge.worker_image_url
 
-    python_version = (
+    python_version = normalize_worker_python_version(
         getattr(challenge, "worker_python_version", None)
-        or DEFAULT_WORKER_PYTHON_VERSION
     )
     return get_evalai_submission_worker_ecr_image(python_version, commit_id)
 
@@ -947,6 +951,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
+    ensure_challenge_worker_python_version(challenge)
+
     definition, error_response = build_task_definition_dict(
         challenge, queue_name
     )
@@ -1618,6 +1624,8 @@ def create_ec2_instance(
             else challenge.worker_image_url
         )
 
+    worker_python_version = ensure_challenge_worker_python_version(challenge)
+
     variables = {
         "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -1627,7 +1635,7 @@ def create_ec2_instance(
         "QUEUE": challenge.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
         "CUSTOM_WORKER_IMAGE": challenge.worker_image_url,
-        "WORKER_PYTHON_VERSION": challenge.worker_python_version or "3.9",
+        "WORKER_PYTHON_VERSION": worker_python_version,
     }
 
     for key, value in variables.items():

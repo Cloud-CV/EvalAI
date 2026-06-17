@@ -55,6 +55,10 @@ from challenges.aws_utils import (
     update_sqs_retention_period_task,
 )
 from challenges.models import Challenge
+from challenges.worker_utils import (
+    ensure_challenge_worker_python_version,
+    normalize_worker_python_version,
+)
 from django.contrib.auth.models import User
 from django.core import serializers
 from hosts.models import ChallengeHostTeam
@@ -5305,6 +5309,21 @@ class TestTriggerEksNodeAutoscale:
 
 
 class TestWorkerImageHelpers(TestCase):
+    def test_normalize_worker_python_version_defaults_to_py39(self):
+        self.assertEqual(normalize_worker_python_version(None), "3.9")
+        self.assertEqual(normalize_worker_python_version(""), "3.9")
+        self.assertEqual(normalize_worker_python_version("3.8"), "3.8")
+        self.assertEqual(normalize_worker_python_version("invalid"), "3.9")
+
+    def test_ensure_challenge_worker_python_version_persists_default(self):
+        challenge = MagicMock(worker_python_version=None)
+        version = ensure_challenge_worker_python_version(challenge)
+        self.assertEqual(version, "3.9")
+        self.assertEqual(challenge.worker_python_version, "3.9")
+        challenge.save.assert_called_once_with(
+            update_fields=["worker_python_version"]
+        )
+
     @patch.dict(
         "challenges.aws_utils.aws_keys",
         {

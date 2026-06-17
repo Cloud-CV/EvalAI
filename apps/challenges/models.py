@@ -13,6 +13,11 @@ from django.utils import timezone
 from hosts.models import ChallengeHost
 from participants.models import ParticipantTeam
 
+from .constants import (
+    DEFAULT_WORKER_PYTHON_VERSION,
+    SUPPORTED_WORKER_PYTHON_VERSIONS,
+)
+
 
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
@@ -296,8 +301,11 @@ class Challenge(TimeStampedModel):
         max_length=10,
         blank=True,
         null=True,
-        default="3.9",
-        help_text="Python version for the Fargate submission worker image (3.7, 3.8, or 3.9).",
+        default=DEFAULT_WORKER_PYTHON_VERSION,
+        help_text=(
+            "Python version for the Fargate submission worker image "
+            f"({', '.join(SUPPORTED_WORKER_PYTHON_VERSIONS)})."
+        ),
     )
     evaluation_module_error = models.TextField(null=True, blank=True)
     is_frozen = models.BooleanField(

@@ -114,6 +114,16 @@ class ChallengeSerializerTest(BaseTestCase):
             Challenge.PAID, serializer.data["challenge_usage_type"]
         )
 
+    def test_worker_python_version_defaults_to_39_when_omitted(self):
+        serializer = ChallengeSerializer()
+        self.assertEqual(
+            serializer.validate_worker_python_version(None), "3.9"
+        )
+        self.assertEqual(serializer.validate_worker_python_version(""), "3.9")
+        self.assertEqual(
+            serializer.validate_worker_python_version("3.8"), "3.8"
+        )
+
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def setUp(self):

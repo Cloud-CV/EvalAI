@@ -240,8 +240,8 @@ case "${operation_name}" in
             --name="worker_${challenge_queue_name}" \
             -e "CHALLENGE_QUEUE=${challenge_queue_name}" \
             -e "CHALLENGE_PK=${challenge_primary_key}" \
-            -d worker
-        echo "Deployed worker docker container for queue: ${challenge_queue_name}"
+            -d worker_py3_9
+        echo "Deployed worker_py3_9 docker container for queue: ${challenge_queue_name}"
         ;;
     deploy-worker-py3-8)
         validate_target_environment
@@ -303,8 +303,8 @@ case "${operation_name}" in
             docker compose -f "docker-compose-${target_environment}.yml" run \
                 --name="worker_${challenge_queue_name}" \
                 -e "CHALLENGE_QUEUE=${challenge_queue_name}" \
-                -d worker
-            echo "Deployed worker docker container for queue: ${challenge_queue_name}"
+                -d worker_py3_9
+            echo "Deployed worker_py3_9 docker container for queue: ${challenge_queue_name}"
         done
         ;;
     scale)

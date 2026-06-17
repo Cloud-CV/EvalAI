@@ -1,6 +1,8 @@
 import copy
 
 from accounts.serializers import UserDetailsSerializer
+from challenges.constants import DEFAULT_WORKER_PYTHON_VERSION
+from challenges.worker_utils import normalize_worker_python_version
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
@@ -31,6 +33,15 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     def get_domain_name(self, obj):
         return obj.get_domain_display()
+
+    def validate_worker_python_version(self, value):
+        return normalize_worker_python_version(value)
+
+    def create(self, validated_data):
+        validated_data.setdefault(
+            "worker_python_version", DEFAULT_WORKER_PYTHON_VERSION
+        )
+        return super().create(validated_data)
 
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
