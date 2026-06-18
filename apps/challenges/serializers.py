@@ -47,6 +47,18 @@ class ChallengeSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_worker_image_url(self, value):
+        if value in (None, ""):
+            return value
+        from .worker_utils import is_allowed_worker_image_url
+
+        if not is_allowed_worker_image_url(value):
+            raise serializers.ValidationError(
+                "worker_image_url must be an EC2 AMI (ami-...) or an EvalAI "
+                "ECR image in this AWS account (evalai-* repositories)."
+            )
+        return value
+
     def create(self, validated_data):
         validated_data.setdefault(
             "worker_python_version", DEFAULT_WORKER_PYTHON_VERSION

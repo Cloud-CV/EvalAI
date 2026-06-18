@@ -3608,7 +3608,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_get_aws_credentials.return_value = {}
 
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda x: {"family": "test"},
         ):
             response = register_task_def_by_challenge_pk(
@@ -3657,7 +3657,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_get_aws_credentials.return_value = {}
 
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda x: {"family": "test"},
         ):
             response = register_task_def_by_challenge_pk(
@@ -3748,7 +3748,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_get_aws_credentials.return_value = {}
 
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda x: {"family": "test"},
         ):
             response = register_task_def_by_challenge_pk(
@@ -3805,7 +3805,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_get_aws_credentials.return_value = {}
 
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda x: {"family": "test"},
         ):
             mock_client.register_task_definition.return_value = {
@@ -3870,7 +3870,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_get_aws_credentials.return_value = {}
 
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda x: {"family": "test"},
         ):
             error_response = {"Error": {"Code": "SomeError"}}
@@ -5383,6 +5383,42 @@ class TestWorkerImageHelpers(TestCase):
         },
         clear=False,
     )
+    @patch("challenges.aws_utils.ENV", "prod")
+    def test_get_evalai_submission_worker_ecr_image_maps_settings_prod_env(
+        self,
+    ):
+        image = get_evalai_submission_worker_ecr_image(commit_id="abc123")
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:abc123",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "prod")
+    def test_is_evalai_managed_submission_worker_image_accepts_production_repo(
+        self,
+    ):
+        image_url = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:oldsha"
+        )
+        self.assertTrue(is_evalai_managed_submission_worker_image(image_url))
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
     @patch("challenges.aws_utils.ENV", "production")
     def test_get_evalai_submission_worker_ecr_image_invalid_version(self):
         image = get_evalai_submission_worker_ecr_image(python_version="3.11")
@@ -5688,7 +5724,7 @@ class TestWorkerImageHelpers(TestCase):
         mock_get_aws_credentials.return_value = {}
         mock_task_definition.format.return_value = "{'family': 'queue'}"
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda value: {"family": "queue"},
         ):
             task_def, error = build_task_definition_dict(challenge, "queue")
@@ -5726,7 +5762,7 @@ class TestWorkerImageHelpers(TestCase):
         mock_get_aws_credentials.return_value = {}
         mock_task_definition.format.return_value = "{'family': 'queue'}"
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda value: {"family": "queue"},
         ):
             task_def, error = build_task_definition_dict(challenge, "queue")
@@ -5769,7 +5805,7 @@ class TestWorkerImageHelpers(TestCase):
         mock_submission_container.format.return_value = "{}"
         mock_task_definition.format.return_value = "{'family': 'queue'}"
         with patch(
-            "challenges.aws_utils.eval",
+            "challenges.aws_utils.load_aws_api_kwargs",
             side_effect=lambda value: {"family": "queue"},
         ):
             task_def, error = build_task_definition_dict(challenge, "queue")
@@ -5990,3 +6026,5 @@ class TestWorkerImageHelpers(TestCase):
         )
 
         self.assertEqual(response["Error"], "build failed")
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
+        challenge.save.assert_not_called()

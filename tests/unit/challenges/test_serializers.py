@@ -127,6 +127,36 @@ class ChallengeSerializerTest(BaseTestCase):
         with self.assertRaises(serializers.ValidationError):
             serializer.validate_worker_python_version("3.10")
 
+    def test_worker_image_url_allows_ec2_ami(self):
+        serializer = ChallengeSerializer()
+        self.assertEqual(
+            serializer.validate_worker_image_url("ami-0747bdcabd34c712a"),
+            "ami-0747bdcabd34c712a",
+        )
+
+    @mockpatch.dict(
+        os.environ,
+        {"AWS_ACCOUNT_ID": "123456789012", "AWS_DEFAULT_REGION": "us-east-1"},
+    )
+    def test_worker_image_url_allows_evalai_ecr_image(self):
+        serializer = ChallengeSerializer()
+        image = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:latest"
+        )
+        self.assertEqual(serializer.validate_worker_image_url(image), image)
+
+    @mockpatch.dict(
+        os.environ,
+        {"AWS_ACCOUNT_ID": "123456789012", "AWS_DEFAULT_REGION": "us-east-1"},
+    )
+    def test_worker_image_url_rejects_untrusted_registry(self):
+        serializer = ChallengeSerializer()
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate_worker_image_url(
+                "docker.io/library/nginx:latest"
+            )
+
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
     def setUp(self):

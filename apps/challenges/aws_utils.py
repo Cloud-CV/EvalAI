@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 import logging
@@ -24,6 +25,7 @@ from .challenge_notification_util import (
 from .constants import (
     DEFAULT_WORKER_PYTHON_VERSION,
     SUPPORTED_WORKER_PYTHON_VERSIONS,
+    get_ecr_env_name,
 )
 from .task_definitions import (
     container_definition_code_upload_worker,
@@ -45,6 +47,33 @@ logger = logging.getLogger(__name__)
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 EVALAI_DNS = os.environ.get("SERVICE_DNS")
+
+
+def get_current_ecr_env():
+    return get_ecr_env_name(ENV, os.environ.get("ECR_ENV"))
+
+
+def load_aws_api_kwargs(formatted_kwargs):
+    """
+    Parse formatted ECS API kwargs without using eval().
+    """
+    return ast.literal_eval(formatted_kwargs)
+
+
+def get_evalai_submission_worker_ecr_prefixes():
+    """
+    Return accepted ECR URL prefixes for EvalAI-managed submission worker images.
+    """
+    account_id = aws_keys["AWS_ACCOUNT_ID"]
+    region = aws_keys["AWS_REGION"]
+    base = f"{account_id}.dkr.ecr.{region}.amazonaws.com/evalai-"
+    ecr_env = get_current_ecr_env()
+    prefixes = {f"{base}{ecr_env}-worker-py"}
+    if ecr_env != ENV:
+        prefixes.add(f"{base}{ENV}-worker-py")
+    return prefixes
+
+
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
@@ -75,13 +104,13 @@ COMMON_SETTINGS_DICT = {
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
         "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker-py3.9:latest".format(
-            aws_keys["AWS_ACCOUNT_ID"], ENV
+            aws_keys["AWS_ACCOUNT_ID"], get_current_ecr_env()
         ),
     ),
     "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
         "CODE_UPLOAD_WORKER_IMAGE",
         "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-code-upload-worker:latest".format(
-            aws_keys["AWS_ACCOUNT_ID"], ENV
+            aws_keys["AWS_ACCOUNT_ID"], get_current_ecr_env()
         ),
     ),
     "CIDR": os.environ.get("CIDR"),
@@ -121,10 +150,11 @@ def get_evalai_submission_worker_ecr_image(
     if python_version not in SUPPORTED_WORKER_PYTHON_VERSIONS:
         python_version = DEFAULT_WORKER_PYTHON_VERSION
     image_tag = commit_id or "latest"
+    ecr_env = get_current_ecr_env()
     return "{account}.dkr.ecr.{region}.amazonaws.com/evalai-{env}-worker-py{version}:{tag}".format(
         account=aws_keys["AWS_ACCOUNT_ID"],
         region=aws_keys["AWS_REGION"],
-        env=ENV,
+        env=ecr_env,
         version=python_version,
         tag=image_tag,
     )
@@ -135,10 +165,11 @@ def get_evalai_code_upload_worker_ecr_image(commit_id=None):
     Return the EvalAI-managed code-upload worker image URI.
     """
     image_tag = commit_id or "latest"
+    ecr_env = get_current_ecr_env()
     return "{account}.dkr.ecr.{region}.amazonaws.com/evalai-{env}-code-upload-worker:{tag}".format(
         account=aws_keys["AWS_ACCOUNT_ID"],
         region=aws_keys["AWS_REGION"],
-        env=ENV,
+        env=ecr_env,
         tag=image_tag,
     )
 
@@ -164,12 +195,10 @@ def is_evalai_managed_submission_worker_image(image_url):
     """
     if not image_url:
         return False
-    account_id = aws_keys["AWS_ACCOUNT_ID"]
-    region = aws_keys["AWS_REGION"]
-    prefix = (
-        f"{account_id}.dkr.ecr.{region}.amazonaws.com/evalai-{ENV}-worker-py"
+    return any(
+        image_url.startswith(prefix)
+        for prefix in get_evalai_submission_worker_ecr_prefixes()
     )
-    return image_url.startswith(prefix)
 
 
 def update_evalai_worker_image_tag(image_url, commit_id):
@@ -345,7 +374,7 @@ def build_task_definition_dict(
             **challenge_aws_keys,
         )
 
-    return eval(definition), None
+    return load_aws_api_kwargs(definition), None
 
 
 def get_capacity_provider_strategy(challenge):
@@ -999,14 +1028,14 @@ def refresh_task_definition_for_challenge(
     if client is None:
         client = get_boto3_client("ecs", aws_keys)
 
+    previous_task_def_arn = challenge.task_def_arn
+
     try:
         response = client.deregister_task_definition(
-            taskDefinition=challenge.task_def_arn
+            taskDefinition=previous_task_def_arn
         )
         if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             return response
-        challenge.task_def_arn = None
-        challenge.save()
     except ClientError as e:
         logger.exception(e)
         return e.response
@@ -1174,7 +1203,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
                 challenge_pk=str(challenge.pk),
                 **VPC_DICT,
             )
-            definition = eval(definition)
+            definition = load_aws_api_kwargs(definition)
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
@@ -1227,7 +1256,7 @@ def update_service_by_challenge_pk(
         force_new_deployment=force_new_deployment,
         num_of_tasks=num_of_tasks,
     )
-    kwargs = eval(kwargs)
+    kwargs = load_aws_api_kwargs(kwargs)
 
     try:
         response = client.update_service(**kwargs)
@@ -1262,7 +1291,7 @@ def delete_service_by_challenge_pk(challenge):
         service_name=service_name,
         force=True,
     )
-    kwargs = eval(kwargs)
+    kwargs = load_aws_api_kwargs(kwargs)
     try:
         # Clean up auto-scaling and EventBridge schedule before deleting
         cleanup_auto_scaling_for_service(challenge)
@@ -1909,9 +1938,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
         )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-            challenge.task_def_arn = None
-            challenge.save()
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            return response
     except ClientError as e:
         e.response["Error"] = True
         e.response["Message"] = "Scaling inactive workers not supported"
@@ -1948,7 +1976,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
                 num_of_tasks=num_of_tasks,
                 force_new_deployment=force_new_deployment,
             )
-            kwargs = eval(kwargs)
+            kwargs = load_aws_api_kwargs(kwargs)
             response = client.update_service(**kwargs)
         return response
     except ClientError as e:
