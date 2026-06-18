@@ -54,7 +54,7 @@ from challenges.aws_utils import (
     update_sqs_retention_period,
     update_sqs_retention_period_task,
 )
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengeEvaluationCluster
 from challenges.worker_utils import (
     ensure_challenge_worker_python_version,
     normalize_worker_python_version,
@@ -945,6 +945,7 @@ class TestDescribeEC2Instance(unittest.TestCase):
         challenge.ec2_storage = None
         challenge.worker_instance_type = None
         challenge.worker_image_url = None
+        challenge.worker_python_version = "3.9"
         challenge.queue = "test_queue"  # Add this to avoid None issues
 
         # Call the function with ec2_storage
@@ -985,6 +986,7 @@ class TestDescribeEC2Instance(unittest.TestCase):
         challenge.ec2_storage = None
         challenge.worker_instance_type = None
         challenge.worker_image_url = None
+        challenge.worker_python_version = "3.9"
         challenge.queue = "test_queue"  # Add this to avoid None issues
 
         # Call the function with worker_instance_type
@@ -1027,6 +1029,7 @@ class TestDescribeEC2Instance(unittest.TestCase):
         challenge.ec2_storage = None
         challenge.worker_instance_type = None
         challenge.worker_image_url = None
+        challenge.worker_python_version = "3.9"
         challenge.queue = "test_queue"  # Add this to avoid None issues
 
         # Call the function with worker_image_url
@@ -1448,6 +1451,7 @@ class TestCreateEC2Instance(unittest.TestCase):
         challenge.ec2_storage = 50
         challenge.worker_instance_type = "t2.micro"
         challenge.worker_image_url = "ami-0747bdcabd34c712a"
+        challenge.worker_python_version = "3.9"
         challenge.queue = "some_queue"
 
         # Mock settings
@@ -2189,6 +2193,8 @@ class TestScaleResources(unittest.TestCase):
         challenge.task_def_arn = "some_task_def_arn"
         challenge.worker_cpu_cores = 2
         challenge.worker_memory = 4096
+        challenge.queue = "test_queue"
+        challenge.workers = 1
         # Mock other dependencies
         with patch(
             "challenges.aws_utils.get_image_settings_for_challenge"
@@ -3651,6 +3657,8 @@ class TestRegisterTaskDefByChallengePk:
         mock_challenge = MagicMock()
         mock_challenge.is_docker_based = True
         mock_challenge.worker_image_url = None
+        mock_challenge.task_def_arn = None
+        mock_challenge.worker_python_version = "3.9"
         mock_challenge.creator.created_by = "user"
         mock_challenge.pk = 1
         mock_challenge.queue = "queue"
@@ -3658,14 +3666,16 @@ class TestRegisterTaskDefByChallengePk:
         mock_challenge.worker_memory = 4096
         mock_challenge.ephemeral_storage = 21
 
-        error_response = {"Error": {"Code": "SomeError"}}
-        mock_cluster_get.side_effect = ClientError(error_response, "GetObject")
+        mock_cluster_get.side_effect = ChallengeEvaluationCluster.DoesNotExist
         mock_get_aws_credentials.return_value = {}
 
         response = register_task_def_by_challenge_pk(
             mock_client, "queue", mock_challenge
         )
-        assert response == error_response
+        assert response == {
+            "Error": "Error. Evaluation cluster not configured for challenge 1.",
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
 
     @patch("challenges.aws_utils.JwtToken.objects.get")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
@@ -3749,6 +3759,7 @@ class TestRegisterTaskDefByChallengePk:
         mock_client = MagicMock()
         mock_challenge = MagicMock()
         mock_challenge.worker_image_url = None
+        mock_challenge.worker_python_version = "3.9"
         mock_challenge.is_docker_based = True
         mock_challenge.is_static_dataset_code_upload = False
         mock_challenge.task_def_arn = None
