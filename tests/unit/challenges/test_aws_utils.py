@@ -4043,7 +4043,7 @@ class TestRegisterTaskDefByChallengePk:
             mock_client, "queue", mock_challenge
         )
 
-        self.assertEqual(response["Error"], "register rejected")
+        assert response["Error"] == "register rejected"
         mock_ensure.assert_called_once_with(mock_challenge)
         mock_challenge.save.assert_not_called()
 
@@ -6101,10 +6101,10 @@ class TestWorkerImageHelpers(TestCase):
     @patch("challenges.models.Challenge.objects.filter")
     def test_refresh_worker_task_definitions_default_queryset(
         self,
-        mock_settings,
-        mock_get_boto3_client,
-        mock_refresh_task_definition,
         mock_filter,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+        mock_settings,
     ):
         challenge = MagicMock(pk=20)
         mock_filter.return_value.exclude.return_value = [challenge]
@@ -6223,15 +6223,15 @@ class TestWorkerImageHelpers(TestCase):
             taskDefinition="arn:aws:ecs:task-def/old:1"
         )
 
+    @patch("challenges.aws_utils.logger")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
     @patch("challenges.aws_utils.get_image_settings_for_challenge")
-    @patch("challenges.aws_utils.logger")
     def test_refresh_task_definition_for_challenge_deregister_failure(
         self,
-        mock_get_boto3_client,
-        mock_build_task_definition,
         mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
         mock_logger,
     ):
         challenge = MagicMock(
