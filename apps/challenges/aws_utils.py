@@ -1006,7 +1006,7 @@ def refresh_task_definition_for_challenge(
     """
     Re-register the ECS task definition for a challenge with updated images.
 
-    Deregisters the previous task definition revision, registers a new one,
+    Deregisters the previous task definition revision after registering a new one,
     and optionally forces the ECS service to redeploy.
     """
     if challenge.uses_ec2_worker or challenge.remote_evaluation:
@@ -1030,16 +1030,6 @@ def refresh_task_definition_for_challenge(
 
     previous_task_def_arn = challenge.task_def_arn
 
-    try:
-        response = client.deregister_task_definition(
-            taskDefinition=previous_task_def_arn
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
-            return response
-    except ClientError as e:
-        logger.exception(e)
-        return e.response
-
     image_settings = get_image_settings_for_challenge(challenge, commit_id)
     definition, error_response = build_task_definition_dict(
         challenge, challenge.queue, image_settings=image_settings
@@ -1055,6 +1045,26 @@ def refresh_task_definition_for_challenge(
         task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
         challenge.task_def_arn = task_def_arn
         challenge.save()
+
+        try:
+            deregister_response = client.deregister_task_definition(
+                taskDefinition=previous_task_def_arn
+            )
+            if (
+                deregister_response["ResponseMetadata"]["HTTPStatusCode"]
+                != HTTPStatus.OK
+            ):
+                logger.warning(
+                    "Failed to deregister old task definition %s: %s",
+                    previous_task_def_arn,
+                    deregister_response,
+                )
+        except ClientError as e:
+            logger.warning(
+                "Failed to deregister old task definition %s: %s",
+                previous_task_def_arn,
+                e,
+            )
 
         if force_redeploy and challenge.workers and challenge.workers > 0:
             return update_service_by_challenge_pk(
@@ -1905,7 +1915,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
     The function called by scale_resources_by_challenge_pk to send the AWS ECS request to update the resources used by
     a challenge's workers.
 
-    Deregisters the old task definition and creates a new definition that is substituted into the challenge workers.
+    Registers a new task definition with updated resources and deregisters the
+    previous task definition after the new revision is saved.
 
     Parameters:
     challenge (): The challenge object for whom the task definition is being registered.
@@ -1936,17 +1947,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
-    try:
-        response = client.deregister_task_definition(
-            taskDefinition=challenge.task_def_arn
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
-            return response
-    except ClientError as e:
-        e.response["Error"] = True
-        e.response["Message"] = "Scaling inactive workers not supported"
-        logger.exception(e)
-        return e.response
+    previous_task_def_arn = challenge.task_def_arn
 
     image_settings = get_image_settings_for_challenge(challenge)
     task_def, error_response = build_task_definition_dict(
@@ -1961,25 +1962,48 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
     try:
         response = client.register_task_definition(**task_def)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-            challenge.worker_cpu_cores = worker_cpu_cores
-            challenge.worker_memory = worker_memory
-            task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            return response
 
-            challenge.task_def_arn = task_def_arn
-            challenge.save()
-            force_new_deployment = False
-            service_name = f"{challenge.queue}_service"
-            num_of_tasks = challenge.workers
-            kwargs = update_service_args.format(
-                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-                service_name=service_name,
-                task_def_arn=task_def_arn,
-                num_of_tasks=num_of_tasks,
-                force_new_deployment=force_new_deployment,
+        challenge.worker_cpu_cores = worker_cpu_cores
+        challenge.worker_memory = worker_memory
+        task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+
+        challenge.task_def_arn = task_def_arn
+        challenge.save()
+        force_new_deployment = False
+        service_name = f"{challenge.queue}_service"
+        num_of_tasks = challenge.workers
+        kwargs = update_service_args.format(
+            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+            service_name=service_name,
+            task_def_arn=task_def_arn,
+            num_of_tasks=num_of_tasks,
+            force_new_deployment=force_new_deployment,
+        )
+        kwargs = load_aws_api_kwargs(kwargs)
+        response = client.update_service(**kwargs)
+
+        try:
+            deregister_response = client.deregister_task_definition(
+                taskDefinition=previous_task_def_arn
             )
-            kwargs = load_aws_api_kwargs(kwargs)
-            response = client.update_service(**kwargs)
+            if (
+                deregister_response["ResponseMetadata"]["HTTPStatusCode"]
+                != HTTPStatus.OK
+            ):
+                logger.warning(
+                    "Failed to deregister old task definition %s: %s",
+                    previous_task_def_arn,
+                    deregister_response,
+                )
+        except ClientError as e:
+            logger.warning(
+                "Failed to deregister old task definition %s: %s",
+                previous_task_def_arn,
+                e,
+            )
+
         return response
     except ClientError as e:
         logger.exception(e)

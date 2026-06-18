@@ -2243,31 +2243,49 @@ class TestScaleResources(unittest.TestCase):
     def test_scale_resources_deregister_failure(
         self, mock_get_boto3_client, mock_settings
     ):
-        # Mock client and response
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {"taskDefinitionArn": "new_task_def_arn"},
+        }
+        mock_client.update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
         mock_client.deregister_task_definition.side_effect = ClientError(
             {"Error": {"Message": "Scaling inactive workers not supported"}},
             "DeregisterTaskDefinition",
         )
 
-        # Mock challenge
         challenge = MagicMock()
         challenge.task_def_arn = "some_task_def_arn"
         challenge.worker_cpu_cores = 2
         challenge.worker_memory = 4096
+        challenge.queue = "test_queue"
+        challenge.workers = 1
 
-        # Call the function
-        result = scale_resources(
-            challenge, worker_cpu_cores=4, worker_memory=8192
-        )
+        with patch(
+            "challenges.aws_utils.get_image_settings_for_challenge"
+        ) as mock_get_image_settings, patch(
+            "challenges.aws_utils.build_task_definition_dict"
+        ) as mock_build_task_definition:
+            mock_get_image_settings.return_value = {}
+            mock_build_task_definition.return_value = (
+                {"some_key": "some_value"},
+                None,
+            )
 
-        # Assert the expected output
+            result = scale_resources(
+                challenge, worker_cpu_cores=4, worker_memory=8192
+            )
+
         expected_result = {
-            "Error": True,
-            "Message": "Scaling inactive workers not supported",
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
         self.assertEqual(result, expected_result)
+        mock_client.deregister_task_definition.assert_called_once_with(
+            taskDefinition="some_task_def_arn"
+        )
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
@@ -5686,6 +5704,9 @@ class TestWorkerImageHelpers(TestCase):
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
         mock_update_service.assert_called_once()
+        mock_client.deregister_task_definition.assert_called_once_with(
+            taskDefinition="arn:aws:ecs:task-def/old:1"
+        )
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",
@@ -5975,19 +5996,39 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         mock_update_service.assert_not_called()
+        mock_client.deregister_task_definition.assert_called_once_with(
+            taskDefinition="arn:aws:ecs:task-def/old:1"
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
     def test_refresh_task_definition_for_challenge_deregister_failure(
-        self, mock_get_boto3_client
+        self,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
     ):
         challenge = MagicMock(
             pk=9,
             uses_ec2_worker=False,
             remote_evaluation=False,
             task_def_arn="arn:aws:ecs:task-def/old:1",
+            workers=0,
         )
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
         mock_client.deregister_task_definition.side_effect = ClientError(
             {"Error": {"Message": "deregister failed"}},
             "DeregisterTaskDefinition",
@@ -5996,7 +6037,11 @@ class TestWorkerImageHelpers(TestCase):
         response = refresh_task_definition_for_challenge(
             challenge, client=mock_client
         )
-        self.assertEqual(response["Error"]["Message"], "deregister failed")
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
@@ -6015,9 +6060,6 @@ class TestWorkerImageHelpers(TestCase):
         )
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
-        mock_client.deregister_task_definition.return_value = {
-            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
-        }
         mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
         mock_build_task_definition.return_value = (
             None,
@@ -6034,6 +6076,8 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(response["Error"], "build failed")
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
         challenge.save.assert_not_called()
+        mock_client.deregister_task_definition.assert_not_called()
+        mock_client.register_task_definition.assert_not_called()
 
     def test_load_aws_api_kwargs_parses_dict_literal(self):
         kwargs = load_aws_api_kwargs(
@@ -6107,9 +6151,6 @@ class TestWorkerImageHelpers(TestCase):
         )
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
-        mock_client.deregister_task_definition.return_value = {
-            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
-        }
         mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
         mock_build_task_definition.return_value = (
             {"family": "queue"},
@@ -6127,3 +6168,4 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(response["Error"]["Message"], "register failed")
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
         challenge.save.assert_not_called()
+        mock_client.deregister_task_definition.assert_not_called()

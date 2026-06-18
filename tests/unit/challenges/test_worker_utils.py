@@ -58,6 +58,19 @@ class TestChallengeWorkerUtils(SimpleTestCase):
             )
         )
 
+    def test_is_allowed_worker_image_url_rejects_missing_account_id(self):
+        image = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:latest"
+        )
+        self.assertFalse(
+            is_allowed_worker_image_url(
+                image,
+                aws_account_id=None,
+                aws_region="us-east-1",
+            )
+        )
+
     def test_normalize_worker_python_version(self):
         self.assertEqual(normalize_worker_python_version("3.8"), "3.8")
         self.assertEqual(normalize_worker_python_version("3.11"), "3.9")
