@@ -146,6 +146,11 @@ class ChallengeSerializerTest(BaseTestCase):
         )
         self.assertEqual(serializer.validate_worker_image_url(image), image)
 
+    def test_worker_image_url_allows_empty_values(self):
+        serializer = ChallengeSerializer()
+        self.assertEqual(serializer.validate_worker_image_url(""), "")
+        self.assertIsNone(serializer.validate_worker_image_url(None))
+
     @mockpatch.dict(
         os.environ,
         {"AWS_ACCOUNT_ID": "123456789012", "AWS_DEFAULT_REGION": "us-east-1"},
@@ -156,6 +161,19 @@ class ChallengeSerializerTest(BaseTestCase):
             serializer.validate_worker_image_url(
                 "docker.io/library/nginx:latest"
             )
+
+    @mockpatch(
+        "rest_framework.serializers.ModelSerializer.create",
+        return_value=MagicMock(),
+    )
+    def test_create_sets_default_worker_python_version(
+        self, mock_super_create
+    ):
+        serializer = ChallengeSerializer()
+        validated_data = {"title": "Test Challenge"}
+        serializer.create(validated_data)
+        self.assertEqual(validated_data["worker_python_version"], "3.9")
+        mock_super_create.assert_called_once_with(validated_data)
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):

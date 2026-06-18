@@ -54,6 +54,7 @@ from challenges.aws_utils import (
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
+    update_evalai_worker_image_tag,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
     update_sqs_retention_period_task,
@@ -6169,3 +6170,186 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
         challenge.save.assert_not_called()
         mock_client.deregister_task_definition.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    def test_refresh_task_definition_register_non_ok_response(
+        self,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=12,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "register rejected",
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, client=mock_client
+        )
+
+        self.assertEqual(response["Error"], "register rejected")
+        challenge.save.assert_not_called()
+        mock_client.deregister_task_definition.assert_not_called()
+
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    def test_refresh_task_definition_deregister_non_ok_http(
+        self,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+        mock_logger,
+    ):
+        challenge = MagicMock(
+            pk=13,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+            workers=0,
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "deregister rejected",
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        mock_logger.warning.assert_called_once()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_scale_resources_deregister_non_ok_http(
+        self, mock_get_boto3_client, mock_logger, mock_settings
+    ):
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {"taskDefinitionArn": "new_task_def_arn"},
+        }
+        mock_client.update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "deregister rejected",
+        }
+
+        challenge = MagicMock()
+        challenge.task_def_arn = "some_task_def_arn"
+        challenge.worker_cpu_cores = 2
+        challenge.worker_memory = 4096
+        challenge.queue = "test_queue"
+        challenge.workers = 1
+
+        with patch(
+            "challenges.aws_utils.get_image_settings_for_challenge"
+        ) as mock_get_image_settings, patch(
+            "challenges.aws_utils.build_task_definition_dict"
+        ) as mock_build_task_definition:
+            mock_get_image_settings.return_value = {}
+            mock_build_task_definition.return_value = (
+                {"some_key": "some_value"},
+                None,
+            )
+
+            result = scale_resources(
+                challenge, worker_cpu_cores=4, worker_memory=8192
+            )
+
+        self.assertEqual(
+            result["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        mock_logger.warning.assert_called_once()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_refresh_worker_task_definitions_failure_without_error_message(
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+    ):
+        mock_refresh_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+        challenge = MagicMock(pk=14)
+        response = refresh_worker_task_definitions(queryset=[challenge])
+        self.assertEqual(response["count"], 0)
+        self.assertEqual(
+            response["failures"][0]["message"],
+            "Failed to refresh worker task definition.",
+        )
+
+    def test_update_evalai_worker_image_tag_no_op_without_commit_id(self):
+        image_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/repo:old"
+        self.assertEqual(
+            update_evalai_worker_image_tag(image_url, None), image_url
+        )
+        self.assertEqual(update_evalai_worker_image_tag("", "abc123"), "")
+
+    def test_update_evalai_worker_image_tag_no_op_without_tag_separator(self):
+        image_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/repo"
+        self.assertEqual(
+            update_evalai_worker_image_tag(image_url, "abc123"), image_url
+        )
+
+    def test_is_evalai_managed_submission_worker_image_rejects_empty_url(self):
+        self.assertFalse(is_evalai_managed_submission_worker_image(None))
+        self.assertFalse(is_evalai_managed_submission_worker_image(""))
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_evalai_submission_worker_ecr_prefixes_without_legacy_env(
+        self,
+    ):
+        prefixes = get_evalai_submission_worker_ecr_prefixes()
+        self.assertEqual(len(prefixes), 1)
+        self.assertIn(
+            "evalai-production-worker-py",
+            next(iter(prefixes)),
+        )
