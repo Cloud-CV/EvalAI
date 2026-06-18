@@ -5353,6 +5353,12 @@ class TestWorkerImageHelpers(TestCase):
             update_fields=["worker_python_version"]
         )
 
+    def test_ensure_challenge_worker_python_version_no_op_when_valid(self):
+        challenge = MagicMock(worker_python_version="3.8")
+        version = ensure_challenge_worker_python_version(challenge)
+        self.assertEqual(version, "3.8")
+        challenge.save.assert_not_called()
+
     @patch.dict(
         "challenges.aws_utils.aws_keys",
         {
@@ -5368,6 +5374,19 @@ class TestWorkerImageHelpers(TestCase):
             image,
             "123456789012.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.9:latest",
         )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_evalai_submission_worker_ecr_image_invalid_version(self):
+        image = get_evalai_submission_worker_ecr_image(python_version="3.11")
+        self.assertTrue(image.endswith("worker-py3.9:latest"))
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",
@@ -5793,3 +5812,181 @@ class TestWorkerImageHelpers(TestCase):
             commit_id="abc123",
             client=mock_get_boto3_client.return_value,
         )
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_refresh_worker_task_definitions_debug_environment(self):
+        challenge = MagicMock(pk=5)
+        response = refresh_worker_task_definitions(queryset=[challenge])
+        self.assertEqual(response["count"], 0)
+        self.assertEqual(len(response["failures"]), 1)
+        self.assertEqual(response["failures"][0]["challenge_pk"], 5)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_refresh_worker_task_definitions_dry_run(
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenges = [MagicMock(pk=1), MagicMock(pk=2)]
+        response = refresh_worker_task_definitions(
+            queryset=challenges, commit_id="abc123", dry_run=True
+        )
+        self.assertEqual(response["count"], 2)
+        self.assertEqual(response["failures"], [])
+        mock_refresh_task_definition.assert_not_called()
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_refresh_worker_task_definitions_skipped_challenge(
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+    ):
+        mock_refresh_task_definition.return_value = {
+            "skipped": True,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+        }
+        challenge = MagicMock(pk=6)
+        response = refresh_worker_task_definitions(queryset=[challenge])
+        self.assertEqual(response["count"], 0)
+        self.assertEqual(response["failures"], [])
+
+    def test_refresh_task_definition_for_challenge_skipped_ec2_worker(self):
+        challenge = MagicMock(
+            uses_ec2_worker=True,
+            remote_evaluation=False,
+        )
+        response = refresh_task_definition_for_challenge(challenge)
+        self.assertTrue(response.get("skipped"))
+
+    def test_refresh_task_definition_for_challenge_skipped_remote_evaluation(
+        self,
+    ):
+        challenge = MagicMock(
+            uses_ec2_worker=False,
+            remote_evaluation=True,
+        )
+        response = refresh_task_definition_for_challenge(challenge)
+        self.assertTrue(response.get("skipped"))
+
+    def test_refresh_task_definition_for_challenge_missing_task_def_arn(self):
+        challenge = MagicMock(
+            pk=7,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn=None,
+        )
+        response = refresh_task_definition_for_challenge(challenge)
+        self.assertIn("Error", response)
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"],
+            HTTPStatus.BAD_REQUEST,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_without_active_workers(
+        self,
+        mock_update_service,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=8,
+            queue="test_queue",
+            workers=0,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:3"
+            },
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id="abc123", client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        mock_update_service.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_refresh_task_definition_for_challenge_deregister_failure(
+        self, mock_get_boto3_client
+    ):
+        challenge = MagicMock(
+            pk=9,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.side_effect = ClientError(
+            {"Error": {"Message": "deregister failed"}},
+            "DeregisterTaskDefinition",
+        )
+
+        response = refresh_task_definition_for_challenge(
+            challenge, client=mock_client
+        )
+        self.assertEqual(response["Error"]["Message"], "deregister failed")
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    def test_refresh_task_definition_for_challenge_build_failure(
+        self,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=10,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            None,
+            {
+                "Error": "build failed",
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            },
+        )
+
+        response = refresh_task_definition_for_challenge(
+            challenge, client=mock_client
+        )
+
+        self.assertEqual(response["Error"], "build failed")
