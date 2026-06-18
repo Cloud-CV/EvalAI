@@ -1102,15 +1102,17 @@ def refresh_worker_task_definitions(
             )
         return {"count": 0, "failures": failures}
 
-    client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
 
-    for challenge in queryset:
-        if dry_run:
+    if dry_run:
+        for challenge in queryset:
             count += 1
-            continue
+        return {"count": count, "failures": failures}
 
+    client = get_boto3_client("ecs", aws_keys)
+
+    for challenge in queryset:
         response = refresh_task_definition_for_challenge(
             challenge, commit_id=commit_id, client=client
         )

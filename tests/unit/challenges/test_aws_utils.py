@@ -5850,7 +5850,9 @@ class TestWorkerImageHelpers(TestCase):
         )
 
     @patch("challenges.aws_utils.settings", DEBUG=True)
-    def test_refresh_worker_task_definitions_debug_environment(self):
+    def test_refresh_worker_task_definitions_debug_environment(
+        self, mock_settings
+    ):
         challenge = MagicMock(pk=5)
         response = refresh_worker_task_definitions(queryset=[challenge])
         self.assertEqual(response["count"], 0)
