@@ -24,12 +24,16 @@ from challenges.aws_utils import (
     ensure_workers_for_submission,
     get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
+    get_current_ecr_env,
     get_deployed_worker_image_urls,
+    get_evalai_code_upload_worker_ecr_image,
     get_evalai_submission_worker_ecr_image,
+    get_evalai_submission_worker_ecr_prefixes,
     get_image_settings_for_challenge,
     get_logs_from_cloudwatch,
     get_worker_image_for_challenge,
     is_evalai_managed_submission_worker_image,
+    load_aws_api_kwargs,
     refresh_task_definition_for_challenge,
     refresh_worker_task_definitions,
     register_task_def_by_challenge_pk,
@@ -6028,5 +6032,98 @@ class TestWorkerImageHelpers(TestCase):
         )
 
         self.assertEqual(response["Error"], "build failed")
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
+        challenge.save.assert_not_called()
+
+    def test_load_aws_api_kwargs_parses_dict_literal(self):
+        kwargs = load_aws_api_kwargs(
+            "{'cluster': 'evalai-prod-cluster', 'forceNewDeployment': True}"
+        )
+        self.assertEqual(kwargs["cluster"], "evalai-prod-cluster")
+        self.assertTrue(kwargs["forceNewDeployment"])
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "prod")
+    def test_get_evalai_submission_worker_ecr_prefixes_includes_legacy_env(
+        self,
+    ):
+        prefixes = get_evalai_submission_worker_ecr_prefixes()
+        production_prefix = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py"
+        )
+        legacy_prefix = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-prod-worker-py"
+        )
+        self.assertIn(production_prefix, prefixes)
+        self.assertIn(legacy_prefix, prefixes)
+
+    @patch("challenges.aws_utils.ENV", "prod")
+    @patch.dict("os.environ", {"ECR_ENV": "custom-env"}, clear=False)
+    def test_get_current_ecr_env_honors_override(self):
+        self.assertEqual(get_current_ecr_env(), "custom-env")
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "prod")
+    def test_get_evalai_code_upload_worker_ecr_image_maps_settings_prod_env(
+        self,
+    ):
+        image = get_evalai_code_upload_worker_ecr_image(commit_id="abc123")
+        expected_image = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-code-upload-worker:abc123"
+        )
+        self.assertEqual(image, expected_image)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    def test_refresh_task_definition_register_failure_preserves_arn(
+        self,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=11,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "queue"},
+            None,
+        )
+        mock_client.register_task_definition.side_effect = ClientError(
+            {"Error": {"Message": "register failed"}},
+            "RegisterTaskDefinition",
+        )
+
+        response = refresh_task_definition_for_challenge(
+            challenge, client=mock_client
+        )
+
+        self.assertEqual(response["Error"]["Message"], "register failed")
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/old:1")
         challenge.save.assert_not_called()
