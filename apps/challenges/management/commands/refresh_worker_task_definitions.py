@@ -55,6 +55,14 @@ class Command(BaseCommand):
                     f"Dry run: {count} challenge(s) would be refreshed."
                 )
             )
+            for failure in failures:
+                self.stdout.write(
+                    self.style.WARNING(
+                        "Challenge {}: {}".format(
+                            failure["challenge_pk"], failure["message"]
+                        )
+                    )
+                )
             return
 
         self.stdout.write(

@@ -206,8 +206,10 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     def refresh_selected_worker_task_definitions(self, request, queryset):
         response = refresh_worker_task_definitions(queryset=queryset)
         count, failures = response["count"], response["failures"]
+        selected_count = queryset.count()
+        skipped_count = selected_count - count - len(failures)
 
-        if count and not failures:
+        if count == selected_count and not failures:
             messages.success(
                 request,
                 "All selected challenge worker task definitions were refreshed.",
@@ -219,6 +221,13 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                     count
                 ),
             )
+            if skipped_count > 0:
+                messages.warning(
+                    request,
+                    "{} selected challenge(s) were skipped.".format(
+                        skipped_count
+                    ),
+                )
             for fail in failures:
                 challenge_pk, message = fail["challenge_pk"], fail["message"]
                 display_message = "Challenge {}: {}".format(
@@ -226,6 +235,13 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                 )
                 messages.error(request, display_message)
         else:
+            if skipped_count > 0:
+                messages.warning(
+                    request,
+                    "{} selected challenge(s) were skipped.".format(
+                        skipped_count
+                    ),
+                )
             for fail in failures:
                 challenge_pk, message = fail["challenge_pk"], fail["message"]
                 display_message = "Challenge {}: {}".format(

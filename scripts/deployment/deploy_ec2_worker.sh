@@ -48,16 +48,20 @@ then
             3.7) WORKER_COMPOSE_SERVICE="worker_py3_7" ;;
             3.8) WORKER_COMPOSE_SERVICE="worker_py3_8" ;;
             3.9) WORKER_COMPOSE_SERVICE="worker_py3_9" ;;
+            *)
+                echo "Unsupported WORKER_PYTHON_VERSION: ${WORKER_PYTHON_VERSION}"
+                exit 1
+                ;;
         esac
     fi
     # Step 8: Pulling worker Docker image
     echo "Step 8/10: Pulling worker Docker image"
-    docker compose -f docker-compose-${ENVIRONMENT}.yml pull ${WORKER_COMPOSE_SERVICE}
+    docker compose -f "docker-compose-${ENVIRONMENT}.yml" pull "${WORKER_COMPOSE_SERVICE}"
 else
     # if using custom image from worker_image_url
     echo "Step 8/10: Pulling worker Docker image"
     echo "Using custom worker image: ${CUSTOM_WORKER_IMAGE}"
-    docker pull ${CUSTOM_WORKER_IMAGE}
+    docker pull "${CUSTOM_WORKER_IMAGE}"
 fi
 
 # Step 9: Running worker Docker container
@@ -65,14 +69,17 @@ echo "Step 9/10: Running worker Docker container"
 if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
     # If using default image from Step 8
-    docker compose -f docker-compose-${ENVIRONMENT}.yml run \
-        --name=worker_${QUEUE} \
-        -e CHALLENGE_QUEUE=${QUEUE} \
-        -e CHALLENGE_PK=${PK} \
-        -d ${WORKER_COMPOSE_SERVICE}
+    docker compose -f "docker-compose-${ENVIRONMENT}.yml" run \
+        --name="worker_${QUEUE}" \
+        -e "CHALLENGE_QUEUE=${QUEUE}" \
+        -e "CHALLENGE_PK=${PK}" \
+        -d "${WORKER_COMPOSE_SERVICE}"
 else
     # If using custom image from worker_image_url
-    docker run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d ${CUSTOM_WORKER_IMAGE}
+    docker run --name="worker_${QUEUE}" \
+        -e "CHALLENGE_QUEUE=${QUEUE}" \
+        -e "CHALLENGE_PK=${PK}" \
+        -d "${CUSTOM_WORKER_IMAGE}"
 fi
 
 # Step 10: Setting up crontab

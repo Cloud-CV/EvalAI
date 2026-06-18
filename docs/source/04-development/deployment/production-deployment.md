@@ -22,7 +22,7 @@ Follow your organization's CI/CD pipeline (see `.github/workflows/` in the repo)
 2. Build and push container images.
 3. Roll out API and worker deployments with health checks.
 4. Run database migrations when models change — see [Migrations](../maintenance/migrations.html).
-5. After API containers restart, production/staging deploys run `refresh_worker_task_definitions --commit-id <sha>` to re-register ECS worker task definitions with the newly pushed ECR images.
+5. After API containers restart, production/staging deploys run `python manage.py refresh_worker_task_definitions --commit-id <git-sha>` to re-register ECS worker task definitions with the newly pushed ECR images.
 
 ## ECS worker images and ECR lifecycle
 

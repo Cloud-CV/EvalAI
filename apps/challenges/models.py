@@ -300,8 +300,9 @@ class Challenge(TimeStampedModel):
     worker_python_version = models.CharField(
         max_length=10,
         blank=True,
-        null=True,
+        null=False,
         default=DEFAULT_WORKER_PYTHON_VERSION,
+        choices=[(v, v) for v in SUPPORTED_WORKER_PYTHON_VERSIONS],
         help_text=(
             "Python version for the Fargate submission worker image "
             f"({', '.join(SUPPORTED_WORKER_PYTHON_VERSIONS)})."

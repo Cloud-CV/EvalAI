@@ -2223,6 +2223,12 @@ class TestScaleResources(unittest.TestCase):
                 challenge, worker_cpu_cores=4, worker_memory=8192
             )
 
+            mock_get_image_settings.assert_called_once_with(challenge)
+            mock_build_task_definition.assert_called_once()
+            call_kwargs = mock_build_task_definition.call_args.kwargs
+            self.assertEqual(call_kwargs["worker_cpu_cores"], 4)
+            self.assertEqual(call_kwargs["worker_memory"], 8192)
+
             expected_result = {
                 "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
             }
@@ -2311,6 +2317,12 @@ class TestScaleResources(unittest.TestCase):
                 challenge, worker_cpu_cores=4, worker_memory=8192
             )
 
+            mock_get_image_settings.assert_called_once_with(challenge)
+            mock_build_task_definition.assert_called_once()
+            call_kwargs = mock_build_task_definition.call_args.kwargs
+            self.assertEqual(call_kwargs["worker_cpu_cores"], 4)
+            self.assertEqual(call_kwargs["worker_memory"], 8192)
+
             expected_result = {
                 "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
             }
@@ -2362,6 +2374,12 @@ class TestScaleResources(unittest.TestCase):
             result = scale_resources(
                 challenge, worker_cpu_cores=4, worker_memory=8192
             )
+
+            mock_get_image_settings.assert_called_once_with(challenge)
+            mock_build_task_definition.assert_called_once()
+            call_kwargs = mock_build_task_definition.call_args.kwargs
+            self.assertEqual(call_kwargs["worker_cpu_cores"], 4)
+            self.assertEqual(call_kwargs["worker_memory"], 8192)
 
             # Expected result
             expected_result = {
@@ -5380,6 +5398,25 @@ class TestWorkerImageHelpers(TestCase):
         clear=False,
     )
     @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_invalid_version_falls_back(
+        self,
+    ):
+        challenge = MagicMock(
+            worker_image_url=None,
+            worker_python_version="3.11",
+        )
+        image = get_worker_image_for_challenge(challenge, commit_id="abc123")
+        self.assertTrue(image.endswith("worker-py3.9:abc123"))
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
     def test_get_worker_image_for_challenge_updates_evalai_managed_tag(self):
         challenge = MagicMock(
             worker_image_url=(
@@ -5746,3 +5783,13 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(response["count"], 1)
         self.assertEqual(len(response["failures"]), 1)
         self.assertEqual(response["failures"][0]["challenge_pk"], 2)
+        mock_refresh_task_definition.assert_any_call(
+            challenge_ok,
+            commit_id="abc123",
+            client=mock_get_boto3_client.return_value,
+        )
+        mock_refresh_task_definition.assert_any_call(
+            challenge_fail,
+            commit_id="abc123",
+            client=mock_get_boto3_client.return_value,
+        )

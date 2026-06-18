@@ -1,8 +1,10 @@
 import copy
 
 from accounts.serializers import UserDetailsSerializer
-from challenges.constants import DEFAULT_WORKER_PYTHON_VERSION
-from challenges.worker_utils import normalize_worker_python_version
+from challenges.constants import (
+    DEFAULT_WORKER_PYTHON_VERSION,
+    SUPPORTED_WORKER_PYTHON_VERSIONS,
+)
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
@@ -35,7 +37,15 @@ class ChallengeSerializer(serializers.ModelSerializer):
         return obj.get_domain_display()
 
     def validate_worker_python_version(self, value):
-        return normalize_worker_python_version(value)
+        if value in (None, ""):
+            return DEFAULT_WORKER_PYTHON_VERSION
+        if value not in SUPPORTED_WORKER_PYTHON_VERSIONS:
+            raise serializers.ValidationError(
+                "Unsupported worker_python_version. Use one of: {}".format(
+                    ", ".join(SUPPORTED_WORKER_PYTHON_VERSIONS)
+                )
+            )
+        return value
 
     def create(self, validated_data):
         validated_data.setdefault(

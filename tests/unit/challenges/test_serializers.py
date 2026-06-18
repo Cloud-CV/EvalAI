@@ -29,6 +29,7 @@ from django.test import RequestFactory
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
+from rest_framework import serializers
 from rest_framework.test import APIClient, APITestCase
 
 
@@ -123,6 +124,8 @@ class ChallengeSerializerTest(BaseTestCase):
         self.assertEqual(
             serializer.validate_worker_python_version("3.8"), "3.8"
         )
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate_worker_python_version("3.10")
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
