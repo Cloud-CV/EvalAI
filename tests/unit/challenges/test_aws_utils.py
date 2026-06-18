@@ -2240,9 +2240,10 @@ class TestScaleResources(unittest.TestCase):
             self.assertEqual(result, expected_result)
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.logger")
     @patch("challenges.aws_utils.get_boto3_client")
     def test_scale_resources_deregister_failure(
-        self, mock_get_boto3_client, mock_settings
+        self, mock_get_boto3_client, mock_logger, mock_settings
     ):
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
@@ -2289,6 +2290,7 @@ class TestScaleResources(unittest.TestCase):
         mock_client.deregister_task_definition.assert_called_once_with(
             taskDefinition="some_task_def_arn"
         )
+        mock_logger.warning.assert_called_once()
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.logger")
@@ -2780,6 +2782,33 @@ class TestRestartWorkers(TestCase):
             challenge_with_workers,
             client=mock_get_boto3_client.return_value,
         )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_restart_workers_failure_without_error_message(
+        self,
+        mock_settings,
+        mock_refresh_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge_with_workers = MagicMock(
+            pk=8,
+            workers=2,
+            is_docker_based=False,
+            is_static_dataset_code_upload=False,
+        )
+        mock_refresh_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
+        result = restart_workers([challenge_with_workers])
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(
+            result["failures"][0]["message"], "Failed to restart worker."
+        )
+        self.assertEqual(result["failures"][0]["challenge_pk"], 8)
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
@@ -3988,6 +4017,35 @@ class TestRegisterTaskDefByChallengePk:
             )
 
         assert response == error_response
+
+    @patch("challenges.aws_utils.ensure_challenge_worker_python_version")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch(
+        "challenges.aws_utils.COMMON_SETTINGS_DICT",
+        {
+            "EXECUTION_ROLE_ARN": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole"
+        },
+    )
+    def test_register_task_def_register_non_ok_response(
+        self, mock_build_task_definition, mock_ensure
+    ):
+        mock_client = MagicMock()
+        mock_challenge = MagicMock()
+        mock_challenge.task_def_arn = None
+        mock_challenge.pk = 1
+        mock_build_task_definition.return_value = ({"family": "test"}, None)
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "register rejected",
+        }
+
+        response = register_task_def_by_challenge_pk(
+            mock_client, "queue", mock_challenge
+        )
+
+        self.assertEqual(response["Error"], "register rejected")
+        mock_ensure.assert_called_once_with(mock_challenge)
+        mock_challenge.save.assert_not_called()
 
     @patch(
         "challenges.aws_utils.COMMON_SETTINGS_DICT",
@@ -6037,6 +6095,36 @@ class TestWorkerImageHelpers(TestCase):
         mock_refresh_task_definition.assert_not_called()
         mock_get_boto3_client.assert_not_called()
 
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
+    @patch("challenges.models.Challenge.objects.filter")
+    def test_refresh_worker_task_definitions_default_queryset(
+        self,
+        mock_settings,
+        mock_get_boto3_client,
+        mock_refresh_task_definition,
+        mock_filter,
+    ):
+        challenge = MagicMock(pk=20)
+        mock_filter.return_value.exclude.return_value = [challenge]
+        mock_refresh_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+        }
+
+        response = refresh_worker_task_definitions()
+
+        mock_filter.assert_called_once()
+        mock_filter.return_value.exclude.assert_called_once_with(
+            task_def_arn=""
+        )
+        mock_refresh_task_definition.assert_called_once_with(
+            challenge,
+            commit_id=None,
+            client=mock_get_boto3_client.return_value,
+        )
+        self.assertEqual(response, {"count": 1, "failures": []})
+
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.refresh_task_definition_for_challenge")
     @patch("challenges.aws_utils.settings", DEBUG=False)
@@ -6138,11 +6226,13 @@ class TestWorkerImageHelpers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
     @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.logger")
     def test_refresh_task_definition_for_challenge_deregister_failure(
         self,
-        mock_get_image_settings,
-        mock_build_task_definition,
         mock_get_boto3_client,
+        mock_build_task_definition,
+        mock_get_image_settings,
+        mock_logger,
     ):
         challenge = MagicMock(
             pk=9,
@@ -6177,6 +6267,7 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_logger.warning.assert_called_once()
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
