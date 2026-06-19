@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from http import HTTPStatus
 from unittest import TestCase, mock
@@ -5498,6 +5499,69 @@ class TestTriggerEksNodeAutoscale:
             previous_submission_status="submitting",
         )
         mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:iam::937891341272:role/evalai-lambda-execution-role",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_skip_when_lambda_arn_is_iam_role(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+
+        trigger_eks_node_autoscale(11, "submission_created")
+
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings")
+    @patch(
+        "challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN",
+        "arn:aws:iam::937891341272:role/evalai-lambda-execution-role",
+    )
+    @patch.dict(
+        os.environ,
+        {"EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"},
+        clear=False,
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_uses_function_name_env_var_over_misconfigured_arn(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_lambda_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_lambda_client
+
+        trigger_eks_node_autoscale(11, "submission_created")
+
+        mock_get_boto3_client.assert_called_once()
+        kwargs = mock_lambda_client.invoke.call_args.kwargs
+        assert kwargs["FunctionName"] == "auto_scale_eks_nodes_lambda"
+
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN", "")
+    @patch.dict(
+        os.environ,
+        {"EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"},
+        clear=False,
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_uses_function_name_env_var_when_arn_empty(
+        self, mock_get_boto3_client, mock_settings
+    ):
+        mock_settings.DEBUG = False
+        mock_settings.TEST = False
+        mock_lambda_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_lambda_client
+
+        trigger_eks_node_autoscale(11, "submission_created")
+
+        mock_get_boto3_client.assert_called_once()
+        kwargs = mock_lambda_client.invoke.call_args.kwargs
+        assert kwargs["FunctionName"] == "auto_scale_eks_nodes_lambda"
 
 
 class TestWorkerImageHelpers(TestCase):
