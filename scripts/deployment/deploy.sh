@@ -172,6 +172,8 @@ fi
 
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs celery memcached
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
+docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
+  django sh -c "python manage.py migrate --noinput && python manage.py refresh_worker_task_definitions --commit-id \${COMMIT_ID}"
 ENDSSH
 }
 
@@ -236,8 +238,8 @@ case "${operation_name}" in
             --name="worker_${challenge_queue_name}" \
             -e "CHALLENGE_QUEUE=${challenge_queue_name}" \
             -e "CHALLENGE_PK=${challenge_primary_key}" \
-            -d worker
-        echo "Deployed worker docker container for queue: ${challenge_queue_name}"
+            -d worker_py3_9
+        echo "Deployed worker_py3_9 docker container for queue: ${challenge_queue_name}"
         ;;
     deploy-worker-py3-8)
         validate_target_environment
@@ -299,8 +301,8 @@ case "${operation_name}" in
             docker compose -f "docker-compose-${target_environment}.yml" run \
                 --name="worker_${challenge_queue_name}" \
                 -e "CHALLENGE_QUEUE=${challenge_queue_name}" \
-                -d worker
-            echo "Deployed worker docker container for queue: ${challenge_queue_name}"
+                -d worker_py3_9
+            echo "Deployed worker_py3_9 docker container for queue: ${challenge_queue_name}"
         done
         ;;
     scale)
