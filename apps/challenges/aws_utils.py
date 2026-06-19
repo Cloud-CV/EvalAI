@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import random
+import re
 import string
 import uuid
 from http import HTTPStatus
@@ -93,6 +94,42 @@ EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
 EKS_NODE_AUTOSCALE_LAMBDA_ARN = os.environ.get(
     "EKS_NODE_AUTOSCALE_LAMBDA_ARN", ""
 )
+IAM_ROLE_ARN_PATTERN = re.compile(r"^arn:aws[a-zA-Z-]*:iam:")
+
+
+def _resolve_eks_node_autoscale_lambda_function_name():
+    """
+    Return a valid Lambda FunctionName for Invoke, or empty string if
+    misconfigured.
+
+    EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME takes precedence when set.
+    EKS_NODE_AUTOSCALE_LAMBDA_ARN may be a full/partial Lambda ARN or a
+    plain function name. IAM role ARNs are rejected with a clear log message.
+    """
+    function_name = os.environ.get(
+        "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME", ""
+    )
+    if function_name:
+        return function_name
+
+    lambda_arn_or_name = EKS_NODE_AUTOSCALE_LAMBDA_ARN
+    if not lambda_arn_or_name:
+        return ""
+
+    if IAM_ROLE_ARN_PATTERN.match(lambda_arn_or_name):
+        logger.error(
+            "EKS_NODE_AUTOSCALE_LAMBDA_ARN is set to an IAM role ARN (%s), "
+            "not a Lambda function ARN or name. Configure "
+            "EKS_NODE_AUTOSCALE_LAMBDA_ARN with the Lambda function ARN "
+            "(e.g. arn:aws:lambda:us-east-1:ACCOUNT_ID:function:"
+            "auto_scale_eks_nodes_lambda) or set "
+            "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME instead.",
+            lambda_arn_or_name,
+        )
+        return ""
+
+    return lambda_arn_or_name
+
 
 COMMON_SETTINGS_DICT = {
     "EXECUTION_ROLE_ARN": os.environ.get(
@@ -891,12 +928,16 @@ def trigger_eks_node_autoscale(
             if was_pending == is_pending:
                 return
 
-    if not EKS_NODE_AUTOSCALE_LAMBDA_ARN:
-        logger.info(
-            "EKS_NODE_AUTOSCALE_LAMBDA_ARN not configured. "
-            "Skipping autoscale invoke for challenge %s.",
-            challenge_pk,
-        )
+    function_name = _resolve_eks_node_autoscale_lambda_function_name()
+    if not function_name:
+        if not EKS_NODE_AUTOSCALE_LAMBDA_ARN and not os.environ.get(
+            "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME", ""
+        ):
+            logger.info(
+                "EKS_NODE_AUTOSCALE_LAMBDA_ARN not configured. "
+                "Skipping autoscale invoke for challenge %s.",
+                challenge_pk,
+            )
         return
 
     payload = {
@@ -913,7 +954,7 @@ def trigger_eks_node_autoscale(
     try:
         lambda_client = get_boto3_client("lambda", aws_keys)
         lambda_client.invoke(
-            FunctionName=EKS_NODE_AUTOSCALE_LAMBDA_ARN,
+            FunctionName=function_name,
             InvocationType="Event",
             Payload=json.dumps(payload).encode("utf-8"),
         )
