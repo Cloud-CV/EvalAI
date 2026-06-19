@@ -5523,7 +5523,9 @@ class TestTriggerEksNodeAutoscale:
     )
     @patch.dict(
         os.environ,
-        {"EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"},
+        {
+            "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"
+        },
         clear=False,
     )
     @patch("challenges.aws_utils.get_boto3_client")
@@ -5545,7 +5547,9 @@ class TestTriggerEksNodeAutoscale:
     @patch("challenges.aws_utils.EKS_NODE_AUTOSCALE_LAMBDA_ARN", "")
     @patch.dict(
         os.environ,
-        {"EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"},
+        {
+            "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME": "auto_scale_eks_nodes_lambda"
+        },
         clear=False,
     )
     @patch("challenges.aws_utils.get_boto3_client")

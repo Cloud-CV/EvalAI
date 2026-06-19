@@ -930,11 +930,8 @@ def trigger_eks_node_autoscale(
 
     function_name = _resolve_eks_node_autoscale_lambda_function_name()
     if not function_name:
-        if (
-            not EKS_NODE_AUTOSCALE_LAMBDA_ARN
-            and not os.environ.get(
-                "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME", ""
-            )
+        if not EKS_NODE_AUTOSCALE_LAMBDA_ARN and not os.environ.get(
+            "EKS_NODE_AUTOSCALE_LAMBDA_FUNCTION_NAME", ""
         ):
             logger.info(
                 "EKS_NODE_AUTOSCALE_LAMBDA_ARN not configured. "
