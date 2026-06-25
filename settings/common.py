@@ -405,7 +405,7 @@ SCOUT_PUBLIC_BASE_URL = (
 )
 OUTREACH_FROM_EMAIL = os.environ.get(
     "OUTREACH_FROM_EMAIL",
-    "EvalAI Team <outreach@eval.ai>",
+    "EvalAI Team <team@eval.ai>",
 )
 
 SENDGRID_SETTINGS = {
