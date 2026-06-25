@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import uuid
+from urllib.parse import urlparse
 
 import botocore
 from accounts.permissions import HasVerifiedEmail
@@ -96,6 +97,39 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_allowed_submission_file_types(challenge_phase):
+    allowed_file_types = challenge_phase.allowed_submission_file_types or ""
+    return [
+        (
+            file_type.strip().lower()
+            if file_type.strip().startswith(".")
+            else ".{}".format(file_type.strip().lower())
+        )
+        for file_type in allowed_file_types.split(",")
+        if file_type.strip()
+    ]
+
+
+def _is_submission_file_type_allowed(file_name, challenge_phase):
+    allowed_file_types = _get_allowed_submission_file_types(challenge_phase)
+    if not allowed_file_types:
+        return True
+
+    file_path = urlparse(file_name).path.lower()
+    return any(
+        file_path.endswith(file_type) for file_type in allowed_file_types
+    )
+
+
+def _invalid_submission_file_type_response(challenge_phase):
+    response_data = {
+        "error": "Invalid submission file type. Allowed file types are: {}.".format(
+            challenge_phase.allowed_submission_file_types
+        )
+    }
+    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
@@ -337,6 +371,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+            if not _is_submission_file_type_allowed(
+                request.data["file_url"], challenge_phase
+            ):
+                return _invalid_submission_file_type_response(challenge_phase)
             download_file_and_publish_submission_message.delay(
                 request.data,
                 request.user.id,
@@ -347,6 +385,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "message": "Please wait while your submission being evaluated!"
             }
             return Response(response_data, status=status.HTTP_200_OK)
+
+        input_file = request.FILES.get("input_file")
+        if input_file and not _is_submission_file_type_allowed(
+            input_file.name, challenge_phase
+        ):
+            return _invalid_submission_file_type_response(challenge_phase)
 
         if request.data.get("submission_meta_attributes"):
             submission_meta_attributes = json.load(
