@@ -1551,8 +1551,8 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
 @override_settings(MEDIA_ROOT="/tmp/evalai-lock-coverage")
 class TestApprovedConfigLockMessageCoverage(TestCase):
     """
-    Cover _locked_* helpers and _stable_json for Codecov on post-approval
-    immutability checks (real ORM queries, no mocks of the methods under test).
+    Cover structural _locked_* helpers and _stable_json for Codecov on
+    post-approval immutability checks (leaderboard, dataset split, phase split).
     """
 
     @staticmethod
@@ -1625,9 +1625,6 @@ class TestApprovedConfigLockMessageCoverage(TestCase):
             is_leaderboard_order_descending=True,
         )
         self.phase.refresh_from_db()
-        self.phase_annotation_basename = basename(
-            self.phase.test_annotation.name
-        )
         self.util = self._bare_util(self.challenge)
 
     def test_stable_json(self):
@@ -1689,90 +1686,6 @@ class TestApprovedConfigLockMessageCoverage(TestCase):
             }
         )
         self.assertIsNone(msg)
-
-    def test_locked_challenge_phase_detects_name_change(self):
-        msg = self.util._locked_challenge_phase_modified_message(
-            {"id": 1, "name": "Renamed"}
-        )
-        self.assertIsNotNone(msg)
-
-    def test_locked_challenge_phase_none_when_consistent(self):
-        msg = self.util._locked_challenge_phase_modified_message(
-            {
-                "id": 1,
-                "name": "Phase 1",
-                "test_annotation_file": self.phase_annotation_basename,
-            }
-        )
-        self.assertIsNone(msg)
-
-    def test_locked_challenge_phase_accepts_yaml_date_format(self):
-        phase_start = timezone.make_aware(
-            datetime(2019, 1, 19, 0, 0, 0), timezone.utc
-        )
-        phase_end = timezone.make_aware(
-            datetime(2019, 1, 20, 0, 0, 0), timezone.utc
-        )
-        self.phase.start_date = phase_start
-        self.phase.end_date = phase_end
-        self.phase.save()
-
-        msg = self.util._locked_challenge_phase_modified_message(
-            {
-                "id": 1,
-                "name": "Phase 1",
-                "start_date": "2019-01-19 00:00:00",
-                "end_date": "2019-01-20 00:00:00",
-                "test_annotation_file": self.phase_annotation_basename,
-            }
-        )
-        self.assertIsNone(msg)
-
-    def test_locked_challenge_phase_accepts_iso_date_format(self):
-        phase_start = timezone.make_aware(
-            datetime(2019, 1, 19, 0, 0, 0), timezone.utc
-        )
-        phase_end = timezone.make_aware(
-            datetime(2019, 1, 20, 0, 0, 0), timezone.utc
-        )
-        self.phase.start_date = phase_start
-        self.phase.end_date = phase_end
-        self.phase.save()
-
-        msg = self.util._locked_challenge_phase_modified_message(
-            {
-                "id": 1,
-                "name": "Phase 1",
-                "start_date": "2019-01-19T00:00:00Z",
-                "end_date": "2019-01-20T00:00:00Z",
-                "test_annotation_file": self.phase_annotation_basename,
-            }
-        )
-        self.assertIsNone(msg)
-
-    def test_locked_challenge_phase_accepts_description_trailing_newline(self):
-        self.phase.description = "<p>hello</p>"
-        self.phase.save()
-
-        msg = self.util._locked_challenge_phase_modified_message(
-            {
-                "id": 1,
-                "name": "Phase 1",
-                "description": "<p>hello</p>\n",
-                "test_annotation_file": self.phase_annotation_basename,
-            }
-        )
-        self.assertIsNone(msg)
-
-    def test_locked_challenge_phase_detects_annotation_reference_change(self):
-        msg = self.util._locked_challenge_phase_modified_message(
-            {
-                "id": 1,
-                "name": "Phase 1",
-                "test_annotation_file": "nonexistent_annotation.txt",
-            }
-        )
-        self.assertIsNotNone(msg)
 
     def test_locked_challenge_phase_split_visibility_change(self):
         msg = self.util._locked_challenge_phase_split_modified_message(
@@ -2022,7 +1935,9 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
     @mockpatch(
         "challenges.challenge_config_utils.ChallengePhaseCreateSerializer"
     )
-    def test_validate_challenge_phases_real_lock_error(self, mock_cps):
+    def test_validate_challenge_phases_allows_changes_when_approved(
+        self, mock_cps
+    ):
         mock_cps.return_value.is_valid.return_value = True
         self.phase.refresh_from_db()
         self.util.yaml_file_data = {
@@ -2032,6 +1947,7 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
                     "codename": "pv1",
                     "name": "Renamed Phase",
                     "description": self.phase_desc_html,
+                    "allowed_submission_file_types": ".json",
                     "start_date": self.phase.start_date,
                     "end_date": self.phase.end_date,
                     "max_submissions": 100,
@@ -2041,9 +1957,7 @@ class TestApprovedValidateMethodsRealLockIntegration(TestCase):
             ]
         }
         self.util.validate_challenge_phases([1])
-        self.assertTrue(
-            any("approved by an admin" in m for m in self.util.error_messages)
-        )
+        self.assertEqual(self.util.error_messages, [])
 
     @mockpatch(
         "challenges.challenge_config_utils.ZipChallengePhaseSplitSerializer"
