@@ -1,6 +1,10 @@
 import copy
 
 from accounts.serializers import UserDetailsSerializer
+from challenges.constants import (
+    DEFAULT_WORKER_PYTHON_VERSION,
+    SUPPORTED_WORKER_PYTHON_VERSIONS,
+)
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
@@ -31,6 +35,35 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     def get_domain_name(self, obj):
         return obj.get_domain_display()
+
+    def validate_worker_python_version(self, value):
+        if value in (None, ""):
+            return DEFAULT_WORKER_PYTHON_VERSION
+        if value not in SUPPORTED_WORKER_PYTHON_VERSIONS:
+            raise serializers.ValidationError(
+                "Unsupported worker_python_version. Use one of: {}".format(
+                    ", ".join(SUPPORTED_WORKER_PYTHON_VERSIONS)
+                )
+            )
+        return value
+
+    def validate_worker_image_url(self, value):
+        if value in (None, ""):
+            return value
+        from .worker_utils import is_allowed_worker_image_url
+
+        if not is_allowed_worker_image_url(value):
+            raise serializers.ValidationError(
+                "worker_image_url must be an EC2 AMI (ami-...) or an EvalAI "
+                "ECR image in this AWS account (evalai-* repositories)."
+            )
+        return value
+
+    def create(self, validated_data):
+        validated_data.setdefault(
+            "worker_python_version", DEFAULT_WORKER_PYTHON_VERSION
+        )
+        return super().create(validated_data)
 
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
@@ -100,6 +133,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
+            "worker_python_version",
             "worker_instance_type",
             "sqs_retention_period",
             "github_repository",
@@ -364,6 +398,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "ephemeral_storage",
             "evaluation_module_error",
             "worker_image_url",
+            "worker_python_version",
             "sqs_retention_period",
         )
 

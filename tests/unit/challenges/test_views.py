@@ -4,6 +4,7 @@ import io
 import json
 import os
 import shutil
+import zipfile
 from datetime import timedelta
 from os.path import join
 from smtplib import SMTPException
@@ -12,6 +13,7 @@ import boto3
 import mock
 import requests
 import responses
+import yaml
 from allauth.account.models import EmailAddress
 from challenges.models import (
     Challenge,
@@ -211,6 +213,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "ec2_storage": self.challenge.ec2_storage,
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
+                "worker_python_version": self.challenge.worker_python_version,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
@@ -641,6 +644,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "ec2_storage": self.challenge.ec2_storage,
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_python_version": self.challenge.worker_python_version,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
@@ -755,6 +759,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "ec2_storage": self.challenge.ec2_storage,
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_python_version": self.challenge.worker_python_version,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
@@ -893,6 +898,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "ec2_storage": self.challenge.ec2_storage,
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_python_version": self.challenge.worker_python_version,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
@@ -979,6 +985,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "ec2_storage": self.challenge.ec2_storage,
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_python_version": self.challenge.worker_python_version,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
             "github_repository": self.challenge.github_repository,
@@ -2164,6 +2171,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_python_version": self.challenge3.worker_python_version,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
@@ -2258,6 +2266,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -2352,6 +2361,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge4.ec2_storage,
                 "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
+                "worker_python_version": self.challenge4.worker_python_version,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
@@ -2446,6 +2456,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge4.ec2_storage,
                 "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
+                "worker_python_version": self.challenge4.worker_python_version,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
                 "github_repository": self.challenge4.github_repository,
@@ -2521,6 +2532,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_python_version": self.challenge3.worker_python_version,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
@@ -2596,6 +2608,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -2776,6 +2789,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "ec2_storage": self.challenge3.ec2_storage,
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_python_version": self.challenge3.worker_python_version,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
                 "github_repository": self.challenge3.github_repository,
@@ -3027,6 +3041,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "ec2_storage": self.challenge3.ec2_storage,
             "ephemeral_storage": self.challenge3.ephemeral_storage,
             "worker_image_url": self.challenge3.worker_image_url,
+            "worker_python_version": self.challenge3.worker_python_version,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
             "github_repository": self.challenge3.github_repository,
@@ -3135,6 +3150,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "ec2_storage": self.challenge4.ec2_storage,
             "ephemeral_storage": self.challenge4.ephemeral_storage,
             "worker_image_url": self.challenge4.worker_image_url,
+            "worker_python_version": self.challenge4.worker_python_version,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
             "github_repository": self.challenge4.github_repository,
@@ -3304,6 +3320,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -3396,6 +3413,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -3488,6 +3506,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -3578,6 +3597,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ec2_storage": self.challenge.ec2_storage,
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
+                "worker_python_version": self.challenge.worker_python_version,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
                 "github_repository": self.challenge.github_repository,
@@ -3653,6 +3673,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ec2_storage": self.challenge2.ec2_storage,
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_python_version": self.challenge2.worker_python_version,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
                 "github_repository": self.challenge2.github_repository,
@@ -5149,6 +5170,55 @@ class CreateChallengeUsingZipFile(
             content_type="application/zip",
         )
 
+    def _build_example_zip_with_yaml_updates(self, yaml_updates):
+        zip_path = join(
+            settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+        )
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_path, "r") as source_zip:
+            with zipfile.ZipFile(
+                zip_buffer, "w", zipfile.ZIP_DEFLATED
+            ) as destination_zip:
+                for name in source_zip.namelist():
+                    if name == "challenge_config.yaml":
+                        challenge_config = yaml.safe_load(
+                            source_zip.read(name)
+                        )
+                        challenge_config.update(yaml_updates)
+                        destination_zip.writestr(
+                            name,
+                            yaml.dump(
+                                challenge_config, default_flow_style=False
+                            ),
+                        )
+                    else:
+                        destination_zip.writestr(name, source_zip.read(name))
+        zip_buffer.seek(0)
+        return zip_buffer.getvalue()
+
+    def _post_modified_example_zip(self, yaml_updates):
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        zip_bytes = self._build_example_zip_with_yaml_updates(yaml_updates)
+        with mock.patch("challenges.views.requests.get") as mock_get:
+            response = mock.Mock()
+            response.content = zip_bytes
+            response.status_code = 200
+            mock_get.return_value = response
+            return self.client.post(
+                self.url,
+                {
+                    "zip_configuration": SimpleUploadedFile(
+                        "test_sample.zip",
+                        zip_bytes,
+                        content_type="application/zip",
+                    )
+                },
+                format="multipart",
+            )
+
     @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(
         self,
@@ -5330,6 +5400,71 @@ class CreateChallengeUsingZipFile(
         self.assertEqual(DatasetSplit.objects.count(), 2)
         self.assertEqual(Leaderboard.objects.count(), 2)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 2)
+
+    @responses.activate
+    def test_create_challenge_using_zip_file_unsafe_evaluation_script(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        response = self._post_modified_example_zip(
+            {"evaluation_script": "../../../etc/passwd.zip"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": ("Challenge configuration contains unsafe file paths.")},
+        )
+
+    @responses.activate
+    def test_create_challenge_using_zip_file_unsafe_test_annotation(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        response = self._post_modified_example_zip(
+            {
+                "challenge_phases": [
+                    {
+                        "id": 1,
+                        "name": "Challenge Name of the challenge phase",
+                        "description": "challenge_phase_description.html",
+                        "leaderboard_public": True,
+                        "is_public": True,
+                        "start_date": "2017-06-09 20:00:00",
+                        "end_date": "2017-06-19 20:00:00",
+                        "test_annotation_file": "../../../etc/passwd",
+                        "codename": "Challenge phase codename",
+                        "max_submissions_per_day": 100,
+                        "max_submissions": 1000,
+                        "max_submissions_per_month": 1000,
+                    }
+                ]
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": ("Challenge configuration contains unsafe file paths.")},
+        )
+
+    @responses.activate
+    def test_create_challenge_using_zip_file_unsafe_description_path(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        response = self._post_modified_example_zip(
+            {"description": "../../../etc/passwd.html"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": ("Challenge configuration contains unsafe file paths.")},
+        )
+
+    @responses.activate
+    def test_create_challenge_using_zip_file_unsafe_image_path(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        response = self._post_modified_example_zip(
+            {"image": "../../../etc/passwd.png"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": ("Challenge configuration contains unsafe file paths.")},
+        )
 
 
 class GetAllSubmissionsTest(

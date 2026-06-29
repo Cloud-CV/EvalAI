@@ -141,6 +141,88 @@ class TestChallengeAdminActions(TestCase):
             "Challenge 55: Failed to delete" in str(m) for m in messages
         )
 
+    @patch("challenges.admin.refresh_worker_task_definitions")
+    def test_refresh_selected_worker_task_definitions_all_success(
+        self, mock_refresh_worker_task_definitions
+    ):
+        mock_refresh_worker_task_definitions.return_value = {
+            "count": 2,
+            "failures": [],
+        }
+        self.admin.refresh_selected_worker_task_definitions(
+            self.request, self.queryset
+        )
+        messages = list(self.request._messages)
+        assert any(
+            "All selected challenge worker task definitions were refreshed"
+            in str(m)
+            for m in messages
+        )
+
+    @patch("challenges.admin.refresh_worker_task_definitions")
+    def test_refresh_selected_worker_task_definitions_partial_with_skipped(
+        self, mock_refresh_worker_task_definitions
+    ):
+        mock_refresh_worker_task_definitions.return_value = {
+            "count": 1,
+            "failures": [],
+        }
+        self.admin.refresh_selected_worker_task_definitions(
+            self.request, self.queryset
+        )
+        messages = list(self.request._messages)
+        assert any(
+            "1 challenge worker task definitions were refreshed" in str(m)
+            for m in messages
+        )
+        assert any(
+            "1 selected challenge(s) were skipped" in str(m) for m in messages
+        )
+
+    @patch("challenges.admin.refresh_worker_task_definitions")
+    def test_refresh_selected_worker_task_definitions_partial_failure(
+        self, mock_refresh_worker_task_definitions
+    ):
+        mock_refresh_worker_task_definitions.return_value = {
+            "count": 1,
+            "failures": [
+                {
+                    "challenge_pk": 3,
+                    "message": "Failed to refresh task definition",
+                }
+            ],
+        }
+        self.admin.refresh_selected_worker_task_definitions(
+            self.request, self.queryset
+        )
+        messages = list(self.request._messages)
+        assert any(
+            "1 challenge worker task definitions were refreshed" in str(m)
+            for m in messages
+        )
+        assert any(
+            "Challenge 3: Failed to refresh task definition" in str(m)
+            for m in messages
+        )
+
+    @patch("challenges.admin.refresh_worker_task_definitions")
+    def test_refresh_selected_worker_task_definitions_all_failed_with_skipped(
+        self, mock_refresh_worker_task_definitions
+    ):
+        self.queryset.count.return_value = 3
+        mock_refresh_worker_task_definitions.return_value = {
+            "count": 0,
+            "failures": [{"challenge_pk": 4, "message": "refresh failed"}],
+        }
+        self.admin.refresh_selected_worker_task_definitions(
+            self.request, self.queryset
+        )
+        messages = list(self.request._messages)
+        assert any(
+            "2 selected challenge(s) were skipped" in str(m) for m in messages
+        )
+        assert any("Challenge 4: refresh failed" in str(m) for m in messages)
+
     def test_freeze_selected_challenges(self):
         self.queryset.update = MagicMock(return_value=2)
         self.admin.freeze_selected_challenges(self.request, self.queryset)

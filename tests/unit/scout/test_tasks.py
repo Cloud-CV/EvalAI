@@ -9,7 +9,7 @@ SENDGRID_TEMPLATES = {"OUTREACH_BENCHMARK_HOSTING": "tmpl-123"}
 
 
 @override_settings(
-    OUTREACH_FROM_EMAIL="EvalAI Team <outreach@eval.ai>",
+    OUTREACH_FROM_EMAIL="EvalAI Team <team@eval.ai>",
     SENDGRID_SETTINGS={"TEMPLATES": SENDGRID_TEMPLATES},
 )
 class SendDailyOutreachTests(TestCase):
@@ -58,7 +58,7 @@ class SendDailyOutreachTests(TestCase):
         )
         self.assertEqual(recipients, ["a@x.com", "b@x.com", "c@x.com"])
         kwargs = mock_send.call_args_list[0].kwargs
-        self.assertEqual(kwargs["sender"], "EvalAI Team <outreach@eval.ai>")
+        self.assertEqual(kwargs["sender"], "EvalAI Team <team@eval.ai>")
         self.assertEqual(kwargs["template_id"], "tmpl-123")
         self.assertIn("benchmark_name", kwargs["template_data"])
 

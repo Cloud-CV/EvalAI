@@ -22,6 +22,25 @@ Follow your organization's CI/CD pipeline (see `.github/workflows/` in the repo)
 2. Build and push container images.
 3. Roll out API and worker deployments with health checks.
 4. Run database migrations when models change — see [Migrations](../maintenance/migrations.html).
+5. After API containers restart, production/staging deploys run `python manage.py refresh_worker_task_definitions --commit-id <git-sha>` to re-register ECS worker task definitions with the newly pushed ECR images.
+
+## ECS worker images and ECR lifecycle
+
+ECS task definitions pin container image digests at registration time. EvalAI refreshes Fargate worker task definitions on each deploy so workers do not reference ECR images deleted by lifecycle policies.
+
+**Recommended ECR lifecycle rules:**
+
+- Keep the last 20 commit-tagged images per worker repository, or retain commit tags for at least 30 days.
+- Avoid deleting image digests immediately after retagging `:latest`.
+- Per-challenge Python versions (`3.7`, `3.8`, `3.9`) are selected via `worker_python_version` (default `3.9`) or a custom `worker_image_url`.
+
+**Manual recovery:**
+
+```bash
+python manage.py refresh_worker_task_definitions --commit-id=<git-sha>
+```
+
+Or use the Django admin action **Refresh worker task definitions** on selected challenges.
 
 ## Self-hosted / forked EvalAI
 

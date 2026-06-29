@@ -177,9 +177,13 @@ def extract_zip_file(download_location, extract_location):
         * `download_location`: Location of zip file
         * `extract_location`: Location of directory for extracted file
     """
+    from base.zip_utils import safe_extract_zip_file
+
     zip_ref = zipfile.ZipFile(download_location, "r")
-    zip_ref.extractall(extract_location)
-    zip_ref.close()
+    try:
+        safe_extract_zip_file(zip_ref, extract_location)
+    finally:
+        zip_ref.close()
 
 
 def delete_zip_file(download_location):

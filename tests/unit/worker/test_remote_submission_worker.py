@@ -92,7 +92,9 @@ class TestDownloadAndExtractZipFile(unittest.TestCase):
         mock_open.assert_called_once_with("/path/to/download.zip", "wb")
         mock_open().write.assert_called_once_with(b"Test content")
         mock_zipfile.assert_called_once_with("/path/to/download.zip", "r")
-        mock_zipfile().extractall.assert_called_once_with("/path/to/extract/")
+        mock_zipfile().extractall.assert_called_once_with(
+            os.path.realpath("/path/to/extract/")
+        )
         mock_remove.assert_called_once_with("/path/to/download.zip")
 
     @patch("requests.get")
@@ -138,7 +140,9 @@ class TestDownloadAndExtractZipFile(unittest.TestCase):
             )
 
         mock_open().write.assert_called_once_with(b"Test content")
-        mock_zipfile().extractall.assert_called_once_with("/path/to/extract/")
+        mock_zipfile().extractall.assert_called_once_with(
+            os.path.realpath("/path/to/extract/")
+        )
 
 
 class TestLoadChallenge(unittest.TestCase):
