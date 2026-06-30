@@ -4,8 +4,8 @@ import tempfile
 import unittest
 import uuid
 import zipfile
-from datetime import datetime, timedelta
-from os.path import basename, join
+from datetime import timedelta
+from os.path import join
 from unittest.mock import Mock
 from unittest.mock import patch as mockpatch
 
