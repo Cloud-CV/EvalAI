@@ -13,8 +13,10 @@ ENV NODE_ENV=${NODE_ENV} \
 
 # Install build dependencies only (for native module compilation and bower)
 # Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     python2 \
     python-is-python2 \
     make \
@@ -24,7 +26,9 @@ RUN apt-get update && \
     curl \
     wget \
     gnupg \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
         python2 \
         python-is-python2 \
         make \
@@ -33,7 +37,7 @@ RUN apt-get update && \
         ca-certificates \
         curl \
         wget \
-        gnupg) && \
+        gnupg)) && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
