@@ -14,7 +14,7 @@ Before marking any coding task complete:
 | Backend tests | See [Running Tests](#running-tests) below |
 | Lint | See [Linting](#linting) below |
 
-`run-all-tests.sh` auto-detects Docker container names (`workspace-*` on Cloud Agent VMs, `evalai-*` when `COMPOSE_PROJECT_NAME=evalai`).
+`run-all-tests.sh` resolves containers from `COMPOSE_PROJECT_NAME` (defaults to `workspace` on Cloud Agent VMs; set `COMPOSE_PROJECT_NAME=evalai` for local dev).
 
 ## Cursor Cloud-specific instructions
 
@@ -66,7 +66,7 @@ Docker must be installed with `fuse-overlayfs` storage driver and `iptables-lega
 - **Backend**: `docker exec -e DJANGO_SETTINGS_MODULE=settings.test workspace-django-1 bash -c 'cd /code && python manage.py flush --noinput && pytest --cov . --cov-config .coveragerc -q'`
   - Note: `flush --noinput` clears the DB. Re-run `manage.py seed` or manually recreate users afterward if you need the dev data.
 - **Frontend**: `docker exec workspace-nodejs-1 bash -c 'Xvfb :99 -screen 0 1024x768x24 &>/dev/null & sleep 1 && npm test -- --single-run'`
-- **Both**: `./scripts/run-all-tests.sh` (auto-detects `workspace-*` or `evalai-*` container names)
+- **Both**: `./scripts/run-all-tests.sh` (uses `COMPOSE_PROJECT_NAME`, default `workspace`)
 
 ### Linting
 

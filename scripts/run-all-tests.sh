@@ -2,20 +2,18 @@
 # Run both frontend and backend test suites (Docker).
 # Usage: ./scripts/run-all-tests.sh
 #
-# Auto-detects container names:
-#   - workspace-* (Cloud Agent VMs, default compose project name)
-#   - evalai-*    (local dev with COMPOSE_PROJECT_NAME=evalai)
+# Auto-detects container names from COMPOSE_PROJECT_NAME (default: workspace).
+# Set COMPOSE_PROJECT_NAME=evalai for local dev stacks named evalai-*.
 
 set -e
 
 detect_container() {
   local suffix="$1"
-  if docker ps --format '{{.Names}}' | grep -qx "workspace-${suffix}"; then
-    echo "workspace-${suffix}"
-  elif docker ps --format '{{.Names}}' | grep -qx "evalai-${suffix}"; then
-    echo "evalai-${suffix}"
+  local project_prefix="${COMPOSE_PROJECT_NAME:-workspace}"
+  if docker ps --format '{{.Names}}' | grep -qx "${project_prefix}-${suffix}"; then
+    echo "${project_prefix}-${suffix}"
   else
-    echo "Error: Could not find ${suffix} container (expected workspace-${suffix} or evalai-${suffix})" >&2
+    echo "Error: Could not find ${suffix} container for ${project_prefix}" >&2
     exit 1
   fi
 }
