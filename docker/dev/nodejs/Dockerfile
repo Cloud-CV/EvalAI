@@ -12,21 +12,25 @@ ENV NODE_ENV=development \
 # Install build dependencies only (for native module compilation and bower)
 # Note: ca-certificates is needed for git to verify SSL certificates when accessing GitHub
 # Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     python2 \
     python-is-python2 \
     make \
     g++ \
     git \
     ca-certificates \
-    || (apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
         python2 \
         python-is-python2 \
         make \
         g++ \
         git \
-        ca-certificates) && \
+        ca-certificates)) && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
