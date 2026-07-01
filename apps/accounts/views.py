@@ -6,6 +6,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from rest_auth.registration.views import RegisterView
+from rest_auth.views import PasswordResetView
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -27,6 +28,26 @@ from .serializers import JwtTokenSerializer, UpdateEmailSerializer
 from .throttles import ResendEmailThrottle
 
 logger = logging.getLogger(__name__)
+
+
+PASSWORD_RESET_GENERIC_MESSAGE = (
+    "If your email exists in our database, you'll receive a password "
+    "reset link."
+)
+
+
+class SafePasswordResetView(PasswordResetView):
+    """Password reset view that returns a generic response to prevent
+    email enumeration."""
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": PASSWORD_RESET_GENERIC_MESSAGE},
+            status=status.HTTP_200_OK,
+        )
 
 
 class SafeRegisterView(RegisterView):
