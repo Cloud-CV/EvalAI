@@ -33,11 +33,18 @@ build_and_push_images() {
         "./docker/prod/nodejs/nginx_${deployment_environment_name}.conf"
     echo "Pulled SSL certificates and nginx configuration successfully."
 
-    echo "Pulling environment variables file..."
-    aws s3 cp \
-        "s3://cloudcv-secrets/evalai/${deployment_environment_name}/docker_${deployment_environment_name}.env" \
-        "./docker/prod/docker_${deployment_environment_name}.env"
-    echo "Environment variables file downloaded successfully."
+    # Real secrets are pulled on the deployment instance (deploy.sh auto_deploy).
+    # CI only needs a placeholder so docker compose config/build can resolve env_file.
+    local environment_file_path="./docker/prod/docker_${deployment_environment_name}.env"
+    local environment_file_example_path="./docker/prod/docker_${deployment_environment_name}.env.example"
+    if [[ ! -f "${environment_file_path}" ]]; then
+        if [[ ! -f "${environment_file_example_path}" ]]; then
+            echo "Missing placeholder env file: ${environment_file_example_path}"
+            exit 1
+        fi
+        cp "${environment_file_example_path}" "${environment_file_path}"
+        echo "Using placeholder environment file for image build (secrets are fetched on the deployment instance)."
+    fi
 
     if [[ "${dry_run_deployment}" == "true" ]]; then
         echo "Dry-run mode enabled. Validating Docker Compose configuration only."
