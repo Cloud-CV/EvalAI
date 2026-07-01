@@ -339,36 +339,30 @@ class UpdateEmailSerializer(serializers.Serializer):
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
-    Serializer to check Account Active Status.
+    Send password reset emails only for eligible accounts while always
+    completing successfully to prevent email enumeration.
     """
 
-    def get_email_options(self):
+    def _can_send_password_reset_email(self):
+        email = self.validated_data.get("email")
+        if not email:
+            return False
         try:
-            user = get_user_by_email(self.data["email"])
+            user = get_user_by_email(email)
         except User.DoesNotExist:
-            raise ValidationError(
-                {"details": "User with the given email does not exist."}
-            )
+            return False
         if not user.is_active:
-            raise ValidationError(
-                {
-                    "details": "Account is not active. Please contact the administrator."
-                }
-            )
+            return False
         if hasattr(user, "profile") and user.profile.email_bounced:
-            raise ValidationError(
-                {
-                    "details": "This email address has bounced and cannot receive password reset emails."
-                }
-            )
+            return False
         if not EmailAddress.objects.filter(
             user=user,
-            email__iexact=self.data["email"],
+            email__iexact=email,
             verified=True,
         ).exists():
-            raise ValidationError(
-                {
-                    "details": "Email address is not verified. Please verify your email before resetting password."
-                }
-            )
-        return super().get_email_options()
+            return False
+        return True
+
+    def save(self):
+        if self._can_send_password_reset_email():
+            super().save()
