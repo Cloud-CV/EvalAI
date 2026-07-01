@@ -33,6 +33,12 @@ build_and_push_images() {
         "./docker/prod/nodejs/nginx_${deployment_environment_name}.conf"
     echo "Pulled SSL certificates and nginx configuration successfully."
 
+    echo "Pulling environment variables file..."
+    aws s3 cp \
+        "s3://cloudcv-secrets/evalai/${deployment_environment_name}/docker_${deployment_environment_name}.env" \
+        "./docker/prod/docker_${deployment_environment_name}.env"
+    echo "Environment variables file downloaded successfully."
+
     if [[ "${dry_run_deployment}" == "true" ]]; then
         echo "Dry-run mode enabled. Validating Docker Compose configuration only."
         docker compose -f "${compose_file_path}" config >/dev/null
