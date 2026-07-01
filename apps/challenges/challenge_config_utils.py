@@ -2,7 +2,6 @@ import json
 import logging
 import re
 import zipfile
-from datetime import datetime
 from os.path import basename, isfile, join
 
 import requests
@@ -20,7 +19,6 @@ from challenges.models import (
     Leaderboard,
 )
 from django.core.files.base import ContentFile
-from django.utils import dateparse, timezone
 from rest_framework import status
 from yaml.scanner import ScannerError
 
@@ -38,59 +36,6 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
-
-_CHALLENGE_PHASE_APPROVED_LOCK_FIELDS = (
-    "name",
-    "description",
-    "leaderboard_public",
-    "start_date",
-    "end_date",
-    "is_public",
-    "codename",
-    "max_submissions_per_day",
-    "max_submissions_per_month",
-    "max_submissions",
-    "max_concurrent_submissions_allowed",
-    "submission_meta_attributes",
-    "default_submission_meta_attributes",
-    "submission_artifact_retention_policy",
-    "is_submission_public",
-    "annotations_uploaded_using_cli",
-    "is_restricted_to_select_one_submission",
-    "allowed_submission_file_types",
-    "allowed_email_ids",
-    "disable_logs",
-    "is_submission_paused",
-    "environment_image",
-    "is_partial_submission_evaluation_enabled",
-)
-
-_CHALLENGE_PHASE_DATE_LOCK_FIELDS = frozenset({"start_date", "end_date"})
-
-
-def _parse_lock_datetime(value):
-    if value is None:
-        return None
-    if isinstance(value, datetime):
-        dt = value
-    elif isinstance(value, str):
-        stripped = value.strip()
-        dt = dateparse.parse_datetime(stripped)
-        if dt is None:
-            dt = dateparse.parse_datetime(stripped.replace(" ", "T", 1))
-    else:
-        return value
-    if timezone.is_naive(dt):
-        dt = timezone.make_aware(dt, timezone.utc)
-    return dt.astimezone(timezone.utc).replace(microsecond=0)
-
-
-def _normalize_lock_field_value(field, value):
-    if field in _CHALLENGE_PHASE_DATE_LOCK_FIELDS:
-        return _parse_lock_datetime(value)
-    if field == "description" and isinstance(value, str):
-        return value.rstrip()
-    return value
 
 
 def write_file(output_path, mode, file_content):
@@ -406,10 +351,6 @@ error_message_dict = {
         "ERROR: Dataset split {} cannot be changed after the challenge is approved by an admin. "
         "Revert the dataset split block to match the approved configuration or contact support."
     ),
-    "locked_challenge_phase_modified": (
-        "ERROR: Challenge phase {} cannot be changed after the challenge is approved by an admin. "
-        "Revert the phase block to match the approved configuration or contact support."
-    ),
     "locked_challenge_phase_split_modified": (
         "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) "
         "cannot be changed after the challenge is approved by an admin. Revert visibility / ordering "
@@ -514,13 +455,6 @@ class ValidateChallengeConfigUtil:
     def _stable_json(value):
         return json.dumps(value, sort_keys=True, default=str)
 
-    def _lock_field_values_equal(self, field, db_value, yaml_value):
-        norm_db = _normalize_lock_field_value(field, db_value)
-        norm_yaml = _normalize_lock_field_value(field, yaml_value)
-        if isinstance(norm_db, datetime) and isinstance(norm_yaml, datetime):
-            return norm_db == norm_yaml
-        return self._stable_json(norm_db) == self._stable_json(norm_yaml)
-
     def _locked_leaderboard_modified_message(self, data):
         lb = Leaderboard.objects.filter(
             config_id=int(data["id"]),
@@ -552,32 +486,6 @@ class ValidateChallengeConfigUtil:
             return self.error_messages_dict[
                 "locked_dataset_split_modified"
             ].format(split["id"])
-        return None
-
-    def _locked_challenge_phase_modified_message(self, data):
-        phase = ChallengePhase.objects.filter(
-            challenge_id=self.current_challenge.pk,
-            config_id=int(data["id"]),
-        ).first()
-        if phase is None:
-            return None
-        for field in _CHALLENGE_PHASE_APPROVED_LOCK_FIELDS:
-            if field not in data:
-                continue
-            if not self._lock_field_values_equal(
-                field, getattr(phase, field), data.get(field)
-            ):
-                return self.error_messages_dict[
-                    "locked_challenge_phase_modified"
-                ].format(data["id"])
-        yaml_ann = data.get("test_annotation_file")
-        db_ann_name = None
-        if phase.test_annotation:
-            db_ann_name = basename(phase.test_annotation.name)
-        if yaml_ann != db_ann_name:
-            return self.error_messages_dict[
-                "locked_challenge_phase_modified"
-            ].format(data["id"])
         return None
 
     def _locked_challenge_phase_split_modified_message(self, data):
@@ -1070,16 +978,6 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
-                if (
-                    self._approved_config_locked()
-                    and current_phase_config_ids
-                    and int(data["id"]) in current_phase_config_ids
-                ):
-                    locked_msg = self._locked_challenge_phase_modified_message(
-                        data
-                    )
-                    if locked_msg:
-                        self.error_messages.append(locked_msg)
                 self.phase_ids.append(data["id"])
 
         for current_challenge_phase_id in current_phase_config_ids:

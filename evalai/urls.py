@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from accounts.views import SafeRegisterView
+from accounts.views import SafePasswordResetView, SafeRegisterView
 from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls import include, url
@@ -45,6 +45,11 @@ urlpatterns = [
         r"^api/auth/login",
         obtain_expiring_auth_token,
         name="obtain_expiring_auth_token",
+    ),
+    url(
+        r"^api/auth/password/reset/$",
+        SafePasswordResetView.as_view(),
+        name="rest_password_reset",
     ),
     url(r"^api/auth/", include("rest_auth.urls")),
     url(

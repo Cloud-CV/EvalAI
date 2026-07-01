@@ -53,7 +53,7 @@ media/
 # .DS_Store for OSX
 .DS_Store
 
-# Docker Environment Files
+# Docker Environment Files (use *.env.example as templates)
 docker/prod/docker_staging.env
 docker/prod/docker_production.env
 

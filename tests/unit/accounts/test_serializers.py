@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from accounts.models import Profile
 from accounts.serializers import (
@@ -12,7 +13,6 @@ from django.test import TestCase
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
-from rest_framework.exceptions import ValidationError
 
 
 class TestCustomPasswordResetSerializer(TestCase):
@@ -54,87 +54,81 @@ class TestCustomPasswordResetSerializer(TestCase):
             verified=True,
         )
 
-    def test_get_email_options_try_block(self):
+    def test_can_send_password_reset_email_for_active_verified_user(self):
         serializer = CustomPasswordResetSerializer(
             data={"email": self.active_user.email}
         )
-        self.assertEqual(serializer.is_valid(), True)
-        base_class = serializer.__class__.__mro__[1]
-        base_serializer = base_class(data={"email": self.active_user.email})
-        self.assertEqual(base_serializer.is_valid(), True)
-        expected_email_options = base_serializer.get_email_options()
-        self.assertEqual(
-            serializer.get_email_options(), expected_email_options
-        )
+        self.assertTrue(serializer.is_valid())
+        self.assertTrue(serializer._can_send_password_reset_email())
 
-    def test_get_email_options_except_block(self):
+    def test_can_send_password_reset_email_returns_false_for_nonexistent_user(
+        self,
+    ):
         serializer = CustomPasswordResetSerializer(
             data={"email": "nonexistent@example.com"}
         )
-        serializer.is_valid()  # Ensure data is validated
-        with self.assertRaises(ValidationError) as e:
-            serializer.get_email_options()
-        self.assertEqual(
-            e.exception.detail,
-            {"details": "User with the given email does not exist."},
-        )
+        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer._can_send_password_reset_email())
 
-    def test_get_email_options_inactive_user(self):
+    def test_can_send_password_reset_email_returns_false_for_inactive_user(
+        self,
+    ):
         serializer = CustomPasswordResetSerializer(
             data={"email": self.inactive_user.email}
         )
-        serializer.is_valid()  # Ensure data is validated
-        with self.assertRaises(ValidationError) as e:
-            serializer.get_email_options()
-        self.assertEqual(
-            e.exception.detail,
-            {
-                "details": "Account is not active. Please contact the administrator."
-            },
-        )
+        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer._can_send_password_reset_email())
 
-    def test_get_email_options_unverified_user(self):
+    def test_can_send_password_reset_email_returns_false_for_unverified_user(
+        self,
+    ):
         serializer = CustomPasswordResetSerializer(
             data={"email": self.unverified_user.email}
         )
-        serializer.is_valid()  # Ensure data is validated
-        with self.assertRaises(ValidationError) as e:
-            serializer.get_email_options()
-        self.assertEqual(
-            e.exception.detail,
-            {
-                "details": "Email address is not verified. Please verify your email before resetting password."
-            },
-        )
+        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer._can_send_password_reset_email())
 
-    def test_get_email_options_bounced_email_user(self):
+    def test_can_send_password_reset_email_returns_false_for_bounced_email_user(
+        self,
+    ):
         self.active_user.profile.email_bounced = True
         self.active_user.profile.save(update_fields=["email_bounced"])
         serializer = CustomPasswordResetSerializer(
             data={"email": self.active_user.email}
         )
-        serializer.is_valid()  # Ensure data is validated
-        with self.assertRaises(ValidationError) as e:
-            serializer.get_email_options()
-        self.assertEqual(
-            e.exception.detail,
-            {
-                "details": "This email address has bounced and cannot receive password reset emails."
-            },
-        )
+        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer._can_send_password_reset_email())
 
-    def test_get_email_options_case_insensitive_email_lookup(self):
+    def test_can_send_password_reset_email_case_insensitive_email_lookup(self):
         serializer = CustomPasswordResetSerializer(
             data={"email": "ACTIVE@EXAMPLE.COM"}
         )
-        self.assertEqual(serializer.is_valid(), True)
-        base_class = serializer.__class__.__mro__[1]
-        base_serializer = base_class(data={"email": "ACTIVE@EXAMPLE.COM"})
-        self.assertEqual(base_serializer.is_valid(), True)
-        expected_email_options = base_serializer.get_email_options()
-        self.assertEqual(
-            serializer.get_email_options(), expected_email_options
+        self.assertTrue(serializer.is_valid())
+        self.assertTrue(serializer._can_send_password_reset_email())
+
+    @patch(
+        "rest_auth.serializers.PasswordResetSerializer.save",
+        autospec=True,
+    )
+    def test_save_sends_email_for_eligible_user(self, mock_super_save):
+        serializer = CustomPasswordResetSerializer(
+            data={"email": self.active_user.email}
         )
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        mock_super_save.assert_called_once()
+
+    @patch(
+        "rest_auth.serializers.PasswordResetSerializer.save",
+        autospec=True,
+    )
+    def test_save_skips_email_for_ineligible_user(self, mock_super_save):
+        serializer = CustomPasswordResetSerializer(
+            data={"email": "nonexistent@example.com"}
+        )
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        mock_super_save.assert_not_called()
 
 
 class TestProfileSerializer(TestCase):
