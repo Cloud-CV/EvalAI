@@ -372,7 +372,9 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": self.verified_user.email}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_called_once()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
@@ -383,7 +385,9 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": "VERIFIED@EXAMPLE.COM"}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_called_once()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
@@ -394,7 +398,9 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": self.unverified_user.email}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_not_called()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
@@ -407,7 +413,9 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": self.verified_user.email}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_not_called()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
@@ -418,7 +426,9 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": self.inactive_user.email}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_not_called()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
@@ -429,5 +439,7 @@ class PasswordResetViewTest(APITestCase):
             self.url, {"email": "nonexistent@example.com"}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE)
+        self.assertEqual(
+            response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
+        )
         mock_save.assert_not_called()
