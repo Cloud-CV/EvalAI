@@ -443,3 +443,42 @@ class PasswordResetViewTest(APITestCase):
             response.data["detail"], PASSWORD_RESET_GENERIC_MESSAGE
         )
         mock_save.assert_not_called()
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_throttles_by_email(self, mock_save):
+        for _ in range(3):
+            response = self.client.post(
+                self.url,
+                {"email": self.verified_user.email},
+                format="json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+            self.url,
+            {"email": self.verified_user.email},
+            format="json",
+        )
+        self.assertEqual(
+            response.status_code, status.HTTP_429_TOO_MANY_REQUESTS
+        )
+        self.assertEqual(mock_save.call_count, 3)
+
+    @patch("django.contrib.auth.forms.PasswordResetForm.save")
+    def test_password_reset_email_throttle_is_case_insensitive(self, mock_save):
+        emails = [
+            "verified@example.com",
+            "VERIFIED@EXAMPLE.COM",
+            "Verified@Example.com",
+        ]
+        for email in emails:
+            response = self.client.post(
+                self.url, {"email": email}, format="json"
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+            self.url, {"email": self.verified_user.email}, format="json"
+        )
+        self.assertEqual(
+            response.status_code, status.HTTP_429_TOO_MANY_REQUESTS
+        )
+        self.assertEqual(mock_save.call_count, 3)
