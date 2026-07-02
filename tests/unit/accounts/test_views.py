@@ -5,6 +5,7 @@ from accounts.models import JwtToken
 from accounts.views import PASSWORD_RESET_GENERIC_MESSAGE
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
+from django.core.cache import caches
 from django.db import IntegrityError
 from django.urls import reverse_lazy
 from rest_framework import status
@@ -365,6 +366,10 @@ class PasswordResetViewTest(APITestCase):
             primary=True,
             verified=True,
         )
+        caches["throttling"].clear()
+
+    def tearDown(self):
+        caches["throttling"].clear()
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
     def test_password_reset_verified_active_user_success(self, mock_save):
@@ -464,7 +469,9 @@ class PasswordResetViewTest(APITestCase):
         self.assertEqual(mock_save.call_count, 3)
 
     @patch("django.contrib.auth.forms.PasswordResetForm.save")
-    def test_password_reset_email_throttle_is_case_insensitive(self, mock_save):
+    def test_password_reset_email_throttle_is_case_insensitive(
+        self, mock_save
+    ):
         emails = [
             "verified@example.com",
             "VERIFIED@EXAMPLE.COM",

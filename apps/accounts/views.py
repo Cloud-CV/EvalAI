@@ -44,7 +44,7 @@ class SafePasswordResetView(PasswordResetView):
     """Password reset view that returns a generic response to prevent
     email enumeration."""
 
-    throttle_classes = [PasswordResetEmailThrottle, PasswordResetIPThrottle]
+    throttle_classes = (PasswordResetEmailThrottle, PasswordResetIPThrottle)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
