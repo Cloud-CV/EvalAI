@@ -104,11 +104,16 @@ describe('Unit tests for change password controller', function () {
             var resetconfirmFormValid = true;
             success = true;
             $state.params.user_id = 1;
+            spyOn(utilities, 'resetStorage');
+            spyOn($state, 'go');
 
             vm.changePassword(resetconfirmFormValid);
             expect(vm.user.error).toBeFalsy();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your password has been changed successfully!");
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your password has been changed successfully! Please log in again.");
             expect(vm.stopLoader).toHaveBeenCalled();
+            expect(utilities.resetStorage).toHaveBeenCalled();
+            expect($rootScope.isAuth).toBeFalsy();
+            expect($state.go).toHaveBeenCalledWith('auth.login');
         });
 
         it('when old password is valid', function () {

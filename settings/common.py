@@ -342,6 +342,12 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 100_000
 REST_AUTH_SERIALIZERS = {
     "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
     "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
+    "PASSWORD_CHANGE_SERIALIZER": (
+        "accounts.serializers.CustomPasswordChangeSerializer"
+    ),
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": (
+        "accounts.serializers.CustomPasswordResetConfirmSerializer"
+    ),
 }
 
 # Default email for sending emails..
