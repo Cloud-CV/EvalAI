@@ -25,7 +25,11 @@ from .authentication import ExpiringTokenAuthentication
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer, UpdateEmailSerializer
-from .throttles import ResendEmailThrottle
+from .throttles import (
+    PasswordResetEmailThrottle,
+    PasswordResetIPThrottle,
+    ResendEmailThrottle,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +43,8 @@ PASSWORD_RESET_GENERIC_MESSAGE = (
 class SafePasswordResetView(PasswordResetView):
     """Password reset view that returns a generic response to prevent
     email enumeration."""
+
+    throttle_classes = (PasswordResetEmailThrottle, PasswordResetIPThrottle)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
