@@ -1,0 +1,4 @@
+{
+  "install": "docker compose build db sqs django",
+  "start": "docker compose up -d db sqs django"
+}

@@ -1,0 +1,30 @@
+---
+description: Enforce build and test verification before completing code changes
+alwaysApply: true
+---
+
+# Build verification
+
+You are in a real environment with shell access. Do not claim work is done without verification.
+
+## On every coding task
+
+1. After making changes, run the appropriate build/test commands from `AGENTS.md` or `./scripts/run-all-tests.sh`.
+2. If build or tests fail, diagnose and fix before finishing.
+3. Report what you ran and the outcome in your final message.
+
+## When editing backend (`apps/`, `settings/`)
+
+- Run backend tests and lint commands documented in `AGENTS.md`.
+
+## When editing frontend (`frontend/`, `gulpfile.js`, etc.)
+
+- Run frontend tests documented in `AGENTS.md`.
+
+## Completion criteria
+
+Do not stop until:
+
+- Build succeeds (if applicable), AND
+- Relevant tests pass, AND
+- You have fixed any failures you introduced.

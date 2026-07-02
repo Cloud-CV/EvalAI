@@ -72,7 +72,10 @@ out/
 
 # LLM Coding Agents
 .claude/
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/environment.json
 .cursorrules
 .github/copilot/
 .copilot/
