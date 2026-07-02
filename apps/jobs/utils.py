@@ -426,20 +426,111 @@ def calculate_distinct_sorted_leaderboard_data(
                 submission__is_public=True
             )
 
+    # Stage 1: fetch a lightweight projection (no heavy JSON columns) for
+    # sort + dedup. This avoids transferring result/error/submission_metadata
+    # for rows that will be discarded by per-team deduplication.
+    leaderboard_data_light = leaderboard_data.annotate(
+        filtering_score=RawSQL(
+            "result->>%s", (default_order_by,), output_field=FloatField()
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
+    ).values(
+        "id",
+        "submission__participant_team",
+        "submission__participant_team__team_name",
+        "submission__is_baseline",
+        "error",
+        "filtering_score",
+        "filtering_error",
+    )
+
+    all_banned_participant_team = set()
+    all_banned_email_ids_set = (
+        set(all_banned_email_ids) if all_banned_email_ids else set()
+    )
+
+    # Apply query limit to prevent slow queries on popular challenges
+    max_limit = getattr(settings, "MAX_LEADERBOARD_QUERY_LIMIT", 10000)
+    leaderboard_data_light = list(leaderboard_data_light[:max_limit])
+
+    # Prefetch all participant teams and their participants' emails in bulk
+    # (fixes N+1 query)
+    unique_team_ids = set(
+        item["submission__participant_team"] for item in leaderboard_data_light
+    )
+    participant_teams = ParticipantTeam.objects.filter(
+        id__in=unique_team_ids
+    ).prefetch_related("participants__user")
+    # Build lookup: team_id -> list of participant emails
+    team_emails_lookup = {
+        team.id: [p.user.email for p in team.participants.all()]
+        for team in participant_teams
+    }
+
+    for leaderboard_item in leaderboard_data_light:
+        participant_team_id = leaderboard_item["submission__participant_team"]
+        all_participants_email_ids = team_emails_lookup.get(
+            participant_team_id, []
+        )
+        for participant_email in all_participants_email_ids:
+            if participant_email in all_banned_email_ids_set:
+                all_banned_participant_team.add(participant_team_id)
+                break
+        if leaderboard_item["error"] is None:
+            leaderboard_item["filtering_error"] = 0
+        if leaderboard_item["filtering_score"] is None:
+            leaderboard_item["filtering_score"] = 0
+
+    if challenge_phase_split.show_leaderboard_by_latest_submission:
+        sorted_leaderboard_data = leaderboard_data_light
+    else:
+        sorted_leaderboard_data = sorted(
+            leaderboard_data_light,
+            key=lambda k: (
+                float(k["filtering_score"]),
+                float(-k["filtering_error"]),
+            ),
+            reverse=True if is_leaderboard_order_descending else False,
+        )
+
+    retained_light = []
+    team_list = set()
+    for data in sorted_leaderboard_data:
+        if (
+            data["submission__participant_team__team_name"] in team_list
+            or data["submission__participant_team"]
+            in all_banned_participant_team
+        ):
+            continue
+        elif data["submission__is_baseline"] is True:
+            retained_light.append(data)
+        else:
+            retained_light.append(data)
+            team_list.add(data["submission__participant_team__team_name"])
+
+    # Stage 2: fetch full row data (with heavy JSON columns) only for the
+    # retained leaderboard rows, then reapply the order from stage 1.
+    retained_ids = [item["id"] for item in retained_light]
+    heavy_qs = LeaderboardData.objects.filter(id__in=retained_ids).annotate(
+        filtering_score=RawSQL(
+            "result->>%s", (default_order_by,), output_field=FloatField()
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
+    )
     if challenge_phase_split.show_execution_time:
         time_diff_expression = ExpressionWrapper(
             F("submission__completed_at") - F("submission__started_at"),
             output_field=fields.DurationField(),
         )
-        leaderboard_data = leaderboard_data.annotate(
-            filtering_score=RawSQL(
-                "result->>%s", (default_order_by,), output_field=FloatField()
-            ),
-            filtering_error=RawSQL(
-                "error->>%s",
-                ("error_{0}".format(default_order_by),),
-                output_field=FloatField(),
-            ),
+        heavy_qs = heavy_qs.annotate(
             submission__execution_time=time_diff_expression,
         ).values(
             "id",
@@ -462,16 +553,7 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__is_verified_by_host",
         )
     else:
-        leaderboard_data = leaderboard_data.annotate(
-            filtering_score=RawSQL(
-                "result->>%s", (default_order_by,), output_field=FloatField()
-            ),
-            filtering_error=RawSQL(
-                "error->>%s",
-                ("error_{0}".format(default_order_by),),
-                output_field=FloatField(),
-            ),
-        ).values(
+        heavy_qs = heavy_qs.values(
             "id",
             "submission__participant_team",
             "submission__participant_team__team_name",
@@ -491,70 +573,19 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__is_verified_by_host",
         )
 
-    all_banned_participant_team = set()
-    all_banned_email_ids_set = (
-        set(all_banned_email_ids) if all_banned_email_ids else set()
-    )
+    heavy_by_id = {row["id"]: row for row in heavy_qs}
 
-    # Apply query limit to prevent slow queries on popular challenges
-    max_limit = getattr(settings, "MAX_LEADERBOARD_QUERY_LIMIT", 10000)
-    leaderboard_data = leaderboard_data[:max_limit]
-
-    # Convert to list to allow multiple iterations
-    leaderboard_data = list(leaderboard_data)
-
-    # Prefetch all participant teams and their participants' emails in bulk
-    # (fixes N+1 query)
-    unique_team_ids = set(
-        item["submission__participant_team"] for item in leaderboard_data
-    )
-    participant_teams = ParticipantTeam.objects.filter(
-        id__in=unique_team_ids
-    ).prefetch_related("participants__user")
-    # Build lookup: team_id -> list of participant emails
-    team_emails_lookup = {
-        team.id: [p.user.email for p in team.participants.all()]
-        for team in participant_teams
-    }
-
-    for leaderboard_item in leaderboard_data:
-        participant_team_id = leaderboard_item["submission__participant_team"]
-        all_participants_email_ids = team_emails_lookup.get(
-            participant_team_id, []
-        )
-        for participant_email in all_participants_email_ids:
-            if participant_email in all_banned_email_ids_set:
-                all_banned_participant_team.add(participant_team_id)
-                break
-        if leaderboard_item["error"] is None:
-            leaderboard_item.update(filtering_error=0)
-        if leaderboard_item["filtering_score"] is None:
-            leaderboard_item.update(filtering_score=0)
-    if challenge_phase_split.show_leaderboard_by_latest_submission:
-        sorted_leaderboard_data = leaderboard_data
-    else:
-        sorted_leaderboard_data = sorted(
-            leaderboard_data,
-            key=lambda k: (
-                float(k["filtering_score"]),
-                float(-k["filtering_error"]),
-            ),
-            reverse=True if is_leaderboard_order_descending else False,
-        )
     distinct_sorted_leaderboard_data = []
-    team_list = set()
-    for data in sorted_leaderboard_data:
-        if (
-            data["submission__participant_team__team_name"] in team_list
-            or data["submission__participant_team"]
-            in all_banned_participant_team
-        ):
+    for light_item in retained_light:
+        full = heavy_by_id.get(light_item["id"])
+        if full is None:
+            # Row removed between stage 1 and stage 2; skip.
             continue
-        elif data["submission__is_baseline"] is True:
-            distinct_sorted_leaderboard_data.append(data)
-        else:
-            distinct_sorted_leaderboard_data.append(data)
-            team_list.add(data["submission__participant_team__team_name"])
+        if full["error"] is None:
+            full["filtering_error"] = 0
+        if full["filtering_score"] is None:
+            full["filtering_score"] = 0
+        distinct_sorted_leaderboard_data.append(full)
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     show_scores = challenge_phase_split.show_scores_on_leaderboard
