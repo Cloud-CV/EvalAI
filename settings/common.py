@@ -119,12 +119,18 @@ WSGI_APPLICATION = "evalai.wsgi.application"
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
+PASSWORD_MAX_LENGTH = 128
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"  # noqa
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"  # noqa
+    },
+    {
+        "NAME": "accounts.validators.MaximumLengthValidator",
+        "OPTIONS": {"max_length": PASSWORD_MAX_LENGTH},
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"  # noqa
@@ -185,6 +191,7 @@ REST_FRAMEWORK = {
         "resend_email": "3/hour",
         "password_reset_email": "3/hour",
         "password_reset_ip": "10/hour",
+        "registration_ip": "10/hour",
     },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -332,7 +339,7 @@ CACHES = {
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 
 # Maximum number of GET/POST parameters for forms
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-number-fields
@@ -344,6 +351,11 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 100_000
 REST_AUTH_SERIALIZERS = {
     "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
     "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
+    "LOGIN_SERIALIZER": "accounts.serializers.CustomLoginSerializer",
+}
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "accounts.serializers.CustomRegisterSerializer",
 }
 
 # Default email for sending emails..

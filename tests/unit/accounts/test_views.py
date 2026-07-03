@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from accounts.models import JwtToken
 from accounts.views import PASSWORD_RESET_GENERIC_MESSAGE
 from allauth.account.models import EmailAddress
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import caches
 from django.db import IntegrityError
@@ -323,6 +324,41 @@ class SafeRegisterViewTest(APITestCase):
                     },
                     format="json",
                 )
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_rejects_password_over_max_length(self, mock_resolve):
+        """Oversized passwords are rejected before hashing."""
+        mock_resolve.return_value = [MagicMock()]
+        long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)
+        response = self.client.post(
+            self.url,
+            {
+                "username": "longpassuser",
+                "email": "longpass@example.com",
+                "password1": long_password,
+                "password2": long_password,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password1", response.data)
+
+
+class LoginPasswordLengthTest(APITestCase):
+    url = reverse_lazy("rest_login")
+
+    def test_login_rejects_password_over_max_length(self):
+        long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)
+        response = self.client.post(
+            self.url,
+            {
+                "username": "someuser",
+                "password": long_password,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
 
 
 class PasswordResetViewTest(APITestCase):

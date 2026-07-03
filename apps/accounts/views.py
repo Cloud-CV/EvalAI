@@ -28,6 +28,7 @@ from .serializers import JwtTokenSerializer, UpdateEmailSerializer
 from .throttles import (
     PasswordResetEmailThrottle,
     PasswordResetIPThrottle,
+    RegistrationIPThrottle,
     ResendEmailThrottle,
 )
 
@@ -64,6 +65,8 @@ class SafeRegisterView(RegisterView):
     but a race condition (two concurrent requests with the same email) can
     slip past the check. This view acts as a safety net for that case.
     """
+
+    throttle_classes = (RegistrationIPThrottle,)
 
     def create(self, request, *args, **kwargs):
         try:
