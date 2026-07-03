@@ -1,8 +1,7 @@
+from accounts.validators import MaximumLengthValidator
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
-
-from accounts.validators import MaximumLengthValidator
 
 
 class MaximumLengthValidatorTest(SimpleTestCase):

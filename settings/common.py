@@ -339,7 +339,7 @@ CACHES = {
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # Maximum number of GET/POST parameters for forms
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-number-fields
@@ -351,7 +351,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 100_000
 REST_AUTH_SERIALIZERS = {
     "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
     "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
-    "LOGIN_SERIALIZER": "accounts.serializers.CustomLoginSerializer",
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {

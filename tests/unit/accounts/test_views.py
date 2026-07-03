@@ -345,7 +345,7 @@ class SafeRegisterViewTest(APITestCase):
 
 
 class LoginPasswordLengthTest(APITestCase):
-    url = reverse_lazy("rest_login")
+    url = reverse_lazy("obtain_expiring_auth_token")
 
     def test_login_rejects_password_over_max_length(self):
         long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)

@@ -16,6 +16,7 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
+from rest_framework_expiring_authtoken.views import ObtainExpiringAuthToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
@@ -24,7 +25,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .authentication import ExpiringTokenAuthentication
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
-from .serializers import JwtTokenSerializer, UpdateEmailSerializer
+from .serializers import (
+    BoundedAuthTokenSerializer,
+    JwtTokenSerializer,
+    UpdateEmailSerializer,
+)
 from .throttles import (
     PasswordResetEmailThrottle,
     PasswordResetIPThrottle,
@@ -39,6 +44,15 @@ PASSWORD_RESET_GENERIC_MESSAGE = (
     "If your email exists in our database, you'll receive a password "
     "reset link."
 )
+
+
+class SafeObtainExpiringAuthToken(ObtainExpiringAuthToken):
+    """Login view with bounded password field length."""
+
+    serializer_class = BoundedAuthTokenSerializer
+
+
+safe_obtain_expiring_auth_token = SafeObtainExpiringAuthToken.as_view()
 
 
 class SafePasswordResetView(PasswordResetView):

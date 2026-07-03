@@ -14,7 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from accounts.views import SafePasswordResetView, SafeRegisterView
+from accounts.views import (
+    SafePasswordResetView,
+    SafeRegisterView,
+    safe_obtain_expiring_auth_token,
+)
 from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls import include, url
@@ -26,7 +30,6 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from web import views
 
 handler404 = "web.views.page_not_found"
@@ -43,7 +46,7 @@ urlpatterns = [
     url(r"^api/admin/", admin.site.urls),
     url(
         r"^api/auth/login",
-        obtain_expiring_auth_token,
+        safe_obtain_expiring_auth_token,
         name="obtain_expiring_auth_token",
     ),
     url(

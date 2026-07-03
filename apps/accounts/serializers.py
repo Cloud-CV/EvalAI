@@ -7,8 +7,9 @@ from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
 )
 from rest_auth.registration.serializers import RegisterSerializer
-from rest_auth.serializers import LoginSerializer, PasswordResetSerializer
+from rest_auth.serializers import PasswordResetSerializer
 from rest_framework import serializers
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import ValidationError
 
 from .models import JwtToken, Profile
@@ -352,10 +353,11 @@ class CustomRegisterSerializer(RegisterSerializer):
     )
 
 
-class CustomLoginSerializer(LoginSerializer):
+class BoundedAuthTokenSerializer(AuthTokenSerializer):
     """Login serializer with bounded password field length."""
 
     password = serializers.CharField(
+        label="Password",
         style={"input_type": "password"},
         max_length=PASSWORD_MAX_LENGTH,
     )
