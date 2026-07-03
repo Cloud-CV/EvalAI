@@ -94,6 +94,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+X_FRAME_OPTIONS = "DENY"
+
 ROOT_URLCONF = "evalai.urls"
 
 
