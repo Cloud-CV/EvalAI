@@ -91,6 +91,9 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 # Hide API Docs on production environment
 REST_FRAMEWORK_DOCS = {"HIDE_DOCS": True}
 
+# One trusted reverse proxy (nginx) sets X-Forwarded-For in production.
+REST_FRAMEWORK["NUM_PROXIES"] = 1  # noqa: F405
+
 # Port number for the python-memcached cache backend.
 CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
     "MEMCACHED_LOCATION"

@@ -359,6 +359,8 @@ class BoundedAuthTokenSerializer(AuthTokenSerializer):
     password = serializers.CharField(
         label="Password",
         style={"input_type": "password"},
+        write_only=True,
+        trim_whitespace=False,
         max_length=PASSWORD_MAX_LENGTH,
     )
 

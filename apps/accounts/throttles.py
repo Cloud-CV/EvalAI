@@ -44,6 +44,9 @@ class PasswordResetEmailThrottle(_ThrottlingCacheMixin, SimpleRateThrottle):
 class RegistrationIPThrottle(_ThrottlingCacheMixin, SimpleRateThrottle):
     """
     Limit registration requests to 10/hour per client IP address.
+
+    Requires REST_FRAMEWORK["NUM_PROXIES"] to be set when deployed behind
+    trusted reverse proxies so client IPs are derived correctly.
     """
 
     scope = "registration_ip"
