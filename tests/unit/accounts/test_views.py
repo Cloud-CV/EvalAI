@@ -381,9 +381,7 @@ class SafeObtainExpiringAuthTokenTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("token", response.data)
-        self.assertTrue(
-            ExpiringToken.objects.filter(user=self.user).exists()
-        )
+        self.assertTrue(ExpiringToken.objects.filter(user=self.user).exists())
 
     @patch.object(ExpiringToken, "expired", return_value=True)
     def test_login_refreshes_expired_token(self, mock_expired):
