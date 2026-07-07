@@ -39,6 +39,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
+        if start_date is None and self.instance is not None:
+            start_date = self.instance.start_date
+        if end_date is None and self.instance is not None:
+            end_date = self.instance.end_date
         if start_date and end_date and start_date >= end_date:
             raise serializers.ValidationError(
                 "Challenge start date must be before end date."
@@ -160,22 +164,34 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
         challenge = attrs.get("challenge")
+        if start_date is None and self.instance is not None:
+            start_date = self.instance.start_date
+        if end_date is None and self.instance is not None:
+            end_date = self.instance.end_date
+        if challenge is None and self.instance is not None:
+            challenge = self.instance.challenge
         if challenge:
-            if start_date and challenge.start_date and start_date < challenge.start_date:
+            csd = challenge.start_date
+            ced = challenge.end_date
+            if start_date and csd and start_date < csd:
                 raise serializers.ValidationError(
-                    "Phase start date must be on or after challenge start date."
+                    "Phase start date must be on or after "
+                    "challenge start date."
                 )
-            if start_date and challenge.end_date and start_date >= challenge.end_date:
+            if start_date and ced and start_date >= ced:
                 raise serializers.ValidationError(
-                    "Phase start date must be before challenge end date."
+                    "Phase start date must be before "
+                    "challenge end date."
                 )
-            if end_date and challenge.start_date and end_date <= challenge.start_date:
+            if end_date and csd and end_date <= csd:
                 raise serializers.ValidationError(
-                    "Phase end date must be after challenge start date."
+                    "Phase end date must be after "
+                    "challenge start date."
                 )
-            if end_date and challenge.end_date and end_date > challenge.end_date:
+            if end_date and ced and end_date > ced:
                 raise serializers.ValidationError(
-                    "Phase end date must be on or before challenge end date."
+                    "Phase end date must be on or before "
+                    "challenge end date."
                 )
         if start_date and end_date and start_date >= end_date:
             raise serializers.ValidationError(
@@ -481,22 +497,34 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
         challenge = attrs.get("challenge")
+        if start_date is None and self.instance is not None:
+            start_date = self.instance.start_date
+        if end_date is None and self.instance is not None:
+            end_date = self.instance.end_date
+        if challenge is None and self.instance is not None:
+            challenge = self.instance.challenge
         if challenge:
-            if start_date and challenge.start_date and start_date < challenge.start_date:
+            csd = challenge.start_date
+            ced = challenge.end_date
+            if start_date and csd and start_date < csd:
                 raise serializers.ValidationError(
-                    "Phase start date must be on or after challenge start date."
+                    "Phase start date must be on or after "
+                    "challenge start date."
                 )
-            if start_date and challenge.end_date and start_date >= challenge.end_date:
+            if start_date and ced and start_date >= ced:
                 raise serializers.ValidationError(
-                    "Phase start date must be before challenge end date."
+                    "Phase start date must be before "
+                    "challenge end date."
                 )
-            if end_date and challenge.start_date and end_date <= challenge.start_date:
+            if end_date and csd and end_date <= csd:
                 raise serializers.ValidationError(
-                    "Phase end date must be after challenge start date."
+                    "Phase end date must be after "
+                    "challenge start date."
                 )
-            if end_date and challenge.end_date and end_date > challenge.end_date:
+            if end_date and ced and end_date > ced:
                 raise serializers.ValidationError(
-                    "Phase end date must be on or before challenge end date."
+                    "Phase end date must be on or before "
+                    "challenge end date."
                 )
         if start_date and end_date and start_date >= end_date:
             raise serializers.ValidationError(
