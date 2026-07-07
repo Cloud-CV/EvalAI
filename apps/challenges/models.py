@@ -355,7 +355,12 @@ class Challenge(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.start_date < timezone.now() and self.end_date > timezone.now():
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date < timezone.now()
+            and self.end_date > timezone.now()
+        ):
             return True
         return False
 
@@ -598,7 +603,12 @@ class ChallengePhase(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.start_date < timezone.now() and self.end_date > timezone.now():
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date < timezone.now()
+            and self.end_date > timezone.now()
+        ):
             return True
         return False
 

@@ -36,6 +36,15 @@ class ChallengeSerializer(serializers.ModelSerializer):
     def get_domain_name(self, obj):
         return obj.get_domain_display()
 
+    def validate(self, attrs):
+        start_date = attrs.get("start_date")
+        end_date = attrs.get("end_date")
+        if start_date and end_date and start_date >= end_date:
+            raise serializers.ValidationError(
+                "Challenge start date must be before end date."
+            )
+        return attrs
+
     def validate_worker_python_version(self, value):
         if value in (None, ""):
             return DEFAULT_WORKER_PYTHON_VERSION
@@ -146,6 +155,33 @@ class ChallengeSerializer(serializers.ModelSerializer):
 class ChallengePhaseSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+
+    def validate(self, attrs):
+        start_date = attrs.get("start_date")
+        end_date = attrs.get("end_date")
+        challenge = attrs.get("challenge")
+        if challenge:
+            if start_date and challenge.start_date and start_date < challenge.start_date:
+                raise serializers.ValidationError(
+                    "Phase start date must be on or after challenge start date."
+                )
+            if start_date and challenge.end_date and start_date >= challenge.end_date:
+                raise serializers.ValidationError(
+                    "Phase start date must be before challenge end date."
+                )
+            if end_date and challenge.start_date and end_date <= challenge.start_date:
+                raise serializers.ValidationError(
+                    "Phase end date must be after challenge start date."
+                )
+            if end_date and challenge.end_date and end_date > challenge.end_date:
+                raise serializers.ValidationError(
+                    "Phase end date must be on or before challenge end date."
+                )
+        if start_date and end_date and start_date >= end_date:
+            raise serializers.ValidationError(
+                "Phase start date must be before end date."
+            )
+        return attrs
 
     def __init__(self, *args, **kwargs):
         super(ChallengePhaseSerializer, self).__init__(*args, **kwargs)
@@ -440,6 +476,33 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
 class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+
+    def validate(self, attrs):
+        start_date = attrs.get("start_date")
+        end_date = attrs.get("end_date")
+        challenge = attrs.get("challenge")
+        if challenge:
+            if start_date and challenge.start_date and start_date < challenge.start_date:
+                raise serializers.ValidationError(
+                    "Phase start date must be on or after challenge start date."
+                )
+            if start_date and challenge.end_date and start_date >= challenge.end_date:
+                raise serializers.ValidationError(
+                    "Phase start date must be before challenge end date."
+                )
+            if end_date and challenge.start_date and end_date <= challenge.start_date:
+                raise serializers.ValidationError(
+                    "Phase end date must be after challenge start date."
+                )
+            if end_date and challenge.end_date and end_date > challenge.end_date:
+                raise serializers.ValidationError(
+                    "Phase end date must be on or before challenge end date."
+                )
+        if start_date and end_date and start_date >= end_date:
+            raise serializers.ValidationError(
+                "Phase start date must be before end date."
+            )
+        return attrs
 
     def __init__(self, *args, **kwargs):
         super(ChallengePhaseCreateSerializer, self).__init__(*args, **kwargs)

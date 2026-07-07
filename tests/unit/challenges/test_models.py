@@ -317,9 +317,10 @@ class ChallengePhaseTestCase(BaseTestCase):
             self.challenge_phase.save()
 
     def test_save_raises_error_when_phase_start_after_phase_end(self):
-        now = timezone.now()
-        self.challenge_phase.start_date = now + timedelta(days=1)
-        self.challenge_phase.end_date = now
+        self.challenge_phase.start_date = self.challenge.start_date + timedelta(
+            hours=5
+        )
+        self.challenge_phase.end_date = self.challenge.start_date + timedelta(hours=1)
         with self.assertRaises(ValidationError):
             self.challenge_phase.save()
 
