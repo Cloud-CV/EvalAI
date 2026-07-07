@@ -37,12 +37,12 @@ class ChallengeSerializer(serializers.ModelSerializer):
         return obj.get_domain_display()
 
     def validate(self, attrs):
-        start_date = attrs.get("start_date")
-        end_date = attrs.get("end_date")
-        if start_date is None and self.instance is not None:
-            start_date = self.instance.start_date
-        if end_date is None and self.instance is not None:
-            end_date = self.instance.end_date
+        start_date = attrs.get(
+            "start_date", getattr(self.instance, "start_date", None)
+        )
+        end_date = attrs.get(
+            "end_date", getattr(self.instance, "end_date", None)
+        )
         if start_date and end_date and start_date >= end_date:
             raise serializers.ValidationError(
                 "Challenge start date must be before end date."
@@ -161,15 +161,15 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
     is_active = serializers.ReadOnlyField()
 
     def validate(self, attrs):
-        start_date = attrs.get("start_date")
-        end_date = attrs.get("end_date")
-        challenge = attrs.get("challenge")
-        if start_date is None and self.instance is not None:
-            start_date = self.instance.start_date
-        if end_date is None and self.instance is not None:
-            end_date = self.instance.end_date
-        if challenge is None and self.instance is not None:
-            challenge = self.instance.challenge
+        start_date = attrs.get(
+            "start_date", getattr(self.instance, "start_date", None)
+        )
+        end_date = attrs.get(
+            "end_date", getattr(self.instance, "end_date", None)
+        )
+        challenge = attrs.get(
+            "challenge", getattr(self.instance, "challenge", None)
+        )
         if challenge:
             csd = challenge.start_date
             ced = challenge.end_date
@@ -494,15 +494,15 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
     is_active = serializers.ReadOnlyField()
 
     def validate(self, attrs):
-        start_date = attrs.get("start_date")
-        end_date = attrs.get("end_date")
-        challenge = attrs.get("challenge")
-        if start_date is None and self.instance is not None:
-            start_date = self.instance.start_date
-        if end_date is None and self.instance is not None:
-            end_date = self.instance.end_date
-        if challenge is None and self.instance is not None:
-            challenge = self.instance.challenge
+        start_date = attrs.get(
+            "start_date", getattr(self.instance, "start_date", None)
+        )
+        end_date = attrs.get(
+            "end_date", getattr(self.instance, "end_date", None)
+        )
+        challenge = attrs.get(
+            "challenge", getattr(self.instance, "challenge", None)
+        )
         if challenge:
             csd = challenge.start_date
             ced = challenge.end_date
