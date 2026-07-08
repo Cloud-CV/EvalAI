@@ -35,8 +35,13 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
+# Note: git is required for kubectl apply -k with github.com kustomize remote bases.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends unzip && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    git \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
