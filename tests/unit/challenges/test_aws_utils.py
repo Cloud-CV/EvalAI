@@ -6019,9 +6019,7 @@ class TestWorkerImageHelpers(TestCase):
         )
 
         self.assertEqual(challenge.worker_image_url, resolved_image)
-        challenge.save.assert_called_once_with(
-            update_fields=["task_def_arn"]
-        )
+        challenge.save.assert_called_once_with(update_fields=["task_def_arn"])
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",
