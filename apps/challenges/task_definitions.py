@@ -38,6 +38,10 @@ task_definition = """
                   "value": "{queue_name}"
                 }},
                 {{
+                  "name": "CELERY_QUEUE_NAME",
+                  "value": "{CELERY_QUEUE_NAME}"
+                }},
+                {{
                   "name": "DJANGO_SERVER",
                   "value": "{DJANGO_SERVER}"
                 }},
@@ -278,6 +282,10 @@ container_definition_submission_worker = """
         {{
             "name": "CHALLENGE_QUEUE",
             "value": "{queue_name}"
+        }},
+        {{
+            "name": "CELERY_QUEUE_NAME",
+            "value": "{CELERY_QUEUE_NAME}"
         }},
         {{
             "name": "DJANGO_SERVER",

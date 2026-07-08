@@ -127,6 +127,17 @@ def should_tag_submission_artifacts(submission):
     return True
 
 
+def get_celery_queue_for_retention_tagging():
+    """Return the Celery queue name when async tagging is available."""
+    celery_queue = os.environ.get("CELERY_QUEUE_NAME")
+    if celery_queue:
+        return celery_queue
+
+    from evalai.celery import app
+
+    return app.conf.task_default_queue or None
+
+
 def enqueue_submission_artifact_retention_tagging(
     submission, artifact_paths=None
 ):
@@ -140,11 +151,17 @@ def enqueue_submission_artifact_retention_tagging(
     if not artifact_paths or not should_tag_submission_artifacts(submission):
         return
 
-    from jobs.tasks import tag_submission_artifact_retention_tags
+    celery_queue = get_celery_queue_for_retention_tagging()
+    if celery_queue:
+        from jobs.tasks import tag_submission_artifact_retention_tags
 
-    tag_submission_artifact_retention_tags.delay(
-        submission.pk, list(artifact_paths)
-    )
+        tag_submission_artifact_retention_tags.apply_async(
+            (submission.pk, list(artifact_paths)),
+            queue=celery_queue,
+        )
+        return
+
+    tag_submission_artifacts_for_retention(submission, artifact_paths)
 
 
 def tag_submission_artifacts_for_retention(submission, artifact_paths=None):

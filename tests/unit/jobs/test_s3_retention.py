@@ -11,6 +11,8 @@ from jobs.models import Submission
 from jobs.s3_retention import (
     backfill_submission_artifact_tags,
     build_submission_artifact_s3_tags,
+    enqueue_submission_artifact_retention_tagging,
+    get_celery_queue_for_retention_tagging,
     get_submission_artifact_s3_key,
     tag_submission_artifacts_for_retention,
 )
@@ -132,3 +134,62 @@ class S3RetentionTestCase(TestCase):
             )
 
         mock_client.assert_not_called()
+
+    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False)
+    @patch("jobs.tasks.tag_submission_artifact_retention_tags.apply_async")
+    def test_enqueue_submission_artifact_retention_tagging_uses_celery(
+        self, mock_apply_async
+    ):
+        with self.settings(TEST=False, DEBUG=False):
+            with patch(
+                "jobs.s3_retention.should_tag_submission_artifacts",
+                return_value=True,
+            ):
+                enqueue_submission_artifact_retention_tagging(
+                    self.submission,
+                    [self.submission.input_file.name],
+                )
+
+        mock_apply_async.assert_called_once_with(
+            (self.submission.pk, [self.submission.input_file.name]),
+            queue="evalai-celery",
+        )
+
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("jobs.s3_retention.tag_submission_artifacts_for_retention")
+    def test_enqueue_submission_artifact_retention_tagging_falls_back_to_sync(
+        self, mock_tag_sync
+    ):
+        with self.settings(TEST=False, DEBUG=False):
+            with patch(
+                "jobs.s3_retention.should_tag_submission_artifacts",
+                return_value=True,
+            ), patch(
+                "jobs.s3_retention.get_celery_queue_for_retention_tagging",
+                return_value=None,
+            ):
+                enqueue_submission_artifact_retention_tagging(
+                    self.submission,
+                    [self.submission.input_file.name],
+                )
+
+        mock_tag_sync.assert_called_once_with(
+            self.submission,
+            [self.submission.input_file.name],
+        )
+
+    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False)
+    def test_get_celery_queue_for_retention_tagging_prefers_env(self):
+        self.assertEqual(
+            "evalai-celery", get_celery_queue_for_retention_tagging()
+        )
+
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("evalai.celery.app")
+    def test_get_celery_queue_for_retention_tagging_uses_app_default(
+        self, mock_app
+    ):
+        mock_app.conf.task_default_queue = "celery_dev"
+        self.assertEqual(
+            "celery_dev", get_celery_queue_for_retention_tagging()
+        )

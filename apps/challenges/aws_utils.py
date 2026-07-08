@@ -161,6 +161,7 @@ COMMON_SETTINGS_DICT = {
     "EMAIL_PORT": settings.EMAIL_PORT,
     "EMAIL_USE_TLS": settings.EMAIL_USE_TLS,
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
+    "CELERY_QUEUE_NAME": os.environ.get("CELERY_QUEUE_NAME"),
     "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
     "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
     "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
