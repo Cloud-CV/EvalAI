@@ -1102,8 +1102,11 @@ def refresh_task_definition_for_challenge(
         challenge.task_def_arn = task_def_arn
         update_fields = ["task_def_arn"]
         resolved_worker_image = image_settings["WORKER_IMAGE"]
-        if challenge.worker_image_url and is_evalai_managed_submission_worker_image(
+        if (
             challenge.worker_image_url
+            and is_evalai_managed_submission_worker_image(
+                challenge.worker_image_url
+            )
         ):
             if challenge.worker_image_url != resolved_worker_image:
                 challenge.worker_image_url = resolved_worker_image

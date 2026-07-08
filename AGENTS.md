@@ -59,7 +59,19 @@ docker run --rm -v nodejs_bc:/dest workspace-nodejs sh -c 'cp -a /code/bower_com
 
 ### Docker Setup (Cloud Agent VMs)
 
-Docker must be installed with `fuse-overlayfs` storage driver and `iptables-legacy`. The Docker daemon must use `"cgroup-parent": "system.slice"` in `/etc/docker/daemon.json` to avoid cgroup v2 threaded-mode errors. See the update script for the exact setup commands.
+Run the bootstrap script (also used by `.cursor/environment.json`):
+
+```bash
+bash scripts/cloud-agent/bootstrap-docker.sh
+```
+
+On Ubuntu 24.04 (Noble) Cloud Agent images:
+
+- Install `docker-compose-v2` (not `docker-compose-plugin`, which is unavailable).
+- `iptables-legacy` alternatives may not exist; the bootstrap script skips that step when missing.
+- If `systemctl` cannot start Docker, the script falls back to launching `dockerd` directly.
+
+The daemon should use the `fuse-overlayfs` storage driver and `"cgroup-parent": "system.slice"` in `/etc/docker/daemon.json` to avoid cgroup v2 threaded-mode errors.
 
 ### Running Tests
 
