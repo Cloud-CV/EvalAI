@@ -41,13 +41,18 @@ EOF
 }
 
 start_docker_daemon() {
+  local dockerd_log
+  dockerd_log="$(mktemp)"
+
   if sudo docker info >/dev/null 2>&1; then
     echo "Docker daemon is already running."
+    rm -f "${dockerd_log}"
     return 0
   fi
 
   if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
     if sudo systemctl enable --now docker 2>/dev/null; then
+      rm -f "${dockerd_log}"
       return 0
     fi
     echo "systemctl could not start docker; falling back to dockerd."
@@ -55,18 +60,20 @@ start_docker_daemon() {
 
   if ! pgrep -x dockerd >/dev/null 2>&1; then
     echo "Starting dockerd in the background..."
-    sudo dockerd >/tmp/dockerd.log 2>&1 &
+    sudo dockerd >"${dockerd_log}" 2>&1 &
   fi
 
   for _ in $(seq 1 30); do
     if sudo docker info >/dev/null 2>&1; then
+      rm -f "${dockerd_log}"
       return 0
     fi
     sleep 1
   done
 
   echo "Docker daemon failed to start. Recent dockerd logs:" >&2
-  tail -50 /tmp/dockerd.log >&2 || true
+  tail -50 "${dockerd_log}" >&2 || true
+  rm -f "${dockerd_log}"
   return 1
 }
 
@@ -74,7 +81,10 @@ if command -v docker >/dev/null 2>&1; then
   echo "Docker client is already installed."
 else
   echo "Installing Docker for Cloud Agent VM..."
-  compose_package="$(ensure_docker_compose_package)"
+  if ! compose_package="$(ensure_docker_compose_package)"; then
+    echo "Cannot install Docker without a compose package." >&2
+    exit 1
+  fi
   sudo apt-get update
   sudo apt-get install -y fuse-overlayfs iptables docker.io "${compose_package}"
   configure_iptables_legacy_if_available

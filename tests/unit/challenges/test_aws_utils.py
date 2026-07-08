@@ -5972,6 +5972,66 @@ class TestWorkerImageHelpers(TestCase):
         clear=False,
     )
     @patch("challenges.aws_utils.ENV", "production")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_skips_worker_image_url_when_already_synced(
+        self,
+        mock_update_service,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        resolved_image = (
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:newsha"
+        )
+        challenge = MagicMock(
+            pk=1,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+            worker_image_url=resolved_image,
+            worker_python_version="3.9",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        refresh_task_definition_for_challenge(
+            challenge, commit_id="newsha", client=mock_client
+        )
+
+        self.assertEqual(challenge.worker_image_url, resolved_image)
+        challenge.save.assert_called_once_with(
+            update_fields=["task_def_arn"]
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
     def test_get_image_settings_for_challenge(self):
         challenge = MagicMock(
             worker_image_url=None,
