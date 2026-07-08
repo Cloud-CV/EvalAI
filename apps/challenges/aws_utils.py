@@ -248,22 +248,37 @@ def update_evalai_worker_image_tag(image_url, commit_id):
     return f"{repository}:{commit_id}"
 
 
+def get_evalai_worker_image_tag(image_url=None, commit_id=None):
+    """
+    Resolve the ECR image tag for an EvalAI-managed worker image.
+    """
+    if commit_id:
+        return commit_id
+    if image_url and ":" in image_url:
+        return image_url.rsplit(":", 1)[1]
+    return "latest"
+
+
 def get_worker_image_for_challenge(challenge, commit_id=None):
     """
     Resolve the submission worker image for a challenge.
     """
-    if challenge.worker_image_url:
-        if commit_id and is_evalai_managed_submission_worker_image(
-            challenge.worker_image_url
-        ):
-            return update_evalai_worker_image_tag(
-                challenge.worker_image_url, commit_id
-            )
-        return challenge.worker_image_url
-
     python_version = normalize_worker_python_version(
         getattr(challenge, "worker_python_version", None)
     )
+
+    if challenge.worker_image_url:
+        if is_evalai_managed_submission_worker_image(
+            challenge.worker_image_url
+        ):
+            image_tag = get_evalai_worker_image_tag(
+                challenge.worker_image_url, commit_id
+            )
+            return get_evalai_submission_worker_ecr_image(
+                python_version, image_tag
+            )
+        return challenge.worker_image_url
+
     return get_evalai_submission_worker_ecr_image(python_version, commit_id)
 
 
@@ -1085,7 +1100,15 @@ def refresh_task_definition_for_challenge(
 
         task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
         challenge.task_def_arn = task_def_arn
-        challenge.save()
+        update_fields = ["task_def_arn"]
+        resolved_worker_image = image_settings["WORKER_IMAGE"]
+        if challenge.worker_image_url and is_evalai_managed_submission_worker_image(
+            challenge.worker_image_url
+        ):
+            if challenge.worker_image_url != resolved_worker_image:
+                challenge.worker_image_url = resolved_worker_image
+                update_fields.append("worker_image_url")
+        challenge.save(update_fields=update_fields)
 
         try:
             deregister_response = client.deregister_task_definition(

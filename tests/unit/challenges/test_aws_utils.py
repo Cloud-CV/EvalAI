@@ -5709,6 +5709,7 @@ class TestWorkerImageHelpers(TestCase):
                 "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
                 "evalai-production-worker-py3.7:oldsha"
             ),
+            worker_python_version="3.7",
         )
         self.assertTrue(
             is_evalai_managed_submission_worker_image(
@@ -5720,6 +5721,58 @@ class TestWorkerImageHelpers(TestCase):
             image,
             "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
             "evalai-production-worker-py3.7:newsha",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_uses_python_version_for_evalai_image(
+        self,
+    ):
+        challenge = MagicMock(
+            worker_image_url=(
+                "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+                "evalai-production-worker-py3.7:oldsha"
+            ),
+            worker_python_version="3.9",
+        )
+        image = get_worker_image_for_challenge(challenge, commit_id="newsha")
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:newsha",
+        )
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    def test_get_worker_image_for_challenge_preserves_evalai_tag_without_commit_id(
+        self,
+    ):
+        challenge = MagicMock(
+            worker_image_url=(
+                "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+                "evalai-production-worker-py3.7:pinnedsha"
+            ),
+            worker_python_version="3.9",
+        )
+        image = get_worker_image_for_challenge(challenge)
+        self.assertEqual(
+            image,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:pinnedsha",
         )
 
     @patch.dict(
@@ -5846,6 +5899,69 @@ class TestWorkerImageHelpers(TestCase):
             "image_settings"
         ]
         self.assertEqual(image_settings["WORKER_IMAGE"], custom_image)
+
+    @patch.dict(
+        "challenges.aws_utils.aws_keys",
+        {
+            "AWS_ACCOUNT_ID": "123456789012",
+            "AWS_REGION": "us-east-1",
+        },
+        clear=False,
+    )
+    @patch("challenges.aws_utils.ENV", "production")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_syncs_evalai_worker_image_url(
+        self,
+        mock_update_service,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=1,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+            worker_image_url=(
+                "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+                "evalai-production-worker-py3.7:oldsha"
+            ),
+            worker_python_version="3.9",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        refresh_task_definition_for_challenge(
+            challenge, commit_id="newsha", client=mock_client
+        )
+
+        self.assertEqual(
+            challenge.worker_image_url,
+            "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+            "evalai-production-worker-py3.9:newsha",
+        )
+        challenge.save.assert_called_once_with(
+            update_fields=["task_def_arn", "worker_image_url"]
+        )
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",

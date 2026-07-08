@@ -55,11 +55,15 @@ COPY requirements/ /code/requirements/
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29 setuptools==57.5.0 && \
     pip install --no-cache-dir --no-compile -r requirements/dev.txt && \
-    pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt && \
-    # Clean up pip cache and Python bytecode (directories first, then files)
-    rm -rf /root/.cache/pip && \
+    pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt
+
+# Best-effort bytecode cleanup; keep separate so pip failures fail the build.
+RUN rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python3.9/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
+
+# Verify worker runtime imports required by submission_worker.py.
+RUN python -c "import boto3, botocore, django, requests, yaml"
 
 # Stage 2: Runtime stage - minimal dependencies only
 FROM python:3.9.21-slim-bullseye
