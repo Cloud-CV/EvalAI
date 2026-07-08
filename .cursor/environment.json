@@ -1,4 +1,4 @@
 {
-  "install": "docker compose build db sqs django",
+  "install": "bash scripts/cloud-agent/bootstrap-docker.sh && docker compose build db sqs django",
   "start": "docker compose up -d db sqs django"
 }

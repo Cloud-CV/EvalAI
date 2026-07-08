@@ -53,7 +53,7 @@ COPY requirements/ /code/requirements/
 # Install Python dependencies with BuildKit cache mount
 # Install prerequisite packages first (needed for compiling native extensions)
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29 setuptools==57.5.0 && \
+    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 setuptools==57.5.0 && \
     pip install --no-cache-dir --no-compile -r requirements/dev.txt && \
     pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt
 

@@ -64,9 +64,12 @@ WORKDIR /code
 # Copy requirements first for better layer caching
 COPY requirements/ /code/requirements/
 
+# PyJWT>=2.10 requires Python 3.9+; pin a 3.7-compatible release for worker builds.
+RUN sed -i 's/^PyJWT==.*/PyJWT==2.8.0/' /code/requirements/common.txt
+
 # Install Python dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29 numpy==1.18.1 && \
+    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 numpy==1.18.1 && \
     pip install --no-cache-dir --no-compile -r requirements/prod.txt && \
     pip install --no-cache-dir --no-compile -r requirements/worker_py3_7.txt && \
     # Clean up pip cache and Python bytecode (directories first, then files)
