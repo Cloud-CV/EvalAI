@@ -65,7 +65,9 @@ WORKDIR /code
 COPY requirements/ /code/requirements/
 
 # PyJWT>=2.10 requires Python 3.9+; pin a 3.7-compatible release for worker builds.
-RUN sed -i 's/^PyJWT==.*/PyJWT==2.8.0/' /code/requirements/common.txt
+# dnspython>=2.4 requires Python 3.8+; pin a 3.7-compatible release for worker builds.
+RUN sed -i 's/^PyJWT==.*/PyJWT==2.8.0/' /code/requirements/common.txt && \
+    sed -i 's/^dnspython==.*/dnspython==2.3.0/' /code/requirements/common.txt
 
 # Install Python dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \

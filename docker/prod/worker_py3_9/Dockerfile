@@ -70,7 +70,7 @@ COPY requirements/ /code/requirements/
 # Note: BuildKit cache mount persists outside container, but we clean internal cache for final image size
 # Install prerequisite packages first (needed for compiling native extensions)
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 numpy==1.18.1 && \
+    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 && \
     pip install --no-cache-dir --no-compile -r requirements/prod.txt && \
     pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt
 
