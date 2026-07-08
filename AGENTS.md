@@ -62,7 +62,7 @@ docker run --rm -v nodejs_bc:/dest workspace-nodejs sh -c 'cp -a /code/bower_com
 Run the bootstrap script (also used by `.cursor/environment.json`):
 
 ```bash
-bash scripts/cloud-agent/bootstrap-docker.sh
+bash cloud-agent/install.sh
 ```
 
 On Ubuntu 24.04 (Noble) Cloud Agent images:
