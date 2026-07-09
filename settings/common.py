@@ -257,6 +257,10 @@ CELERY_BEAT_SCHEDULE = {
         # to "America/Los_Angeles" if year-round 10:30 Pacific is required.
         "schedule": crontab(hour=18, minute=30),
     },
+    "fail-stuck-submissions": {
+        "task": "jobs.tasks.fail_stuck_submissions_task",
+        "schedule": datetime.timedelta(minutes=30),
+    },
 }
 
 # CORS Settings

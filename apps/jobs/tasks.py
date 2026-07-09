@@ -125,3 +125,11 @@ def tag_submission_artifact_retention_tags(submission_pk, artifact_paths):
     except Submission.DoesNotExist:
         return
     tag_submission_artifacts_for_retention(submission, artifact_paths)
+
+
+@app.task
+def fail_stuck_submissions_task():
+    """Periodic task to fail submissions stuck in pre-running queue states."""
+    from .queue_timeout import fail_stuck_submissions
+
+    return fail_stuck_submissions()

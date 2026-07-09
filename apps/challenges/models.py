@@ -94,6 +94,14 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Publicly Available", db_index=True
     )
     submission_time_limit = models.PositiveIntegerField(default=86400)
+    submission_queue_time_limit = models.PositiveIntegerField(
+        default=7200,
+        help_text=(
+            "Maximum seconds a submission may remain in a pre-running queue "
+            "state (submitted, submitting, queued, resuming) before it is "
+            "automatically marked failed. Set to 0 to disable."
+        ),
+    )
     is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)

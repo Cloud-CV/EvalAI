@@ -5566,6 +5566,7 @@ def update_challenge_attributes(request):
         "start_date",
         "max_concurrent_submission_evaluation",
         "sqs_retention_period",
+        "submission_queue_time_limit",
     }
 
     for key, value in request.data.items():
