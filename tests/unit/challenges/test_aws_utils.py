@@ -3689,6 +3689,12 @@ class TestSetupEC2(TestCase):
         )
 
 
+@pytest.fixture
+def celery_queue_env(monkeypatch):
+    monkeypatch.setenv("CELERY_QUEUE_NAME", "evalai-celery")
+
+
+@pytest.mark.usefixtures("celery_queue_env")
 class TestRegisterTaskDefByChallengePk:
     @patch("challenges.aws_utils.JwtToken.objects.get")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
@@ -6163,7 +6169,9 @@ class TestWorkerImageHelpers(TestCase):
             )
         )
 
-    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False)
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
     @patch("challenges.aws_utils.JwtToken.objects.get")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -6193,7 +6201,9 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(task_def, {"family": "queue"})
         mock_task_definition.format.assert_called_once()
 
-    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False)
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
     @patch("challenges.aws_utils.JwtToken.objects.get")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -6231,7 +6241,9 @@ class TestWorkerImageHelpers(TestCase):
         self.assertIsNone(error)
         self.assertEqual(task_def, {"family": "queue"})
 
-    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False)
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
     @patch("challenges.aws_utils.JwtToken.objects.get")
     @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
