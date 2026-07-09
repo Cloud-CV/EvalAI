@@ -155,11 +155,18 @@ def enqueue_submission_artifact_retention_tagging(
     if celery_queue:
         from jobs.tasks import tag_submission_artifact_retention_tags
 
-        tag_submission_artifact_retention_tags.apply_async(
-            (submission.pk, list(artifact_paths)),
-            queue=celery_queue,
-        )
-        return
+        try:
+            tag_submission_artifact_retention_tags.apply_async(
+                (submission.pk, list(artifact_paths)),
+                queue=celery_queue,
+            )
+            return
+        except Exception:
+            logger.exception(
+                "Failed to enqueue retention tagging, falling back to sync: "
+                "submission_id=%s",
+                submission.pk,
+            )
 
     tag_submission_artifacts_for_retention(submission, artifact_paths)
 

@@ -161,7 +161,6 @@ COMMON_SETTINGS_DICT = {
     "EMAIL_PORT": settings.EMAIL_PORT,
     "EMAIL_USE_TLS": settings.EMAIL_USE_TLS,
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
-    "CELERY_QUEUE_NAME": os.environ.get("CELERY_QUEUE_NAME"),
     "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
     "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
     "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
@@ -312,6 +311,17 @@ def build_task_definition_dict(
     """
     from .utils import get_aws_credentials_for_challenge
 
+    celery_queue_name = os.environ.get("CELERY_QUEUE_NAME")
+    if not celery_queue_name:
+        message = (
+            "CELERY_QUEUE_NAME environment variable must be set to build "
+            "worker task definitions."
+        )
+        return None, {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
     container_name = f"worker_{queue_name}"
     code_upload_container_name = f"code_upload_worker_{queue_name}"
     worker_cpu_cores = (
@@ -329,6 +339,10 @@ def build_task_definition_dict(
     updated_settings = image_settings or get_image_settings_for_challenge(
         challenge
     )
+    updated_settings = {
+        **updated_settings,
+        "CELERY_QUEUE_NAME": celery_queue_name,
+    }
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
 
     if challenge.is_docker_based:

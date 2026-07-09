@@ -8,10 +8,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 app = Celery(broker=settings.CELERY_BROKER_URL)
 app.config_from_object("django.conf:settings")
 
+celery_queue_name = os.environ.get("CELERY_QUEUE_NAME")
 if settings.DEBUG:
     app.conf.task_default_queue = "celery_dev"
-elif os.environ.get("CELERY_QUEUE_NAME"):
-    app.conf.task_default_queue = os.environ["CELERY_QUEUE_NAME"]
+elif celery_queue_name:
+    app.conf.task_default_queue = celery_queue_name
 
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 

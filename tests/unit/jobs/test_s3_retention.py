@@ -193,3 +193,37 @@ class S3RetentionTestCase(TestCase):
         self.assertEqual(
             "celery_dev", get_celery_queue_for_retention_tagging()
         )
+
+    @patch.dict("os.environ", {"CELERY_QUEUE_NAME": ""}, clear=True)
+    @patch("evalai.celery.app")
+    def test_get_celery_queue_for_retention_tagging_empty_env_falls_back(
+        self, mock_app
+    ):
+        mock_app.conf.task_default_queue = "celery_dev"
+        self.assertEqual(
+            "celery_dev", get_celery_queue_for_retention_tagging()
+        )
+
+    @patch("jobs.s3_retention.tag_submission_artifacts_for_retention")
+    @patch("jobs.tasks.tag_submission_artifact_retention_tags.apply_async")
+    def test_enqueue_submission_artifact_retention_tagging_falls_back_on_broker_error(
+        self, mock_apply_async, mock_tag_sync
+    ):
+        mock_apply_async.side_effect = Exception("broker unavailable")
+        with self.settings(TEST=False, DEBUG=False):
+            with patch(
+                "jobs.s3_retention.should_tag_submission_artifacts",
+                return_value=True,
+            ), patch(
+                "jobs.s3_retention.get_celery_queue_for_retention_tagging",
+                return_value="evalai-celery",
+            ):
+                enqueue_submission_artifact_retention_tagging(
+                    self.submission,
+                    [self.submission.input_file.name],
+                )
+
+        mock_tag_sync.assert_called_once_with(
+            self.submission,
+            [self.submission.input_file.name],
+        )
