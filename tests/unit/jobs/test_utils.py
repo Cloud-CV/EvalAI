@@ -11,6 +11,7 @@ from jobs.utils import (
     get_remaining_submission_for_a_phase,
     handle_submission_rerun,
     handle_submission_resume,
+    is_public_http_url,
     is_url_valid,
     reorder_submissions_comparator_to_key,
     response_if_submissions_paused,
@@ -18,10 +19,49 @@ from jobs.utils import (
 from jobs.views import _compute_remaining_limits
 from rest_framework import status
 
+PUBLIC_ADDR_INFO = [(2, 1, 6, "", ("93.184.216.34", 0))]
+
 
 class TestUtils(unittest.TestCase):
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_is_public_http_url_accepts_public_address(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = PUBLIC_ADDR_INFO
+        self.assertTrue(is_public_http_url("http://example.com"))
+
+    def test_is_public_http_url_rejects_non_http_scheme(self):
+        self.assertFalse(is_public_http_url("file:///etc/passwd"))
+
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_is_public_http_url_rejects_loopback_address(
+        self, mock_getaddrinfo
+    ):
+        mock_getaddrinfo.return_value = [(2, 1, 6, "", ("127.0.0.1", 0))]
+        self.assertFalse(is_public_http_url("http://localhost"))
+
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_is_public_http_url_rejects_private_address(
+        self, mock_getaddrinfo
+    ):
+        mock_getaddrinfo.return_value = [(2, 1, 6, "", ("10.0.0.5", 0))]
+        self.assertFalse(is_public_http_url("http://internal.example"))
+
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_is_public_http_url_rejects_link_local_address(
+        self, mock_getaddrinfo
+    ):
+        mock_getaddrinfo.return_value = [(2, 1, 6, "", ("169.254.169.254", 0))]
+        self.assertFalse(is_public_http_url("http://metadata.internal"))
+
+    def test_is_public_http_url_rejects_unresolvable_host(self):
+        self.assertFalse(
+            is_public_http_url("http://this-host-does-not-resolve.invalid")
+        )
+
+    @patch("jobs.utils.socket.getaddrinfo")
     @patch("urllib.request.urlopen")
-    def test_is_url_valid(self, mock_urlopen):
+    def test_is_url_valid(self, mock_urlopen, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = PUBLIC_ADDR_INFO
+
         # Test with a valid URL
         mock_urlopen.return_value = True
         self.assertTrue(is_url_valid("http://example.com"))
@@ -32,8 +72,15 @@ class TestUtils(unittest.TestCase):
         )
         self.assertFalse(is_url_valid("http://invalid-url.com"))
 
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_is_url_valid_rejects_private_address(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [(2, 1, 6, "", ("10.0.0.5", 0))]
+        self.assertFalse(is_url_valid("http://internal.example"))
+
+    @patch("jobs.utils.socket.getaddrinfo")
     @patch("requests.get")
-    def test_get_file_from_url(self, mock_get):
+    def test_get_file_from_url(self, mock_get, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = PUBLIC_ADDR_INFO
         mock_response = MagicMock()
         mock_response.iter_content = lambda chunk_size: [b"test data"]
         mock_get.return_value = mock_response
@@ -41,6 +88,12 @@ class TestUtils(unittest.TestCase):
         file_obj = get_file_from_url("http://example.com/file.txt")
         self.assertEqual(file_obj["name"], "file.txt")
         self.assertTrue(os.path.exists(file_obj["temp_dir_path"]))
+
+    @patch("jobs.utils.socket.getaddrinfo")
+    def test_get_file_from_url_rejects_private_address(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [(2, 1, 6, "", ("10.0.0.5", 0))]
+        with self.assertRaises(ValueError):
+            get_file_from_url("http://internal.example/file.txt")
 
     @patch("challenges.models.LeaderboardData.objects.exclude")
     @patch("challenges.models.LeaderboardData.objects.filter")

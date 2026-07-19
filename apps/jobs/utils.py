@@ -1,8 +1,11 @@
 import datetime
+import ipaddress
 import logging
 import os
+import socket
 import tempfile
 import urllib.request
+from urllib.parse import urlparse
 
 import requests
 from base.utils import get_model_object, suppress_autotime
@@ -182,12 +185,45 @@ def get_remaining_submission_for_a_phase(
         return response_data, status.HTTP_200_OK
 
 
-def is_url_valid(url):
+def is_public_http_url(url):
     """
-    Checks that a given URL is reachable.
+    Checks that a URL uses http(s) and that every IP address its hostname
+    resolves to is publicly routable. Used to block SSRF attempts via
+    file_url submissions that target loopback, private, link-local,
+    reserved, or multicast network destinations.
     :param url: A URL
     :return type: bool
     """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return False
+    try:
+        addr_infos = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror:
+        return False
+    for addr_info in addr_infos:
+        ip = ipaddress.ip_address(addr_info[4][0])
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            return False
+    return True
+
+
+def is_url_valid(url):
+    """
+    Checks that a given URL targets a public network destination and is
+    reachable.
+    :param url: A URL
+    :return type: bool
+    """
+    if not is_public_http_url(url):
+        return False
     request = urllib.request.Request(url)
     request.get_method = lambda: "HEAD"
     try:
@@ -199,6 +235,11 @@ def is_url_valid(url):
 
 def get_file_from_url(url):
     """Get file object from a url"""
+
+    if not is_public_http_url(url):
+        raise ValueError(
+            "The file URL does not point to a public network destination!"
+        )
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name = url.split("/")[-1]
