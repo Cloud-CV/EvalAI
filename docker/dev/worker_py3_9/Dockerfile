@@ -85,7 +85,9 @@ RUN apt-get update && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 && \
+    libwebp6 \
+    libgl1 \
+    libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
