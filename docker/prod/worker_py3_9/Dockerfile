@@ -114,7 +114,9 @@ RUN apt-get update && \
     libfreetype6 \
     liblcms2-2 \
     libwebp6 \
-    libgmp10 && \
+    libgmp10 \
+    libgl1 \
+    libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
