@@ -1,6 +1,7 @@
 import os
 import shutil
 import signal
+import subprocess
 import sys
 import tempfile
 import zipfile
@@ -590,14 +591,12 @@ class ExtractChallengeDataWorkerTest(BaseAPITestClass):
     @patch("scripts.workers.submission_worker.download_and_extract_file")
     @patch("scripts.workers.submission_worker.os.path.isfile")
     @patch("scripts.workers.submission_worker.subprocess.check_output")
-    @patch("scripts.workers.submission_worker.logger.error")
     @patch("scripts.workers.submission_worker.importlib.import_module")
     @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
     def test_extract_challenge_data_requirements_error(
         self,
         mock_invalidate_caches,
         mock_import_module,
-        mock_logger_error,
         mock_check_output,
         mock_isfile,
         mock_download_and_extract_file,
@@ -605,16 +604,65 @@ class ExtractChallengeDataWorkerTest(BaseAPITestClass):
         mock_download_and_extract_zip_file,
         mock_create_dir_as_python_package,
     ):
+        # A failed dependency install must surface on the challenge as
+        # evaluation_module_error and abort, rather than being swallowed and
+        # continuing to a misleading import error.
         mock_isfile.return_value = True
-        mock_check_output.side_effect = Exception("pip error")
+        mock_check_output.side_effect = subprocess.CalledProcessError(
+            returncode=1,
+            cmd="pip install",
+            output=b"ERROR: Could not find a version for numpy==2.0.2",
+        )
+        challenge = self.challenge
+        phase = self.challenge_phase
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            extract_challenge_data(challenge, [phase])
+
+        self.assertIsNotNone(challenge.evaluation_module_error)
+        self.assertIn(
+            "Could not find a version", challenge.evaluation_module_error
+        )
+        # Worker must not import a challenge whose requirements failed to install
+        mock_import_module.assert_not_called()
+        mock_invalidate_caches.assert_not_called()
+
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch("scripts.workers.submission_worker.download_and_extract_zip_file")
+    @patch("scripts.workers.submission_worker.create_dir")
+    @patch("scripts.workers.submission_worker.download_and_extract_file")
+    @patch("scripts.workers.submission_worker.os.path.isfile")
+    @patch("scripts.workers.submission_worker.subprocess.check_output")
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    def test_extract_challenge_data_pins_core_constraints(
+        self,
+        mock_invalidate_caches,
+        mock_import_module,
+        mock_check_output,
+        mock_isfile,
+        mock_download_and_extract_file,
+        mock_create_dir,
+        mock_download_and_extract_zip_file,
+        mock_create_dir_as_python_package,
+    ):
+        # Both the challenge requirements.txt and the worker constraints file
+        # exist, so pip must be invoked with a `-c` constraints file that pins
+        # the worker's core dependency stack (prevents challenge deps from
+        # upgrading numpy/scipy and breaking compiled C extensions).
+        mock_isfile.return_value = True
         challenge = self.challenge
         phase = self.challenge_phase
 
         extract_challenge_data(challenge, [phase])
 
-        mock_logger_error.assert_called()
-        mock_import_module.assert_called()
-        mock_invalidate_caches.assert_called()
+        mock_check_output.assert_called_once()
+        pip_command = mock_check_output.call_args[0][0]
+        self.assertIn("-r", pip_command)
+        self.assertIn("-c", pip_command)
+        constraints_arg = pip_command[pip_command.index("-c") + 1]
+        self.assertIn("requirements", constraints_arg)
+        self.assertTrue(constraints_arg.endswith(".txt"))
 
 
 class RunSubmissionRemoteEvaluationTest(BaseAPITestClass):
