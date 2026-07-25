@@ -309,6 +309,39 @@ def return_file_url_per_environment(url):
     return url
 
 
+def get_challenge_pip_constraints_file():
+    """
+    Return the path to the worker's pinned dependency file for the running
+    Python version, or None if it is not present.
+
+    This file is passed to pip as a constraints file (``-c``) when installing
+    challenge-supplied ``requirements.txt`` so a challenge cannot upgrade the
+    worker's core scientific stack (numpy, scipy, pandas, scikit-learn, ...).
+    Upgrading numpy/scipy in place breaks the worker image's already-compiled
+    C extensions (e.g. scipy built against the numpy 1.x ABI raises a
+    ``TypeError`` at import when numpy 2.x is installed on top of it).
+    """
+    repo_root = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+    constraints_file = join(
+        repo_root,
+        "requirements",
+        "worker_py{0}_{1}.txt".format(
+            sys.version_info.major, sys.version_info.minor
+        ),
+    )
+    if os.path.isfile(constraints_file):
+        return constraints_file
+    logger.warning(
+        "{} Worker constraints file not found at {}; installing challenge "
+        "requirements without pinning the core dependency stack.".format(
+            WORKER_LOGS_PREFIX, constraints_file
+        )
+    )
+    return None
+
+
 def extract_challenge_data(challenge, phases):
     """
     * Expects a challenge object and an array of phase object
@@ -337,27 +370,45 @@ def extract_challenge_data(challenge, phases):
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
-    try:
-        requirements_location = join(
-            challenge_data_directory, "requirements.txt"
-        )
-        if os.path.isfile(requirements_location):
+    requirements_location = join(challenge_data_directory, "requirements.txt")
+    if os.path.isfile(requirements_location):
+        pip_install_command = [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-r",
+            requirements_location,
+        ]
+        # Pin the worker's core dependency stack so a challenge cannot
+        # upgrade numpy/scipy/etc. and break already-compiled C extensions.
+        constraints_file = get_challenge_pip_constraints_file()
+        if constraints_file:
+            pip_install_command += ["-c", constraints_file]
+        try:
             subprocess.check_output(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "-r",
-                    requirements_location,
-                ]
+                pip_install_command, stderr=subprocess.STDOUT
             )
-        else:
-            logger.info(
-                "No custom requirements for challenge {}".format(challenge.id)
+        except subprocess.CalledProcessError as e:
+            # Surface dependency-install failures directly on the challenge
+            # instead of swallowing them and continuing to a misleading
+            # import error below.
+            pip_output = (
+                e.output.decode("utf-8", errors="replace") if e.output else ""
             )
-    except Exception as e:
-        logger.error(e)
+            error_message = (
+                "Failed to install requirements for challenge {}:\n{}".format(
+                    challenge.id, pip_output
+                )
+            )
+            challenge.evaluation_module_error = error_message
+            challenge.save()
+            logger.exception("{} {}".format(WORKER_LOGS_PREFIX, error_message))
+            raise
+    else:
+        logger.info(
+            "No custom requirements for challenge {}".format(challenge.id)
+        )
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
