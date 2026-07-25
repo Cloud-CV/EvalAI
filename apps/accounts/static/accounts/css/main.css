@@ -1171,13 +1171,14 @@ a.view-more:hover {
     width: 100%;
   }
 }
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 992px) {
   .org-logo {
     height: auto;
     width: 100%;
   }
   .org-logo img {
-    width: 100%;
+    width: 40%;
+    padding: 10px;
     height: auto;
   }
 }
