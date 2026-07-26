@@ -95,6 +95,12 @@ WORKDIR /code
 COPY --from=builder /usr/local/lib/python3.7/site-packages /usr/local/lib/python3.7/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
+# Force every runtime pip invocation (challenge requirements.txt and the
+# evaluation_script __init__.py install() helper) to honor the worker's pinned
+# core dependency stack, preventing numpy/scipy ABI breakage.
+ENV PIP_CONSTRAINT=/code/requirements/worker_py3_7.txt \
+    PIP_BUILD_CONSTRAINT=/code/requirements/worker_py3_7.txt
+
 # Copy application code
 COPY . /code/
 
