@@ -1304,12 +1304,19 @@ class ConfigureChallengePipEnvironmentTest(APITestCase):
     )
     def test_no_constraints_file_leaves_env_untouched(self, mock_constraints):
         mock_constraints.return_value = None
+        os.environ["PIP_CONSTRAINT"] = "/existing/constraints.txt"
+        os.environ["PIP_BUILD_CONSTRAINT"] = "/existing/build-constraints.txt"
 
         returned = configure_challenge_pip_environment()
 
         self.assertIsNone(returned)
-        self.assertNotIn("PIP_CONSTRAINT", os.environ)
-        self.assertNotIn("PIP_BUILD_CONSTRAINT", os.environ)
+        self.assertEqual(
+            os.environ["PIP_CONSTRAINT"], "/existing/constraints.txt"
+        )
+        self.assertEqual(
+            os.environ["PIP_BUILD_CONSTRAINT"],
+            "/existing/build-constraints.txt",
+        )
 
 
 class ExtractChallengeDataConstraintEnvTest(APITestCase):
@@ -1334,6 +1341,10 @@ class ExtractChallengeDataConstraintEnvTest(APITestCase):
         mock_file,
         mock_import,
     ):
+        # Fail if the challenge module is imported before the pip environment
+        # is configured (the install() helper runs at import time).
+        mock_configure.side_effect = mock_import.assert_not_called
+
         challenge = MagicMock()
         challenge.id = 356
         challenge.evaluation_script.url = "http://server/eval.zip"
@@ -1344,4 +1355,5 @@ class ExtractChallengeDataConstraintEnvTest(APITestCase):
 
         extract_challenge_data(challenge, [phase])
 
-        self.assertTrue(mock_configure.called)
+        mock_configure.assert_called_once_with()
+        mock_import.assert_called_once()
