@@ -26,12 +26,16 @@ def test_worker_dockerfile_sets_pip_constraint(
     # ENV would not.
     runtime_stage = re.split(r"(?mi)^FROM\s+", content)[-1]
     expected = f"/code/requirements/{requirements_name}"
-    assert (
-        f"PIP_CONSTRAINT={expected}" in runtime_stage
-    ), f"{dockerfile_path} must set PIP_CONSTRAINT to {expected}"
-    assert (
-        f"PIP_BUILD_CONSTRAINT={expected}" in runtime_stage
-    ), f"{dockerfile_path} must set PIP_BUILD_CONSTRAINT to {expected}"
+    # Match real ENV assignments (ENV on the first line, backslash-continued
+    # for the second) rather than a bare substring that could sit in a comment.
+    for variable in ("PIP_CONSTRAINT", "PIP_BUILD_CONSTRAINT"):
+        pattern = (
+            rf"(?m)^\s*(?:ENV\s+)?{variable}"
+            rf"={re.escape(expected)}(?:\s|\\|$)"
+        )
+        assert re.search(
+            pattern, runtime_stage
+        ), f"{dockerfile_path} must set {variable} to {expected}"
 
 
 @pytest.mark.parametrize(
@@ -45,5 +49,5 @@ def test_pip_constraint_points_at_runtime_stage_requirements(
     content = (REPO_ROOT / dockerfile_path).read_text()
     runtime_stage = re.split(r"(?mi)^FROM\s+", content)[-1]
     assert re.search(
-        r"COPY\s+\.\s+/code/", runtime_stage
+        r"(?m)^COPY\s+\.\s+/code/(?:\s|$)", runtime_stage
     ), f"{dockerfile_path} must copy the app (incl. requirements/) into /code"
