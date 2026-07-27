@@ -342,12 +342,39 @@ def get_challenge_pip_constraints_file():
     return None
 
 
+def configure_challenge_pip_environment():
+    """Force every pip invocation in the worker to honor the core dependency
+    pins.
+
+    Both challenge dependency paths run pip: the ``requirements.txt`` install in
+    ``extract_challenge_data`` and the ``install()`` helper shipped inside a
+    challenge's ``evaluation_script/__init__.py`` (which runs
+    ``sys.executable -m pip install`` at import time). Exporting
+    ``PIP_CONSTRAINT``/``PIP_BUILD_CONSTRAINT`` into the process environment
+    makes *both* subprocesses inherit the constraint, so a challenge cannot move
+    numpy/scipy/etc. off the worker's already-compiled core stack.
+
+    Returns the constraints file path applied, or ``None`` if no per-version
+    constraints file was found (environment left untouched).
+    """
+    constraints_file = get_challenge_pip_constraints_file()
+    if constraints_file:
+        os.environ["PIP_CONSTRAINT"] = constraints_file
+        os.environ["PIP_BUILD_CONSTRAINT"] = constraints_file
+    return constraints_file
+
+
 def extract_challenge_data(challenge, phases):
     """
     * Expects a challenge object and an array of phase object
     * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
 
     """
+
+    # Pin the core dependency stack for every pip path (requirements.txt and the
+    # challenge __init__.py install() helper) before any challenge dependency is
+    # installed or the challenge module is imported.
+    configure_challenge_pip_environment()
 
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.id

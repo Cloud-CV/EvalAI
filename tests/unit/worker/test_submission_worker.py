@@ -32,6 +32,7 @@ from scripts.workers.submission_worker import (
     GracefulKiller,
     MultiOut,
     alarm_handler,
+    configure_challenge_pip_environment,
     create_dir,
     create_dir_as_python_package,
     delete_old_temp_directories,
@@ -1262,3 +1263,97 @@ class ExtractSubmissionDataCancelledTest(BaseAPITestClass):
                 "SUBMISSION_LOG", 123
             )
         )
+
+
+class ConfigureChallengePipEnvironmentTest(APITestCase):
+    def setUp(self):
+        self._saved = {
+            key: os.environ.get(key)
+            for key in ("PIP_CONSTRAINT", "PIP_BUILD_CONSTRAINT")
+        }
+        os.environ.pop("PIP_CONSTRAINT", None)
+        os.environ.pop("PIP_BUILD_CONSTRAINT", None)
+
+    def tearDown(self):
+        for key, value in self._saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+    @patch(
+        "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
+    )
+    def test_sets_both_pip_constraint_env_vars(self, mock_constraints):
+        mock_constraints.return_value = "/code/requirements/worker_py3_9.txt"
+
+        returned = configure_challenge_pip_environment()
+
+        self.assertEqual(returned, "/code/requirements/worker_py3_9.txt")
+        self.assertEqual(
+            os.environ["PIP_CONSTRAINT"],
+            "/code/requirements/worker_py3_9.txt",
+        )
+        self.assertEqual(
+            os.environ["PIP_BUILD_CONSTRAINT"],
+            "/code/requirements/worker_py3_9.txt",
+        )
+
+    @patch(
+        "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
+    )
+    def test_no_constraints_file_leaves_env_untouched(self, mock_constraints):
+        mock_constraints.return_value = None
+        os.environ["PIP_CONSTRAINT"] = "/existing/constraints.txt"
+        os.environ["PIP_BUILD_CONSTRAINT"] = "/existing/build-constraints.txt"
+
+        returned = configure_challenge_pip_environment()
+
+        self.assertIsNone(returned)
+        self.assertEqual(
+            os.environ["PIP_CONSTRAINT"], "/existing/constraints.txt"
+        )
+        self.assertEqual(
+            os.environ["PIP_BUILD_CONSTRAINT"],
+            "/existing/build-constraints.txt",
+        )
+
+
+class ExtractChallengeDataConstraintEnvTest(APITestCase):
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.download_and_extract_file")
+    @patch("scripts.workers.submission_worker.download_and_extract_zip_file")
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch("scripts.workers.submission_worker.create_dir")
+    @patch(
+        "scripts.workers.submission_worker.os.path.isfile", return_value=False
+    )
+    @patch(
+        "scripts.workers.submission_worker.configure_challenge_pip_environment"
+    )
+    def test_configures_pip_env_before_import(
+        self,
+        mock_configure,
+        mock_isfile,
+        mock_create_dir,
+        mock_create_pkg,
+        mock_zip,
+        mock_file,
+        mock_import,
+    ):
+        # Fail if the challenge module is imported before the pip environment
+        # is configured (the install() helper runs at import time).
+        mock_configure.side_effect = mock_import.assert_not_called
+
+        challenge = MagicMock()
+        challenge.id = 356
+        challenge.evaluation_script.url = "http://server/eval.zip"
+        phase = MagicMock()
+        phase.id = 1
+        phase.test_annotation.url = "http://server/ann.txt"
+        phase.test_annotation.name = "ann.txt"
+
+        extract_challenge_data(challenge, [phase])
+
+        mock_configure.assert_called_once_with()
+        mock_import.assert_called_once()

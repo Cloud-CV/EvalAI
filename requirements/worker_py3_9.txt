@@ -1,3 +1,8 @@
+# Default-provided worker stack (Python 3.9). These packages are baked into every
+# submission worker image and pinned. Challenge requirements.txt and the
+# evaluation_script install() helper are constrained to these versions
+# (PIP_CONSTRAINT), so a challenge cannot move them. To add or bump a shared
+# package, open a PR against this file so the base image is rebuilt and tested.
 matplotlib==3.8.4
 cfn-lint==0.79.5
 networkx==3.2.1
