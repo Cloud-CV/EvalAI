@@ -166,8 +166,11 @@ def serialize_submission_artifact(value):
         return value
     try:
         return json.dumps(value)
-    except TypeError:
-        return json.dumps(value, default=str)
+    except (TypeError, ValueError):
+        try:
+            return json.dumps(value, default=str)
+        except (TypeError, ValueError):
+            return str(value)
 
 
 def download_and_extract_file(url, download_location):

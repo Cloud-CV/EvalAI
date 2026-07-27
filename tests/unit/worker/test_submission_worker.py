@@ -1417,8 +1417,10 @@ class RunSubmissionArtifactPersistenceTest(BaseAPITestClass):
         all artifact uploads after status was already marked finished."""
         self._setup_phase_map()
         submission = self.submission
+        # remote_evaluation is read from submission.challenge_phase.challenge;
+        # disable_logs is read from the challenge_phase arg to run_submission.
         submission.challenge_phase.challenge.remote_evaluation = False
-        submission.challenge_phase.disable_logs = False
+        self.challenge_phase.disable_logs = False
 
         mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
             "result": [{"split_codename_1": {"key1": 10}}],
@@ -1487,8 +1489,10 @@ class RunSubmissionArtifactPersistenceTest(BaseAPITestClass):
         """Failures while saving/tagging result files must not drop stdout."""
         self._setup_phase_map()
         submission = self.submission
+        # remote_evaluation is read from submission.challenge_phase.challenge;
+        # disable_logs is read from the challenge_phase arg to run_submission.
         submission.challenge_phase.challenge.remote_evaluation = False
-        submission.challenge_phase.disable_logs = False
+        self.challenge_phase.disable_logs = False
 
         mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
             "result": [{"split_codename_1": {"key1": 10}}],
@@ -1521,3 +1525,7 @@ class RunSubmissionArtifactPersistenceTest(BaseAPITestClass):
         self.assertEqual(submission.status, Submission.FINISHED)
         self.assertTrue(bool(submission.stdout_file.name))
         self.assertIn(b"kept stdout", submission.stdout_file.read())
+        # Second enqueue (result/metadata tagging) must have raised after
+        # result files were already saved; stdout must still be present.
+        self.assertEqual(mock_enqueue.call_count, 2)
+        self.assertTrue(bool(submission.submission_result_file.name))
