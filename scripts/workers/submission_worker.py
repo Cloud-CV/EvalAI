@@ -147,6 +147,29 @@ def alarm_handler(signum, frame):
     raise ExecutionTimeLimitExceeded
 
 
+def serialize_submission_artifact(value):
+    """Serialize evaluate() artifacts for Django ContentFile / FileField.
+
+    Challenge evaluation scripts commonly return ``dict`` / ``list`` metadata
+    (see the documented ``evaluate`` return format) and may include values that
+    are not JSON-native (e.g. numpy scalars). Passing a non-string to
+    ``ContentFile`` raises ``TypeError``, and ``json.dumps`` without a fallback
+    can raise as well. Either failure used to abort ``run_submission`` after
+    status was already set to FINISHED/FAILED, so stdout/stderr/result files
+    were never persisted.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value)
+    except TypeError:
+        return json.dumps(value, default=str)
+
+
 def download_and_extract_file(url, download_location):
     """
     * Function to extract download a file.
@@ -633,24 +656,34 @@ def run_submission(
             submission.completed_at = timezone.now()
             submission.save()
             if not challenge_phase.disable_logs:
-                log_submission_artifact_upload_context(
-                    submission,
-                    "submission_worker.run_submission.remote_eval_failed_logs",
-                )
-                with open(stdout_file, "r") as stdout:
-                    stdout_content = stdout.read()
-                    submission.stdout_file.save(
-                        "stdout.txt", ContentFile(stdout_content)
+                try:
+                    log_submission_artifact_upload_context(
+                        submission,
+                        "submission_worker.run_submission.remote_eval_failed_logs",
                     )
-                with open(stderr_file, "r") as stderr:
-                    stderr_content = stderr.read()
-                    submission.stderr_file.save(
-                        "stderr.txt", ContentFile(stderr_content)
+                    with open(stdout_file, "r") as stdout_fh:
+                        stdout_content = stdout_fh.read().encode("utf-8")
+                        submission.stdout_file.save(
+                            "stdout.txt", ContentFile(stdout_content)
+                        )
+                    with open(stderr_file, "r") as stderr_fh:
+                        stderr_content = stderr_fh.read().encode("utf-8")
+                        submission.stderr_file.save(
+                            "stderr.txt", ContentFile(stderr_content)
+                        )
+                    enqueue_submission_artifact_retention_tagging(
+                        submission,
+                        [
+                            submission.stdout_file.name,
+                            submission.stderr_file.name,
+                        ],
                     )
-                enqueue_submission_artifact_retention_tagging(
-                    submission,
-                    [submission.stdout_file.name, submission.stderr_file.name],
-                )
+                except Exception:
+                    logger.exception(
+                        "{} Failed to persist remote-eval logs for submission {}".format(
+                            SUBMISSION_LOGS_PREFIX, submission.id
+                        )
+                    )
 
             # delete the complete temp run directory
             shutil.rmtree(temp_run_dir)
@@ -784,65 +817,88 @@ def run_submission(
     submission.completed_at = timezone.now()
     submission.save()
 
-    # after the execution is finished, set `status` to finished and hence
-    # `completed_at`
-    if submission_output and successful_submission_flag:
-        log_submission_artifact_upload_context(
-            submission,
-            "submission_worker.run_submission.before_result_files",
-        )
-        output = {}
-        output["result"] = submission_output.get("result", "")
-        submission.output = output
-
-        # Save submission_result_file
-        submission_result = submission_output.get("submission_result", "")
-        submission_result = json.dumps(submission_result)
-        submission.submission_result_file.save(
-            "submission_result.json", ContentFile(submission_result)
-        )
-
-        # Save submission_metadata_file
-        submission_metadata = submission_output.get("submission_metadata", "")
-        submission.submission_metadata_file.save(
-            "submission_metadata.json", ContentFile(submission_metadata)
-        )
-        submission.save()
-        enqueue_submission_artifact_retention_tagging(
-            submission,
-            [
-                submission.submission_result_file.name,
-                submission.submission_metadata_file.name,
-            ],
-        )
-
-    stderr.close()
+    # Always close redirected handles before reading temp log files.
     stdout.close()
-    stderr_content = open(stderr_file, "r").read()
-    stdout_content = open(stdout_file, "r").read()
+    stderr.close()
 
-    # TODO :: see if two updates can be combine into a single update.
+    # Persist stdout/stderr BEFORE result/metadata artifacts. Serialization of
+    # evaluate() return values (dict metadata without dumps, numpy scalars,
+    # etc.) or retention-tagging failures used to raise here and skip logs,
+    # leaving users with finished/failed submissions and empty file fields.
     if not challenge_phase.disable_logs:
-        log_submission_artifact_upload_context(
-            submission, "submission_worker.run_submission.before_stdout_stderr"
-        )
-        with open(stdout_file, "r") as stdout:
-            stdout_content = stdout.read()
-            submission.stdout_file.save(
-                "stdout.txt", ContentFile(stdout_content)
+        try:
+            log_submission_artifact_upload_context(
+                submission,
+                "submission_worker.run_submission.before_stdout_stderr",
             )
-        if submission_status is Submission.FAILED:
-            with open(stderr_file, "r") as stderr:
-                stderr_content = stderr.read().encode("utf-8")
-                submission.stderr_file.save(
-                    "stderr.txt", ContentFile(stderr_content)
+            with open(stdout_file, "r") as stdout_fh:
+                stdout_content = stdout_fh.read().encode("utf-8")
+                submission.stdout_file.save(
+                    "stdout.txt", ContentFile(stdout_content)
                 )
-        artifact_paths = [submission.stdout_file.name]
-        if submission.stderr_file.name:
-            artifact_paths.append(submission.stderr_file.name)
-        enqueue_submission_artifact_retention_tagging(
-            submission, artifact_paths
-        )
+            if submission_status == Submission.FAILED:
+                with open(stderr_file, "r") as stderr_fh:
+                    stderr_content = stderr_fh.read().encode("utf-8")
+                    submission.stderr_file.save(
+                        "stderr.txt", ContentFile(stderr_content)
+                    )
+            artifact_paths = [submission.stdout_file.name]
+            if submission.stderr_file.name:
+                artifact_paths.append(submission.stderr_file.name)
+            enqueue_submission_artifact_retention_tagging(
+                submission, artifact_paths
+            )
+        except Exception:
+            logger.exception(
+                "{} Failed to persist stdout/stderr for submission {}".format(
+                    SUBMISSION_LOGS_PREFIX, submission.id
+                )
+            )
+
+    # Persist result/metadata after logs so serialization or tagging failures
+    # cannot drop stdout/stderr for participants.
+    if submission_output and successful_submission_flag:
+        try:
+            log_submission_artifact_upload_context(
+                submission,
+                "submission_worker.run_submission.before_result_files",
+            )
+            output = {}
+            output["result"] = submission_output.get("result", "")
+            submission.output = output
+
+            # Preserve historical json.dumps for submission_result (including
+            # string values). default=str covers numpy scalars and similar.
+            submission_result = json.dumps(
+                submission_output.get("submission_result", ""),
+                default=str,
+            )
+            # Metadata is often a dict in evaluate() return values; ContentFile
+            # requires str/bytes, so serialize first (matches remote worker).
+            submission_metadata = serialize_submission_artifact(
+                submission_output.get("submission_metadata", "")
+            )
+
+            submission.submission_result_file.save(
+                "submission_result.json", ContentFile(submission_result)
+            )
+            submission.submission_metadata_file.save(
+                "submission_metadata.json", ContentFile(submission_metadata)
+            )
+            submission.save()
+            enqueue_submission_artifact_retention_tagging(
+                submission,
+                [
+                    submission.submission_result_file.name,
+                    submission.submission_metadata_file.name,
+                ],
+            )
+        except Exception:
+            logger.exception(
+                "{} Failed to persist result/metadata for submission {}".format(
+                    SUBMISSION_LOGS_PREFIX, submission.id
+                )
+            )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
