@@ -10,6 +10,9 @@ Environment variables required:
 - EVALAI_API_SERVER: EvalAI API server URL (e.g. https://eval.ai)
 - LAMBDA_AUTH_TOKEN: shared secret for internal Lambda-auth APIs
 - AWS_REGION: AWS region (optional, defaults to us-east-1)
+- EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME: name of the IAM role assumed in a
+  challenge's host AWS account for cross-account nodegroup scaling
+  (optional, defaults to "evalai-autoscale-crossaccount")
 """
 
 import json
@@ -28,6 +31,9 @@ logger.setLevel(logging.INFO)
 EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER")
 LAMBDA_AUTH_TOKEN = os.environ.get("LAMBDA_AUTH_TOKEN")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+CROSS_ACCOUNT_ROLE_NAME = os.environ.get(
+    "EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME", "evalai-autoscale-crossaccount"
+)
 
 
 def _validate_env():
@@ -82,6 +88,34 @@ def _should_force_scale_down(challenge_meta):
         logger.warning("Invalid end_date format: %s", end_date)
         return False
     return challenge_end <= datetime.now(challenge_end.tzinfo)
+
+
+def _build_eks_client(aws_region, challenge_meta):
+    """
+    Build an EKS client for the challenge's nodegroup.
+
+    Challenges that run in a host-provided AWS account (use_host_credentials)
+    have their EKS cluster in a different account than this Lambda. For those
+    we assume a cross-account role in the challenge's account; otherwise we use
+    the Lambda's own execution role (same-account behaviour, unchanged).
+    """
+    account_id = challenge_meta.get("aws_account_id")
+    if challenge_meta.get("use_host_credentials") and account_id:
+        role_arn = "arn:aws:iam::{0}:role/{1}".format(
+            account_id, CROSS_ACCOUNT_ROLE_NAME
+        )
+        credentials = boto3.client("sts").assume_role(
+            RoleArn=role_arn,
+            RoleSessionName="evalai-eks-autoscale",
+        )["Credentials"]
+        return boto3.client(
+            "eks",
+            region_name=aws_region,
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+        )
+    return boto3.client("eks", region_name=aws_region)
 
 
 def handler(event, context):
@@ -152,7 +186,7 @@ def handler(event, context):
     force_scale_down = _should_force_scale_down(challenge_meta)
 
     try:
-        eks_client = boto3.client("eks", region_name=aws_region)
+        eks_client = _build_eks_client(aws_region, challenge_meta)
         nodegroup_name = _get_nodegroup_name(eks_client, cluster_name)
         current = _get_scaling_config(eks_client, cluster_name, nodegroup_name)
         current_desired = int(current.get("desiredSize", 0))

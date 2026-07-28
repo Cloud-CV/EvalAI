@@ -293,6 +293,107 @@ class TestAutoScaleEksNodesLambda(unittest.TestCase):
         kwargs = mock_eks.update_nodegroup_config.call_args.kwargs
         self.assertEqual(kwargs["scalingConfig"]["desiredSize"], 0)
 
+    @patch("boto3.client")
+    @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
+    def test_assumes_cross_account_role_for_host_credentials(
+        self, mock_call_evalai_api, mock_boto_client
+    ):
+        mock_call_evalai_api.side_effect = [
+            {
+                "is_docker_based": True,
+                "remote_evaluation": False,
+                "cluster_name": "cluster-1",
+                "scale_up_cap": 5,
+                "use_host_credentials": True,
+                "aws_account_id": "123456789012",
+                "end_date": None,
+            },
+            {"pending_submissions": 4},
+        ]
+        mock_sts = MagicMock()
+        mock_sts.assume_role.return_value = {
+            "Credentials": {
+                "AccessKeyId": "AKIATEST",
+                "SecretAccessKey": "secret",
+                "SessionToken": "token",
+            }
+        }
+        mock_eks = MagicMock()
+        mock_eks.list_nodegroups.return_value = {"nodegroups": ["ng-1"]}
+        mock_eks.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "scalingConfig": {"minSize": 0, "desiredSize": 0, "maxSize": 1}
+            }
+        }
+        mock_eks.update_nodegroup_config.return_value = {
+            "update": {"id": "upd-xacct"}
+        }
+
+        def client_factory(service, *args, **kwargs):
+            return mock_sts if service == "sts" else mock_eks
+
+        mock_boto_client.side_effect = client_factory
+
+        response = self.module.handler({"challenge_pk": 42}, None)
+
+        self.assertEqual(response["statusCode"], 200)
+        mock_sts.assume_role.assert_called_once_with(
+            RoleArn="arn:aws:iam::123456789012:role/evalai-autoscale-crossaccount",
+            RoleSessionName="evalai-eks-autoscale",
+        )
+        mock_boto_client.assert_any_call(
+            "eks",
+            region_name="us-east-1",
+            aws_access_key_id="AKIATEST",
+            aws_secret_access_key="secret",
+            aws_session_token="token",
+        )
+        self.assertEqual(
+            mock_eks.update_nodegroup_config.call_args.kwargs["scalingConfig"][
+                "desiredSize"
+            ],
+            4,
+        )
+
+    @patch("boto3.client")
+    @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
+    def test_uses_default_client_without_host_credentials(
+        self, mock_call_evalai_api, mock_boto_client
+    ):
+        mock_call_evalai_api.side_effect = [
+            {
+                "is_docker_based": True,
+                "remote_evaluation": False,
+                "cluster_name": "cluster-1",
+                "scale_up_cap": 5,
+                "use_host_credentials": False,
+                "aws_account_id": "123456789012",
+                "end_date": None,
+            },
+            {"pending_submissions": 4},
+        ]
+        mock_eks = MagicMock()
+        mock_eks.list_nodegroups.return_value = {"nodegroups": ["ng-1"]}
+        mock_eks.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "scalingConfig": {"minSize": 0, "desiredSize": 0, "maxSize": 1}
+            }
+        }
+        mock_eks.update_nodegroup_config.return_value = {
+            "update": {"id": "upd-same"}
+        }
+        mock_boto_client.return_value = mock_eks
+
+        response = self.module.handler({"challenge_pk": 77}, None)
+
+        self.assertEqual(response["statusCode"], 200)
+        # No cross-account assume when use_host_credentials is False.
+        for call in mock_boto_client.call_args_list:
+            self.assertNotEqual(call.args[0], "sts")
+        mock_boto_client.assert_called_once_with(
+            "eks", region_name="us-east-1"
+        )
+
 
 class TestDesiredSizeLogic(unittest.TestCase):
     def setUp(self):
