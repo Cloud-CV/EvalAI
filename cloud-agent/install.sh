@@ -77,23 +77,23 @@ start_docker_daemon() {
   return 1
 }
 
-if command -v docker >/dev/null 2>&1; then
-  echo "Docker client is already installed."
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  echo "Docker client and Compose plugin are already installed."
 else
   echo "Installing Docker for Cloud Agent VM..."
+  sudo apt-get update
   if ! compose_package="$(ensure_docker_compose_package)"; then
     echo "Cannot install Docker without a compose package." >&2
     exit 1
   fi
-  sudo apt-get update
   sudo apt-get install -y fuse-overlayfs iptables docker.io "${compose_package}"
   configure_iptables_legacy_if_available
-  configure_docker_daemon
   if getent group docker >/dev/null 2>&1; then
     sudo usermod -aG docker "${USER}" || true
   fi
 fi
 
+configure_docker_daemon
 start_docker_daemon
 
 sudo docker --version
