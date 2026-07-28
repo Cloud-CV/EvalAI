@@ -5719,6 +5719,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
         "aws_region": challenge.aws_region
         or os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         "use_host_credentials": challenge.use_host_credentials,
+        "aws_account_id": challenge.aws_account_id,
         "scale_up_cap": challenge.max_worker_instance or 1,
     }
     return Response(response_data, status=status.HTTP_200_OK)
