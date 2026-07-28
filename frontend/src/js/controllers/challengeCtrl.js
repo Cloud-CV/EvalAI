@@ -387,6 +387,7 @@
                 vm.is_approval_requested = details.is_approval_requested;
                 vm.isFrozen = details.is_frozen;
                 vm.isRemoteChallenge = details.remote_evaluation;
+                vm.isDockerBased = details.is_docker_based;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.allowHostCancelSubmissions = details.allow_host_cancel_submissions,
