@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import signal
@@ -8,6 +9,7 @@ import zipfile
 from datetime import timedelta
 from io import BytesIO
 from os.path import join
+from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
 
 import boto3
@@ -48,6 +50,7 @@ from scripts.workers.submission_worker import (
     process_add_challenge_message,
     return_file_url_per_environment,
     run_submission,
+    serialize_submission_artifact,
 )
 from settings.common import SQS_RETENTION_PERIOD
 
@@ -1357,3 +1360,172 @@ class ExtractChallengeDataConstraintEnvTest(APITestCase):
 
         mock_configure.assert_called_once_with()
         mock_import.assert_called_once()
+
+
+class SerializeSubmissionArtifactTest(TestCase):
+    def test_none_and_empty(self):
+        self.assertEqual(serialize_submission_artifact(None), "")
+        self.assertEqual(serialize_submission_artifact(""), "")
+
+    def test_string_passthrough(self):
+        self.assertEqual(serialize_submission_artifact("already"), "already")
+
+    def test_bytes_decoded(self):
+        self.assertEqual(serialize_submission_artifact(b"logs"), "logs")
+
+    def test_dict_json_serialized(self):
+        serialized = serialize_submission_artifact({"foo": "bar", "n": 1})
+        self.assertEqual(json.loads(serialized), {"foo": "bar", "n": 1})
+
+    def test_list_json_serialized(self):
+        serialized = serialize_submission_artifact([1, "a"])
+        self.assertEqual(json.loads(serialized), [1, "a"])
+
+    def test_non_json_native_uses_default_str(self):
+        class Weird:
+            def __str__(self):
+                return "weird-value"
+
+        serialized = serialize_submission_artifact({"x": Weird()})
+        self.assertIn("weird-value", serialized)
+
+
+class RunSubmissionArtifactPersistenceTest(BaseAPITestClass):
+    def _setup_phase_map(self):
+        PHASE_ANNOTATION_FILE_NAME_MAP[self.challenge.id] = {
+            self.challenge_phase.id: "dummy_annotation.txt"
+        }
+
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    @patch("scripts.workers.submission_worker.LeaderboardData")
+    @patch("scripts.workers.submission_worker.ChallengePhaseSplit.objects.get")
+    def test_dict_metadata_still_persists_stdout_and_result_files(
+        self,
+        mock_cps_get,
+        mock_leaderboard_data,
+        mock_rmtree,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        """Dict submission_metadata used to TypeError in ContentFile and skip
+        all artifact uploads after status was already marked finished."""
+        self._setup_phase_map()
+        submission = self.submission
+        # remote_evaluation is read from submission.challenge_phase.challenge;
+        # disable_logs is read from the challenge_phase arg to run_submission.
+        submission.challenge_phase.challenge.remote_evaluation = False
+        self.challenge_phase.disable_logs = False
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 10}}],
+            "submission_result": {"score": 10},
+            "submission_metadata": {"foo": "bar", "split": "dev"},
+        }
+
+        mock_cps = MagicMock()
+        mock_cps.leaderboard = MagicMock()
+        mock_cps.dataset_split.codename = "split_codename_1"
+        mock_cps_get.return_value = mock_cps
+
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        os.makedirs(temp_run_dir, exist_ok=True)
+        with open(join(temp_run_dir, "temp_stdout.txt"), "w") as fh:
+            fh.write("eval stdout")
+        with open(join(temp_run_dir, "temp_stderr.txt"), "w") as fh:
+            fh.write("")
+
+        run_submission(
+            self.challenge.id,
+            self.challenge_phase,
+            submission,
+            "dummy/path",
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, Submission.FINISHED)
+        self.assertTrue(bool(submission.stdout_file.name))
+        self.assertTrue(bool(submission.submission_result_file.name))
+        self.assertTrue(bool(submission.submission_metadata_file.name))
+        self.assertIn(b"eval stdout", submission.stdout_file.read())
+        self.assertEqual(
+            json.loads(submission.submission_metadata_file.read().decode()),
+            {"foo": "bar", "split": "dev"},
+        )
+        self.assertEqual(
+            json.loads(submission.submission_result_file.read().decode()),
+            {"score": 10},
+        )
+
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    @patch("scripts.workers.submission_worker.LeaderboardData")
+    @patch("scripts.workers.submission_worker.ChallengePhaseSplit.objects.get")
+    @patch(
+        "scripts.workers.submission_worker.enqueue_submission_artifact_retention_tagging",
+        side_effect=[None, RuntimeError("tagging boom")],
+    )
+    def test_result_artifact_failure_still_persists_stdout(
+        self,
+        mock_enqueue,
+        mock_cps_get,
+        mock_leaderboard_data,
+        mock_rmtree,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        """Failures while saving/tagging result files must not drop stdout."""
+        self._setup_phase_map()
+        submission = self.submission
+        # remote_evaluation is read from submission.challenge_phase.challenge;
+        # disable_logs is read from the challenge_phase arg to run_submission.
+        submission.challenge_phase.challenge.remote_evaluation = False
+        self.challenge_phase.disable_logs = False
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 10}}],
+            "submission_result": {"score": 10},
+            "submission_metadata": {"foo": "bar"},
+        }
+
+        mock_cps = MagicMock()
+        mock_cps.leaderboard = MagicMock()
+        mock_cps.dataset_split.codename = "split_codename_1"
+        mock_cps_get.return_value = mock_cps
+
+        temp_run_dir = join(
+            SUBMISSION_DATA_DIR.format(submission_id=submission.id), "run"
+        )
+        os.makedirs(temp_run_dir, exist_ok=True)
+        with open(join(temp_run_dir, "temp_stdout.txt"), "w") as fh:
+            fh.write("kept stdout")
+        with open(join(temp_run_dir, "temp_stderr.txt"), "w") as fh:
+            fh.write("")
+
+        run_submission(
+            self.challenge.id,
+            self.challenge_phase,
+            submission,
+            "dummy/path",
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, Submission.FINISHED)
+        self.assertTrue(bool(submission.stdout_file.name))
+        self.assertIn(b"kept stdout", submission.stdout_file.read())
+        # Second enqueue (result/metadata tagging) must have raised after
+        # result files were already saved; stdout must still be present.
+        self.assertEqual(mock_enqueue.call_count, 2)
+        self.assertTrue(bool(submission.submission_result_file.name))
