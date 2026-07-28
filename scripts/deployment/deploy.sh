@@ -173,8 +173,10 @@ fi
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs celery memcached
 # Run migrations before starting django. container-start.sh also calls migrate on
 # startup; running both concurrently races on CREATE TABLE (pg_type_typname_nsp_index).
+# Detach stdin so compose cannot consume the remaining commands from the SSH heredoc.
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
-  django sh -c "python manage.py migrate --noinput && python manage.py refresh_worker_task_definitions --commit-id \${COMMIT_ID}"
+  django sh -c "python manage.py migrate --noinput && python manage.py refresh_worker_task_definitions --commit-id \${COMMIT_ID}" \
+  </dev/null
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
 ENDSSH
 }
