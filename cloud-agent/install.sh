@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+docker_daemon_config_changed=false
+
 ensure_docker_compose_package() {
   if apt-cache show docker-compose-plugin >/dev/null 2>&1; then
     echo "docker-compose-plugin"
@@ -29,25 +31,78 @@ configure_iptables_legacy_if_available() {
 }
 
 configure_docker_daemon() {
+  local daemon_config="/etc/docker/daemon.json"
+  local updated_config
+
   sudo mkdir -p /etc/docker
-  if [ ! -f /etc/docker/daemon.json ]; then
-    sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
+  updated_config="$(mktemp)"
+
+  if sudo test -f "${daemon_config}"; then
+    sudo python3 - "${daemon_config}" >"${updated_config}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as config_file:
+    config = json.load(config_file)
+
+config["storage-driver"] = "fuse-overlayfs"
+config["cgroup-parent"] = "system.slice"
+json.dump(config, sys.stdout, indent=2, sort_keys=True)
+sys.stdout.write("\n")
+PY
+  else
+    cat >"${updated_config}" <<'EOF'
 {
   "storage-driver": "fuse-overlayfs",
   "cgroup-parent": "system.slice"
 }
 EOF
   fi
+
+  if ! sudo cmp -s "${updated_config}" "${daemon_config}"; then
+    sudo install -m 0644 "${updated_config}" "${daemon_config}"
+    docker_daemon_config_changed=true
+  fi
+
+  rm -f "${updated_config}"
 }
 
 start_docker_daemon() {
   local dockerd_log
+  local dockerd_pid
   dockerd_log="$(mktemp)"
 
   if sudo docker info >/dev/null 2>&1; then
-    echo "Docker daemon is already running."
-    rm -f "${dockerd_log}"
-    return 0
+    if [ "${docker_daemon_config_changed}" = false ]; then
+      echo "Docker daemon is already running."
+      rm -f "${dockerd_log}"
+      return 0
+    fi
+
+    echo "Docker daemon configuration changed; restarting Docker..."
+    if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+      if sudo systemctl restart docker 2>/dev/null; then
+        for _ in $(seq 1 30); do
+          if sudo docker info >/dev/null 2>&1; then
+            rm -f "${dockerd_log}"
+            return 0
+          fi
+          sleep 1
+        done
+      fi
+      echo "systemctl could not restart docker; falling back to dockerd."
+    fi
+
+    while read -r dockerd_pid; do
+      sudo kill "${dockerd_pid}"
+    done < <(pgrep -x dockerd || true)
+
+    for _ in $(seq 1 30); do
+      if ! pgrep -x dockerd >/dev/null 2>&1; then
+        break
+      fi
+      sleep 1
+    done
   fi
 
   if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
@@ -77,7 +132,7 @@ start_docker_daemon() {
   return 1
 }
 
-if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+if command -v docker >/dev/null 2>&1 && sudo docker compose version >/dev/null 2>&1; then
   echo "Docker client and Compose plugin are already installed."
 else
   echo "Installing Docker for Cloud Agent VM..."
