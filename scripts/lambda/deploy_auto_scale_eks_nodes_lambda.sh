@@ -96,14 +96,25 @@ aws_cli events put-rule \
     --schedule-expression "${SWEEP_SCHEDULE}" \
     --description "Reconciles EvalAI EKS nodegroup scaling for all eligible challenges" >/dev/null
 
-# Idempotent: the statement may already exist from a previous deploy.
-aws_cli lambda add-permission \
+# Idempotent: the statement may already exist from a previous deploy. Only
+# that conflict is ignored — swallowing every failure here would let a deploy
+# report success while leaving EventBridge unable to invoke the function, so
+# the sweep would never run and nothing would say so.
+RULE_ARN="$(aws_cli events describe-rule --name "${RULE_NAME}" \
+    --query "Arn" --output text)"
+
+if ! ADD_PERMISSION_OUTPUT="$(aws_cli lambda add-permission \
     --function-name "${FUNCTION_NAME}" \
     --statement-id "${RULE_NAME}-invoke" \
     --action "lambda:InvokeFunction" \
     --principal events.amazonaws.com \
-    --source-arn "$(aws_cli events describe-rule --name "${RULE_NAME}" \
-        --query "Arn" --output text)" >/dev/null 2>&1 || true
+    --source-arn "${RULE_ARN}" 2>&1)"; then
+    if ! grep -q "ResourceConflictException" <<<"${ADD_PERMISSION_OUTPUT}"; then
+        echo "${ADD_PERMISSION_OUTPUT}" >&2
+        exit 1
+    fi
+    echo "    invoke permission already present"
+fi
 
 aws_cli events put-targets \
     --rule "${RULE_NAME}" \

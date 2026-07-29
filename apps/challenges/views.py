@@ -5718,6 +5718,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
         ),
         "cluster_name": cluster_name,
         "nodegroup_name": nodegroup_name,
+        "is_disabled": challenge.is_disabled,
         "queue": challenge.queue,
         "aws_region": challenge.aws_region
         or os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),

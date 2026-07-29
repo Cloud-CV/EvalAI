@@ -2462,9 +2462,16 @@ def setup_eks_autoscale_cross_account_role(iam_client, challenge_obj):
                 PolicyDocument=json.dumps(trust_relation),
             )
             role_arn = iam_client.get_role(RoleName=role_name)["Role"]["Arn"]
-        except ClientError as err:
+        except (ClientError, BotoCoreError) as err:
             logger.exception(err)
             return None
+    except BotoCoreError as e:
+        # Covers WaiterError, which the role_exists waiter raises when IAM's
+        # eventual consistency outlasts the poll budget. It is not a
+        # ClientError, so without this the exception would escape a function
+        # documented as best-effort.
+        logger.exception(e)
+        return None
 
     try:
         iam_client.put_role_policy(
@@ -2474,7 +2481,7 @@ def setup_eks_autoscale_cross_account_role(iam_client, challenge_obj):
                 settings.EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_DOCUMENT
             ),
         )
-    except ClientError as e:
+    except (ClientError, BotoCoreError) as e:
         logger.exception(e)
         return None
 
@@ -2583,8 +2590,14 @@ def setup_eks_cluster(challenge):
         return
 
     # Provision the role the autoscale Lambda assumes for host-credential
-    # challenges. Best-effort: never blocks cluster setup.
-    setup_eks_autoscale_cross_account_role(client, challenge_obj)
+    # challenges. Best-effort: never blocks cluster setup. The broad catch is
+    # deliberate — the cluster and its persisted config matter far more than
+    # an optional autoscaling role, so no failure mode here may reach the
+    # ChallengeEvaluationCluster save and subnet creation below.
+    try:
+        setup_eks_autoscale_cross_account_role(client, challenge_obj)
+    except Exception as e:
+        logger.exception(e)
 
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(

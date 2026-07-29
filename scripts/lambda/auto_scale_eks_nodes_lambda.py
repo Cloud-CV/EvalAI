@@ -111,6 +111,18 @@ def _desired_size_for_pending(pending_submissions, scale_up_cap):
 
 
 def _should_force_scale_down(challenge_meta):
+    """
+    Return True when the challenge should hold zero nodes regardless of its
+    pending submission count.
+
+    A disabled challenge is treated like an ended one. Excluding disabled
+    challenges from the sweep entirely would be worse: one disabled while its
+    nodegroup is scaled up would keep those nodes running with nothing left to
+    reconcile it back down.
+    """
+    if challenge_meta.get("is_disabled"):
+        return True
+
     end_date = challenge_meta.get("end_date")
     if not end_date:
         return False
@@ -350,7 +362,11 @@ def _sweep():
         try:
             _scale_challenge(challenge_pk)
             succeeded.append(challenge_pk)
-        except AutoscaleError as err:
+        except Exception as err:
+            # Deliberately broad. _scale_challenge also raises bare ValueError
+            # on malformed API data (a non-numeric pending count, invalid
+            # JSON), and catching only AutoscaleError would let one bad
+            # challenge skip every challenge after it.
             logger.error(
                 "Sweep failed for challenge %s: %s", challenge_pk, err
             )
