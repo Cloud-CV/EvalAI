@@ -58,6 +58,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "remote_evaluation",
         "created_at",
         "workers",
+        "max_workers",
+        "min_workers",
         "use_fargate_spot",
         "task_def_arn",
         "github_repository",

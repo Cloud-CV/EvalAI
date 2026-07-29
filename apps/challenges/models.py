@@ -212,6 +212,19 @@ class Challenge(TimeStampedModel):
     )
     # The number of active workers on Fargate of the challenge.
     workers = models.IntegerField(null=True, blank=True, default=None)
+    # The Application Auto Scaling ceiling for the Fargate worker service. The
+    # scale-up policy uses ExactCapacity, so this is also the number of workers
+    # the autoscaler restores when the queue becomes non-empty. Scaling workers
+    # from the admin moves this to match; without it the autoscaler would clamp
+    # the service back to 1 on the next alarm transition.
+    # Distinct from max_worker_instance, which sizes EKS node groups for
+    # code-upload challenges.
+    max_workers = models.IntegerField(null=True, blank=True, default=1)
+    # The Application Auto Scaling floor for the Fargate worker service.
+    # 0 (default) allows scale-to-zero when the queue is empty.
+    # Distinct from min_worker_instance, which sizes EKS node groups for
+    # code-upload challenges.
+    min_workers = models.IntegerField(null=True, blank=True, default=0)
     # The task definition ARN for the challenge, used for updating and
     # creating service.
     task_def_arn = models.CharField(

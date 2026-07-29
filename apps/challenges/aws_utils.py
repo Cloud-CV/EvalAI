@@ -532,31 +532,44 @@ def setup_auto_scaling_for_service(challenge):
     Scale-up: when ApproximateNumberOfMessagesVisible > 0 for 1 minute.
     Scale-down: when ApproximateNumberOfMessagesVisible = 0 for 2 minutes.
 
+    The ceiling comes from challenge.max_workers so that a manual scale from the
+    admin survives service recreation. All the AWS calls below are upserts keyed
+    by resource id / policy name / alarm name, so this is safe to re-run to
+    reconcile an existing configuration.
+
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge whose service to configure.
+
+    Returns:
+    bool: True if the configuration was applied (or intentionally skipped),
+        False if AWS rejected it.
     """
     if settings.DEBUG:
         logger.info(
             "Skipping auto-scaling setup for challenge %s in development environment.",
             challenge.pk,
         )
-        return
+        return True
 
     queue_name = challenge.queue
     service_name = f"{queue_name}_service"
     cluster = COMMON_SETTINGS_DICT["CLUSTER"]
     resource_id = f"service/{cluster}/{service_name}"
+    # A ceiling of 0 would leave the service permanently switched off, since the
+    # scale-up policy sets ExactCapacity to this value.
+    max_workers = max(challenge.max_workers or 1, 1)
+    min_workers = max(challenge.min_workers or 0, 0)
 
     autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
 
     try:
-        # Register the ECS service as a scalable target (min=0, max=1)
+        # Register the ECS service as a scalable target
         autoscaling_client.register_scalable_target(
             ServiceNamespace="ecs",
             ResourceId=resource_id,
             ScalableDimension="ecs:service:DesiredCount",
-            MinCapacity=0,
-            MaxCapacity=1,
+            MinCapacity=min_workers,
+            MaxCapacity=max_workers,
         )
 
         # Create scale-up policy
@@ -571,7 +584,7 @@ def setup_auto_scaling_for_service(challenge):
                 "StepAdjustments": [
                     {
                         "MetricIntervalLowerBound": 0,
-                        "ScalingAdjustment": 1,
+                        "ScalingAdjustment": max_workers,
                     }
                 ],
                 "Cooldown": 60,
@@ -591,7 +604,7 @@ def setup_auto_scaling_for_service(challenge):
                 "StepAdjustments": [
                     {
                         "MetricIntervalUpperBound": 0,
-                        "ScalingAdjustment": 0,
+                        "ScalingAdjustment": min_workers,
                     }
                 ],
                 "Cooldown": 120,
@@ -631,16 +644,21 @@ def setup_auto_scaling_for_service(challenge):
         )
 
         logger.info(
-            "Auto-scaling configured for challenge %s (service: %s)",
+            "Auto-scaling configured for challenge %s"
+            " (service: %s, min: %s, max: %s)",
             challenge.pk,
             service_name,
+            min_workers,
+            max_workers,
         )
+        return True
     except ClientError as e:
         logger.exception(
             "Failed to setup auto-scaling for challenge %s: %s",
             challenge.pk,
             e,
         )
+        return False
 
 
 def cleanup_auto_scaling_for_service(challenge):
@@ -1946,6 +1964,11 @@ def scale_workers(queryset, num_of_tasks):
 
     Calls the service_manager method. Before calling, checks if the target scaling number is different than current.
 
+    Scaling to a non-zero count also moves the Application Auto Scaling ceiling
+    to match. The scale-up policy uses ExactCapacity, so leaving a stale ceiling
+    behind would let the next queue-depth alarm override the requested count in
+    whichever direction the ceiling disagrees.
+
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
 
@@ -1980,6 +2003,23 @@ def scale_workers(queryset, num_of_tasks):
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
+        # Move the auto-scaling ceiling before ECS. Scaling up past a stale
+        # ceiling gets clamped back down; scaling down below one gets pushed
+        # back up, since the scale-up policy restores ExactCapacity == ceiling.
+        # A target of 0 is an idle pause, not a request to change the ceiling.
+        if num_of_tasks > 0 and num_of_tasks != challenge.max_workers:
+            previous_max_workers = challenge.max_workers
+            challenge.max_workers = num_of_tasks
+            if not setup_auto_scaling_for_service(challenge):
+                challenge.max_workers = previous_max_workers
+                failures.append(
+                    {
+                        "message": "Failed to update auto-scaling configuration. Workers were not scaled.",
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+            challenge.save()
         response = service_manager(
             client, challenge=challenge, num_of_tasks=num_of_tasks
         )
