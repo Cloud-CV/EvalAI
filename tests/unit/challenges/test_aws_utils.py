@@ -3771,7 +3771,27 @@ class TestSetupEksAutoscaleCrossAccountRole(TestCase):
             trust_policy["Statement"][0]["Principal"]["AWS"],
             "arn:aws:iam::123456789012:role/lambda-role",
         )
-        self.assertTrue(self.client.put_role_policy.called)
+
+        # Pin the permission contract: a role carrying the wrong policy is
+        # indistinguishable from a missing one at autoscale time.
+        put_kwargs = self.client.put_role_policy.call_args.kwargs
+        self.assertEqual(
+            put_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        self.assertEqual(
+            put_kwargs["PolicyName"], "evalai-autoscale-nodegroup-access"
+        )
+        policy = json.loads(put_kwargs["PolicyDocument"])
+        self.assertEqual(
+            sorted(policy["Statement"][0]["Action"]),
+            [
+                "eks:DescribeCluster",
+                "eks:DescribeNodegroup",
+                "eks:ListNodegroups",
+                "eks:UpdateNodegroupConfig",
+            ],
+        )
+        self.assertEqual(policy["Statement"][0]["Effect"], "Allow")
 
     @override_settings(
         EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role"
@@ -3823,8 +3843,19 @@ class TestSetupEksAutoscaleCrossAccountRole(TestCase):
             role_arn,
             "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount",
         )
-        self.assertTrue(self.client.update_assume_role_policy.called)
-        self.assertTrue(self.client.put_role_policy.called)
+        refresh_kwargs = self.client.update_assume_role_policy.call_args.kwargs
+        self.assertEqual(
+            refresh_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        refreshed_trust = json.loads(refresh_kwargs["PolicyDocument"])
+        self.assertEqual(
+            refreshed_trust["Statement"][0]["Principal"]["AWS"],
+            "arn:aws:iam::123456789012:role/lambda-role",
+        )
+        self.assertEqual(
+            self.client.put_role_policy.call_args.kwargs["PolicyName"],
+            "evalai-autoscale-nodegroup-access",
+        )
 
     @override_settings(
         EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
@@ -3841,6 +3872,9 @@ class TestSetupEksAutoscaleCrossAccountRole(TestCase):
 
         self.assertIsNone(role_arn)
         self.client.put_role_policy.assert_not_called()
+        # A non-conflict CreateRole error is not the already-exists path, so
+        # the trust policy must not be rewritten either.
+        self.client.update_assume_role_policy.assert_not_called()
 
     @override_settings(
         EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",

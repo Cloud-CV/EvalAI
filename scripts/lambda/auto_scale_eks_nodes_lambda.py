@@ -366,8 +366,10 @@ def _sweep():
             # Deliberately broad. _scale_challenge also raises bare ValueError
             # on malformed API data (a non-numeric pending count, invalid
             # JSON), and catching only AutoscaleError would let one bad
-            # challenge skip every challenge after it.
-            logger.error(
+            # challenge skip every challenge after it. logger.exception keeps
+            # the traceback, which matters most for the unanticipated types
+            # this catch exists to absorb.
+            logger.exception(
                 "Sweep failed for challenge %s: %s", challenge_pk, err
             )
             failed.append(challenge_pk)
