@@ -3255,6 +3255,7 @@ class TestGetLogsFromCloudwatch(TestCase):
 
 
 class TestCreateEKSNodegroup(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -3275,6 +3276,7 @@ class TestCreateEKSNodegroup(unittest.TestCase):
         mock_get_aws_credentials_for_challenge,
         mock_get_code_upload_setup_meta_for_challenge,
         mock_get_boto3_client,
+        mock_evaluation_cluster,
     ):
         # Setup mock objects and functions
         mock_settings.ENVIRONMENT = "test-env"
@@ -3322,6 +3324,15 @@ class TestCreateEKSNodegroup(unittest.TestCase):
 
         # Assertions
         mock_get_boto3_client.assert_called_with("ecs", mock_aws_credentials)
+
+        # The nodegroup name is recorded so autoscaling can target it directly
+        # instead of guessing the first entry from list_nodegroups.
+        mock_evaluation_cluster.objects.filter.assert_called_once_with(
+            challenge_id=mock_challenge.pk
+        )
+        mock_evaluation_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="Test-Challenge-1-test-env-nodegroup"
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
