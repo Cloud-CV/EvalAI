@@ -2380,7 +2380,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     # Record the name so autoscaling targets this nodegroup explicitly.
     try:
         ChallengeEvaluationCluster.objects.filter(
-            challenge=challenge_obj
+            challenge_id=challenge_obj.pk
         ).update(nodegroup_name=nodegroup_name)
     except DatabaseError as e:
         logger.exception(e)

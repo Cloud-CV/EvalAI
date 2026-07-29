@@ -8852,11 +8852,23 @@ class AutoscaleEligibleChallengesAPITest(BaseAPITestClass):
             response = client.get(self.url, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def _make_challenge_eligible(self, **overrides):
+        """
+        Update via the queryset so the post_save signal does not fire.
+
+        Approving a docker-based challenge dispatches the real EKS cluster
+        setup Celery task, which these tests have no reason to exercise.
+        """
+        fields = {
+            "is_docker_based": True,
+            "remote_evaluation": False,
+            "approved_by_admin": True,
+        }
+        fields.update(overrides)
+        Challenge.objects.filter(pk=self.challenge.pk).update(**fields)
+
     def test_includes_eligible_challenge(self):
-        self.challenge.is_docker_based = True
-        self.challenge.remote_evaluation = False
-        self.challenge.approved_by_admin = True
-        self.challenge.save()
+        self._make_challenge_eligible()
         ChallengeEvaluationCluster.objects.create(
             challenge=self.challenge, name="eligible-cluster"
         )
@@ -8869,10 +8881,7 @@ class AutoscaleEligibleChallengesAPITest(BaseAPITestClass):
         self.assertIn(self.challenge.pk, response.data["challenge_pks"])
 
     def test_excludes_challenge_without_cluster(self):
-        self.challenge.is_docker_based = True
-        self.challenge.remote_evaluation = False
-        self.challenge.approved_by_admin = True
-        self.challenge.save()
+        self._make_challenge_eligible()
         ChallengeEvaluationCluster.objects.filter(
             challenge=self.challenge
         ).delete()
@@ -8885,10 +8894,7 @@ class AutoscaleEligibleChallengesAPITest(BaseAPITestClass):
         self.assertNotIn(self.challenge.pk, response.data["challenge_pks"])
 
     def test_excludes_remote_evaluation_challenge(self):
-        self.challenge.is_docker_based = True
-        self.challenge.remote_evaluation = True
-        self.challenge.approved_by_admin = True
-        self.challenge.save()
+        self._make_challenge_eligible(remote_evaluation=True)
         ChallengeEvaluationCluster.objects.create(
             challenge=self.challenge, name="remote-cluster"
         )
