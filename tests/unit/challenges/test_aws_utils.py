@@ -47,6 +47,7 @@ from challenges.aws_utils import (
     service_manager,
     setup_auto_scaling_for_service,
     setup_ec2,
+    setup_eks_autoscale_cross_account_role,
     setup_eks_cluster,
     start_ec2_instance,
     start_workers,
@@ -67,6 +68,7 @@ from challenges.worker_utils import (
 )
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.test import override_settings
 from hosts.models import ChallengeHostTeam
 
 
@@ -3607,6 +3609,120 @@ class TestSetupEksCluster(TestCase):
 
         # Ensure subnets creation task is triggered
         self.assertTrue(mock_create_subnets.called)
+
+
+class TestSetupEksAutoscaleCrossAccountRole(TestCase):
+    """
+    The autoscale Lambda cannot reach a host account's EKS cluster with its
+    own execution role, so this role has to exist for every host-credential
+    challenge.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 42
+        self.challenge.use_host_credentials = True
+        self.client = MagicMock()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME="evalai-autoscale-nodegroup-access",
+    )
+    def test_creates_role_and_attaches_policy(self):
+        self.client.create_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertEqual(
+            role_arn,
+            "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount",
+        )
+        create_kwargs = self.client.create_role.call_args.kwargs
+        self.assertEqual(
+            create_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        trust_policy = json.loads(create_kwargs["AssumeRolePolicyDocument"])
+        self.assertEqual(
+            trust_policy["Statement"][0]["Principal"]["AWS"],
+            "arn:aws:iam::123456789012:role/lambda-role",
+        )
+        self.assertTrue(self.client.put_role_policy.called)
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role"
+    )
+    def test_skips_when_not_using_host_credentials(self):
+        self.challenge.use_host_credentials = False
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.create_role.assert_not_called()
+
+    @override_settings(EKS_AUTOSCALE_LAMBDA_ROLE_ARN="")
+    def test_skips_when_lambda_role_arn_unset(self):
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.create_role.assert_not_called()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME="evalai-autoscale-nodegroup-access",
+    )
+    def test_refreshes_trust_policy_when_role_already_exists(self):
+        """
+        The role is shared across a host account's challenges, so it usually
+        already exists. Its trust policy still needs refreshing in case the
+        Lambda's role ARN changed.
+        """
+        self.client.create_role.side_effect = ClientError(
+            {"Error": {"Code": "EntityAlreadyExists"}}, "CreateRole"
+        )
+        self.client.get_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertEqual(
+            role_arn,
+            "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount",
+        )
+        self.assertTrue(self.client.update_assume_role_policy.called)
+        self.assertTrue(self.client.put_role_policy.called)
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+    )
+    def test_returns_none_on_unexpected_client_error(self):
+        self.client.create_role.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied"}}, "CreateRole"
+        )
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.put_role_policy.assert_not_called()
 
 
 @pytest.mark.django_db

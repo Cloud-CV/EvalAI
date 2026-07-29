@@ -16,6 +16,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
+from django.db import DatabaseError
 
 from evalai.celery import app
 
@@ -2342,6 +2343,7 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
+    from .models import ChallengeEvaluationCluster
     from .utils import get_aws_credentials_for_challenge
 
     for obj in serializers.deserialize("json", challenge):
@@ -2374,6 +2376,15 @@ def create_eks_nodegroup(challenge, cluster_name):
     except ClientError as e:
         logger.exception(e)
         return
+
+    # Record the name so autoscaling targets this nodegroup explicitly.
+    try:
+        ChallengeEvaluationCluster.objects.filter(
+            challenge=challenge_obj
+        ).update(nodegroup_name=nodegroup_name)
+    except DatabaseError as e:
+        logger.exception(e)
+
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
@@ -2381,6 +2392,98 @@ def create_eks_nodegroup(challenge, cluster_name):
     client = get_boto3_client("ecs", aws_keys)
     client_token = client_token_generator(challenge_obj.pk)
     create_service_by_challenge_pk(client, challenge_obj, client_token)
+
+
+def setup_eks_autoscale_cross_account_role(iam_client, challenge_obj):
+    """
+    Provision the role the autoscale Lambda assumes in a challenge's own AWS
+    account.
+
+    Challenges using host credentials run their EKS cluster in the host's
+    account, so the Lambda's own execution role cannot reach the nodegroup.
+    Without this role every such challenge silently fails to scale with an
+    AccessDeniedException on eks:ListNodegroups.
+
+    This is best-effort: failures are logged but never abort cluster setup,
+    since the cluster itself is still usable without autoscaling.
+
+    Arguments:
+        iam_client -- boto3 IAM client authenticated with the host's credentials
+        challenge_obj {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+    Returns:
+        {str or None} -- ARN of the cross-account role, or None when skipped
+    """
+    if not challenge_obj.use_host_credentials:
+        # Same-account challenges are reachable with the Lambda's own role.
+        return None
+
+    lambda_role_arn = settings.EKS_AUTOSCALE_LAMBDA_ROLE_ARN
+    if not lambda_role_arn:
+        logger.warning(
+            "EKS_AUTOSCALE_LAMBDA_ROLE_ARN is not configured. Skipping "
+            "cross-account autoscale role creation for challenge %s. EKS "
+            "node autoscaling will not work for this challenge until the "
+            "role is created manually.",
+            challenge_obj.pk,
+        )
+        return None
+
+    role_name = settings.EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME
+    trust_relation = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {"AWS": lambda_role_arn},
+                "Action": "sts:AssumeRole",
+            }
+        ],
+    }
+
+    try:
+        response = iam_client.create_role(
+            RoleName=role_name,
+            Description="EvalAI cross-account EKS nodegroup autoscaling role",
+            AssumeRolePolicyDocument=json.dumps(trust_relation),
+        )
+        role_arn = response["Role"]["Arn"]
+        waiter = iam_client.get_waiter("role_exists")
+        waiter.wait(RoleName=role_name)
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "EntityAlreadyExists":
+            logger.exception(e)
+            return None
+        # The role is shared across all challenges in a host account, so it
+        # already existing is the common case. Refresh its trust policy so a
+        # rotated Lambda role ARN does not leave the role unusable.
+        try:
+            iam_client.update_assume_role_policy(
+                RoleName=role_name,
+                PolicyDocument=json.dumps(trust_relation),
+            )
+            role_arn = iam_client.get_role(RoleName=role_name)["Role"]["Arn"]
+        except ClientError as err:
+            logger.exception(err)
+            return None
+
+    try:
+        iam_client.put_role_policy(
+            RoleName=role_name,
+            PolicyName=settings.EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME,
+            PolicyDocument=json.dumps(
+                settings.EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_DOCUMENT
+            ),
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return None
+
+    logger.info(
+        "Cross-account autoscale role ready for challenge %s: %s",
+        challenge_obj.pk,
+        role_arn,
+    )
+    return role_arn
 
 
 @app.task
@@ -2478,6 +2581,11 @@ def setup_eks_cluster(challenge):
     except ClientError as e:
         logger.exception(e)
         return
+
+    # Provision the role the autoscale Lambda assumes for host-credential
+    # challenges. Best-effort: never blocks cluster setup.
+    setup_eks_autoscale_cross_account_role(client, challenge_obj)
+
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj

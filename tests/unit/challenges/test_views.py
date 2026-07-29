@@ -8679,6 +8679,40 @@ class ChallengeAutoscaleInternalAPITest(BaseAPITestClass):
         self.assertEqual(response.data["aws_region"], "us-west-2")
         self.assertTrue(response.data["use_host_credentials"])
 
+    def test_meta_returns_recorded_nodegroup_name(self):
+        self.challenge.is_docker_based = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge,
+            name="test-eks-cluster-ng",
+            nodegroup_name="test-eks-nodegroup",
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.meta_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["nodegroup_name"], "test-eks-nodegroup")
+
+    def test_meta_nodegroup_name_none_without_cluster(self):
+        self.challenge.is_docker_based = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.filter(
+            challenge=self.challenge
+        ).delete()
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(
+                self.meta_url, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data["nodegroup_name"])
+
     def test_meta_non_docker_based_challenge(self):
         self.challenge.is_docker_based = False
         self.challenge.save()
@@ -8789,6 +8823,82 @@ class ChallengeAutoscaleInternalAPITest(BaseAPITestClass):
         self.assertEqual(response.data["status_counts"]["running"], 1)
         self.assertEqual(response.data["status_counts"]["queued"], 1)
         self.assertEqual(response.data["status_counts"]["resuming"], 1)
+
+
+class AutoscaleEligibleChallengesAPITest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+        self.auth_token = "test-lambda-secret-token"
+        self.url = reverse_lazy("challenges:get_autoscale_eligible_challenges")
+
+    def _client_with_auth(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+        return client
+
+    def test_missing_authorization_header(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = APIClient().get(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_invalid_auth_token(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION="Bearer wrong-token")
+            response = client.get(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_includes_eligible_challenge(self):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        self.challenge.approved_by_admin = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge, name="eligible-cluster"
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.challenge.pk, response.data["challenge_pks"])
+
+    def test_excludes_challenge_without_cluster(self):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        self.challenge.approved_by_admin = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.filter(
+            challenge=self.challenge
+        ).delete()
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.challenge.pk, response.data["challenge_pks"])
+
+    def test_excludes_remote_evaluation_challenge(self):
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = True
+        self.challenge.approved_by_admin = True
+        self.challenge.save()
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge, name="remote-cluster"
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.challenge.pk, response.data["challenge_pks"])
 
 
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):

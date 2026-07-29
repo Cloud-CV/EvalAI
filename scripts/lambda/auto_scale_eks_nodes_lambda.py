@@ -6,6 +6,17 @@ It fetches challenge metadata and pending submission counts from internal
 EvalAI APIs authenticated via LAMBDA_AUTH_TOKEN, then updates the challenge
 EKS nodegroup scaling config accordingly.
 
+It also supports a scheduled sweep mode (``{"sweep": true}``) that reconciles
+every autoscale-eligible challenge. Event-driven invocations are best-effort,
+so a single dropped invoke can otherwise leave a nodegroup stuck at zero nodes
+with submissions pending indefinitely.
+
+Unrecoverable errors are raised rather than returned as an error status code,
+so that asynchronous invocations surface in the Lambda ``Errors`` metric and
+are routed to the configured dead-letter queue / on-failure destination.
+Returning a 5xx body would be recorded as a successful invocation and fail
+silently.
+
 Environment variables required:
 - EVALAI_API_SERVER: EvalAI API server URL (e.g. https://eval.ai)
 - LAMBDA_AUTH_TOKEN: shared secret for internal Lambda-auth APIs
@@ -36,6 +47,10 @@ CROSS_ACCOUNT_ROLE_NAME = os.environ.get(
 )
 
 
+class AutoscaleError(Exception):
+    """Raised for unrecoverable autoscale failures worth retrying/alarming."""
+
+
 def _validate_env():
     if not EVALAI_API_SERVER:
         raise RuntimeError("Missing EVALAI_API_SERVER")
@@ -52,13 +67,31 @@ def _call_evalai_api(path):
     return json.loads(payload)
 
 
-def _get_nodegroup_name(eks_client, cluster_name):
+def _get_nodegroup_name(eks_client, cluster_name, configured_nodegroup=None):
+    """
+    Resolve the nodegroup to scale.
+
+    Prefers the name recorded on the challenge at nodegroup creation. Falling
+    back to the first entry of list_nodegroups is non-deterministic once a
+    cluster has more than one nodegroup, so it is only a last resort.
+    """
+    if configured_nodegroup:
+        return configured_nodegroup
+
     nodegroups = eks_client.list_nodegroups(clusterName=cluster_name).get(
         "nodegroups", []
     )
     if not nodegroups:
         raise ValueError(
             "No nodegroups found for cluster '{0}'".format(cluster_name)
+        )
+    if len(nodegroups) > 1:
+        logger.warning(
+            "Cluster '%s' has %s nodegroups and no recorded nodegroup_name. "
+            "Defaulting to '%s'.",
+            cluster_name,
+            len(nodegroups),
+            nodegroups[0],
         )
     return nodegroups[0]
 
@@ -100,7 +133,21 @@ def _build_eks_client(aws_region, challenge_meta):
     the Lambda's own execution role (same-account behaviour, unchanged).
     """
     account_id = challenge_meta.get("aws_account_id")
-    if challenge_meta.get("use_host_credentials") and account_id:
+    use_host_credentials = challenge_meta.get("use_host_credentials")
+
+    if use_host_credentials and not account_id:
+        # Falling back to the Lambda's own account here produces a confusing
+        # AccessDeniedException against a cluster that lives elsewhere.
+        logger.warning(
+            "Challenge %s has use_host_credentials=True but no "
+            "aws_account_id. Cannot assume the cross-account autoscale role; "
+            "falling back to this Lambda's own account, which will fail if "
+            "the cluster lives in the host's account. Set aws_account_id on "
+            "the challenge.",
+            challenge_meta.get("challenge_pk"),
+        )
+
+    if use_host_credentials and account_id:
         role_arn = "arn:aws:iam::{0}:role/{1}".format(
             account_id, CROSS_ACCOUNT_ROLE_NAME
         )
@@ -118,33 +165,13 @@ def _build_eks_client(aws_region, challenge_meta):
     return boto3.client("eks", region_name=aws_region)
 
 
-def handler(event, context):
+def _scale_challenge(challenge_pk):
     """
-    Lambda handler for EKS nodegroup autoscaling.
+    Reconcile one challenge's nodegroup against its pending submission count.
 
-    Event payload:
-    {
-      "challenge_pk": 123,
-      "trigger_source": "submission_created|submission_status_changed|manual"
-    }
+    Raises:
+        AutoscaleError: on failures that should be retried and alarmed on.
     """
-    try:
-        _validate_env()
-    except RuntimeError as err:
-        logger.error("Environment validation failed: %s", err)
-        return {"statusCode": 500, "body": str(err)}
-
-    challenge_pk = event.get("challenge_pk")
-    if not challenge_pk:
-        logger.error("Missing challenge_pk in event: %s", event)
-        return {"statusCode": 400, "body": "Missing challenge_pk"}
-
-    logger.info(
-        "Starting EKS autoscale for challenge_pk=%s trigger=%s",
-        challenge_pk,
-        event.get("trigger_source", "unknown"),
-    )
-
     try:
         challenge_meta = _call_evalai_api(
             "/api/challenges/challenge/{0}/autoscale_meta/".format(
@@ -162,7 +189,11 @@ def handler(event, context):
             challenge_pk,
             err,
         )
-        return {"statusCode": 502, "body": "Failed to fetch autoscale data"}
+        raise AutoscaleError(
+            "Failed to fetch autoscale data for challenge {0}".format(
+                challenge_pk
+            )
+        ) from err
 
     if not challenge_meta.get("is_docker_based") or challenge_meta.get(
         "remote_evaluation"
@@ -187,7 +218,11 @@ def handler(event, context):
 
     try:
         eks_client = _build_eks_client(aws_region, challenge_meta)
-        nodegroup_name = _get_nodegroup_name(eks_client, cluster_name)
+        nodegroup_name = _get_nodegroup_name(
+            eks_client,
+            cluster_name,
+            challenge_meta.get("nodegroup_name"),
+        )
         current = _get_scaling_config(eks_client, cluster_name, nodegroup_name)
         current_desired = int(current.get("desiredSize", 0))
     except (ClientError, ValueError) as err:
@@ -196,7 +231,11 @@ def handler(event, context):
             challenge_pk,
             err,
         )
-        return {"statusCode": 500, "body": "Failed to fetch EKS nodegroup"}
+        raise AutoscaleError(
+            "Failed to fetch EKS nodegroup for challenge {0}".format(
+                challenge_pk
+            )
+        ) from err
 
     if force_scale_down or pending_submissions == 0:
         target_desired_size = 0
@@ -225,10 +264,13 @@ def handler(event, context):
     if target_desired_size == 0:
         scaling_config = {"minSize": 0, "desiredSize": 0, "maxSize": 1}
     else:
+        # maxSize must stay within the challenge's configured cap. Deriving it
+        # from the raw pending count would let a submission burst raise the
+        # ceiling above what the challenge host provisioned for.
         scaling_config = {
             "minSize": 1,
             "desiredSize": target_desired_size,
-            "maxSize": max(target_desired_size, pending_submissions),
+            "maxSize": max(target_desired_size, scale_up_cap),
         }
 
     if (
@@ -255,7 +297,11 @@ def handler(event, context):
             challenge_pk,
             err,
         )
-        return {"statusCode": 500, "body": "Failed to update EKS nodegroup"}
+        raise AutoscaleError(
+            "Failed to update EKS nodegroup for challenge {0}".format(
+                challenge_pk
+            )
+        ) from err
 
     logger.info(
         "Updated nodegroup scaling for challenge %s from %s to %s",
@@ -277,3 +323,84 @@ def handler(event, context):
             }
         ),
     }
+
+
+def _sweep():
+    """
+    Reconcile every autoscale-eligible challenge.
+
+    One challenge failing must not stop the sweep, so per-challenge errors are
+    collected and re-raised together once every challenge has been attempted.
+    """
+    try:
+        eligible = _call_evalai_api(
+            "/api/challenges/challenge/autoscale_eligible_challenges/"
+        )
+    except (HTTPError, URLError, TimeoutError) as err:
+        logger.error("Failed to fetch autoscale-eligible challenges: %s", err)
+        raise AutoscaleError(
+            "Failed to fetch autoscale-eligible challenges"
+        ) from err
+
+    challenge_pks = eligible.get("challenge_pks", [])
+    logger.info("Sweeping %s challenges", len(challenge_pks))
+
+    succeeded, failed = [], []
+    for challenge_pk in challenge_pks:
+        try:
+            _scale_challenge(challenge_pk)
+            succeeded.append(challenge_pk)
+        except AutoscaleError as err:
+            logger.error(
+                "Sweep failed for challenge %s: %s", challenge_pk, err
+            )
+            failed.append(challenge_pk)
+
+    if failed:
+        raise AutoscaleError(
+            "Sweep failed for challenges: {0}".format(
+                ", ".join(str(pk) for pk in failed)
+            )
+        )
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(
+            {"swept": len(succeeded), "challenge_pks": succeeded}
+        ),
+    }
+
+
+def handler(event, context):
+    """
+    Lambda handler for EKS nodegroup autoscaling.
+
+    Event payload, either a single challenge:
+    {
+      "challenge_pk": 123,
+      "trigger_source": "submission_created|submission_status_changed|manual"
+    }
+
+    or a scheduled reconciliation sweep across all eligible challenges:
+    {
+      "sweep": true
+    }
+    """
+    _validate_env()
+
+    if event.get("sweep"):
+        logger.info("Starting EKS autoscale sweep")
+        return _sweep()
+
+    challenge_pk = event.get("challenge_pk")
+    if not challenge_pk:
+        # A malformed payload is not retryable, so return rather than raise.
+        logger.error("Missing challenge_pk in event: %s", event)
+        return {"statusCode": 400, "body": "Missing challenge_pk"}
+
+    logger.info(
+        "Starting EKS autoscale for challenge_pk=%s trigger=%s",
+        challenge_pk,
+        event.get("trigger_source", "unknown"),
+    )
+    return _scale_challenge(challenge_pk)

@@ -5697,11 +5697,13 @@ def get_challenge_autoscale_meta(request, challenge_pk):
         )
 
     cluster_name = None
+    nodegroup_name = None
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge
         )
         cluster_name = challenge_evaluation_cluster.name
+        nodegroup_name = challenge_evaluation_cluster.nodegroup_name
     except ChallengeEvaluationCluster.DoesNotExist:
         # Some challenges might not have cluster setup yet.
         pass
@@ -5715,6 +5717,7 @@ def get_challenge_autoscale_meta(request, challenge_pk):
             challenge.end_date.isoformat() if challenge.end_date else None
         ),
         "cluster_name": cluster_name,
+        "nodegroup_name": nodegroup_name,
         "queue": challenge.queue,
         "aws_region": challenge.aws_region
         or os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
@@ -5768,6 +5771,41 @@ def get_challenge_pending_submission_count(request, challenge_pk):
             "challenge_pk": challenge.pk,
             "pending_submissions": pending_submissions,
             "status_counts": status_counts,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(())
+@authentication_classes(())
+def get_autoscale_eligible_challenges(request):
+    """
+    Internal API endpoint listing challenges the autoscale Lambda should sweep.
+
+    Autoscaling is otherwise purely event-driven, so a single dropped Lambda
+    invocation can leave a nodegroup stuck at zero nodes with submissions
+    pending indefinitely. A scheduled sweep over this list reconciles that.
+    """
+    auth_error = _authenticate_lambda_request(request)
+    if auth_error:
+        return auth_error
+
+    challenges = (
+        Challenge.objects.filter(
+            is_docker_based=True,
+            remote_evaluation=False,
+            approved_by_admin=True,
+        )
+        .exclude(challengeevaluationcluster__isnull=True)
+        .values_list("pk", flat=True)
+    )
+    challenge_pks = list(challenges)
+    return Response(
+        {
+            "challenge_pks": challenge_pks,
+            "count": len(challenge_pks),
         },
         status=status.HTTP_200_OK,
     )
