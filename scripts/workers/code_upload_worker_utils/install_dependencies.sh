@@ -27,6 +27,12 @@ chmod +x ./kubectl
 mv ./kubectl /usr/local/bin/kubectl
 echo "### Kubectl Installed"
 
+# Install helm
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod +x get_helm.sh
+./get_helm.sh
+echo "### Helm Installed"
+
 # Install aws-container-insights
 # Create amazon-cloudwatch namespace
 kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cloudwatch-namespace.yaml
@@ -50,11 +56,22 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volume_storage_class.yaml
 
 # Install cilium
-# Cilium is being used to provide networking and network policy
-kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
+# Cilium is being used to provide networking and network policy.
+# Installed via `helm upgrade --install`, which is idempotent across worker
+# restarts (this script re-runs on every restart) and actually applies a
+# version bump. The old `kubectl create` against a hardcoded v1.9
+# quick-install.yaml silently no-op'd on already-existing resources and
+# never advanced, which is how this cluster ended up permanently pinned to
+# a 2021-era Cilium build incompatible with current EKS AMI kernels.
+helm repo add cilium https://helm.cilium.io/
+helm repo update cilium
+helm upgrade --install cilium cilium/cilium --version 1.19.6 \
+  --namespace kube-system \
+  --set ipam.mode=cluster-pool \
+  --set kubeProxyReplacement=false
 echo "### Cilium Installed"
 
-sleep 120s;
+kubectl -n kube-system rollout status daemonset/cilium --timeout=120s
 
 # Apply cilium network policy
 # echo "### Setting up Cilium Network Policy..."
