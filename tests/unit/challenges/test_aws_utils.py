@@ -4839,6 +4839,15 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
         self.assertEqual(register_kwargs["MinCapacity"], 2)
         self.assertEqual(register_kwargs["MaxCapacity"], 2)
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
+            2,
+        )
 
 
 class TestCleanupAutoScalingForService(unittest.TestCase):
