@@ -2074,9 +2074,13 @@ class TestScaleWorkers(unittest.TestCase):
         challenge1 = MagicMock()
         challenge1.pk = 1
         challenge1.workers = 5
+        challenge1.max_ecs_workers = 7
+        challenge1.min_ecs_workers = 0
         challenge2 = MagicMock()
         challenge2.pk = 2
         challenge2.workers = 10
+        challenge2.max_ecs_workers = 7
+        challenge2.min_ecs_workers = 0
         queryset = [challenge1, challenge2]
 
         # Call the function
@@ -2110,9 +2114,13 @@ class TestScaleWorkers(unittest.TestCase):
         challenge1 = MagicMock()
         challenge1.pk = 1
         challenge1.workers = 5
+        challenge1.max_ecs_workers = 7
+        challenge1.min_ecs_workers = 0
         challenge2 = MagicMock()
         challenge2.pk = 2
         challenge2.workers = 10
+        challenge2.max_ecs_workers = 7
+        challenge2.min_ecs_workers = 0
         queryset = [challenge1, challenge2]
 
         # Call the function
@@ -2130,6 +2138,227 @@ class TestScaleWorkers(unittest.TestCase):
             mock_ec2, challenge=challenge2, num_of_tasks=7
         )
         self.assertEqual(mock_service_manager.call_count, 2)
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_raises_auto_scaling_ceiling(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Scaling up must lift the Application Auto Scaling ceiling too.
+
+        Otherwise the scale-up policy's ExactCapacity clamps the service back
+        down and the extra tasks are killed.
+        """
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_setup_auto_scaling.return_value = True
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result, {"count": 1, "failures": []})
+        self.assertEqual(challenge.max_ecs_workers, 2)
+        mock_setup_auto_scaling.assert_called_once_with(challenge)
+        challenge.save.assert_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_aborts_when_auto_scaling_update_fails(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Never raise desiredCount past a ceiling we failed to lift."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_setup_auto_scaling.return_value = False
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(result["failures"][0]["challenge_pk"], 1)
+        self.assertIn("auto-scaling", result["failures"][0]["message"].lower())
+        # The ceiling is rolled back so the DB does not drift from AWS.
+        self.assertEqual(challenge.max_ecs_workers, 1)
+        mock_service_manager.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_rolls_back_ceiling_on_ecs_failure(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Autoscaling succeeds but ECS fails: roll back ceiling and re-sync AWS."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_setup_auto_scaling.return_value = True
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "ECS update failed",
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(challenge.max_ecs_workers, 1)
+        # setup called twice: once to raise ceiling, once to roll back
+        self.assertEqual(mock_setup_auto_scaling.call_count, 2)
+        # DB not persisted since ECS failed
+        challenge.save.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_logs_warning_when_rollback_fails(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """If the compensating setup call also fails, a warning is logged."""
+        mock_get_boto3_client.return_value = MagicMock()
+        # First call (raise ceiling) succeeds, second (rollback) fails
+        mock_setup_auto_scaling.side_effect = [True, False]
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "ECS update failed",
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
+
+        with self.assertLogs("challenges.aws_utils", level="ERROR") as log:
+            result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(challenge.max_ecs_workers, 1)
+        self.assertEqual(mock_setup_auto_scaling.call_count, 2)
+        challenge.save.assert_not_called()
+        self.assertTrue(any("inconsistent" in m for m in log.output))
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_to_zero_preserves_ceiling(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Scaling to 0 is an idle pause, not a request to lower the ceiling."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 4
+        challenge.max_ecs_workers = 4
+
+        result = scale_workers([challenge], num_of_tasks=0)
+
+        self.assertEqual(result, {"count": 1, "failures": []})
+        self.assertEqual(challenge.max_ecs_workers, 4)
+        mock_setup_auto_scaling.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_lowers_auto_scaling_ceiling(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Scaling down must lower the ceiling as well.
+
+        The scale-up policy restores ExactCapacity == the ceiling, so a stale
+        higher ceiling would push the service straight back up.
+        """
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_setup_auto_scaling.return_value = True
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 4
+        challenge.max_ecs_workers = 4
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result, {"count": 1, "failures": []})
+        self.assertEqual(challenge.max_ecs_workers, 2)
+        mock_setup_auto_scaling.assert_called_once_with(challenge)
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_skips_auto_scaling_when_ceiling_unchanged(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Restarting an idle service at its existing ceiling needs no AWS churn."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 0
+        challenge.max_ecs_workers = 2
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result, {"count": 1, "failures": []})
+        self.assertEqual(challenge.max_ecs_workers, 2)
+        mock_setup_auto_scaling.assert_not_called()
 
 
 class TestScaleResources(unittest.TestCase):
@@ -4444,6 +4673,8 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         challenge = MagicMock()
         challenge.pk = 1
         challenge.queue = "test_queue"
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
 
         setup_auto_scaling_for_service(challenge)
 
@@ -4473,18 +4704,185 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         challenge = MagicMock()
         challenge.pk = 1
         challenge.queue = "test_queue"
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
 
         # Should not raise, just log
-        setup_auto_scaling_for_service(challenge)
+        self.assertFalse(setup_auto_scaling_for_service(challenge))
 
     @patch("challenges.aws_utils.settings", DEBUG=True)
     def test_setup_auto_scaling_skipped_in_debug(self, mock_settings):
         challenge = MagicMock()
         challenge.pk = 42
 
-        setup_auto_scaling_for_service(challenge)
+        self.assertTrue(setup_auto_scaling_for_service(challenge))
 
         # No boto3 calls should be made in DEBUG mode
+
+    def _run_setup(
+        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=0
+    ):
+        """Run setup_auto_scaling_for_service and return the autoscaling mock."""
+        mock_autoscaling = MagicMock()
+        mock_cloudwatch = MagicMock()
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+        mock_autoscaling.put_scaling_policy.side_effect = [
+            {"PolicyARN": "arn:aws:autoscaling:scale-up-policy"},
+            {"PolicyARN": "arn:aws:autoscaling:scale-down-policy"},
+        ]
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+        challenge.max_ecs_workers = max_ecs_workers
+        challenge.min_ecs_workers = min_ecs_workers
+
+        result = setup_auto_scaling_for_service(challenge)
+        return mock_autoscaling, result
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_uses_challenge_max_ecs_workers(
+        self, mock_get_boto3_client
+    ):
+        """MaxCapacity and the scale-up target both follow challenge.max_ecs_workers."""
+        mock_autoscaling, result = self._run_setup(mock_get_boto3_client, 3)
+
+        self.assertTrue(result)
+        register_kwargs = (
+            mock_autoscaling.register_scalable_target.call_args.kwargs
+        )
+        self.assertEqual(register_kwargs["MaxCapacity"], 3)
+        self.assertEqual(register_kwargs["MinCapacity"], 0)
+
+        scale_up_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            0
+        ].kwargs
+        self.assertEqual(
+            scale_up_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
+            3,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_defaults_to_one_when_unset(
+        self, mock_get_boto3_client
+    ):
+        """Challenges predating max_ecs_workers keep the original ceiling of 1."""
+        mock_autoscaling, result = self._run_setup(mock_get_boto3_client, None)
+
+        self.assertTrue(result)
+        self.assertEqual(
+            mock_autoscaling.register_scalable_target.call_args.kwargs[
+                "MaxCapacity"
+            ],
+            1,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_floors_max_ecs_workers_at_one(
+        self, mock_get_boto3_client
+    ):
+        """A ceiling of 0 would wedge the service off permanently."""
+        mock_autoscaling, _ = self._run_setup(mock_get_boto3_client, 0)
+
+        self.assertEqual(
+            mock_autoscaling.register_scalable_target.call_args.kwargs[
+                "MaxCapacity"
+            ],
+            1,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_uses_challenge_min_ecs_workers(
+        self, mock_get_boto3_client
+    ):
+        """MinCapacity and scale-down target follow challenge.min_ecs_workers."""
+        mock_autoscaling, result = self._run_setup(
+            mock_get_boto3_client, max_ecs_workers=3, min_ecs_workers=1
+        )
+
+        self.assertTrue(result)
+        register_kwargs = (
+            mock_autoscaling.register_scalable_target.call_args.kwargs
+        )
+        self.assertEqual(register_kwargs["MinCapacity"], 1)
+
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
+            1,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
+        self, mock_get_boto3_client
+    ):
+        """Challenges predating min_ecs_workers keep scale-to-zero."""
+        mock_autoscaling, result = self._run_setup(
+            mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
+        )
+
+        self.assertTrue(result)
+        self.assertEqual(
+            mock_autoscaling.register_scalable_target.call_args.kwargs[
+                "MinCapacity"
+            ],
+            0,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_floors_min_ecs_workers_at_zero(
+        self, mock_get_boto3_client
+    ):
+        """Negative min_ecs_workers is clamped to 0."""
+        mock_autoscaling, _ = self._run_setup(
+            mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=-1
+        )
+
+        self.assertEqual(
+            mock_autoscaling.register_scalable_target.call_args.kwargs[
+                "MinCapacity"
+            ],
+            0,
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_clamps_min_to_max(self, mock_get_boto3_client):
+        """min_ecs_workers > max_ecs_workers is clamped to max."""
+        mock_autoscaling, result = self._run_setup(
+            mock_get_boto3_client,
+            max_ecs_workers=2,
+            min_ecs_workers=5,
+        )
+
+        self.assertTrue(result)
+        register_kwargs = (
+            mock_autoscaling.register_scalable_target.call_args.kwargs
+        )
+        self.assertEqual(register_kwargs["MinCapacity"], 2)
+        self.assertEqual(register_kwargs["MaxCapacity"], 2)
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
+            2,
+        )
 
 
 class TestCleanupAutoScalingForService(unittest.TestCase):
