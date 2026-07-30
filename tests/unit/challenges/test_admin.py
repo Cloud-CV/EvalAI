@@ -261,6 +261,8 @@ class TestChallengeAdminListDisplay(TestCase):
             "remote_evaluation",
             "created_at",
             "workers",
+            "max_ecs_workers",
+            "min_ecs_workers",
             "use_fargate_spot",
             "task_def_arn",
             "github_repository",
