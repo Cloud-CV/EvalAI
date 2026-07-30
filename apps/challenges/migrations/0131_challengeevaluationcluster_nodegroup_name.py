@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("challenges", "0127_alter_challenge_worker_python_version_choices"),
+        ("challenges", "0130_add_challenge_field_help_text"),
     ]
 
     operations = [

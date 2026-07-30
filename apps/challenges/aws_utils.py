@@ -335,8 +335,8 @@ def build_task_definition_dict(
     )
     ephemeral_storage = challenge.ephemeral_storage
     log_group_name = get_log_group_name(challenge.pk)
-    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
-    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
+    AWS_SES_REGION_NAME = getattr(settings, "AWS_SES_REGION_NAME", "")
+    AWS_SES_REGION_ENDPOINT = getattr(settings, "AWS_SES_REGION_ENDPOINT", "")
     updated_settings = image_settings or get_image_settings_for_challenge(
         challenge
     )
