@@ -219,12 +219,12 @@ class Challenge(TimeStampedModel):
     # the service back to 1 on the next alarm transition.
     # Distinct from max_worker_instance, which sizes EKS node groups for
     # code-upload challenges.
-    max_workers = models.IntegerField(null=True, blank=True, default=1)
+    max_ecs_workers = models.IntegerField(null=True, blank=True, default=1)
     # The Application Auto Scaling floor for the Fargate worker service.
     # 0 (default) allows scale-to-zero when the queue is empty.
     # Distinct from min_worker_instance, which sizes EKS node groups for
     # code-upload challenges.
-    min_workers = models.IntegerField(null=True, blank=True, default=0)
+    min_ecs_workers = models.IntegerField(null=True, blank=True, default=0)
     # The task definition ARN for the challenge, used for updating and
     # creating service.
     task_def_arn = models.CharField(
