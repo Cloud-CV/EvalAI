@@ -558,7 +558,9 @@ def setup_auto_scaling_for_service(challenge):
     # A ceiling of 0 would leave the service permanently switched off, since the
     # scale-up policy sets ExactCapacity to this value.
     max_ecs_workers = max(challenge.max_ecs_workers or 1, 1)
-    min_ecs_workers = max(challenge.min_ecs_workers or 0, 0)
+    min_ecs_workers = min(
+        max(challenge.min_ecs_workers or 0, 0), max_ecs_workers
+    )
 
     autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
 
@@ -2019,7 +2021,7 @@ def scale_workers(queryset, num_of_tasks):
                     }
                 )
                 continue
-            challenge.save()
+            challenge.save(update_fields=["max_ecs_workers"])
         response = service_manager(
             client, challenge=challenge, num_of_tasks=num_of_tasks
         )

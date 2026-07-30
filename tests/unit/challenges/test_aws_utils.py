@@ -4790,6 +4790,22 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             0,
         )
 
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_setup_auto_scaling_clamps_min_to_max(self, mock_get_boto3_client):
+        """min_ecs_workers > max_ecs_workers is clamped to max."""
+        mock_autoscaling, result = self._run_setup(
+            mock_get_boto3_client,
+            max_ecs_workers=2,
+            min_ecs_workers=5,
+        )
+
+        self.assertTrue(result)
+        register_kwargs = (
+            mock_autoscaling.register_scalable_target.call_args.kwargs
+        )
+        self.assertEqual(register_kwargs["MinCapacity"], 2)
+        self.assertEqual(register_kwargs["MaxCapacity"], 2)
+
 
 class TestCleanupAutoScalingForService(unittest.TestCase):
     @patch("challenges.aws_utils.delete_challenge_cleanup_schedule")
