@@ -335,6 +335,11 @@ urlpatterns = [
         name="get_challenge_pending_submission_count",
     ),
     url(
+        r"^challenge/autoscale_eligible_challenges/$",
+        views.get_autoscale_eligible_challenges,
+        name="get_autoscale_eligible_challenges",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/update_evaluation_module_error/$",
         views.update_evaluation_module_error,
         name="update_evaluation_module_error",
