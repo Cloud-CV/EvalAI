@@ -2240,6 +2240,41 @@ class TestScaleWorkers(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_logs_warning_when_rollback_fails(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """If the compensating setup call also fails, a warning is logged."""
+        mock_get_boto3_client.return_value = MagicMock()
+        # First call (raise ceiling) succeeds, second (rollback) fails
+        mock_setup_auto_scaling.side_effect = [True, False]
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "ECS update failed",
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
+
+        with self.assertLogs("challenges.aws_utils", level="ERROR") as log:
+            result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(challenge.max_ecs_workers, 1)
+        self.assertEqual(mock_setup_auto_scaling.call_count, 2)
+        challenge.save.assert_not_called()
+        self.assertTrue(any("inconsistent" in m for m in log.output))
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
     def test_scale_workers_to_zero_preserves_ceiling(
         self,
         mock_service_manager,

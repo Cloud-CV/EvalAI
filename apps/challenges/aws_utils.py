@@ -2029,7 +2029,12 @@ def scale_workers(queryset, num_of_tasks):
         if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             if ceiling_changed:
                 challenge.max_ecs_workers = previous_max_ecs_workers
-                setup_auto_scaling_for_service(challenge)
+                if not setup_auto_scaling_for_service(challenge):
+                    logger.error(
+                        "Failed to restore auto-scaling ceiling for "
+                        "challenge %s; AWS bounds may be inconsistent.",
+                        challenge.pk,
+                    )
             failures.append(
                 {"message": response["Error"], "challenge_pk": challenge.pk}
             )
