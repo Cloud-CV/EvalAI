@@ -2009,8 +2009,9 @@ def scale_workers(queryset, num_of_tasks):
         # ceiling gets clamped back down; scaling down below one gets pushed
         # back up, since the scale-up policy restores ExactCapacity == ceiling.
         # A target of 0 is an idle pause, not a request to change the ceiling.
+        ceiling_changed = False
+        previous_max_ecs_workers = challenge.max_ecs_workers
         if num_of_tasks > 0 and num_of_tasks != challenge.max_ecs_workers:
-            previous_max_ecs_workers = challenge.max_ecs_workers
             challenge.max_ecs_workers = num_of_tasks
             if not setup_auto_scaling_for_service(challenge):
                 challenge.max_ecs_workers = previous_max_ecs_workers
@@ -2021,15 +2022,20 @@ def scale_workers(queryset, num_of_tasks):
                     }
                 )
                 continue
-            challenge.save(update_fields=["max_ecs_workers"])
+            ceiling_changed = True
         response = service_manager(
             client, challenge=challenge, num_of_tasks=num_of_tasks
         )
         if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            if ceiling_changed:
+                challenge.max_ecs_workers = previous_max_ecs_workers
+                setup_auto_scaling_for_service(challenge)
             failures.append(
                 {"message": response["Error"], "challenge_pk": challenge.pk}
             )
             continue
+        if ceiling_changed:
+            challenge.save(update_fields=["max_ecs_workers"])
         count += 1
     return {"count": count, "failures": failures}
 

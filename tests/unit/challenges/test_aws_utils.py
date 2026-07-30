@@ -2206,6 +2206,40 @@ class TestScaleWorkers(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_rolls_back_ceiling_on_ecs_failure(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Autoscaling succeeds but ECS fails: roll back ceiling and re-sync AWS."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_setup_auto_scaling.return_value = True
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": "ECS update failed",
+        }
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 1
+        challenge.max_ecs_workers = 1
+        challenge.min_ecs_workers = 0
+
+        result = scale_workers([challenge], num_of_tasks=2)
+
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(challenge.max_ecs_workers, 1)
+        # setup called twice: once to raise ceiling, once to roll back
+        self.assertEqual(mock_setup_auto_scaling.call_count, 2)
+        # DB not persisted since ECS failed
+        challenge.save.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
     def test_scale_workers_to_zero_preserves_ceiling(
         self,
         mock_service_manager,
