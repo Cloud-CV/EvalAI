@@ -351,8 +351,14 @@ def get_boto3_client(resource, aws_keys):
 
 
 def get_or_create_sqs_queue(queue_name, challenge=None):
+    is_fifo = queue_name.endswith(".fifo")
+
     if settings.DEBUG or settings.TEST:
-        queue_name = "evalai_submission_queue"
+        queue_name = (
+            "evalai_submission_queue.fifo"
+            if is_fifo
+            else "evalai_submission_queue"
+        )
         sqs = boto3.resource(
             "sqs",
             endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
@@ -375,7 +381,11 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
                 aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
                 aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
             )
-    # Check if the queue exists. If no, then create one
+
+    if queue_name == "":
+        queue_name = "evalai_submission_queue"
+        is_fifo = False
+
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
@@ -389,9 +399,12 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             if challenge is None
             else str(challenge.sqs_retention_period)
         )
+        attributes = {"MessageRetentionPeriod": sqs_retention_period}
+        if is_fifo:
+            attributes["FifoQueue"] = "true"
         queue = sqs.create_queue(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": sqs_retention_period},
+            Attributes=attributes,
         )
     return queue
 
@@ -404,19 +417,20 @@ def get_slug(param):
     return slug
 
 
-def get_queue_name(param, challenge_pk):
+def get_queue_name(param, challenge_pk, use_fifo=False):
     """
     Generate unique SQS queue name of max length 80 for a challenge
 
     Arguments:
         param {string} -- challenge title
         challenge_pk {int} -- challenge primary key
+        use_fifo {bool} -- append .fifo suffix for FIFO queues
 
     Returns:
         {string} -- unique queue name
     """
-    # The max-length for queue-name is 80 in SQS
-    max_len = 80
+    fifo_suffix = ".fifo" if use_fifo else ""
+    max_len = 80 - len(fifo_suffix)
     max_challenge_title_len = 50
 
     env = settings.ENVIRONMENT
@@ -424,7 +438,7 @@ def get_queue_name(param, challenge_pk):
     queue_name = re.sub(r"\W+", "-", queue_name)
 
     queue_name = f"{queue_name}-{challenge_pk}-{env}-{uuid.uuid4()}"[:max_len]
-    return queue_name
+    return queue_name + fifo_suffix
 
 
 def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):

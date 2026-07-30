@@ -1904,7 +1904,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                queue_name = get_queue_name(challenge.title, challenge.pk)
+                queue_name = get_queue_name(
+                    challenge.title,
+                    challenge.pk,
+                    use_fifo=challenge.use_fifo_sqs,
+                )
                 challenge.queue = queue_name
                 challenge.save()
             else:
@@ -4456,7 +4460,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     challenge = serializer.instance
-                    queue_name = get_queue_name(challenge.title, challenge.pk)
+                    queue_name = get_queue_name(
+                        challenge.title,
+                        challenge.pk,
+                        use_fifo=challenge.use_fifo_sqs,
+                    )
                     challenge.queue = queue_name
                     challenge.save()
 

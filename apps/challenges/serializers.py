@@ -136,6 +136,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "worker_python_version",
             "worker_instance_type",
             "sqs_retention_period",
+            "use_fifo_sqs",
             "github_repository",
             "github_branch",
             "is_frozen",
@@ -400,6 +401,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "worker_image_url",
             "worker_python_version",
             "sqs_retention_period",
+            "use_fifo_sqs",
         )
 
 

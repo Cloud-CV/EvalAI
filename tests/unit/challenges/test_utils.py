@@ -95,6 +95,29 @@ class BaseTestCase(unittest.TestCase):
         self.assertNotRegex(sqs_queue_name, "[^a-zA-Z0-9_-]")
         self.assertLessEqual(len(sqs_queue_name), 80)
 
+    def test_sqs_queue_name_fifo_suffix(self):
+        title = "Test Challenge"
+        challenge_pk = 1
+        sqs_queue_name = get_queue_name(title, challenge_pk, use_fifo=True)
+        self.assertTrue(sqs_queue_name.endswith(".fifo"))
+        self.assertLessEqual(len(sqs_queue_name), 80)
+
+    def test_sqs_queue_name_fifo_long_title(self):
+        title = "".join(
+            [random.choice(self.sqs_valid_characters) for i in range(256)]
+        )
+        challenge_pk = 1
+        sqs_queue_name = get_queue_name(title, challenge_pk, use_fifo=True)
+        self.assertTrue(sqs_queue_name.endswith(".fifo"))
+        self.assertLessEqual(len(sqs_queue_name), 80)
+
+    def test_sqs_queue_name_standard_no_fifo_suffix(self):
+        title = "Test Challenge"
+        challenge_pk = 1
+        sqs_queue_name = get_queue_name(title, challenge_pk)
+        self.assertFalse(sqs_queue_name.endswith(".fifo"))
+        self.assertLessEqual(len(sqs_queue_name), 80)
+
 
 class TestGeneratePresignedUrl(unittest.TestCase):
     @mockpatch("challenges.utils.settings")
