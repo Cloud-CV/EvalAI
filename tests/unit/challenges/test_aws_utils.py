@@ -6,7 +6,7 @@ from unittest import TestCase, mock
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
 from challenges.aws_utils import (
     _file_content_changed,
     build_task_definition_dict,
@@ -47,6 +47,7 @@ from challenges.aws_utils import (
     service_manager,
     setup_auto_scaling_for_service,
     setup_ec2,
+    setup_eks_autoscale_cross_account_role,
     setup_eks_cluster,
     start_ec2_instance,
     start_workers,
@@ -67,6 +68,8 @@ from challenges.worker_utils import (
 )
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.db import DatabaseError
+from django.test import override_settings
 from hosts.models import ChallengeHostTeam
 
 
@@ -3482,6 +3485,7 @@ class TestGetLogsFromCloudwatch(TestCase):
 
 
 class TestCreateEKSNodegroup(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -3502,6 +3506,7 @@ class TestCreateEKSNodegroup(unittest.TestCase):
         mock_get_aws_credentials_for_challenge,
         mock_get_code_upload_setup_meta_for_challenge,
         mock_get_boto3_client,
+        mock_evaluation_cluster,
     ):
         # Setup mock objects and functions
         mock_settings.ENVIRONMENT = "test-env"
@@ -3549,6 +3554,82 @@ class TestCreateEKSNodegroup(unittest.TestCase):
 
         # Assertions
         mock_get_boto3_client.assert_called_with("ecs", mock_aws_credentials)
+
+        mock_client.create_nodegroup.assert_called_once_with(
+            clusterName="test-cluster",
+            nodegroupName="Test-Challenge-1-test-env-nodegroup",
+            scalingConfig={"minSize": 1, "maxSize": 2, "desiredSize": 1},
+            diskSize=50,
+            subnets=["subnet-123", "subnet-456"],
+            instanceTypes=["t2.medium"],
+            amiType="AL2_x86_64",
+            nodeRole="arn:aws:iam::123456789012:role/eks-nodegroup-role",
+        )
+
+        # The nodegroup name is recorded so autoscaling can target it directly
+        # instead of guessing the first entry from list_nodegroups.
+        mock_evaluation_cluster.objects.filter.assert_called_once_with(
+            challenge_id=mock_challenge.pk
+        )
+        mock_evaluation_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="Test-Challenge-1-test-env-nodegroup"
+        )
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.settings")
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.construct_and_send_eks_cluster_creation_mail")
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    def test_create_eks_nodegroup_continues_when_name_not_recorded(
+        self,
+        mock_client_token_generator,
+        mock_create_service_by_challenge_pk,
+        mock_construct_and_send_eks_cluster_creation_mail,
+        mock_logger,
+        mock_settings,
+        mock_deserialize,
+        mock_get_aws_credentials_for_challenge,
+        mock_get_code_upload_setup_meta_for_challenge,
+        mock_get_boto3_client,
+        mock_evaluation_cluster,
+    ):
+        """
+        Recording the nodegroup name is a convenience for autoscaling. Failing
+        to record it must not abort cluster provisioning, which is the far
+        more expensive operation.
+        """
+        mock_settings.ENVIRONMENT = "test-env"
+        mock_challenge = MagicMock()
+        mock_challenge.pk = 1
+        mock_challenge.title = "Test Challenge"
+        mock_deserialize.return_value = [MagicMock(object=mock_challenge)]
+        mock_get_code_upload_setup_meta_for_challenge.return_value = {
+            "SUBNET_1": "subnet-1",
+            "SUBNET_2": "subnet-2",
+            "EKS_NODEGROUP_ROLE_ARN": "arn:aws:iam::210987654321:role/ng",
+        }
+        mock_get_aws_credentials_for_challenge.return_value = {
+            "AWS_REGION": "us-east-1"
+        }
+
+        mock_client = MagicMock()
+        mock_get_boto3_client.side_effect = [mock_client, mock_client]
+        mock_client.create_nodegroup.return_value = {"nodegroup": "created"}
+        mock_evaluation_cluster.objects.filter.return_value.update.side_effect = DatabaseError(
+            "connection lost"
+        )
+
+        create_eks_nodegroup(mock_challenge, "test-cluster")
+
+        self.assertTrue(mock_logger.exception.called)
+        # Provisioning still completes.
+        self.assertTrue(mock_client.get_waiter.called)
+        self.assertTrue(mock_create_service_by_challenge_pk.called)
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
@@ -3836,6 +3917,263 @@ class TestSetupEksCluster(TestCase):
 
         # Ensure subnets creation task is triggered
         self.assertTrue(mock_create_subnets.called)
+
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.aws_utils.logger")
+    @patch("challenges.aws_utils.create_eks_cluster_subnets.delay")
+    @patch("challenges.serializers.ChallengeEvaluationClusterSerializer")
+    @patch("challenges.models.ChallengeEvaluationCluster.objects.get")
+    @patch("challenges.aws_utils.setup_eks_autoscale_cross_account_role")
+    def test_setup_eks_cluster_survives_autoscale_role_failure(
+        self,
+        mock_autoscale_role,
+        mock_get_cluster,
+        mock_serializer,
+        mock_create_subnets,
+        mock_logger,
+        mock_deserialize,
+        mock_boto3,
+        mock_get_aws,
+    ):
+        """
+        The autoscale role is optional; the cluster is not. Any failure while
+        provisioning it must not prevent the evaluation cluster config from
+        being persisted or its subnets from being created.
+        """
+        mock_client = MagicMock()
+        mock_boto3.return_value = mock_client
+        mock_serializer.return_value.is_valid.return_value = True
+        mock_get_cluster.return_value = MagicMock()
+        mock_obj = MagicMock()
+        mock_obj.object = MagicMock()
+        mock_deserialize.return_value = [mock_obj]
+        mock_autoscale_role.side_effect = RuntimeError("unexpected failure")
+
+        setup_eks_cluster('{"some": "data"}')
+
+        self.assertTrue(mock_autoscale_role.called)
+        self.assertTrue(mock_serializer.return_value.save.called)
+        self.assertTrue(mock_create_subnets.called)
+
+
+class TestSetupEksAutoscaleCrossAccountRole(TestCase):
+    """
+    The autoscale Lambda cannot reach a host account's EKS cluster with its
+    own execution role, so this role has to exist for every host-credential
+    challenge.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 42
+        self.challenge.use_host_credentials = True
+        self.client = MagicMock()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME="evalai-autoscale-nodegroup-access",
+    )
+    def test_creates_role_and_attaches_policy(self):
+        self.client.create_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertEqual(
+            role_arn,
+            "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount",
+        )
+        create_kwargs = self.client.create_role.call_args.kwargs
+        self.assertEqual(
+            create_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        trust_policy = json.loads(create_kwargs["AssumeRolePolicyDocument"])
+        self.assertEqual(
+            trust_policy["Statement"][0]["Principal"]["AWS"],
+            "arn:aws:iam::123456789012:role/lambda-role",
+        )
+
+        # Pin the permission contract: a role carrying the wrong policy is
+        # indistinguishable from a missing one at autoscale time.
+        put_kwargs = self.client.put_role_policy.call_args.kwargs
+        self.assertEqual(
+            put_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        self.assertEqual(
+            put_kwargs["PolicyName"], "evalai-autoscale-nodegroup-access"
+        )
+        policy = json.loads(put_kwargs["PolicyDocument"])
+        self.assertEqual(
+            sorted(policy["Statement"][0]["Action"]),
+            [
+                "eks:DescribeCluster",
+                "eks:DescribeNodegroup",
+                "eks:ListNodegroups",
+                "eks:UpdateNodegroupConfig",
+            ],
+        )
+        self.assertEqual(policy["Statement"][0]["Effect"], "Allow")
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role"
+    )
+    def test_skips_when_not_using_host_credentials(self):
+        self.challenge.use_host_credentials = False
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.create_role.assert_not_called()
+
+    @override_settings(EKS_AUTOSCALE_LAMBDA_ROLE_ARN="")
+    def test_skips_when_lambda_role_arn_unset(self):
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.create_role.assert_not_called()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME="evalai-autoscale-nodegroup-access",
+    )
+    def test_refreshes_trust_policy_when_role_already_exists(self):
+        """
+        The role is shared across a host account's challenges, so it usually
+        already exists. Its trust policy still needs refreshing in case the
+        Lambda's role ARN changed.
+        """
+        self.client.create_role.side_effect = ClientError(
+            {"Error": {"Code": "EntityAlreadyExists"}}, "CreateRole"
+        )
+        self.client.get_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertEqual(
+            role_arn,
+            "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount",
+        )
+        refresh_kwargs = self.client.update_assume_role_policy.call_args.kwargs
+        self.assertEqual(
+            refresh_kwargs["RoleName"], "evalai-autoscale-crossaccount"
+        )
+        refreshed_trust = json.loads(refresh_kwargs["PolicyDocument"])
+        self.assertEqual(
+            refreshed_trust["Statement"][0]["Principal"]["AWS"],
+            "arn:aws:iam::123456789012:role/lambda-role",
+        )
+        self.assertEqual(
+            self.client.put_role_policy.call_args.kwargs["PolicyName"],
+            "evalai-autoscale-nodegroup-access",
+        )
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+    )
+    def test_returns_none_on_unexpected_client_error(self):
+        self.client.create_role.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied"}}, "CreateRole"
+        )
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.put_role_policy.assert_not_called()
+        # A non-conflict CreateRole error is not the already-exists path, so
+        # the trust policy must not be rewritten either.
+        self.client.update_assume_role_policy.assert_not_called()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+    )
+    def test_returns_none_when_trust_policy_refresh_fails(self):
+        self.client.create_role.side_effect = ClientError(
+            {"Error": {"Code": "EntityAlreadyExists"}}, "CreateRole"
+        )
+        self.client.update_assume_role_policy.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied"}}, "UpdateAssumeRolePolicy"
+        )
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.put_role_policy.assert_not_called()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+    )
+    def test_returns_none_when_role_waiter_times_out(self):
+        """
+        WaiterError is a BotoCoreError, not a ClientError, so IAM eventual
+        consistency outlasting the poll budget must not escape this
+        best-effort function and abort cluster setup.
+        """
+        self.client.create_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+        self.client.get_waiter.return_value.wait.side_effect = WaiterError(
+            name="role_exists",
+            reason="Max attempts exceeded",
+            last_response={},
+        )
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        self.assertIsNone(role_arn)
+        self.client.put_role_policy.assert_not_called()
+
+    @override_settings(
+        EKS_AUTOSCALE_LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME="evalai-autoscale-crossaccount",
+        EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME="evalai-autoscale-nodegroup-access",
+    )
+    def test_returns_none_when_policy_attachment_fails(self):
+        self.client.create_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::210987654321:role/evalai-autoscale-crossaccount"
+            }
+        }
+        self.client.put_role_policy.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied"}}, "PutRolePolicy"
+        )
+
+        role_arn = setup_eks_autoscale_cross_account_role(
+            self.client, self.challenge
+        )
+
+        # The role exists but cannot scale anything without its policy, so
+        # report failure rather than a usable ARN.
+        self.assertIsNone(role_arn)
 
 
 @pytest.mark.django_db

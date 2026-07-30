@@ -503,5 +503,38 @@ EKS_CLUSTER_TRUST_RELATION = {
     ],
 }
 
+# Cross-account role assumed by the EKS node autoscale Lambda inside a
+# challenge host's AWS account. Challenges using host credentials keep their
+# EKS cluster in their own account, so the Lambda cannot scale the nodegroup
+# with its own execution role alone.
+EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME = os.environ.get(
+    "EKS_AUTOSCALE_CROSS_ACCOUNT_ROLE_NAME", "evalai-autoscale-crossaccount"
+)
+
+# ARN of the autoscale Lambda's execution role in the EvalAI AWS account.
+# Required to provision the cross-account role above; when unset, provisioning
+# is skipped with a warning instead of failing cluster setup.
+EKS_AUTOSCALE_LAMBDA_ROLE_ARN = os.environ.get(
+    "EKS_AUTOSCALE_LAMBDA_ROLE_ARN", ""
+)
+
+EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME = "evalai-autoscale-nodegroup-access"
+
+EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_DOCUMENT = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "eks:DescribeCluster",
+                "eks:DescribeNodegroup",
+                "eks:ListNodegroups",
+                "eks:UpdateNodegroupConfig",
+            ],
+            "Resource": "*",
+        }
+    ],
+}
+
 # SQS Queue Message Retention Period
 SQS_RETENTION_PERIOD = "345600"

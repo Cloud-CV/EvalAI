@@ -1279,6 +1279,9 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     node_group_arn_role = models.CharField(
         max_length=512, null=True, blank=True
     )
+    # Recorded at nodegroup creation so autoscaling targets an explicit
+    # nodegroup instead of guessing the first entry from list_nodegroups.
+    nodegroup_name = models.CharField(max_length=512, null=True, blank=True)
     ecr_all_access_policy_arn = models.CharField(
         max_length=512, null=True, blank=True
     )
