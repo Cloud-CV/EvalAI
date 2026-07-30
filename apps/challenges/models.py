@@ -39,28 +39,82 @@ class Challenge(TimeStampedModel):
         self._original_sqs_retention_period = self.sqs_retention_period
         self._original_end_date = self.end_date
 
-    title = models.CharField(max_length=100, db_index=True)
-    short_description = models.TextField(null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    terms_and_conditions = models.TextField(null=True, blank=True)
-    submission_guidelines = models.TextField(null=True, blank=True)
-    evaluation_details = models.TextField(null=True, blank=True)
+    title = models.CharField(
+        max_length=100,
+        db_index=True,
+        help_text=(
+            "Challenge name shown in listings and on the challenge page."
+        ),
+    )
+    short_description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "One or two line summary shown on challenge cards and in "
+            "listings."
+        ),
+    )
+    description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Full challenge overview rendered on the challenge landing page."
+        ),
+    )
+    terms_and_conditions = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Terms a participant must accept before submitting.",
+    )
+    submission_guidelines = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Instructions shown to participants on the submission page.",
+    )
+    evaluation_details = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Explanation of how submissions are scored, shown to "
+            "participants."
+        ),
+    )
     image = models.ImageField(
         upload_to=RandomFileName("logos"),
         null=True,
         blank=True,
         verbose_name="Logo",
+        help_text=(
+            "Challenge logo shown in listings and on the challenge page."
+        ),
     )
     start_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Start Date (UTC)", db_index=True
+        null=True,
+        blank=True,
+        verbose_name="Start Date (UTC)",
+        db_index=True,
+        help_text=(
+            "When the challenge opens. Submissions are rejected before this "
+            "time."
+        ),
     )
     end_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
+        null=True,
+        blank=True,
+        verbose_name="End Date (UTC)",
+        db_index=True,
+        help_text=(
+            "When the challenge closes. Also triggers worker and EKS "
+            "nodegroup scale-down."
+        ),
     )
     creator = models.ForeignKey(
         "hosts.ChallengeHostTeam",
         related_name="challenge_creator",
         on_delete=models.CASCADE,
+        help_text=(
+            "Challenge host team that owns and administers this challenge."
+        ),
     )
     DOMAIN_OPTIONS = (
         ("CV", "Computer Vision"),
@@ -77,34 +131,103 @@ class Challenge(TimeStampedModel):
         (INTERNAL, "Internal"),
     )
     domain = models.CharField(
-        max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+        max_length=50,
+        choices=DOMAIN_OPTIONS,
+        null=True,
+        blank=True,
+        help_text="Research area used to filter and group challenges.",
     )
     challenge_usage_type = models.CharField(
         max_length=20,
         choices=CHALLENGE_USAGE_TYPE_OPTIONS,
         default=PAID,
         db_index=True,
+        help_text=(
+            "Paid challenges are billed to the host; internal ones are not."
+        ),
     )
     list_tags = ArrayField(
-        models.TextField(null=True, blank=True), default=list, blank=True
+        models.TextField(null=True, blank=True),
+        default=list,
+        blank=True,
+        help_text=(
+            "Free-form tags shown on the challenge page and used in search."
+        ),
     )
-    has_prize = models.BooleanField(default=False)
-    has_sponsors = models.BooleanField(default=False)
+    has_prize = models.BooleanField(
+        default=False,
+        help_text=(
+            "Whether a prize is offered. Shows the prize section on the "
+            "challenge page."
+        ),
+    )
+    has_sponsors = models.BooleanField(
+        default=False,
+        help_text=(
+            "Whether sponsors are listed. Shows the sponsors section on the "
+            "challenge page."
+        ),
+    )
     published = models.BooleanField(
-        default=False, verbose_name="Publicly Available", db_index=True
+        default=False,
+        verbose_name="Publicly Available",
+        db_index=True,
+        help_text="Whether the challenge is visible to the public.",
     )
-    submission_time_limit = models.PositiveIntegerField(default=86400)
-    is_registration_open = models.BooleanField(default=True)
-    enable_forum = models.BooleanField(default=True)
-    forum_url = models.URLField(max_length=100, blank=True, null=True)
-    leaderboard_description = models.TextField(null=True, blank=True)
-    anonymous_leaderboard = models.BooleanField(default=False)
-    participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
-    manual_participant_approval = models.BooleanField(default=False)
+    submission_time_limit = models.PositiveIntegerField(
+        default=86400,
+        help_text=(
+            "Per-submission wall-clock limit in seconds. Default 86400 (24 "
+            "hours)."
+        ),
+    )
+    is_registration_open = models.BooleanField(
+        default=True,
+        help_text="Whether new participant teams may join.",
+    )
+    enable_forum = models.BooleanField(
+        default=True,
+        help_text="Show a discussion forum link on the challenge page.",
+    )
+    forum_url = models.URLField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=(
+            "External discussion forum URL, used when the forum is enabled."
+        ),
+    )
+    leaderboard_description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Notes rendered above the leaderboard, e.g. how to read each "
+            "metric."
+        ),
+    )
+    anonymous_leaderboard = models.BooleanField(
+        default=False,
+        help_text="Hide participant team names on the public leaderboard.",
+    )
+    participant_teams = models.ManyToManyField(
+        ParticipantTeam,
+        blank=True,
+        help_text=(
+            "Teams that have joined. Normally managed through registration "
+            "rather than edited here."
+        ),
+    )
+    manual_participant_approval = models.BooleanField(
+        default=False,
+        help_text="Require a host to approve each team before it can submit.",
+    )
     require_complete_profile = models.BooleanField(
         default=False,
         verbose_name="Require Complete Profile",
-        help_text="If enabled, participants must have a complete profile (name, address, city, state, country) before joining this challenge.",
+        help_text=(
+            "If enabled, participants must have a complete profile (name, "
+            "address, city, state, country) before joining this challenge."
+        ),
     )
     max_team_members = models.PositiveIntegerField(
         null=True,
@@ -117,13 +240,35 @@ class Challenge(TimeStampedModel):
         ParticipantTeam,
         blank=True,
         related_name="approved_challenge_participant_teams",
+        help_text=(
+            "Teams cleared to submit when manual participant approval is "
+            "enabled."
+        ),
     )
-    is_disabled = models.BooleanField(default=False, db_index=True)
+    is_disabled = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text=(
+            "Hide the challenge and reject submissions. Also forces workers "
+            "and the EKS nodegroup to zero."
+        ),
+    )
     evaluation_script = models.FileField(
-        default=False, upload_to=RandomFileName("evaluation_scripts")
-    )  # should be zip format
+        default=False,
+        upload_to=RandomFileName("evaluation_scripts"),
+        help_text=(
+            "Zip archive containing the evaluation code run against "
+            "submissions."
+        ),
+    )
     approved_by_admin = models.BooleanField(
-        default=False, verbose_name="Approved By Admin", db_index=True
+        default=False,
+        verbose_name="Approved By Admin",
+        db_index=True,
+        help_text=(
+            "EvalAI admin approval. Provisions workers or the EKS cluster the "
+            "first time it is set."
+        ),
     )
     is_approval_requested = models.BooleanField(
         default=False,
@@ -133,82 +278,215 @@ class Challenge(TimeStampedModel):
         "Prevents duplicate subscription plan emails from being sent.",
     )
     uses_ec2_worker = models.BooleanField(
-        default=False, verbose_name="Uses EC2 worker instance", db_index=True
+        default=False,
+        verbose_name="Uses EC2 worker instance",
+        db_index=True,
+        help_text=(
+            "Run the submission worker on a dedicated EC2 instance instead of "
+            "Fargate."
+        ),
     )
     ec2_instance_id = models.CharField(
-        max_length=200, default="", null=True, blank=True
+        max_length=200,
+        default="",
+        null=True,
+        blank=True,
+        help_text=(
+            "Instance ID of the provisioned EC2 worker. Set automatically."
+        ),
     )
     ec2_storage = models.PositiveIntegerField(
-        default=8, verbose_name="EC2 storage (GB)"
+        default=8,
+        verbose_name="EC2 storage (GB)",
+        help_text="Root volume size for the EC2 worker, in GB.",
     )
     ephemeral_storage = models.PositiveIntegerField(
-        default=21, verbose_name="Ephemeral Storage (GB)"
+        default=21,
+        verbose_name="Ephemeral Storage (GB)",
+        help_text="Fargate task ephemeral storage in GB. Minimum 21.",
     )
     featured = models.BooleanField(
-        default=False, verbose_name="Featured", db_index=True
+        default=False,
+        verbose_name="Featured",
+        db_index=True,
+        help_text=(
+            "Show this challenge in the featured section of the home page."
+        ),
     )
     allowed_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=list, blank=True
+        models.CharField(max_length=50, blank=True),
+        default=list,
+        blank=True,
+        help_text=(
+            "If non-empty, only these email domains may join, e.g. "
+            "example.com."
+        ),
     )
     blocked_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=list, blank=True
+        models.CharField(max_length=50, blank=True),
+        default=list,
+        blank=True,
+        help_text="Email domains barred from joining this challenge.",
     )
     banned_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
         default=list,
         blank=True,
         null=True,
+        help_text=(
+            "Individual email addresses barred from joining or submitting."
+        ),
     )
     remote_evaluation = models.BooleanField(
-        default=False, verbose_name="Remote Evaluation", db_index=True
+        default=False,
+        verbose_name="Remote Evaluation",
+        db_index=True,
+        help_text=(
+            "Host runs evaluation on their own infrastructure; EvalAI "
+            "provisions no workers."
+        ),
     )
     queue = models.CharField(
         max_length=200,
         default="",
         verbose_name="SQS queue name",
         db_index=True,
+        help_text=(
+            "Name of the SQS queue carrying this challenge's submission "
+            "messages. Set automatically."
+        ),
     )
     sqs_retention_period = models.PositiveIntegerField(
-        default=345600, verbose_name="SQS Retention Period"
+        default=345600,
+        verbose_name="SQS Retention Period",
+        help_text=(
+            "How long unread SQS messages are kept, in seconds. Default "
+            "345600 (4 days)."
+        ),
     )
     is_docker_based = models.BooleanField(
-        default=False, verbose_name="Is Docker Based", db_index=True
+        default=False,
+        verbose_name="Is Docker Based",
+        db_index=True,
+        help_text=(
+            "Participants submit code or container images rather than "
+            "prediction files."
+        ),
     )
     is_static_dataset_code_upload = models.BooleanField(
         default=False,
         verbose_name="Is Static Dataset Code Upload Based",
         db_index=True,
+        help_text=(
+            "Two-stage code upload: participant code runs on EKS, then "
+            "evaluation runs on the worker."
+        ),
     )
-    slug = models.SlugField(max_length=200, null=True, unique=True)
+    slug = models.SlugField(
+        max_length=200,
+        null=True,
+        unique=True,
+        help_text=(
+            "URL identifier for the challenge. Generated from the title."
+        ),
+    )
     max_docker_image_size = models.BigIntegerField(
-        default=42949672960, null=True, blank=True
-    )  # Default is 40 GB
+        default=42949672960,
+        null=True,
+        blank=True,
+        help_text=(
+            "Maximum participant image size in bytes. Default 42949672960 (40 "
+            "GB)."
+        ),
+    )
     max_concurrent_submission_evaluation = models.PositiveIntegerField(
-        default=100000
+        default=100000,
+        help_text=(
+            "Maximum submissions evaluated at once across all participants."
+        ),
     )
     aws_account_id = models.CharField(
-        max_length=200, default="", null=True, blank=True
+        max_length=200,
+        default="",
+        null=True,
+        blank=True,
+        help_text=(
+            "Host AWS account ID. Required alongside use host credentials for "
+            "cross-account EKS scaling."
+        ),
     )
     aws_access_key_id = models.CharField(
-        max_length=200, default="", null=True, blank=True
+        max_length=200,
+        default="",
+        null=True,
+        blank=True,
+        help_text=(
+            "Host AWS access key. Used only when use host credentials is "
+            "enabled."
+        ),
     )
     aws_secret_access_key = models.CharField(
-        max_length=200, default="", null=True, blank=True
+        max_length=200,
+        default="",
+        null=True,
+        blank=True,
+        help_text=(
+            "Host AWS secret key. Used only when use host credentials is "
+            "enabled."
+        ),
     )
     aws_region = models.CharField(
-        max_length=50, default="us-east-1", null=True, blank=True
+        max_length=50,
+        default="us-east-1",
+        null=True,
+        blank=True,
+        help_text="AWS region holding this challenge's compute resources.",
     )
     queue_aws_region = models.CharField(
-        max_length=50, default="us-east-1", null=True, blank=True
+        max_length=50,
+        default="us-east-1",
+        null=True,
+        blank=True,
+        help_text=(
+            "AWS region holding the SQS queue. May differ from the compute "
+            "region."
+        ),
     )
-    use_host_credentials = models.BooleanField(default=False)
-    use_host_sqs = models.BooleanField(default=False)
-    allow_resuming_submissions = models.BooleanField(default=False)
-    allow_host_cancel_submissions = models.BooleanField(default=False)
-    allow_cancel_running_submissions = models.BooleanField(default=False)
-    allow_participants_resubmissions = models.BooleanField(default=False)
+    use_host_credentials = models.BooleanField(
+        default=False,
+        help_text=(
+            "Provision compute in the host's own AWS account using the "
+            "credentials below."
+        ),
+    )
+    use_host_sqs = models.BooleanField(
+        default=False,
+        help_text="Use the host's own SQS queue instead of EvalAI's.",
+    )
+    allow_resuming_submissions = models.BooleanField(
+        default=False,
+        help_text="Let hosts re-queue a failed or cancelled submission.",
+    )
+    allow_host_cancel_submissions = models.BooleanField(
+        default=False,
+        help_text="Let hosts cancel a participant's queued submission.",
+    )
+    allow_cancel_running_submissions = models.BooleanField(
+        default=False,
+        help_text=(
+            "Let hosts cancel a submission that has already started running."
+        ),
+    )
+    allow_participants_resubmissions = models.BooleanField(
+        default=False,
+        help_text="Let participants resubmit without consuming a new attempt.",
+    )
     cli_version = models.CharField(
-        max_length=20, verbose_name="evalai-cli version", null=True, blank=True
+        max_length=20,
+        verbose_name="evalai-cli version",
+        null=True,
+        blank=True,
+        help_text="Minimum evalai-cli version required to submit.",
     )
     workers = models.IntegerField(
         null=True,
@@ -237,90 +515,213 @@ class Challenge(TimeStampedModel):
             "SQS queue is empty. 0 allows scale-to-zero."
         ),
     )
-    # The task definition ARN for the challenge, used for updating and
-    # creating service.
     task_def_arn = models.CharField(
-        null=True, blank=True, max_length=2048, default=""
+        null=True,
+        blank=True,
+        max_length=2048,
+        default="",
+        help_text=(
+            "ECS task definition ARN for the worker. Set automatically when "
+            "the service is created or updated."
+        ),
     )
-    slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
-    # Identifier for the github repository of a challenge in format:
-    # account_name/repository_name
+    slack_webhook_url = models.URLField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Slack incoming webhook for challenge notifications.",
+    )
     github_repository = models.CharField(
-        max_length=1000, null=True, blank=True, default=""
+        max_length=1000,
+        null=True,
+        blank=True,
+        default="",
+        help_text=(
+            "Source repository as account_name/repository_name, used by the "
+            "GitHub sync workflow."
+        ),
     )
-    # The github branch name used to create/update the challenge
     github_branch = models.CharField(
-        max_length=200, null=True, blank=True, default=""
+        max_length=200,
+        null=True,
+        blank=True,
+        default="",
+        help_text=(
+            "Branch the GitHub sync workflow reads the challenge "
+            "configuration from."
+        ),
     )
-    # The number of vCPU for a Fargate worker for the challenge. Default value
-    # is 0.25 vCPU.
-    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
-    # Memory size of a Fargate worker for the challenge. Default value is 0.5
-    # GB memory.
-    worker_memory = models.IntegerField(null=True, blank=True, default=1024)
+    worker_cpu_cores = models.IntegerField(
+        null=True,
+        blank=True,
+        default=512,
+        help_text="Fargate worker CPU in ECS CPU units (1024 = 1 vCPU).",
+    )
+    worker_memory = models.IntegerField(
+        null=True,
+        blank=True,
+        default=1024,
+        help_text="Fargate worker memory in MiB (1024 = 1 GB).",
+    )
     use_fargate_spot = models.BooleanField(
         default=True,
         verbose_name="Use Fargate Spot",
-        help_text="If True, use capacityProviderStrategy (Spot). If False, use launchType FARGATE.",
+        help_text=(
+            "If True, use capacityProviderStrategy (Spot). If False, use "
+            "launchType FARGATE."
+        ),
     )
     fargate_spot_weight = models.PositiveSmallIntegerField(
         default=1,
         verbose_name="Fargate Spot Weight",
-        help_text="Weight for FARGATE_SPOT in capacity provider strategy. 0 excludes Spot.",
+        help_text=(
+            "Weight for FARGATE_SPOT in capacity provider strategy. 0 "
+            "excludes Spot."
+        ),
     )
     fargate_spot_base = models.PositiveSmallIntegerField(
         default=0,
         verbose_name="Fargate Spot Base",
-        help_text="Minimum number of tasks placed on FARGATE_SPOT before weights apply.",
+        help_text=(
+            "Minimum number of tasks placed on FARGATE_SPOT before weights "
+            "apply."
+        ),
     )
     fargate_weight = models.PositiveSmallIntegerField(
         default=0,
         verbose_name="Fargate Weight",
-        help_text="Weight for FARGATE in capacity provider strategy. 0 = Spot only.",
+        help_text=(
+            "Weight for FARGATE in capacity provider strategy. 0 = Spot only."
+        ),
     )
     fargate_base = models.PositiveSmallIntegerField(
         default=0,
         verbose_name="Fargate Base",
-        help_text="Minimum number of tasks placed on FARGATE before weights apply.",
+        help_text=(
+            "Minimum number of tasks placed on FARGATE before weights apply."
+        ),
     )
-    # Enable/Disable emails notifications for the challenge
-    inform_hosts = models.BooleanField(default=True)
-    # VPC and subnet CIDRs for code upload challenge
+    inform_hosts = models.BooleanField(
+        default=True,
+        help_text=(
+            "Send email notifications about this challenge to its hosts."
+        ),
+    )
     vpc_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
+        null=True,
+        blank=True,
+        max_length=200,
+        default="",
+        help_text=(
+            "CIDR block for the VPC created for this code upload challenge."
+        ),
     )
     subnet_1_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
+        null=True,
+        blank=True,
+        max_length=200,
+        default="",
+        help_text=(
+            "CIDR block for the first subnet of the code upload challenge "
+            "VPC."
+        ),
     )
     subnet_2_cidr = models.CharField(
-        null=True, blank=True, max_length=200, default=""
+        null=True,
+        blank=True,
+        max_length=200,
+        default="",
+        help_text=(
+            "CIDR block for the second subnet of the code upload challenge "
+            "VPC."
+        ),
     )
-    # Evaluation instance config for code upload challenge
     worker_instance_type = models.CharField(
-        max_length=256, null=True, blank=True, default="g4dn.xlarge"
+        max_length=256,
+        null=True,
+        blank=True,
+        default="g4dn.xlarge",
+        help_text=(
+            "EC2 instance type for the EKS nodes that run code upload "
+            "submissions."
+        ),
     )
     worker_ami_type = models.CharField(
-        max_length=256, null=True, blank=True, default="AL2_x86_64_GPU"
+        max_length=256,
+        null=True,
+        blank=True,
+        default="AL2_x86_64_GPU",
+        help_text=(
+            "EKS node AMI type. Use a GPU variant unless CPU only jobs is "
+            "enabled."
+        ),
     )
-    worker_disk_size = models.IntegerField(null=True, blank=True, default=100)
+    worker_disk_size = models.IntegerField(
+        null=True,
+        blank=True,
+        default=100,
+        help_text="Disk size of each EKS node, in GB.",
+    )
     max_worker_instance = models.IntegerField(
-        null=True, blank=True, default=10
+        null=True,
+        blank=True,
+        default=10,
+        help_text=(
+            "EKS nodegroup ceiling, and the cap autoscaling may scale "
+            "up to. Distinct from max ecs workers, which sizes Fargate."
+        ),
     )
-    min_worker_instance = models.IntegerField(null=True, blank=True, default=1)
+    min_worker_instance = models.IntegerField(
+        null=True,
+        blank=True,
+        default=1,
+        help_text=(
+            "EKS nodegroup floor. Distinct from min ecs workers, which sizes "
+            "Fargate."
+        ),
+    )
     desired_worker_instance = models.IntegerField(
-        null=True, blank=True, default=1
+        null=True,
+        blank=True,
+        default=1,
+        help_text=(
+            "EKS nodegroup size at creation. Autoscaling adjusts it "
+            "from the pending submission count afterwards."
+        ),
     )
-    cpu_only_jobs = models.BooleanField(default=False)
-    # The number of vCPU for a code upload submission kubernetes job. Default
-    # value is 2 vCPU.
+    cpu_only_jobs = models.BooleanField(
+        default=False,
+        help_text="Schedule submission jobs without GPUs.",
+    )
     job_cpu_cores = models.CharField(
-        max_length=256, null=True, blank=True, default="2000m"
+        max_length=256,
+        null=True,
+        blank=True,
+        default="2000m",
+        help_text=(
+            "CPU request for a code upload submission's Kubernetes job, e.g. "
+            "2000m = 2 vCPU."
+        ),
     )
     job_memory = models.CharField(
-        max_length=256, null=True, blank=True, default="8Gi"
+        max_length=256,
+        null=True,
+        blank=True,
+        default="8Gi",
+        help_text=(
+            "Memory request for a code upload submission's Kubernetes job, "
+            "e.g. 8Gi."
+        ),
     )
     worker_image_url = models.CharField(
-        max_length=200, blank=True, null=True, default=""
+        max_length=200,
+        blank=True,
+        null=True,
+        default="",
+        help_text=(
+            "Override the worker container image. Leave blank to use the "
+            "EvalAI default."
+        ),
     )
     worker_python_version = models.CharField(
         max_length=10,
@@ -333,18 +734,33 @@ class Challenge(TimeStampedModel):
             f"({', '.join(SUPPORTED_WORKER_PYTHON_VERSIONS)})."
         ),
     )
-    evaluation_module_error = models.TextField(null=True, blank=True)
+    evaluation_module_error = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Last error raised while importing the host's evaluation module. "
+            "Set automatically."
+        ),
+    )
     is_frozen = models.BooleanField(
         default=False,
         verbose_name="Is Frozen",
         db_index=True,
-        help_text="When frozen, challenge hosts cannot modify the start and end dates. Automatically set to True when a challenge is approved by admin.",
+        help_text=(
+            "When frozen, challenge hosts cannot modify the start and end "
+            "dates. Automatically set to True when a challenge is approved by "
+            "admin."
+        ),
     )
     is_submission_paused = models.BooleanField(
         default=False,
         verbose_name="Submissions Paused",
         db_index=True,
-        help_text="When True, new submissions are rejected for all phases of this challenge. Already-queued submissions continue processing normally.",
+        help_text=(
+            "When True, new submissions are rejected for all phases of this "
+            "challenge. Already-queued submissions continue processing "
+            "normally."
+        ),
     )
 
     class Meta:
