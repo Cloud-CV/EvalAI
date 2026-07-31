@@ -42,6 +42,7 @@ from challenges.aws_utils import (
     restart_ec2_instance,
     restart_workers,
     restart_workers_signal_callback,
+    sanitize_ecs_resource_name,
     scale_resources,
     scale_workers,
     schedule_challenge_cleanup,
@@ -154,7 +155,7 @@ def mock_client():
 
 @pytest.fixture
 def mock_challenge():
-    return MagicMock()
+    return MagicMock(queue="dummy_queue")
 
 
 @pytest.fixture
@@ -6951,10 +6952,10 @@ class TestWorkerImageHelpers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
     @patch("challenges.aws_utils.get_image_settings_for_challenge")
-    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    @patch("challenges.aws_utils.service_manager")
     def test_refresh_task_definition_for_challenge(
         self,
-        mock_update_service,
+        mock_service_manager,
         mock_get_image_settings,
         mock_build_task_definition,
         mock_get_boto3_client,
@@ -6983,7 +6984,7 @@ class TestWorkerImageHelpers(TestCase):
                 "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
             },
         }
-        mock_update_service.return_value = {
+        mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
@@ -6995,9 +6996,78 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
-        mock_update_service.assert_called_once()
+        mock_service_manager.assert_called_once_with(
+            mock_client,
+            challenge,
+            num_of_tasks=1,
+            force_new_deployment=True,
+        )
         mock_client.deregister_task_definition.assert_called_once_with(
             taskDefinition="arn:aws:ecs:task-def/old:1"
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_service_not_found(
+        self,
+        mock_update_service,
+        mock_client_token_generator,
+        mock_create_service,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {
+                "Code": "ServiceNotFoundException",
+                "Message": "Service not found.",
+            },
+        }
+        mock_client_token_generator.return_value = "mock_client_token"
+        mock_create_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id="abc123", client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_client_token_generator.assert_called_once_with(challenge.pk)
+        mock_create_service.assert_called_once_with(
+            mock_client, challenge, "mock_client_token"
         )
 
     @patch.dict(
@@ -7457,7 +7527,61 @@ class TestWorkerImageHelpers(TestCase):
     def test_get_ecs_service_name_no_double_strip(self):
         self.assertEqual(
             get_ecs_service_name("my-queue.fifo.fifo"),
-            "my-queue.fifo_service",
+            "my-queue-fifo_service",
+        )
+
+    def test_sanitize_ecs_resource_name_fifo_queue(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my-queue.fifo"),
+            "my-queue",
+        )
+
+    def test_sanitize_ecs_resource_name_removes_other_invalid_chars(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my.queue_name.fifo"),
+            "my-queue_name",
+        )
+
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition")
+    def test_build_task_definition_dict_fifo_queue_uses_ecs_safe_family(
+        self, mock_task_definition, mock_get_aws_credentials
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            is_docker_based=False,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+        )
+        mock_get_aws_credentials.return_value = {}
+        mock_task_definition.format.return_value = "{'family': 'ecs-safe'}"
+
+        with patch(
+            "challenges.aws_utils.load_aws_api_kwargs",
+            side_effect=lambda value: {"family": "ecs-safe"},
+        ):
+            task_def, error = build_task_definition_dict(
+                challenge, "mars2-challenge-2698-production-abc.fifo"
+            )
+
+        self.assertIsNone(error)
+        self.assertEqual(task_def["family"], "ecs-safe")
+        format_kwargs = mock_task_definition.format.call_args.kwargs
+        self.assertEqual(
+            format_kwargs["queue_name"],
+            "mars2-challenge-2698-production-abc",
+        )
+        self.assertEqual(
+            format_kwargs["sqs_queue_name"],
+            "mars2-challenge-2698-production-abc.fifo",
+        )
+        self.assertEqual(
+            format_kwargs["container_name"],
+            "worker_mars2-challenge-2698-production-abc",
         )
 
     @patch.dict(

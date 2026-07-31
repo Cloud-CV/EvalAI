@@ -63,6 +63,9 @@ def load_aws_api_kwargs(formatted_kwargs):
     return ast.literal_eval(formatted_kwargs)
 
 
+ECS_RESOURCE_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_-]+")
+
+
 def strip_fifo_suffix(queue_name):
     """Strip the ``.fifo`` suffix from an SQS queue name.
 
@@ -74,9 +77,14 @@ def strip_fifo_suffix(queue_name):
     return queue_name
 
 
+def sanitize_ecs_resource_name(name):
+    """Return a name safe for ECS families, services, and containers."""
+    return ECS_RESOURCE_NAME_PATTERN.sub("-", strip_fifo_suffix(name))
+
+
 def get_ecs_service_name(queue_name):
     """Return ECS-safe service name from a queue name."""
-    return f"{strip_fifo_suffix(queue_name)}_service"
+    return f"{sanitize_ecs_resource_name(queue_name)}_service"
 
 
 def get_evalai_submission_worker_ecr_prefixes():
@@ -341,7 +349,7 @@ def build_task_definition_dict(
         }
 
     sqs_queue_name = queue_name
-    queue_name = strip_fifo_suffix(queue_name)
+    queue_name = sanitize_ecs_resource_name(queue_name)
 
     container_name = f"worker_{queue_name}"
     code_upload_container_name = f"code_upload_worker_{queue_name}"
@@ -1202,10 +1210,10 @@ def refresh_task_definition_for_challenge(
             )
 
         if force_redeploy and challenge.workers and challenge.workers > 0:
-            return update_service_by_challenge_pk(
+            return service_manager(
                 client,
                 challenge,
-                challenge.workers,
+                num_of_tasks=challenge.workers,
                 force_new_deployment=True,
             )
         return response
