@@ -40,7 +40,11 @@ def publish_submission_message(message):
     queue = get_or_create_sqs_queue(queue_name, challenge)
     send_kwargs = {"MessageBody": json.dumps(message)}
     if queue_name.endswith(".fifo"):
-        send_kwargs["MessageGroupId"] = str(message["phase_pk"])
+        # One MessageGroupId per submission so ECS workers can evaluate
+        # different submissions in parallel. SQS FIFO only allows one
+        # in-flight message per group; using phase_pk serialized an entire
+        # phase to a single worker regardless of desiredCount.
+        send_kwargs["MessageGroupId"] = str(message["submission_pk"])
         # FIFO deduplicates on MessageDeduplicationId for 5 minutes. Using
         # only submission_pk silently drops resume/republish of the same
         # submission. Include a UUID so each intentional enqueue is unique.

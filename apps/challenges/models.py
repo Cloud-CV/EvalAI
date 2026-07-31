@@ -466,9 +466,10 @@ class Challenge(TimeStampedModel):
     use_fifo_sqs = models.BooleanField(
         default=False,
         help_text=(
-            "Use a FIFO SQS queue for strict per-phase submission ordering. "
-            "Do not toggle after queue creation; provision a new challenge "
-            "instead."
+            "Use a FIFO SQS queue for exactly-once delivery. Each submission "
+            "is its own message group so multiple ECS workers can process "
+            "in parallel. Do not toggle after queue creation; provision a "
+            "new challenge instead."
         ),
     )
     allow_resuming_submissions = models.BooleanField(

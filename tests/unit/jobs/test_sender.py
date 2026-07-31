@@ -310,7 +310,9 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
     publish_submission_message(message)
 
     call_kwargs = mock_queue.send_message.call_args[1]
-    assert call_kwargs["MessageGroupId"] == str(message["phase_pk"])
+    # Per-submission group id enables parallel ECS workers; a shared
+    # phase_pk group would serialize the entire phase to one in-flight msg.
+    assert call_kwargs["MessageGroupId"] == str(message["submission_pk"])
     dedup_id = call_kwargs["MessageDeduplicationId"]
     assert dedup_id.startswith("{}-".format(message["submission_pk"]))
     assert len(dedup_id) > len(str(message["submission_pk"])) + 1
@@ -350,6 +352,49 @@ def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
     assert first_dedup != second_dedup
     assert first_dedup.startswith("{}-".format(message["submission_pk"]))
     assert second_dedup.startswith("{}-".format(message["submission_pk"]))
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_group_id_per_submission(
+    mock_challenge_get,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Distinct submissions must use distinct MessageGroupIds.
+
+    SQS FIFO delivers at most one in-flight message per MessageGroupId
+    across all consumers. Sharing a group (e.g. phase_pk) would force
+    serial evaluation even with many ECS workers.
+    """
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    first = dict(message)
+    first["submission_pk"] = 101
+    second = dict(message)
+    second["submission_pk"] = 202
+    # Same phase — must still get different groups for parallelism.
+    assert first["phase_pk"] == second["phase_pk"]
+
+    publish_submission_message(first)
+    publish_submission_message(second)
+
+    first_group = mock_queue.send_message.call_args_list[0][1][
+        "MessageGroupId"
+    ]
+    second_group = mock_queue.send_message.call_args_list[1][1][
+        "MessageGroupId"
+    ]
+    assert first_group == "101"
+    assert second_group == "202"
+    assert first_group != second_group
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
