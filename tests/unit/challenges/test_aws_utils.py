@@ -277,6 +277,14 @@ def test_update_service_success(mock_client, mock_challenge, num_of_tasks):
 
     response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
     mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "valid_task_def_arn",
+            }
+        ]
+    }
 
     response = update_service_by_challenge_pk(
         mock_client, mock_challenge, num_of_tasks
@@ -328,6 +336,111 @@ def test_update_service_force_new_deployment(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
     mock_challenge.save.assert_called_once()
     assert mock_challenge.workers == num_of_tasks
+
+
+def test_update_service_scale_only_omits_task_definition(
+    mock_client, mock_challenge, num_of_tasks
+):
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks
+    )
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    mock_client.update_service.assert_called_once_with(
+        cluster=mock.ANY,
+        service="dummy_queue_service",
+        desiredCount=num_of_tasks,
+    )
+    assert mock_challenge.task_def_arn == "active_task_def_arn"
+
+
+def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
+    mock_client, mock_challenge, num_of_tasks
+):
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.side_effect = [inactive_error, response_metadata]
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_client.update_service.call_count == 2
+    assert mock_challenge.task_def_arn == "active_task_def_arn"
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_continues_when_task_def_inactive(
+    mock_cleanup, mock_challenge, mock_client
+):
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+    response_metadata_ok = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+    }
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "DeregisterTaskDefinition operation: TaskDefinition is "
+                    "inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="DeregisterTaskDefinition",
+    )
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.return_value = response_metadata_ok
+        mock_client.deregister_task_definition.side_effect = inactive_error
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_challenge.task_def_arn == ""
 
 
 @patch("challenges.aws_utils.cleanup_auto_scaling_for_service")

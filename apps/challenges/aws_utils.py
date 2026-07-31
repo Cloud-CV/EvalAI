@@ -33,6 +33,7 @@ from .task_definitions import (
     container_definition_code_upload_worker,
     container_definition_submission_worker,
     delete_service_args,
+    scale_service_args,
     service_definition,
     task_definition,
     task_definition_code_upload_worker,
@@ -1342,6 +1343,58 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         }
 
 
+def _is_inactive_task_definition_error(error):
+    """Return True when ECS rejects an update due to a deregistered task definition."""
+    if isinstance(error, ClientError):
+        error_response = error.response
+    else:
+        error_response = error
+    error_code = error_response.get("Error", {}).get("Code")
+    error_message = error_response.get("Error", {}).get("Message", "")
+    return error_code == "ClientException" and (
+        "TaskDefinition is inactive" in error_message
+    )
+
+
+def _get_ecs_service_task_definition_arn(client, service_name):
+    """Return the task definition ARN currently attached to an ECS service."""
+    response = client.describe_services(
+        cluster=COMMON_SETTINGS_DICT["CLUSTER"],
+        services=[service_name],
+    )
+    services = response.get("services", [])
+    if not services:
+        return None
+    service = services[0]
+    if service.get("status") == "INACTIVE":
+        return None
+    return service.get("taskDefinition")
+
+
+def _sync_challenge_task_def_from_service(client, challenge, service_name):
+    """
+    Align challenge.task_def_arn with the ECS service's active task definition.
+
+    Returns True when the challenge record was updated.
+    """
+    service_task_def_arn = _get_ecs_service_task_definition_arn(
+        client, service_name
+    )
+    if not service_task_def_arn:
+        return False
+    if challenge.task_def_arn == service_task_def_arn:
+        return False
+    logger.warning(
+        "Syncing stale task_def_arn for challenge %s from %s to %s",
+        challenge.pk,
+        challenge.task_def_arn,
+        service_task_def_arn,
+    )
+    challenge.task_def_arn = service_task_def_arn
+    challenge.save(update_fields=["task_def_arn"])
+    return True
+
+
 def update_service_by_challenge_pk(
     client, challenge, num_of_tasks, force_new_deployment=False
 ):
@@ -1364,13 +1417,22 @@ def update_service_by_challenge_pk(
     service_name = f"{queue_name}_service"
     task_def_arn = challenge.task_def_arn
 
-    kwargs = update_service_args.format(
-        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-        service_name=service_name,
-        task_def_arn=task_def_arn,
-        force_new_deployment=force_new_deployment,
-        num_of_tasks=num_of_tasks,
-    )
+    if force_new_deployment:
+        kwargs = update_service_args.format(
+            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+            service_name=service_name,
+            task_def_arn=task_def_arn,
+            force_new_deployment=force_new_deployment,
+            num_of_tasks=num_of_tasks,
+        )
+    else:
+        # Scale/stop without sending taskDefinition so stale DB ARNs do not
+        # block worker management when the ECS service still has an active one.
+        kwargs = scale_service_args.format(
+            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+            service_name=service_name,
+            num_of_tasks=num_of_tasks,
+        )
     kwargs = load_aws_api_kwargs(kwargs)
 
     try:
@@ -1378,8 +1440,36 @@ def update_service_by_challenge_pk(
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = num_of_tasks
             challenge.save()
+            if not force_new_deployment:
+                _sync_challenge_task_def_from_service(
+                    client, challenge, service_name
+                )
         return response
     except ClientError as e:
+        if force_new_deployment and _is_inactive_task_definition_error(e):
+            if _sync_challenge_task_def_from_service(
+                client, challenge, service_name
+            ):
+                kwargs = update_service_args.format(
+                    CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                    service_name=service_name,
+                    task_def_arn=challenge.task_def_arn,
+                    force_new_deployment=force_new_deployment,
+                    num_of_tasks=num_of_tasks,
+                )
+                kwargs = load_aws_api_kwargs(kwargs)
+                try:
+                    response = client.update_service(**kwargs)
+                    if (
+                        response["ResponseMetadata"]["HTTPStatusCode"]
+                        == HTTPStatus.OK
+                    ):
+                        challenge.workers = num_of_tasks
+                        challenge.save()
+                    return response
+                except ClientError as retry_error:
+                    logger.exception(retry_error)
+                    return retry_error.response
         logger.exception(e)
         return e.response
 
@@ -1426,9 +1516,22 @@ def delete_service_by_challenge_pk(challenge):
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = None
             challenge.save()
-            client.deregister_task_definition(
-                taskDefinition=challenge.task_def_arn
-            )
+            if challenge.task_def_arn:
+                try:
+                    client.deregister_task_definition(
+                        taskDefinition=challenge.task_def_arn
+                    )
+                except ClientError as deregister_error:
+                    if not _is_inactive_task_definition_error(
+                        deregister_error
+                    ):
+                        logger.warning(
+                            "Failed to deregister task definition %s for "
+                            "challenge %s: %s",
+                            challenge.task_def_arn,
+                            challenge.pk,
+                            deregister_error,
+                        )
             challenge.task_def_arn = ""
             challenge.save()
         return response

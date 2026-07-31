@@ -488,6 +488,14 @@ service_definition = """
 }}
 """
 
+scale_service_args = """
+{{
+    "cluster":"{CLUSTER}",
+    "service":"{service_name}",
+    "desiredCount":{num_of_tasks}
+}}
+"""
+
 update_service_args = """
 {{
     "cluster":"{CLUSTER}",
