@@ -27,6 +27,7 @@ from challenges.aws_utils import (
     get_code_upload_setup_meta_for_challenge,
     get_current_ecr_env,
     get_deployed_worker_image_urls,
+    get_ecs_service_name,
     get_evalai_code_upload_worker_ecr_image,
     get_evalai_submission_worker_ecr_image,
     get_evalai_submission_worker_ecr_prefixes,
@@ -53,6 +54,7 @@ from challenges.aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
+    strip_fifo_suffix,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
@@ -5171,7 +5173,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         # No boto3 calls should be made in DEBUG mode
 
     def _run_setup(
-        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=0
+        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=1
     ):
         """Run setup_auto_scaling_for_service and return the autoscaling mock."""
         mock_autoscaling = MagicMock()
@@ -5211,7 +5213,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs
         )
         self.assertEqual(register_kwargs["MaxCapacity"], 3)
-        self.assertEqual(register_kwargs["MinCapacity"], 0)
+        self.assertEqual(register_kwargs["MinCapacity"], 1)
 
         scale_up_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
             0
@@ -5278,10 +5280,10 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
-    def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
+    def test_setup_auto_scaling_defaults_min_ecs_workers_to_one(
         self, mock_get_boto3_client
     ):
-        """Challenges predating min_ecs_workers keep scale-to-zero."""
+        """Challenges predating min_ecs_workers default to one worker."""
         mock_autoscaling, result = self._run_setup(
             mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
         )
@@ -5291,7 +5293,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
-            0,
+            1,
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
@@ -7432,6 +7434,31 @@ class TestWorkerImageHelpers(TestCase):
         )
         self.assertEqual(kwargs["cluster"], "evalai-prod-cluster")
         self.assertTrue(kwargs["forceNewDeployment"])
+
+    def test_strip_fifo_suffix_standard_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue"), "my-queue")
+
+    def test_strip_fifo_suffix_fifo_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue.fifo"), "my-queue")
+
+    def test_strip_fifo_suffix_no_double_strip(self):
+        self.assertEqual(
+            strip_fifo_suffix("my-queue.fifo.fifo"), "my-queue.fifo"
+        )
+
+    def test_get_ecs_service_name_standard_queue(self):
+        self.assertEqual(get_ecs_service_name("my-queue"), "my-queue_service")
+
+    def test_get_ecs_service_name_fifo_queue(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo"), "my-queue_service"
+        )
+
+    def test_get_ecs_service_name_no_double_strip(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo.fifo"),
+            "my-queue.fifo_service",
+        )
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",

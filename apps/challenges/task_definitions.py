@@ -35,7 +35,7 @@ task_definition = """
                 }},
                 {{
                   "name": "CHALLENGE_QUEUE",
-                  "value": "{queue_name}"
+                  "value": "{sqs_queue_name}"
                 }},
                 {{
                   "name": "CELERY_QUEUE_NAME",
@@ -183,7 +183,7 @@ task_definition_code_upload_worker = """
                 }},
                 {{
                   "name": "QUEUE_NAME",
-                  "value": "{queue_name}"
+                  "value": "{sqs_queue_name}"
                 }},
                 {{
                   "name": "EVALAI_API_SERVER",
@@ -281,7 +281,7 @@ container_definition_submission_worker = """
         }},
         {{
             "name": "CHALLENGE_QUEUE",
-            "value": "{queue_name}"
+            "value": "{sqs_queue_name}"
         }},
         {{
             "name": "CELERY_QUEUE_NAME",
@@ -414,7 +414,7 @@ container_definition_code_upload_worker = """
         }},
         {{
             "name": "QUEUE_NAME",
-            "value": "{queue_name}"
+            "value": "{sqs_queue_name}"
         }},
         {{
             "name": "EVALAI_API_SERVER",
