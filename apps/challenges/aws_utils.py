@@ -1209,10 +1209,10 @@ def refresh_task_definition_for_challenge(
             )
 
         if force_redeploy and challenge.workers and challenge.workers > 0:
-            return update_service_by_challenge_pk(
+            return service_manager(
                 client,
                 challenge,
-                challenge.workers,
+                num_of_tasks=challenge.workers,
                 force_new_deployment=True,
             )
         return response
