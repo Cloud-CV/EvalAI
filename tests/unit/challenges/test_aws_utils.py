@@ -6952,6 +6952,7 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_client_token_generator.assert_called_once_with(challenge.pk)
         mock_create_service.assert_called_once_with(
             mock_client, challenge, "mock_client_token"
         )
