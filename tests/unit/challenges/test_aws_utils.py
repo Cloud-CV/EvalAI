@@ -5060,7 +5060,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         # No boto3 calls should be made in DEBUG mode
 
     def _run_setup(
-        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=0
+        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=1
     ):
         """Run setup_auto_scaling_for_service and return the autoscaling mock."""
         mock_autoscaling = MagicMock()
@@ -5100,7 +5100,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs
         )
         self.assertEqual(register_kwargs["MaxCapacity"], 3)
-        self.assertEqual(register_kwargs["MinCapacity"], 0)
+        self.assertEqual(register_kwargs["MinCapacity"], 1)
 
         scale_up_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
             0
@@ -5167,10 +5167,10 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
-    def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
+    def test_setup_auto_scaling_defaults_min_ecs_workers_to_one(
         self, mock_get_boto3_client
     ):
-        """Challenges predating min_ecs_workers keep scale-to-zero."""
+        """Challenges predating min_ecs_workers default to one worker."""
         mock_autoscaling, result = self._run_setup(
             mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
         )
@@ -5180,7 +5180,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
-            0,
+            1,
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
