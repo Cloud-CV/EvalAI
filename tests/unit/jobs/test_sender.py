@@ -3,8 +3,9 @@ from unittest.mock import MagicMock, patch
 
 import botocore
 import pytest
+from base.utils import get_or_create_sqs_queue
 from challenges.models import Challenge
-from jobs.sender import get_or_create_sqs_queue, publish_submission_message
+from jobs.sender import publish_submission_message
 
 
 @pytest.fixture
@@ -95,8 +96,8 @@ def test_publish_submission_message_success(
     assert response == {"MessageId": "12345"}
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_use_host_sqs(
     mock_settings, mock_boto3_resource
 ):
@@ -124,8 +125,8 @@ def test_get_or_create_sqs_queue_use_host_sqs(
     assert queue == mock_sqs.get_queue_by_name.return_value
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_challenge_use_host_sqs(
     mock_settings, mock_boto3_resource
 ):
@@ -154,8 +155,8 @@ def test_get_or_create_sqs_queue_challenge_use_host_sqs(
     assert queue == mock_sqs.get_queue_by_name.return_value
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_no_challenge(
     mock_settings, mock_boto3_resource
 ):
@@ -178,8 +179,8 @@ def test_get_or_create_sqs_queue_no_challenge(
     assert queue == mock_sqs.get_queue_by_name.return_value
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_non_existent_queue(
     mock_settings, mock_boto3_resource
 ):
@@ -214,8 +215,8 @@ def test_get_or_create_sqs_queue_non_existent_queue(
     assert queue == mock_created_queue
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_debug_or_test(
     mock_settings, mock_boto3_resource
 ):
@@ -241,8 +242,8 @@ def test_get_or_create_sqs_queue_debug_or_test(
     assert queue  # Ensure queue was returned
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
 def test_get_or_create_sqs_queue_empty_queue_name(
     mock_settings, mock_boto3_resource
 ):
@@ -262,9 +263,9 @@ def test_get_or_create_sqs_queue_empty_queue_name(
     assert queue  # Ensure queue was returned
 
 
-@patch("jobs.sender.boto3.resource")
-@patch("jobs.sender.settings")
-@patch("jobs.sender.logger")
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
+@patch("base.utils.logger")
 def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
     mock_logger, mock_settings, mock_boto3_resource
 ):
@@ -278,8 +279,109 @@ def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
         {"Error": {"Code": "SomeOtherError"}}, "GetQueueUrl"
     )
 
-    queue_name = "test-queue"
-    with pytest.raises(UnboundLocalError):
-        get_or_create_sqs_queue(queue_name)
+    mock_created_queue = MagicMock()
+    mock_sqs.create_queue.return_value = mock_created_queue
 
-    mock_logger.exception.assert_called_once_with("Cannot get or create Queue")
+    queue_name = "test-queue"
+    queue = get_or_create_sqs_queue(queue_name)
+
+    mock_logger.exception.assert_called_once_with(
+        "Cannot get queue: %s", "test-queue"
+    )
+    assert queue == mock_created_queue
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_sends_group_and_dedup_id(
+    mock_challenge_get,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    publish_submission_message(message)
+
+    call_kwargs = mock_queue.send_message.call_args[1]
+    assert call_kwargs["MessageGroupId"] == str(message["phase_pk"])
+    assert call_kwargs["MessageDeduplicationId"] == str(
+        message["submission_pk"]
+    )
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_standard_no_fifo_params(
+    mock_challenge_get,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    publish_submission_message(message)
+
+    call_kwargs = mock_queue.send_message.call_args[1]
+    assert "MessageGroupId" not in call_kwargs
+    assert "MessageDeduplicationId" not in call_kwargs
+
+
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
+def test_get_or_create_sqs_queue_fifo_sets_fifo_attribute(
+    mock_settings, mock_boto3_resource
+):
+    mock_settings.DEBUG = False
+    mock_settings.TEST = False
+
+    mock_challenge = MagicMock()
+    mock_challenge.use_host_sqs = False
+    mock_challenge.sqs_retention_period = "345600"
+
+    mock_sqs = MagicMock()
+    mock_boto3_resource.return_value = mock_sqs
+
+    mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
+        {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+        "GetQueueUrl",
+    )
+
+    mock_created_queue = MagicMock()
+    mock_sqs.create_queue.return_value = mock_created_queue
+
+    queue = get_or_create_sqs_queue("test-queue.fifo", mock_challenge)
+
+    create_call_kwargs = mock_sqs.create_queue.call_args[1]
+    assert create_call_kwargs["Attributes"]["FifoQueue"] == "true"
+    assert queue == mock_created_queue
+
+
+@patch("base.utils.boto3.resource")
+@patch("base.utils.settings")
+def test_get_or_create_sqs_queue_fifo_debug_mode(
+    mock_settings, mock_boto3_resource
+):
+    mock_settings.DEBUG = True
+    mock_settings.TEST = False
+
+    mock_sqs = MagicMock()
+    mock_boto3_resource.return_value = mock_sqs
+
+    get_or_create_sqs_queue("test-queue.fifo")
+
+    mock_sqs.get_queue_by_name.assert_called_once_with(
+        QueueName="evalai_submission_queue.fifo"
+    )

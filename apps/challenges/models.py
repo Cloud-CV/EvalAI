@@ -463,6 +463,14 @@ class Challenge(TimeStampedModel):
         default=False,
         help_text="Use the host's own SQS queue instead of EvalAI's.",
     )
+    use_fifo_sqs = models.BooleanField(
+        default=False,
+        help_text=(
+            "Use a FIFO SQS queue for strict per-phase submission ordering. "
+            "Do not toggle after queue creation; provision a new challenge "
+            "instead."
+        ),
+    )
     allow_resuming_submissions = models.BooleanField(
         default=False,
         help_text="Let hosts re-queue a failed or cancelled submission.",
