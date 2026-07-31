@@ -68,7 +68,7 @@ def get_ecs_service_name(queue_name):
     Strips the .fifo suffix (which contains a dot illegal in ECS
     service names) before appending ``_service``.
     """
-    base = queue_name.removesuffix(".fifo")
+    base = queue_name[:-5] if queue_name.endswith(".fifo") else queue_name
     return f"{base}_service"
 
 
