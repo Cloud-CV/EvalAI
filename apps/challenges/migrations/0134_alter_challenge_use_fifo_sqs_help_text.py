@@ -16,10 +16,12 @@ class Migration(migrations.Migration):
             field=models.BooleanField(
                 default=False,
                 help_text=(
-                    "Use a FIFO SQS queue for exactly-once delivery. Each "
-                    "submission is its own message group so multiple ECS "
-                    "workers can process in parallel. Do not toggle after "
-                    "queue creation; provision a new challenge instead."
+                    "Use a FIFO SQS queue for ordered per-team evaluation "
+                    "within a phase. Message groups are "
+                    "phase_pk-participant_team_pk so different teams can be "
+                    "processed in parallel by ECS workers. Do not toggle "
+                    "after queue creation; provision a new challenge "
+                    "instead."
                 ),
             ),
         ),

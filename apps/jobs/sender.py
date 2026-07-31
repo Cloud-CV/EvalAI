@@ -38,13 +38,21 @@ def publish_submission_message(message):
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name, challenge)
+    # FIFO grouping and Slack both need the submission; load once.
+    submission = None
+    if queue_name.endswith(".fifo") or slack_url:
+        submission = get_submission_model(message["submission_pk"])
     send_kwargs = {"MessageBody": json.dumps(message)}
     if queue_name.endswith(".fifo"):
-        # One MessageGroupId per submission so ECS workers can evaluate
-        # different submissions in parallel. SQS FIFO only allows one
-        # in-flight message per group; using phase_pk serialized an entire
-        # phase to a single worker regardless of desiredCount.
-        send_kwargs["MessageGroupId"] = str(message["submission_pk"])
+        # Group by phase + participant team so:
+        # - submissions from the same team stay ordered within a phase
+        # - different teams can be evaluated in parallel by ECS workers
+        # SQS FIFO allows only one in-flight message per MessageGroupId;
+        # phase_pk alone serialized an entire phase to a single worker.
+        team_pk = submission.participant_team_id
+        send_kwargs["MessageGroupId"] = "{}-{}".format(
+            message["phase_pk"], team_pk
+        )
         # FIFO deduplicates on MessageDeduplicationId for 5 minutes. Using
         # only submission_pk silently drops resume/republish of the same
         # submission. Include a UUID so each intentional enqueue is unique.
@@ -55,10 +63,9 @@ def publish_submission_message(message):
     # send slack notification
     if slack_url:
         challenge_name = challenge.title
-        submission = get_submission_model(message["submission_pk"])
         participant_team_name = submission.participant_team.team_name
         phase_name = submission.challenge_phase.name
-        message = {
+        slack_message = {
             "text": "A *new submission* has been uploaded to {}".format(
                 challenge_name
             ),
@@ -80,5 +87,5 @@ def publish_submission_message(message):
                 },
             ],
         }
-        send_slack_notification(slack_url, message)
+        send_slack_notification(slack_url, slack_message)
     return response
