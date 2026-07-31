@@ -55,6 +55,7 @@ from challenges.aws_utils import (
     stop_ec2_instance,
     stop_workers,
     strip_fifo_suffix,
+    sanitize_ecs_resource_name,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
@@ -7345,6 +7346,60 @@ class TestWorkerImageHelpers(TestCase):
         self.assertEqual(
             get_ecs_service_name("my-queue.fifo.fifo"),
             "my-queue.fifo_service",
+        )
+
+    def test_sanitize_ecs_resource_name_fifo_queue(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my-queue.fifo"),
+            "my-queue",
+        )
+
+    def test_sanitize_ecs_resource_name_removes_other_invalid_chars(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my.queue_name.fifo"),
+            "my-queue_name",
+        )
+
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition")
+    def test_build_task_definition_dict_fifo_queue_uses_ecs_safe_family(
+        self, mock_task_definition, mock_get_aws_credentials
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            is_docker_based=False,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+        )
+        mock_get_aws_credentials.return_value = {}
+        mock_task_definition.format.return_value = "{'family': 'ecs-safe'}"
+
+        with patch(
+            "challenges.aws_utils.load_aws_api_kwargs",
+            side_effect=lambda value: {"family": "ecs-safe"},
+        ):
+            task_def, error = build_task_definition_dict(
+                challenge, "mars2-challenge-2698-production-abc.fifo"
+            )
+
+        self.assertIsNone(error)
+        self.assertEqual(task_def["family"], "ecs-safe")
+        format_kwargs = mock_task_definition.format.call_args.kwargs
+        self.assertEqual(
+            format_kwargs["queue_name"],
+            "mars2-challenge-2698-production-abc",
+        )
+        self.assertEqual(
+            format_kwargs["sqs_queue_name"],
+            "mars2-challenge-2698-production-abc.fifo",
+        )
+        self.assertEqual(
+            format_kwargs["container_name"],
+            "worker_mars2-challenge-2698-production-abc",
         )
 
     @patch.dict(
