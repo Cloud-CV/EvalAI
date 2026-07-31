@@ -438,7 +438,7 @@ def get_queue_name(param, challenge_pk, use_fifo=False):
     queue_name = re.sub(r"\W+", "-", queue_name)
 
     queue_name = f"{queue_name}-{challenge_pk}-{env}-{uuid.uuid4()}"[:max_len]
-    return queue_name + fifo_suffix
+    return f"{queue_name}{fifo_suffix}"
 
 
 def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
