@@ -62,6 +62,16 @@ def load_aws_api_kwargs(formatted_kwargs):
     return ast.literal_eval(formatted_kwargs)
 
 
+def get_ecs_service_name(queue_name):
+    """Return ECS-safe service name from a queue name.
+
+    Strips the .fifo suffix (which contains a dot illegal in ECS
+    service names) before appending ``_service``.
+    """
+    base = queue_name.removesuffix(".fifo")
+    return f"{base}_service"
+
+
 def get_evalai_submission_worker_ecr_prefixes():
     """
     Return accepted ECR URL prefixes for EvalAI-managed submission worker images.
@@ -553,7 +563,7 @@ def setup_auto_scaling_for_service(challenge):
         return True
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     cluster = COMMON_SETTINGS_DICT["CLUSTER"]
     resource_id = f"service/{cluster}/{service_name}"
     # A ceiling of 0 would leave the service permanently switched off, since the
@@ -682,7 +692,7 @@ def cleanup_auto_scaling_for_service(challenge):
         return
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     cluster = COMMON_SETTINGS_DICT["CLUSTER"]
     resource_id = f"service/{cluster}/{service_name}"
 
@@ -1263,7 +1273,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     """
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     if (
         challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
@@ -1361,7 +1371,7 @@ def update_service_by_challenge_pk(
     """
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     task_def_arn = challenge.task_def_arn
 
     kwargs = update_service_args.format(
@@ -1400,7 +1410,7 @@ def delete_service_by_challenge_pk(challenge):
     """
     client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     kwargs = delete_service_args.format(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
@@ -2108,7 +2118,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         challenge.task_def_arn = task_def_arn
         challenge.save()
         force_new_deployment = False
-        service_name = f"{challenge.queue}_service"
+        service_name = get_ecs_service_name(challenge.queue)
         num_of_tasks = challenge.workers
         kwargs = update_service_args.format(
             CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
