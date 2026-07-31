@@ -326,6 +326,19 @@ class BaseAPITestClass(APITestCase):
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 
+    @mock_sqs()
+    def test_get_or_create_sqs_queue_for_fifo_queue(self):
+        get_or_create_sqs_queue("test_queue.fifo")
+        queue_url = self.sqs_client.get_queue_url(
+            QueueName="evalai_submission_queue.fifo"
+        )["QueueUrl"]
+        self.assertTrue(queue_url)
+        attrs = self.sqs_client.get_queue_attributes(
+            QueueUrl=queue_url, AttributeNames=["FifoQueue"]
+        )["Attributes"]
+        self.assertEqual(attrs["FifoQueue"], "true")
+        self.sqs_client.delete_queue(QueueUrl=queue_url)
+
 
 class DownloadAndExtractFileTest(BaseAPITestClass):
     def setUp(self):
