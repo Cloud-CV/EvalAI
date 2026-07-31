@@ -27,6 +27,7 @@ from challenges.aws_utils import (
     get_code_upload_setup_meta_for_challenge,
     get_current_ecr_env,
     get_deployed_worker_image_urls,
+    get_ecs_service_name,
     get_evalai_code_upload_worker_ecr_image,
     get_evalai_submission_worker_ecr_image,
     get_evalai_submission_worker_ecr_prefixes,
@@ -7319,6 +7320,20 @@ class TestWorkerImageHelpers(TestCase):
         )
         self.assertEqual(kwargs["cluster"], "evalai-prod-cluster")
         self.assertTrue(kwargs["forceNewDeployment"])
+
+    def test_get_ecs_service_name_standard_queue(self):
+        self.assertEqual(get_ecs_service_name("my-queue"), "my-queue_service")
+
+    def test_get_ecs_service_name_fifo_queue(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo"), "my-queue_service"
+        )
+
+    def test_get_ecs_service_name_no_double_strip(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo.fifo"),
+            "my-queue.fifo_service",
+        )
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",
