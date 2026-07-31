@@ -54,6 +54,7 @@ from challenges.aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
+    strip_fifo_suffix,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
@@ -7320,6 +7321,17 @@ class TestWorkerImageHelpers(TestCase):
         )
         self.assertEqual(kwargs["cluster"], "evalai-prod-cluster")
         self.assertTrue(kwargs["forceNewDeployment"])
+
+    def test_strip_fifo_suffix_standard_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue"), "my-queue")
+
+    def test_strip_fifo_suffix_fifo_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue.fifo"), "my-queue")
+
+    def test_strip_fifo_suffix_no_double_strip(self):
+        self.assertEqual(
+            strip_fifo_suffix("my-queue.fifo.fifo"), "my-queue.fifo"
+        )
 
     def test_get_ecs_service_name_standard_queue(self):
         self.assertEqual(get_ecs_service_name("my-queue"), "my-queue_service")
