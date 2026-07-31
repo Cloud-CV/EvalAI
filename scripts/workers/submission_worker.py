@@ -20,8 +20,6 @@ import traceback
 import zipfile
 from os.path import join
 
-import boto3
-import botocore
 import django
 import requests
 import yaml
@@ -30,6 +28,7 @@ import yaml
 django.setup()  # isort:skip noqa:E402
 # fmt: on
 
+from base.utils import get_or_create_sqs_queue  # noqa:E402
 from challenges.aws_utils import trigger_eks_node_autoscale  # noqa:E402
 from challenges.models import ChallengePhase  # noqa:E402
 from challenges.models import (  # noqa:E402
@@ -37,8 +36,6 @@ from challenges.models import (  # noqa:E402
     ChallengePhaseSplit,
     LeaderboardData,
 )
-
-# Load django app settings
 from django.conf import settings  # noqa:E402
 from django.core.files.base import ContentFile  # noqa:E402
 from django.utils import timezone  # noqa:E402
@@ -48,8 +45,6 @@ from jobs.s3_retention import (  # noqa:E402
     log_submission_artifact_upload_context,
 )
 from jobs.serializers import SubmissionSerializer  # noqa:E402
-
-from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")
@@ -996,57 +991,6 @@ def process_submission_callback(body):
                 SUBMISSION_LOGS_PREFIX, e
             )
         )
-
-
-def get_or_create_sqs_queue(queue_name, challenge=None):
-    """
-    Returns:
-        Returns the SQS Queue object
-    """
-    if settings.DEBUG or settings.TEST:
-        sqs = boto3.resource(
-            "sqs",
-            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
-    else:
-        if challenge and challenge.use_host_sqs:
-            sqs = boto3.resource(
-                "sqs",
-                region_name=challenge.queue_aws_region,
-                aws_secret_access_key=challenge.aws_secret_access_key,
-                aws_access_key_id=challenge.aws_access_key_id,
-            )
-        else:
-            sqs = boto3.resource(
-                "sqs",
-                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-            )
-    if queue_name == "":
-        queue_name = "evalai_submission_queue"
-    # Check if the queue exists. If no, then create one
-    try:
-        queue = sqs.get_queue_by_name(QueueName=queue_name)
-    except botocore.exceptions.ClientError as ex:
-        if (
-            ex.response["Error"]["Code"]
-            != "AWS.SimpleQueueService.NonExistentQueue"
-        ):
-            logger.exception("Cannot get queue: {}".format(queue_name))
-        sqs_retention_period = (
-            SQS_RETENTION_PERIOD
-            if challenge is None
-            else str(challenge.sqs_retention_period)
-        )
-        queue = sqs.create_queue(
-            QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": sqs_retention_period},
-        )
-    return queue
 
 
 def load_challenge_and_return_max_submissions(q_params):
