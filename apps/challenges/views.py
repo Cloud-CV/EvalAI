@@ -126,7 +126,7 @@ from .aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
-    strip_fifo_suffix,
+    sanitize_ecs_resource_name,
     terminate_ec2_instance,
 )
 from .models import (
@@ -3767,7 +3767,7 @@ def get_worker_logs(request, challenge_pk):
     response_data = []
 
     log_group_name = get_log_group_name(challenge.pk)
-    log_stream_prefix = strip_fifo_suffix(challenge.queue)
+    log_stream_prefix = sanitize_ecs_resource_name(challenge.queue)
     pattern = ""  # Empty string to get all logs including container logs.
 
     # This is to specify the time window for fetching logs: 3 days before from

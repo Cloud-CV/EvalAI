@@ -23,9 +23,20 @@ Event payload (from EventBridge Scheduler):
 import json
 import logging
 import os
+import re
 
 import boto3
 from botocore.exceptions import ClientError
+
+ECS_RESOURCE_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_-]+")
+
+
+def get_ecs_service_name(queue_name):
+    """Return ECS-safe service name from an SQS queue name."""
+    base = queue_name[:-5] if queue_name.endswith(".fifo") else queue_name
+    base = ECS_RESOURCE_NAME_PATTERN.sub("-", base)
+    return f"{base}_service"
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -46,7 +57,7 @@ def handler(event, context):
         logger.error("Missing challenge_pk or queue_name in event: %s", event)
         return {"statusCode": 400, "body": "Missing required fields"}
 
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     resource_id = f"service/{ECS_CLUSTER}/{service_name}"
     log_group_name = f"challenge-pk-{challenge_pk}-{ENVIRONMENT}-workers"
 

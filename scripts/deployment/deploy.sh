@@ -175,9 +175,18 @@ docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs
 # startup; running both concurrently races on CREATE TABLE (pg_type_typname_nsp_index).
 # Detach stdin so compose cannot consume the remaining commands from the SSH heredoc.
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
-  django sh -c "python manage.py migrate --noinput && python manage.py refresh_worker_task_definitions --commit-id \${COMMIT_ID}" \
+  django python manage.py migrate --noinput \
   </dev/null
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
+
+# Refresh challenge workers only after the core application has been deployed.
+# A stale or missing ECS service is challenge-specific and must not prevent the
+# independently managed application containers from being rolled out.
+if ! docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
+  django python manage.py refresh_worker_task_definitions --commit-id "\${COMMIT_ID}" \
+  </dev/null; then
+    echo "WARNING: Core services deployed, but one or more worker task definitions failed to refresh." >&2
+fi
 ENDSSH
 }
 
