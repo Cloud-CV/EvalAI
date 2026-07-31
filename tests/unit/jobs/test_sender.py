@@ -279,13 +279,16 @@ def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
         {"Error": {"Code": "SomeOtherError"}}, "GetQueueUrl"
     )
 
+    mock_created_queue = MagicMock()
+    mock_sqs.create_queue.return_value = mock_created_queue
+
     queue_name = "test-queue"
-    with pytest.raises(UnboundLocalError):
-        get_or_create_sqs_queue(queue_name)
+    queue = get_or_create_sqs_queue(queue_name)
 
     mock_logger.exception.assert_called_once_with(
         "Cannot get queue: %s", "test-queue"
     )
+    assert queue == mock_created_queue
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
