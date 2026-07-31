@@ -308,7 +308,9 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
 
     call_kwargs = mock_queue.send_message.call_args[1]
     assert call_kwargs["MessageGroupId"] == str(message["phase_pk"])
-    assert "MessageDeduplicationId" in call_kwargs
+    assert call_kwargs["MessageDeduplicationId"] == str(
+        message["submission_pk"]
+    )
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")

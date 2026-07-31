@@ -59,6 +59,18 @@ class ChallengeSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_use_fifo_sqs(self, value):
+        if (
+            self.instance
+            and self.instance.pk
+            and value != self.instance.use_fifo_sqs
+        ):
+            raise serializers.ValidationError(
+                "use_fifo_sqs cannot be changed after the challenge queue "
+                "has been created."
+            )
+        return value
+
     def create(self, validated_data):
         validated_data.setdefault(
             "worker_python_version", DEFAULT_WORKER_PYTHON_VERSION

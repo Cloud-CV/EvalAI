@@ -20,8 +20,6 @@ import traceback
 import zipfile
 from os.path import join
 
-import boto3
-import botocore
 import django
 import requests
 import yaml

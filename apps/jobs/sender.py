@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import json
 import logging
-import uuid
 
 from base.utils import get_or_create_sqs_queue, send_slack_notification
 from challenges.models import Challenge
@@ -41,7 +40,7 @@ def publish_submission_message(message):
     send_kwargs = {"MessageBody": json.dumps(message)}
     if queue_name.endswith(".fifo"):
         send_kwargs["MessageGroupId"] = str(message["phase_pk"])
-        send_kwargs["MessageDeduplicationId"] = str(uuid.uuid4())
+        send_kwargs["MessageDeduplicationId"] = str(message["submission_pk"])
     response = queue.send_message(**send_kwargs)
     # send slack notification
     if slack_url:
