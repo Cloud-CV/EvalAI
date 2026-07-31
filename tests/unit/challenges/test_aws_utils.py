@@ -155,7 +155,7 @@ def mock_client():
 
 @pytest.fixture
 def mock_challenge():
-    return MagicMock()
+    return MagicMock(queue="dummy_queue")
 
 
 @pytest.fixture
@@ -7345,7 +7345,7 @@ class TestWorkerImageHelpers(TestCase):
     def test_get_ecs_service_name_no_double_strip(self):
         self.assertEqual(
             get_ecs_service_name("my-queue.fifo.fifo"),
-            "my-queue.fifo_service",
+            "my-queue-fifo_service",
         )
 
     def test_sanitize_ecs_resource_name_fifo_queue(self):
