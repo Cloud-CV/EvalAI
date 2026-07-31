@@ -6838,10 +6838,10 @@ class TestWorkerImageHelpers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
     @patch("challenges.aws_utils.get_image_settings_for_challenge")
-    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    @patch("challenges.aws_utils.service_manager")
     def test_refresh_task_definition_for_challenge(
         self,
-        mock_update_service,
+        mock_service_manager,
         mock_get_image_settings,
         mock_build_task_definition,
         mock_get_boto3_client,
@@ -6870,7 +6870,7 @@ class TestWorkerImageHelpers(TestCase):
                 "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
             },
         }
-        mock_update_service.return_value = {
+        mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
@@ -6882,9 +6882,77 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
-        mock_update_service.assert_called_once()
+        mock_service_manager.assert_called_once_with(
+            mock_client,
+            challenge,
+            num_of_tasks=1,
+            force_new_deployment=True,
+        )
         mock_client.deregister_task_definition.assert_called_once_with(
             taskDefinition="arn:aws:ecs:task-def/old:1"
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_service_not_found(
+        self,
+        mock_update_service,
+        mock_client_token_generator,
+        mock_create_service,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {
+                "Code": "ServiceNotFoundException",
+                "Message": "Service not found.",
+            },
+        }
+        mock_client_token_generator.return_value = "mock_client_token"
+        mock_create_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id="abc123", client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_create_service.assert_called_once_with(
+            mock_client, challenge, "mock_client_token"
         )
 
     @patch.dict(
