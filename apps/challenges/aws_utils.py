@@ -62,14 +62,20 @@ def load_aws_api_kwargs(formatted_kwargs):
     return ast.literal_eval(formatted_kwargs)
 
 
-def get_ecs_service_name(queue_name):
-    """Return ECS-safe service name from a queue name.
+def strip_fifo_suffix(queue_name):
+    """Strip the ``.fifo`` suffix from an SQS queue name.
 
-    Strips the .fifo suffix (which contains a dot illegal in ECS
-    service names) before appending ``_service``.
+    The suffix contains a dot which is illegal in ECS resource names
+    (service names, task-definition families, container names).
     """
-    base = queue_name[:-5] if queue_name.endswith(".fifo") else queue_name
-    return f"{base}_service"
+    if queue_name.endswith(".fifo"):
+        return queue_name[:-5]
+    return queue_name
+
+
+def get_ecs_service_name(queue_name):
+    """Return ECS-safe service name from a queue name."""
+    return f"{strip_fifo_suffix(queue_name)}_service"
 
 
 def get_evalai_submission_worker_ecr_prefixes():
@@ -333,6 +339,9 @@ def build_task_definition_dict(
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
+    sqs_queue_name = queue_name
+    queue_name = strip_fifo_suffix(queue_name)
+
     container_name = f"worker_{queue_name}"
     code_upload_container_name = f"code_upload_worker_{queue_name}"
     worker_cpu_cores = (
@@ -383,6 +392,7 @@ def build_task_definition_dict(
             code_upload_container = (
                 container_definition_code_upload_worker.format(
                     queue_name=queue_name,
+                    sqs_queue_name=sqs_queue_name,
                     code_upload_container_name=code_upload_container_name,
                     auth_token=token.refresh_token,
                     cluster_name=cluster_name,
@@ -398,6 +408,7 @@ def build_task_definition_dict(
             submission_container = (
                 container_definition_submission_worker.format(
                     queue_name=queue_name,
+                    sqs_queue_name=sqs_queue_name,
                     container_name=container_name,
                     ENV=ENV,
                     challenge_pk=challenge.pk,
@@ -420,6 +431,7 @@ def build_task_definition_dict(
         else:
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
+                sqs_queue_name=sqs_queue_name,
                 code_upload_container_name=code_upload_container_name,
                 ENV=ENV,
                 challenge_pk=challenge.pk,
@@ -439,6 +451,7 @@ def build_task_definition_dict(
     else:
         definition = task_definition.format(
             queue_name=queue_name,
+            sqs_queue_name=sqs_queue_name,
             container_name=container_name,
             ENV=ENV,
             challenge_pk=challenge.pk,
