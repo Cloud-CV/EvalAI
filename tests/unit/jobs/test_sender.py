@@ -311,9 +311,45 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
 
     call_kwargs = mock_queue.send_message.call_args[1]
     assert call_kwargs["MessageGroupId"] == str(message["phase_pk"])
-    assert call_kwargs["MessageDeduplicationId"] == str(
-        message["submission_pk"]
-    )
+    dedup_id = call_kwargs["MessageDeduplicationId"]
+    assert dedup_id.startswith("{}-".format(message["submission_pk"]))
+    assert len(dedup_id) > len(str(message["submission_pk"])) + 1
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
+    mock_challenge_get,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Resume/republish must not reuse MessageDeduplicationId.
+
+    SQS FIFO drops sends that reuse a MessageDeduplicationId within the
+    5-minute deduplication window, which would leave resumed submissions
+    stuck without evaluation.
+    """
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    publish_submission_message(message)
+    publish_submission_message(message)
+
+    first_dedup = mock_queue.send_message.call_args_list[0][1][
+        "MessageDeduplicationId"
+    ]
+    second_dedup = mock_queue.send_message.call_args_list[1][1][
+        "MessageDeduplicationId"
+    ]
+    assert first_dedup != second_dedup
+    assert first_dedup.startswith("{}-".format(message["submission_pk"]))
+    assert second_dedup.startswith("{}-".format(message["submission_pk"]))
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
