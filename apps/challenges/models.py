@@ -517,7 +517,7 @@ class Challenge(TimeStampedModel):
     min_ecs_workers = models.IntegerField(
         null=True,
         blank=True,
-        default=0,
+        default=1,
         help_text=(
             "Autoscaling floor: min workers kept alive when the "
             "SQS queue is empty. 0 allows scale-to-zero."

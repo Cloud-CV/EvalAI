@@ -560,7 +560,13 @@ def setup_auto_scaling_for_service(challenge):
     # scale-up policy sets ExactCapacity to this value.
     max_ecs_workers = max(challenge.max_ecs_workers or 1, 1)
     min_ecs_workers = min(
-        max(challenge.min_ecs_workers or 0, 0), max_ecs_workers
+        max(
+            challenge.min_ecs_workers
+            if challenge.min_ecs_workers is not None
+            else 1,
+            0,
+        ),
+        max_ecs_workers,
     )
 
     autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
