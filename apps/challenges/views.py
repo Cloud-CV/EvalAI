@@ -121,12 +121,12 @@ from .aws_utils import (
     get_logs_from_cloudwatch,
     restart_ec2_instance,
     restart_workers,
+    sanitize_ecs_resource_name,
     scale_resources,
     start_ec2_instance,
     start_workers,
     stop_ec2_instance,
     stop_workers,
-    sanitize_ecs_resource_name,
     terminate_ec2_instance,
 )
 from .models import (
