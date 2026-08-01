@@ -45,6 +45,20 @@ def stop_worker(challenge_id):
     return response
 
 
+def worker_action_succeeded(response):
+    """
+    manage_worker returns HTTP 200 for both {"action": "Success"} and
+    {"action": "Failure", ...}, so response.ok alone can't tell them apart.
+    """
+    if not response.ok:
+        return False
+    try:
+        payload = response.json()
+    except ValueError:
+        return False
+    return isinstance(payload, dict) and payload.get("action") == "Success"
+
+
 def get_pending_submission_count(challenge_metrics):
     pending_submissions = 0
     for status in ["running", "submitted", "queued", "resuming"]:
@@ -56,7 +70,7 @@ def scale_down_workers(challenge, num_workers):
     if num_workers > 0:
         response = stop_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        if response.ok:
+        if worker_action_succeeded(response):
             print(
                 "Stopped worker for Challenge ID: {}, Title: {}".format(
                     challenge["id"], challenge["title"]
@@ -81,7 +95,7 @@ def scale_up_workers(challenge, num_workers):
     if num_workers == 0:
         response = start_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        if response.ok:
+        if worker_action_succeeded(response):
             print(
                 "Started worker for Challenge ID: {}, Title: {}.".format(
                     challenge["id"], challenge["title"]
