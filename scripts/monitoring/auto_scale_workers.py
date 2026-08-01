@@ -45,18 +45,27 @@ def stop_worker(challenge_id):
     return response
 
 
-def worker_action_succeeded(response):
+def worker_action_result(response):
     """
     manage_worker returns HTTP 200 for both {"action": "Success"} and
-    {"action": "Failure", ...}, so response.ok alone can't tell them apart.
+    {"action": "Failure", "error": ...}, so response.ok alone can't tell
+    them apart. Returns (succeeded, reason) - reason is the API's error
+    message on failure, or the HTTP status when the body can't be parsed.
     """
     if not response.ok:
-        return False
+        return False, "HTTP {}".format(response.status_code)
     try:
         payload = response.json()
     except ValueError:
-        return False
-    return isinstance(payload, dict) and payload.get("action") == "Success"
+        return False, "HTTP {} (bad body)".format(response.status_code)
+    if isinstance(payload, dict) and payload.get("action") == "Success":
+        return True, None
+    reason = (
+        payload.get("error", "unknown error")
+        if isinstance(payload, dict)
+        else "unexpected response body"
+    )
+    return False, reason
 
 
 def get_pending_submission_count(challenge_metrics):
@@ -70,7 +79,8 @@ def scale_down_workers(challenge, num_workers):
     if num_workers > 0:
         response = stop_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        if worker_action_succeeded(response):
+        succeeded, reason = worker_action_result(response)
+        if succeeded:
             print(
                 "Stopped worker for Challenge ID: {}, Title: {}".format(
                     challenge["id"], challenge["title"]
@@ -79,8 +89,8 @@ def scale_down_workers(challenge, num_workers):
         else:
             print(
                 "Failed to stop worker for Challenge ID: {}, Title: {}. "
-                "Status: {}".format(
-                    challenge["id"], challenge["title"], response.status_code
+                "Reason: {}".format(
+                    challenge["id"], challenge["title"], reason
                 )
             )
     else:
@@ -95,7 +105,8 @@ def scale_up_workers(challenge, num_workers):
     if num_workers == 0:
         response = start_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        if worker_action_succeeded(response):
+        succeeded, reason = worker_action_result(response)
+        if succeeded:
             print(
                 "Started worker for Challenge ID: {}, Title: {}.".format(
                     challenge["id"], challenge["title"]
@@ -104,8 +115,8 @@ def scale_up_workers(challenge, num_workers):
         else:
             print(
                 "Failed to start worker for Challenge ID: {}, Title: {}. "
-                "Status: {}".format(
-                    challenge["id"], challenge["title"], response.status_code
+                "Reason: {}".format(
+                    challenge["id"], challenge["title"], reason
                 )
             )
     else:
