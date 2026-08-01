@@ -28,9 +28,12 @@ mv ./kubectl /usr/local/bin/kubectl
 echo "### Kubectl Installed"
 
 # Install helm
+# Pinned to a fixed release rather than the mutable `main` branch script
+# default (which installs whatever the latest v3 patch happens to be at
+# run time) so this step is reproducible across worker restarts.
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod +x get_helm.sh
-./get_helm.sh
+./get_helm.sh --version v3.21.3
 echo "### Helm Installed"
 
 # Install aws-container-insights
@@ -63,15 +66,36 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 # quick-install.yaml silently no-op'd on already-existing resources and
 # never advanced, which is how this cluster ended up permanently pinned to
 # a 2021-era Cilium build incompatible with current EKS AMI kernels.
-helm repo add cilium https://helm.cilium.io/
+helm repo add --force-update cilium https://helm.cilium.io/
 helm repo update cilium
-helm upgrade --install cilium cilium/cilium --version 1.19.6 \
+
+# One-time migration: clusters bootstrapped before this change installed
+# Cilium via `kubectl create` against a raw quick-install.yaml, so those
+# resources carry no Helm ownership metadata. Helm refuses to adopt them
+# ("invalid ownership metadata") and errors out instead of upgrading. If no
+# Helm release named "cilium" is tracked yet but the legacy ConfigMap is
+# still present, this is one of those clusters - remove the legacy install
+# first so the Helm install below starts clean.
+if ! helm status cilium --namespace kube-system >/dev/null 2>&1 && \
+   kubectl get configmap cilium-config -n kube-system >/dev/null 2>&1; then
+  echo "### Migrating legacy (non-Helm) Cilium install"
+  kubectl delete -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml --ignore-not-found
+fi
+
+if ! helm upgrade --install cilium cilium/cilium --version 1.19.6 \
   --namespace kube-system \
   --set ipam.mode=cluster-pool \
-  --set kubeProxyReplacement=false
-echo "### Cilium Installed"
+  --set kubeProxyReplacement=false; then
+  echo "### Cilium Helm install failed" >&2
+  exit 1
+fi
 
-kubectl -n kube-system rollout status daemonset/cilium --timeout=120s
+if ! kubectl -n kube-system rollout status daemonset/cilium --timeout=120s; then
+  echo "### Cilium daemonset failed to roll out" >&2
+  exit 1
+fi
+
+echo "### Cilium Installed"
 
 # Apply cilium network policy
 # echo "### Setting up Cilium Network Policy..."
