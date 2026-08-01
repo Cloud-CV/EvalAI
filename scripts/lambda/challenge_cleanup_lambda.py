@@ -175,7 +175,7 @@ def handler(event, context):
                 f"Could not verify pending submissions for challenge "
                 f"{challenge_pk} and failed to reschedule cleanup; "
                 f"needs manual attention."
-            )
+            ) from e
         return {
             "statusCode": 200,
             "body": json.dumps(
