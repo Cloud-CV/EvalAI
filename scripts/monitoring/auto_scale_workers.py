@@ -3,7 +3,7 @@ import warnings
 from datetime import datetime
 
 import pytz
-from auto_stop_workers import start_worker, stop_worker
+import requests
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
@@ -15,6 +15,25 @@ ENV = os.environ.get("ENV", "dev")
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
 auth_token = os.environ.get("AUTH_TOKEN")
+authorization_header = {"Authorization": "Bearer {}".format(auth_token)}
+
+
+def start_worker(challenge_id):
+    start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start/".format(
+        evalai_endpoint, challenge_id
+    )
+    response = requests.put(
+        start_worker_endpoint, headers=authorization_header
+    )
+    return response
+
+
+def stop_worker(challenge_id):
+    stop_worker_endpoint = "{}/api/challenges/{}/manage_worker/stop/".format(
+        evalai_endpoint, challenge_id
+    )
+    response = requests.put(stop_worker_endpoint, headers=authorization_header)
+    return response
 
 
 def get_pending_submission_count(challenge_metrics):
