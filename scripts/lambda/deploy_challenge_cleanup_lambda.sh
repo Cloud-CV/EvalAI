@@ -104,6 +104,11 @@ if [ -n "${EVENTBRIDGE_SCHEDULER_ROLE_ARN:-}" ]; then
         "${EVENTBRIDGE_SCHEDULER_ROLE_ARN}"
 fi
 if [ -n "${CLEANUP_RETRY_DELAY_MINUTES:-}" ]; then
+    if ! [[ "${CLEANUP_RETRY_DELAY_MINUTES}" =~ ^[1-9][0-9]*$ ]]; then
+        echo "==> ERROR: CLEANUP_RETRY_DELAY_MINUTES must be a positive" \
+             "integer, got: ${CLEANUP_RETRY_DELAY_MINUTES}" >&2
+        exit 1
+    fi
     set_override CLEANUP_RETRY_DELAY_MINUTES \
         "${CLEANUP_RETRY_DELAY_MINUTES}"
 fi
