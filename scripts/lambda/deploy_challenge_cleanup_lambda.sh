@@ -76,7 +76,11 @@ else
     # including vars this script doesn't know about, is left untouched.
     OVERRIDES_JSON="{}"
     set_override() {
-        OVERRIDES_JSON="$(jq --arg k "$1" --arg v "$2" '. + {($k): $v}' \
+        # Pass the value through an env var, not --arg, so secrets like
+        # LAMBDA_AUTH_TOKEN never appear in this process's argv (visible
+        # via `ps` to other users on the box).
+        OVERRIDES_JSON="$(OVERRIDE_VALUE="$2" jq --arg k "$1" \
+            '. + {($k): env.OVERRIDE_VALUE}' \
             <<<"${OVERRIDES_JSON}")"
     }
     if [ -n "${ECS_CLUSTER:-}" ]; then
@@ -111,8 +115,11 @@ else
         '$existing + $overrides')"
 
     MISSING="$(jq -r '
-        ["ECS_CLUSTER","EVALAI_API_SERVER","LAMBDA_AUTH_TOKEN",
-         "EVENTBRIDGE_SCHEDULER_ROLE_ARN"] - (keys) | join(", ")
+        . as $env
+        | ["ECS_CLUSTER","EVALAI_API_SERVER","LAMBDA_AUTH_TOKEN",
+           "EVENTBRIDGE_SCHEDULER_ROLE_ARN"]
+        | map(select(. as $name | (($env[$name] // "") | length) == 0))
+        | join(", ")
     ' <<<"${MERGED_ENV_JSON}")"
     if [ -n "${MISSING}" ]; then
         echo "==> ERROR: missing required config with no existing value" \
