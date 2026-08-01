@@ -466,9 +466,19 @@ class Challenge(TimeStampedModel):
     use_fifo_sqs = models.BooleanField(
         default=False,
         help_text=(
-            "Use a FIFO SQS queue for strict per-phase submission ordering. "
-            "Do not toggle after queue creation; provision a new challenge "
-            "instead."
+            "Use a FIFO SQS queue with per-team ordering within a phase "
+            "(MessageGroupId=phase_pk-participant_team_pk) so different "
+            "teams can be processed in parallel by ECS workers. "
+            "MessageDeduplicationId is unique per enqueue (submission_pk "
+            "plus UUID), so intentional resume/republish is not dropped; "
+            "SQS only deduplicates identical MessageDeduplicationId values "
+            "within a five-minute window. Do not toggle after queue "
+            "creation; provision a new challenge instead. When changing "
+            "group-id strategy: pause enqueueing, deploy the new grouping, "
+            "purge or drain the FIFO queue (purge deletes pending work), "
+            "requeue any submitted/queued submissions that still need "
+            "evaluation, then resume producers only after the queue is "
+            "empty under the new strategy."
         ),
     )
     allow_resuming_submissions = models.BooleanField(

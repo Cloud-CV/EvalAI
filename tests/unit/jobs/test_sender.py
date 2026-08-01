@@ -292,9 +292,11 @@ def test_get_or_create_sqs_queue_logs_exception_for_other_client_error(
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.Challenge.objects.get")
 def test_publish_submission_message_fifo_sends_group_and_dedup_id(
     mock_challenge_get,
+    mock_get_submission_model,
     mock_get_or_create_sqs_queue,
     message,
 ):
@@ -303,6 +305,10 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
     mock_challenge.slack_webhook_url = ""
     mock_challenge_get.return_value = mock_challenge
 
+    mock_submission = MagicMock()
+    mock_submission.participant_team_id = 42
+    mock_get_submission_model.return_value = mock_submission
+
     mock_queue = MagicMock()
     mock_queue.send_message.return_value = {"MessageId": "12345"}
     mock_get_or_create_sqs_queue.return_value = mock_queue
@@ -310,16 +316,21 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
     publish_submission_message(message)
 
     call_kwargs = mock_queue.send_message.call_args[1]
-    assert call_kwargs["MessageGroupId"] == str(message["phase_pk"])
+    # phase_pk-team_pk: order within a team, parallel across teams.
+    assert call_kwargs["MessageGroupId"] == "{}-{}".format(
+        message["phase_pk"], mock_submission.participant_team_id
+    )
     dedup_id = call_kwargs["MessageDeduplicationId"]
     assert dedup_id.startswith("{}-".format(message["submission_pk"]))
     assert len(dedup_id) > len(str(message["submission_pk"])) + 1
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.Challenge.objects.get")
 def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
     mock_challenge_get,
+    mock_get_submission_model,
     mock_get_or_create_sqs_queue,
     message,
 ):
@@ -333,6 +344,10 @@ def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
     mock_challenge.queue = "test-queue.fifo"
     mock_challenge.slack_webhook_url = ""
     mock_challenge_get.return_value = mock_challenge
+
+    mock_submission = MagicMock()
+    mock_submission.participant_team_id = 42
+    mock_get_submission_model.return_value = mock_submission
 
     mock_queue = MagicMock()
     mock_queue.send_message.return_value = {"MessageId": "12345"}
@@ -350,6 +365,139 @@ def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
     assert first_dedup != second_dedup
     assert first_dedup.startswith("{}-".format(message["submission_pk"]))
     assert second_dedup.startswith("{}-".format(message["submission_pk"]))
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_group_id_same_team_same_phase(
+    mock_challenge_get,
+    mock_get_submission_model,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Same team + phase share a MessageGroupId (ordered within the team)."""
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_submission = MagicMock()
+    mock_submission.participant_team_id = 7
+    mock_get_submission_model.return_value = mock_submission
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    first = dict(message)
+    first["submission_pk"] = 101
+    second = dict(message)
+    second["submission_pk"] = 202
+    assert first["phase_pk"] == second["phase_pk"]
+
+    publish_submission_message(first)
+    publish_submission_message(second)
+
+    first_group = mock_queue.send_message.call_args_list[0][1][
+        "MessageGroupId"
+    ]
+    second_group = mock_queue.send_message.call_args_list[1][1][
+        "MessageGroupId"
+    ]
+    assert first_group == "1-7"
+    assert second_group == "1-7"
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_group_id_differs_by_team(
+    mock_challenge_get,
+    mock_get_submission_model,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Different teams in the same phase get distinct MessageGroupIds.
+
+    SQS FIFO delivers at most one in-flight message per MessageGroupId.
+    Per-team groups let ECS workers evaluate different teams in parallel.
+    """
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    team_a = MagicMock()
+    team_a.participant_team_id = 7
+    team_b = MagicMock()
+    team_b.participant_team_id = 8
+    mock_get_submission_model.side_effect = [team_a, team_b]
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    first = dict(message)
+    first["submission_pk"] = 101
+    second = dict(message)
+    second["submission_pk"] = 202
+    assert first["phase_pk"] == second["phase_pk"]
+
+    publish_submission_message(first)
+    publish_submission_message(second)
+
+    first_group = mock_queue.send_message.call_args_list[0][1][
+        "MessageGroupId"
+    ]
+    second_group = mock_queue.send_message.call_args_list[1][1][
+        "MessageGroupId"
+    ]
+    assert first_group == "1-7"
+    assert second_group == "1-8"
+    assert first_group != second_group
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_group_id_differs_by_phase(
+    mock_challenge_get,
+    mock_get_submission_model,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """Same team in different phases gets distinct MessageGroupIds."""
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_submission = MagicMock()
+    mock_submission.participant_team_id = 7
+    mock_get_submission_model.return_value = mock_submission
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    first = dict(message)
+    first["phase_pk"] = 10
+    second = dict(message)
+    second["phase_pk"] = 20
+
+    publish_submission_message(first)
+    publish_submission_message(second)
+
+    first_group = mock_queue.send_message.call_args_list[0][1][
+        "MessageGroupId"
+    ]
+    second_group = mock_queue.send_message.call_args_list[1][1][
+        "MessageGroupId"
+    ]
+    assert first_group == "10-7"
+    assert second_group == "20-7"
+    assert first_group != second_group
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")
