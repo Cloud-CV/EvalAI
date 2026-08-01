@@ -5,6 +5,13 @@
 # Mirrors deploy_auto_scale_eks_nodes_lambda.sh: single source of truth for
 # this function's code and configuration instead of manual console edits.
 #
+# Only the code is updated unconditionally. Configuration is fetched from
+# the live function first and merged with whatever env vars you pass here,
+# so you only need to supply values you're changing - anything already set
+# on the function (including vars this script doesn't know about) is left
+# alone. On a function's first deploy, nothing is set yet, so pass every
+# required var at least once.
+#
 # Usage:
 #   ENVIRONMENT=production \
 #   ECS_CLUSTER=evalai-prod-cluster \
@@ -13,14 +20,16 @@
 #   EVENTBRIDGE_SCHEDULER_ROLE_ARN=arn:aws:iam::123456789012:role/evalai-scheduler \
 #   ./scripts/lambda/deploy_challenge_cleanup_lambda.sh
 #
-# Optional:
-#   AWS_REGION                (default us-east-1)
-#   AWS_PROFILE                passed through to the AWS CLI
-#   FUNCTION_NAME               override the derived function name
-#   CLEANUP_RETRY_DELAY_MINUTES  minutes between pending-submission re-checks
-#                                (default 60, matches the Lambda's own default)
-#   DLQ_ARN                    SQS queue / SNS topic ARN for failed async invocations
-#   SKIP_CONFIG=1              skip updating function configuration/env vars
+# Optional (only overrides the existing value on the function if set):
+#   AWS_REGION                    (falls back to us-east-1 if nothing is set)
+#   ECS_CLUSTER, EVALAI_API_SERVER, LAMBDA_AUTH_TOKEN,
+#   EVENTBRIDGE_SCHEDULER_ROLE_ARN, CLEANUP_RETRY_DELAY_MINUTES
+#   AWS_PROFILE                    passed through to the AWS CLI
+#   FUNCTION_NAME                  override the derived function name
+#   DLQ_ARN                        SQS queue / SNS topic ARN for failed async invocations
+#   SKIP_CONFIG=1                  skip updating function configuration/env vars
+#
+# Requires: aws CLI, jq
 
 set -euo pipefail
 
@@ -60,13 +69,12 @@ if [ "${SKIP_CONFIG:-0}" = "1" ]; then
     exit 0
 fi
 
-if [ -z "${ECS_CLUSTER:-}" ] || [ -z "${EVALAI_API_SERVER:-}" ] \
-    || [ -z "${LAMBDA_AUTH_TOKEN:-}" ] \
-    || [ -z "${EVENTBRIDGE_SCHEDULER_ROLE_ARN:-}" ]; then
-    echo "==> Skipping configuration update" \
-         "(set ECS_CLUSTER, EVALAI_API_SERVER, LAMBDA_AUTH_TOKEN," \
-         "and EVENTBRIDGE_SCHEDULER_ROLE_ARN to apply)"
-    exit 0
+echo "==> Fetching existing function configuration"
+EXISTING_ENV_JSON="$(aws_cli lambda get-function-configuration \
+    --function-name "${FUNCTION_NAME}" \
+    --query "Environment.Variables" --output json)"
+if [ "${EXISTING_ENV_JSON}" = "null" ]; then
+    EXISTING_ENV_JSON="{}"
 fi
 
 echo "==> Resolving function ARN (needed for self-rescheduling)"
@@ -74,20 +82,58 @@ FUNCTION_ARN="$(aws_cli lambda get-function \
     --function-name "${FUNCTION_NAME}" \
     --query "Configuration.FunctionArn" --output text)"
 
-echo "==> Updating function configuration"
-ENV_VARS="ECS_CLUSTER=${ECS_CLUSTER}"
-ENV_VARS="${ENV_VARS},ENVIRONMENT=${ENVIRONMENT}"
-ENV_VARS="${ENV_VARS},EVALAI_API_SERVER=${EVALAI_API_SERVER}"
-ENV_VARS="${ENV_VARS},LAMBDA_AUTH_TOKEN=${LAMBDA_AUTH_TOKEN}"
-ENV_VARS="${ENV_VARS},EVENTBRIDGE_SCHEDULER_ROLE_ARN=${EVENTBRIDGE_SCHEDULER_ROLE_ARN}"
-ENV_VARS="${ENV_VARS},CHALLENGE_CLEANUP_LAMBDA_ARN=${FUNCTION_ARN}"
-if [ -n "${CLEANUP_RETRY_DELAY_MINUTES:-}" ]; then
-    ENV_VARS="${ENV_VARS},CLEANUP_RETRY_DELAY_MINUTES=${CLEANUP_RETRY_DELAY_MINUTES}"
+# Only vars actually provided (plus the two always intrinsic to this
+# deploy) become overrides - anything else already on the function,
+# including vars this script doesn't know about, is left untouched.
+OVERRIDES_JSON="{}"
+set_override() {
+    OVERRIDES_JSON="$(jq --arg k "$1" --arg v "$2" '. + {($k): $v}' \
+        <<<"${OVERRIDES_JSON}")"
+}
+if [ -n "${ECS_CLUSTER:-}" ]; then
+    set_override ECS_CLUSTER "${ECS_CLUSTER}"
 fi
+if [ -n "${EVALAI_API_SERVER:-}" ]; then
+    set_override EVALAI_API_SERVER "${EVALAI_API_SERVER}"
+fi
+if [ -n "${LAMBDA_AUTH_TOKEN:-}" ]; then
+    set_override LAMBDA_AUTH_TOKEN "${LAMBDA_AUTH_TOKEN}"
+fi
+if [ -n "${EVENTBRIDGE_SCHEDULER_ROLE_ARN:-}" ]; then
+    set_override EVENTBRIDGE_SCHEDULER_ROLE_ARN \
+        "${EVENTBRIDGE_SCHEDULER_ROLE_ARN}"
+fi
+if [ -n "${CLEANUP_RETRY_DELAY_MINUTES:-}" ]; then
+    set_override CLEANUP_RETRY_DELAY_MINUTES \
+        "${CLEANUP_RETRY_DELAY_MINUTES}"
+fi
+set_override ENVIRONMENT "${ENVIRONMENT}"
+set_override CHALLENGE_CLEANUP_LAMBDA_ARN "${FUNCTION_ARN}"
+
+MERGED_ENV_JSON="$(jq -n \
+    --argjson existing "${EXISTING_ENV_JSON}" \
+    --argjson overrides "${OVERRIDES_JSON}" \
+    '$existing + $overrides')"
+
+MISSING="$(jq -r '
+    ["ECS_CLUSTER","EVALAI_API_SERVER","LAMBDA_AUTH_TOKEN",
+     "EVENTBRIDGE_SCHEDULER_ROLE_ARN"] - (keys) | join(", ")
+' <<<"${MERGED_ENV_JSON}")"
+if [ -n "${MISSING}" ]; then
+    echo "==> ERROR: missing required config with no existing value set:" \
+         "${MISSING}" >&2
+    echo "    Pass these on first deploy of a function." >&2
+    exit 1
+fi
+
+echo "==> Updating function configuration"
+ENV_FILE="${BUILD_DIR}/environment.json"
+jq -n --argjson vars "${MERGED_ENV_JSON}" '{Variables: $vars}' \
+    >"${ENV_FILE}"
 
 CONFIG_ARGS=(
     --function-name "${FUNCTION_NAME}"
-    --environment "Variables={${ENV_VARS}}"
+    --environment "file://${ENV_FILE}"
     --timeout 300
 )
 # Cleanup is invoked by EventBridge Scheduler; routing failures to a DLQ is
