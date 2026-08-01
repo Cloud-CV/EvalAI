@@ -38,7 +38,6 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta
-from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import boto3
@@ -81,6 +80,7 @@ def get_pending_submission_count(challenge_pk):
             "EVALAI_API_SERVER or LAMBDA_AUTH_TOKEN not configured."
         )
 
+    challenge_pk = int(challenge_pk)
     url = (
         f"{EVALAI_API_SERVER.rstrip('/')}/api/challenges/challenge/"
         f"{challenge_pk}/pending_submission_count/"
@@ -99,6 +99,9 @@ def reschedule_cleanup(challenge_pk, queue_name):
     schedule_challenge_cleanup in apps/challenges/aws_utils.py. The schedule
     that invoked this Lambda already self-deleted (ActionAfterCompletion is
     DELETE on every schedule), so this always creates a fresh one.
+
+    Returns True on success, False on failure (logged) so the caller can
+    surface the failure instead of reporting a false success.
     """
     if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
         logger.error(
@@ -106,7 +109,7 @@ def reschedule_cleanup(challenge_pk, queue_name):
             "not set. Cannot reschedule cleanup for challenge %s.",
             challenge_pk,
         )
-        return
+        return False
 
     schedule_name = f"evalai-cleanup-challenge-{ENVIRONMENT}-{challenge_pk}"
     retry_at = datetime.utcnow() + timedelta(
@@ -121,6 +124,7 @@ def reschedule_cleanup(challenge_pk, queue_name):
         scheduler_client.create_schedule(
             Name=schedule_name,
             ScheduleExpression=schedule_expression,
+            ScheduleExpressionTimezone="UTC",
             FlexibleTimeWindow={"Mode": "OFF"},
             Target={
                 "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
@@ -136,12 +140,14 @@ def reschedule_cleanup(challenge_pk, queue_name):
             challenge_pk,
             retry_at,
         )
+        return True
     except ClientError as e:
         logger.exception(
             "Failed to reschedule cleanup for challenge %s: %s",
             challenge_pk,
             e,
         )
+        return False
 
 
 def handler(event, context):
@@ -157,14 +163,19 @@ def handler(event, context):
 
     try:
         pending_submissions = get_pending_submission_count(challenge_pk)
-    except (HTTPError, URLError, RuntimeError, KeyError, ValueError) as e:
+    except Exception as e:  # noqa: BLE001 - any failure here must fail safe
         logger.error(
             "Failed to check pending submissions for challenge %s: %s. "
             "Skipping cleanup and rescheduling to be safe.",
             challenge_pk,
             e,
         )
-        reschedule_cleanup(challenge_pk, queue_name)
+        if not reschedule_cleanup(challenge_pk, queue_name):
+            raise RuntimeError(
+                f"Could not verify pending submissions for challenge "
+                f"{challenge_pk} and failed to reschedule cleanup; "
+                f"needs manual attention."
+            )
         return {
             "statusCode": 200,
             "body": json.dumps(
@@ -182,7 +193,11 @@ def handler(event, context):
             challenge_pk,
             pending_submissions,
         )
-        reschedule_cleanup(challenge_pk, queue_name)
+        if not reschedule_cleanup(challenge_pk, queue_name):
+            raise RuntimeError(
+                f"Challenge {challenge_pk} has pending submissions but "
+                f"failed to reschedule cleanup; needs manual attention."
+            )
         return {
             "statusCode": 200,
             "body": json.dumps(

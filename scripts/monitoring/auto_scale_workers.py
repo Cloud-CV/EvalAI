@@ -18,12 +18,17 @@ auth_token = os.environ.get("AUTH_TOKEN")
 authorization_header = {"Authorization": "Bearer {}".format(auth_token)}
 
 
+REQUEST_TIMEOUT_SECONDS = 10
+
+
 def start_worker(challenge_id):
     start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start/".format(
         evalai_endpoint, challenge_id
     )
     response = requests.put(
-        start_worker_endpoint, headers=authorization_header
+        start_worker_endpoint,
+        headers=authorization_header,
+        timeout=REQUEST_TIMEOUT_SECONDS,
     )
     return response
 
@@ -32,7 +37,11 @@ def stop_worker(challenge_id):
     stop_worker_endpoint = "{}/api/challenges/{}/manage_worker/stop/".format(
         evalai_endpoint, challenge_id
     )
-    response = requests.put(stop_worker_endpoint, headers=authorization_header)
+    response = requests.put(
+        stop_worker_endpoint,
+        headers=authorization_header,
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
     return response
 
 
@@ -47,11 +56,19 @@ def scale_down_workers(challenge, num_workers):
     if num_workers > 0:
         response = stop_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        print(
-            "Stopped worker for Challenge ID: {}, Title: {}".format(
-                challenge["id"], challenge["title"]
+        if response.ok:
+            print(
+                "Stopped worker for Challenge ID: {}, Title: {}".format(
+                    challenge["id"], challenge["title"]
+                )
             )
-        )
+        else:
+            print(
+                "Failed to stop worker for Challenge ID: {}, Title: {}. "
+                "Status: {}".format(
+                    challenge["id"], challenge["title"], response.status_code
+                )
+            )
     else:
         print(
             "No workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
@@ -64,11 +81,19 @@ def scale_up_workers(challenge, num_workers):
     if num_workers == 0:
         response = start_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        print(
-            "Started worker for Challenge ID: {}, Title: {}.".format(
-                challenge["id"], challenge["title"]
+        if response.ok:
+            print(
+                "Started worker for Challenge ID: {}, Title: {}.".format(
+                    challenge["id"], challenge["title"]
+                )
             )
-        )
+        else:
+            print(
+                "Failed to start worker for Challenge ID: {}, Title: {}. "
+                "Status: {}".format(
+                    challenge["id"], challenge["title"], response.status_code
+                )
+            )
     else:
         print(
             "Existing workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
