@@ -55,8 +55,8 @@ from challenges.aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
-    suspend_auto_scaling_for_service,
     strip_fifo_suffix,
+    suspend_auto_scaling_for_service,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
@@ -2506,7 +2506,7 @@ class TestScaleWorkers(unittest.TestCase):
         mock_get_boto3_client,
         mock_settings,
     ):
-        """Restarting an idle service at its existing ceiling needs no AWS churn."""
+        """Scaling a running service at its existing ceiling needs no AWS churn."""
         mock_get_boto3_client.return_value = MagicMock()
         mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
@@ -2514,7 +2514,8 @@ class TestScaleWorkers(unittest.TestCase):
 
         challenge = MagicMock()
         challenge.pk = 1
-        challenge.workers = 0
+        # Already running (not a scale-from-zero restore) with matching ceiling.
+        challenge.workers = 1
         challenge.max_ecs_workers = 2
 
         result = scale_workers([challenge], num_of_tasks=2)
