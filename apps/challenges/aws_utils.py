@@ -703,6 +703,91 @@ def setup_auto_scaling_for_service(challenge):
         return False
 
 
+def _deregister_auto_scaling_resources(challenge):
+    """
+    Deregister the Application Auto Scaling target and delete its CloudWatch
+    alarms for a challenge service.
+
+    Does not touch the EventBridge challenge-cleanup schedule. Returns True on
+    success (including already-absent resources), False if AWS rejects the call.
+    """
+    queue_name = challenge.queue
+    service_name = get_ecs_service_name(queue_name)
+    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
+    resource_id = f"service/{cluster}/{service_name}"
+
+    deregister_ok = True
+    try:
+        autoscaling_client = get_boto3_client(
+            "application-autoscaling", aws_keys
+        )
+        autoscaling_client.deregister_scalable_target(
+            ServiceNamespace="ecs",
+            ResourceId=resource_id,
+            ScalableDimension="ecs:service:DesiredCount",
+        )
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "")
+        # Already gone is fine; anything else is a real failure.
+        if error_code != "ObjectNotFoundException":
+            logger.exception(
+                "Failed to deregister auto-scaling for challenge %s: %s",
+                challenge.pk,
+                e,
+            )
+            deregister_ok = False
+
+    try:
+        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+        cloudwatch_client.delete_alarms(
+            AlarmNames=[
+                f"{service_name}_scale_up",
+                f"{service_name}_scale_down",
+            ]
+        )
+    except ClientError:
+        pass  # Already deleted or never created
+
+    return deregister_ok
+
+
+def suspend_auto_scaling_for_service(challenge):
+    """
+    Temporarily disable queue-depth autoscaling so a manual stop or scale-to-zero
+    is not undone by CloudWatch alarms.
+
+    After #5168, ``min_ecs_workers`` defaults to 1. Leaving autoscaling registered
+    means the scale-down policy restores ExactCapacity=min within ~2 minutes
+    (empty queue) and the scale-up policy restores ExactCapacity=max within ~1
+    minute (non-empty queue), so ``stop_workers`` / scale-to-0 report success
+    while ECS tasks keep running.
+
+    Does not modify ``challenge.min_ecs_workers`` / ``max_ecs_workers``. Call
+    ``setup_auto_scaling_for_service`` on start/scale-up to restore. Does not
+    delete the EventBridge challenge-cleanup schedule.
+
+    Returns:
+    bool: True if autoscaling was suspended (or intentionally skipped), False
+        if AWS rejected the change.
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping auto-scaling suspend for challenge %s in development environment.",
+            challenge.pk,
+        )
+        return True
+
+    if not _deregister_auto_scaling_resources(challenge):
+        return False
+
+    logger.info(
+        "Auto-scaling suspended for challenge %s (service: %s)",
+        challenge.pk,
+        get_ecs_service_name(challenge.queue),
+    )
+    return True
+
+
 def cleanup_auto_scaling_for_service(challenge):
     """
     Removes auto-scaling configuration and CloudWatch alarms for a challenge.
@@ -720,35 +805,7 @@ def cleanup_auto_scaling_for_service(challenge):
         )
         return
 
-    queue_name = challenge.queue
-    service_name = get_ecs_service_name(queue_name)
-    cluster = COMMON_SETTINGS_DICT["CLUSTER"]
-    resource_id = f"service/{cluster}/{service_name}"
-
-    # Deregister scalable target (also removes scaling policies)
-    try:
-        autoscaling_client = get_boto3_client(
-            "application-autoscaling", aws_keys
-        )
-        autoscaling_client.deregister_scalable_target(
-            ServiceNamespace="ecs",
-            ResourceId=resource_id,
-            ScalableDimension="ecs:service:DesiredCount",
-        )
-    except ClientError:
-        pass  # Already deregistered or never registered
-
-    # Delete CloudWatch alarms
-    try:
-        cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
-        cloudwatch_client.delete_alarms(
-            AlarmNames=[
-                f"{service_name}_scale_up",
-                f"{service_name}_scale_down",
-            ]
-        )
-    except ClientError:
-        pass  # Already deleted or never created
+    _deregister_auto_scaling_resources(challenge)
 
     # Delete EventBridge cleanup schedule
     delete_challenge_cleanup_schedule(challenge)
@@ -756,7 +813,7 @@ def cleanup_auto_scaling_for_service(challenge):
     logger.info(
         "Auto-scaling cleaned up for challenge %s (service: %s)",
         challenge.pk,
-        service_name,
+        get_ecs_service_name(challenge.queue),
     )
 
 
@@ -1938,6 +1995,21 @@ def start_workers(queryset):
                     }
                 )
                 continue
+            # A prior stop/scale-to-zero suspends autoscaling; restore it so
+            # queue-depth policies work again. create_service already calls
+            # setup_auto_scaling_for_service, so this is an idempotent upsert
+            # for the common update_service path.
+            if not setup_auto_scaling_for_service(challenge):
+                failures.append(
+                    {
+                        "message": (
+                            "Workers started, but failed to restore "
+                            "auto-scaling configuration."
+                        ),
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
             # Clear any OOM or evaluation module error on successful start
             if challenge.evaluation_module_error:
                 challenge.evaluation_module_error = None
@@ -1956,6 +2028,9 @@ def stop_workers(queryset):
     The function called by the admin action method to stop all the selected workers.
 
     Calls the service_manager method. Before calling, verifies that the challenge is not new, and is active.
+
+    Suspends queue-depth autoscaling before scaling to 0 so CloudWatch alarms
+    cannot restore desiredCount to min/max_ecs_workers after a successful stop.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
@@ -1980,10 +2055,30 @@ def stop_workers(queryset):
     failures = []
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
+            # Suspend before ECS so a racing scale alarm cannot undo the stop.
+            if not suspend_auto_scaling_for_service(challenge):
+                failures.append(
+                    {
+                        "message": (
+                            "Failed to suspend auto-scaling. Workers were "
+                            "not stopped."
+                        ),
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                # Best-effort restore so a failed stop does not leave
+                # autoscaling permanently suspended.
+                if not setup_auto_scaling_for_service(challenge):
+                    logger.error(
+                        "Failed to restore auto-scaling after stop failure "
+                        "for challenge %s; AWS bounds may be inconsistent.",
+                        challenge.pk,
+                    )
                 failures.append(
                     {
                         "message": response["Error"],
@@ -2010,6 +2105,10 @@ def scale_workers(queryset, num_of_tasks):
     to match. The scale-up policy uses ExactCapacity, so leaving a stale ceiling
     behind would let the next queue-depth alarm override the requested count in
     whichever direction the ceiling disagrees.
+
+    Scaling to 0 is an idle pause: the stored ceiling is preserved, but
+    autoscaling is suspended so queue-depth alarms cannot undo the pause.
+    Scaling back up from 0 restores autoscaling from the challenge fields.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
@@ -2045,14 +2144,52 @@ def scale_workers(queryset, num_of_tasks):
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
+        # A target of 0 is an idle pause, not a request to change the ceiling.
+        # Suspend autoscaling so scale-down/up alarms cannot restore workers.
+        if num_of_tasks == 0:
+            if not suspend_auto_scaling_for_service(challenge):
+                failures.append(
+                    {
+                        "message": (
+                            "Failed to suspend auto-scaling. Workers were "
+                            "not scaled."
+                        ),
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+            response = service_manager(
+                client, challenge=challenge, num_of_tasks=0
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                if not setup_auto_scaling_for_service(challenge):
+                    logger.error(
+                        "Failed to restore auto-scaling after scale-to-zero "
+                        "failure for challenge %s; AWS bounds may be "
+                        "inconsistent.",
+                        challenge.pk,
+                    )
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+            count += 1
+            continue
         # Move the auto-scaling ceiling before ECS. Scaling up past a stale
         # ceiling gets clamped back down; scaling down below one gets pushed
         # back up, since the scale-up policy restores ExactCapacity == ceiling.
-        # A target of 0 is an idle pause, not a request to change the ceiling.
+        # Also restore autoscaling when leaving a prior scale-to-zero pause
+        # even if the ceiling is unchanged.
         ceiling_changed = False
         previous_max_ecs_workers = challenge.max_ecs_workers
-        if num_of_tasks > 0 and num_of_tasks != challenge.max_ecs_workers:
+        was_stopped = challenge.workers == 0
+        if num_of_tasks != challenge.max_ecs_workers:
             challenge.max_ecs_workers = num_of_tasks
+            ceiling_changed = True
+        if ceiling_changed or was_stopped:
             if not setup_auto_scaling_for_service(challenge):
                 challenge.max_ecs_workers = previous_max_ecs_workers
                 failures.append(
@@ -2062,7 +2199,6 @@ def scale_workers(queryset, num_of_tasks):
                     }
                 )
                 continue
-            ceiling_changed = True
         response = service_manager(
             client, challenge=challenge, num_of_tasks=num_of_tasks
         )

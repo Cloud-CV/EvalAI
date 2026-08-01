@@ -55,6 +55,7 @@ from challenges.aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
+    suspend_auto_scaling_for_service,
     strip_fifo_suffix,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
@@ -1653,10 +1654,15 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.assert_not_called()
 
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_start_workers_success(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
     ):
         # Setup mock ECS client
         mock_client = MagicMock()
@@ -1664,6 +1670,7 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
+        mock_setup_auto_scaling.return_value = True
 
         # Mock queryset
         challenge = MagicMock()
@@ -1690,12 +1697,18 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.assert_called_once_with(
             mock_client, challenge=challenge, num_of_tasks=1
         )
+        mock_setup_auto_scaling.assert_called_once_with(challenge)
 
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_start_workers_clears_evaluation_module_error(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
     ):
         # Setup mock ECS client
         mock_client = MagicMock()
@@ -1703,6 +1716,7 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
+        mock_setup_auto_scaling.return_value = True
 
         # Mock queryset with a challenge that has an OOM error
         challenge = MagicMock()
@@ -1722,10 +1736,15 @@ class TestStartWorkers(unittest.TestCase):
         self.assertEqual(result, {"count": 1, "failures": []})
 
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     @patch("challenges.aws_utils.settings", DEBUG=False)
     def test_start_workers_no_clear_when_no_error(
-        self, mock_settings, mock_service_manager, mock_get_boto3_client
+        self,
+        mock_settings,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
     ):
         # Setup mock ECS client
         mock_client = MagicMock()
@@ -1733,6 +1752,7 @@ class TestStartWorkers(unittest.TestCase):
         mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
+        mock_setup_auto_scaling.return_value = True
 
         # Mock queryset with a challenge that has no error
         challenge = MagicMock()
@@ -1747,6 +1767,47 @@ class TestStartWorkers(unittest.TestCase):
         # save() should not be called for clearing error (it's None already)
         challenge.save.assert_not_called()
         self.assertEqual(result, {"count": 1, "failures": []})
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    def test_start_workers_reports_autoscaling_restore_failure(
+        self,
+        mock_settings,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+    ):
+        """Workers can start but still fail the action if autoscaling restore fails."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_setup_auto_scaling.return_value = False
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 0
+        challenge.evaluation_module_error = None
+
+        result = start_workers([challenge])
+
+        self.assertEqual(
+            result,
+            {
+                "count": 0,
+                "failures": [
+                    {
+                        "message": (
+                            "Workers started, but failed to restore "
+                            "auto-scaling configuration."
+                        ),
+                        "challenge_pk": 1,
+                    }
+                ],
+            },
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.service_manager")
@@ -1847,15 +1908,21 @@ class TestStartWorkers(unittest.TestCase):
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.suspend_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     def test_stop_workers_success(
-        self, mock_service_manager, mock_get_boto3_client, mock_settings
+        self,
+        mock_service_manager,
+        mock_suspend_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
     ):
         # Mock client and service manager response
         mock_ec2 = MagicMock()
         mock_get_boto3_client.return_value = mock_ec2
         mock_response = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
         mock_service_manager.return_value = mock_response
+        mock_suspend_auto_scaling.return_value = True
 
         # Mock queryset with active workers
         challenge1 = MagicMock()
@@ -1877,12 +1944,20 @@ class TestStartWorkers(unittest.TestCase):
             mock_ec2, challenge=challenge2, num_of_tasks=0
         )
         self.assertEqual(mock_service_manager.call_count, 2)
+        self.assertEqual(mock_suspend_auto_scaling.call_count, 2)
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.suspend_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     def test_stop_workers_failure(
-        self, mock_service_manager, mock_get_boto3_client, mock_settings
+        self,
+        mock_service_manager,
+        mock_suspend_auto_scaling,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
     ):
         # Mock client and service manager response with error
         mock_ec2 = MagicMock()
@@ -1892,6 +1967,8 @@ class TestStartWorkers(unittest.TestCase):
             "Error": "Error stopping worker",
         }
         mock_service_manager.return_value = mock_response
+        mock_suspend_auto_scaling.return_value = True
+        mock_setup_auto_scaling.return_value = True
 
         # Mock queryset with active workers
         challenge1 = MagicMock()
@@ -1920,6 +1997,46 @@ class TestStartWorkers(unittest.TestCase):
             mock_ec2, challenge=challenge1, num_of_tasks=0
         )
         self.assertEqual(mock_service_manager.call_count, 1)
+        # Failed stop should attempt to restore autoscaling.
+        mock_setup_auto_scaling.assert_called_once_with(challenge1)
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.suspend_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_stop_workers_aborts_when_autoscaling_suspend_fails(
+        self,
+        mock_service_manager,
+        mock_suspend_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Do not scale to 0 if autoscaling cannot be suspended first."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_suspend_auto_scaling.return_value = False
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 2
+
+        result = stop_workers([challenge])
+
+        self.assertEqual(
+            result,
+            {
+                "count": 0,
+                "failures": [
+                    {
+                        "message": (
+                            "Failed to suspend auto-scaling. Workers were "
+                            "not stopped."
+                        ),
+                        "challenge_pk": 1,
+                    }
+                ],
+            },
+        )
+        mock_service_manager.assert_not_called()
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
@@ -2279,20 +2396,23 @@ class TestScaleWorkers(unittest.TestCase):
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.suspend_auto_scaling_for_service")
     @patch("challenges.aws_utils.setup_auto_scaling_for_service")
     @patch("challenges.aws_utils.service_manager")
     def test_scale_workers_to_zero_preserves_ceiling(
         self,
         mock_service_manager,
         mock_setup_auto_scaling,
+        mock_suspend_auto_scaling,
         mock_get_boto3_client,
         mock_settings,
     ):
-        """Scaling to 0 is an idle pause, not a request to lower the ceiling."""
+        """Scaling to 0 is an idle pause: preserve ceiling, suspend autoscaling."""
         mock_get_boto3_client.return_value = MagicMock()
         mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
+        mock_suspend_auto_scaling.return_value = True
 
         challenge = MagicMock()
         challenge.pk = 1
@@ -2304,6 +2424,43 @@ class TestScaleWorkers(unittest.TestCase):
         self.assertEqual(result, {"count": 1, "failures": []})
         self.assertEqual(challenge.max_ecs_workers, 4)
         mock_setup_auto_scaling.assert_not_called()
+        mock_suspend_auto_scaling.assert_called_once_with(challenge)
+        mock_service_manager.assert_called_once_with(
+            mock_get_boto3_client.return_value,
+            challenge=challenge,
+            num_of_tasks=0,
+        )
+
+    @patch("challenges.aws_utils.settings", DEBUG=False)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.setup_auto_scaling_for_service")
+    @patch("challenges.aws_utils.service_manager")
+    def test_scale_workers_from_zero_restores_autoscaling(
+        self,
+        mock_service_manager,
+        mock_setup_auto_scaling,
+        mock_get_boto3_client,
+        mock_settings,
+    ):
+        """Leaving a scale-to-zero pause must restore autoscaling even if ceiling is unchanged."""
+        mock_get_boto3_client.return_value = MagicMock()
+        mock_service_manager.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_setup_auto_scaling.return_value = True
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.workers = 0
+        challenge.max_ecs_workers = 3
+        challenge.min_ecs_workers = 1
+
+        result = scale_workers([challenge], num_of_tasks=3)
+
+        self.assertEqual(result, {"count": 1, "failures": []})
+        self.assertEqual(challenge.max_ecs_workers, 3)
+        mock_setup_auto_scaling.assert_called_once_with(challenge)
+        challenge.save.assert_not_called()
 
     @patch("challenges.aws_utils.settings", DEBUG=False)
     @patch("challenges.aws_utils.get_boto3_client")
@@ -5224,6 +5381,97 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             ][0]["ScalingAdjustment"],
             2,
         )
+
+
+class TestSuspendAutoScalingForService(unittest.TestCase):
+    @patch("challenges.aws_utils.delete_challenge_cleanup_schedule")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_suspend_auto_scaling_success(
+        self, mock_get_boto3_client, mock_delete_schedule
+    ):
+        mock_autoscaling = MagicMock()
+        mock_cloudwatch = MagicMock()
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        self.assertTrue(suspend_auto_scaling_for_service(challenge))
+
+        mock_autoscaling.deregister_scalable_target.assert_called_once()
+        mock_cloudwatch.delete_alarms.assert_called_once_with(
+            AlarmNames=[
+                "test_queue_service_scale_up",
+                "test_queue_service_scale_down",
+            ]
+        )
+        # Suspend must not delete the end-of-challenge EventBridge schedule.
+        mock_delete_schedule.assert_not_called()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_suspend_auto_scaling_treats_missing_target_as_success(
+        self, mock_get_boto3_client
+    ):
+        mock_autoscaling = MagicMock()
+        mock_autoscaling.deregister_scalable_target.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ObjectNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": 400},
+            },
+            operation_name="DeregisterScalableTarget",
+        )
+        mock_cloudwatch = MagicMock()
+
+        def side_effect(resource, keys):
+            if resource == "application-autoscaling":
+                return mock_autoscaling
+            elif resource == "cloudwatch":
+                return mock_cloudwatch
+            return MagicMock()
+
+        mock_get_boto3_client.side_effect = side_effect
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        self.assertTrue(suspend_auto_scaling_for_service(challenge))
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_suspend_auto_scaling_fails_on_unexpected_error(
+        self, mock_get_boto3_client
+    ):
+        mock_autoscaling = MagicMock()
+        mock_autoscaling.deregister_scalable_target.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "AccessDeniedException"},
+                "ResponseMetadata": {"HTTPStatusCode": 403},
+            },
+            operation_name="DeregisterScalableTarget",
+        )
+        mock_get_boto3_client.return_value = mock_autoscaling
+
+        challenge = MagicMock()
+        challenge.pk = 1
+        challenge.queue = "test_queue"
+
+        self.assertFalse(suspend_auto_scaling_for_service(challenge))
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_suspend_auto_scaling_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        self.assertTrue(suspend_auto_scaling_for_service(challenge))
 
 
 class TestCleanupAutoScalingForService(unittest.TestCase):
