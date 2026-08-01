@@ -24,10 +24,13 @@ def publish_submission_message(message):
       intentional enqueue (including resume/republish) is unique. SQS only
       deduplicates matching ids within a five-minute window.
 
-    Deploy note: changing MessageGroupId strategy while legacy messages
-    remain on the queue can allow the same submission to be processed
-    under two groups. Purge or drain FIFO queues before/after deploy
-    (see ``purge_challenge_sqs_queue``).
+    Deploy note: changing MessageGroupId strategy while producers are
+    still enqueueing can leave legacy and new group ids on the queue
+    together (same submission under two groups). Pause enqueueing,
+    deploy, purge/drain (``purge_challenge_sqs_queue``; purge deletes
+    pending work), requeue submitted/queued submissions that still need
+    evaluation, then resume producers only after the queue is empty
+    under the new strategy.
 
     Args:
         message: A Dict with following keys

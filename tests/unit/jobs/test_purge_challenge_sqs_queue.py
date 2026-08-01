@@ -1,6 +1,7 @@
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
+import botocore
 import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -14,9 +15,7 @@ def mock_challenge():
     return challenge
 
 
-@patch(
-    "jobs.management.commands.purge_challenge_sqs_queue.get_or_create_sqs_queue"
-)
+@patch("jobs.management.commands.purge_challenge_sqs_queue.get_sqs_queue")
 @patch(
     "jobs.management.commands.purge_challenge_sqs_queue.Challenge.objects.get"
 )
@@ -35,6 +34,7 @@ def test_purge_challenge_sqs_queue_success(
         stdout=out,
     )
 
+    mock_challenge_get.assert_called_once_with(pk=mock_challenge.pk)
     mock_get_queue.assert_called_once_with(
         mock_challenge.queue, mock_challenge
     )
@@ -68,9 +68,33 @@ def test_purge_challenge_sqs_queue_empty_queue_name(mock_challenge_get):
         call_command("purge_challenge_sqs_queue", "1", "--yes")
 
 
+@patch("jobs.management.commands.purge_challenge_sqs_queue.get_sqs_queue")
 @patch(
-    "jobs.management.commands.purge_challenge_sqs_queue.get_or_create_sqs_queue"
+    "jobs.management.commands.purge_challenge_sqs_queue.Challenge.objects.get"
 )
+def test_purge_challenge_sqs_queue_missing_sqs_queue(
+    mock_challenge_get, mock_get_queue, mock_challenge
+):
+    mock_challenge_get.return_value = mock_challenge
+    mock_get_queue.side_effect = botocore.exceptions.ClientError(
+        {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+        "GetQueueUrl",
+    )
+
+    with pytest.raises(CommandError, match="does not exist"):
+        call_command(
+            "purge_challenge_sqs_queue",
+            str(mock_challenge.pk),
+            "--yes",
+        )
+
+    mock_challenge_get.assert_called_once_with(pk=mock_challenge.pk)
+    mock_get_queue.assert_called_once_with(
+        mock_challenge.queue, mock_challenge
+    )
+
+
+@patch("jobs.management.commands.purge_challenge_sqs_queue.get_sqs_queue")
 @patch(
     "jobs.management.commands.purge_challenge_sqs_queue.Challenge.objects.get"
 )

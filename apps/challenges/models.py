@@ -473,9 +473,12 @@ class Challenge(TimeStampedModel):
             "plus UUID), so intentional resume/republish is not dropped; "
             "SQS only deduplicates identical MessageDeduplicationId values "
             "within a five-minute window. Do not toggle after queue "
-            "creation; provision a new challenge instead. After changing "
-            "group-id strategy, purge or drain the FIFO queue so legacy "
-            "messages do not share the queue with a new grouping scheme."
+            "creation; provision a new challenge instead. When changing "
+            "group-id strategy: pause enqueueing, deploy the new grouping, "
+            "purge or drain the FIFO queue (purge deletes pending work), "
+            "requeue any submitted/queued submissions that still need "
+            "evaluation, then resume producers only after the queue is "
+            "empty under the new strategy."
         ),
     )
     allow_resuming_submissions = models.BooleanField(
