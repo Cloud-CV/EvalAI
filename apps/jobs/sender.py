@@ -14,6 +14,21 @@ logger = logging.getLogger(__name__)
 
 def publish_submission_message(message):
     """
+    Publish a submission evaluation message to the challenge SQS queue.
+
+    For FIFO queues (queue name ends with ``.fifo``), sets:
+    - ``MessageGroupId`` to ``{phase_pk}-{participant_team_pk}`` so
+      submissions from the same team stay ordered within a phase while
+      different teams can be processed in parallel by ECS workers.
+    - ``MessageDeduplicationId`` to ``{submission_pk}-{uuid4}`` so each
+      intentional enqueue (including resume/republish) is unique. SQS only
+      deduplicates matching ids within a five-minute window.
+
+    Deploy note: changing MessageGroupId strategy while legacy messages
+    remain on the queue can allow the same submission to be processed
+    under two groups. Purge or drain FIFO queues before/after deploy
+    (see ``purge_challenge_sqs_queue``).
+
     Args:
         message: A Dict with following keys
             - "challenge_pk": int
