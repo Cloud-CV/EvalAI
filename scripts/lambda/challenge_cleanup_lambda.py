@@ -116,9 +116,7 @@ def clear_challenge_worker_state(challenge_pk):
         "Authorization": f"Bearer {LAMBDA_AUTH_TOKEN}",
         "Content-Type": "application/json",
     }
-    request = Request(
-        url=url, data=b"{}", headers=headers, method="POST"
-    )
+    request = Request(url=url, data=b"{}", headers=headers, method="POST")
     try:
         with urlopen(request, timeout=10) as response:
             payload = json.loads(response.read().decode("utf-8"))

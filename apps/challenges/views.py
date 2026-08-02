@@ -5910,9 +5910,7 @@ def clear_challenge_worker_state(request, challenge_pk):
 
     return Response(
         {
-            "message": (
-                f"Worker state cleared for challenge {challenge_pk}."
-            ),
+            "message": (f"Worker state cleared for challenge {challenge_pk}."),
             "challenge_pk": challenge.pk,
             "workers": challenge.workers,
             "task_def_arn": challenge.task_def_arn,
