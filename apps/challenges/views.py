@@ -5876,3 +5876,46 @@ def update_evaluation_module_error(request, challenge_pk):
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["POST"])
+@throttle_classes([])
+@permission_classes(())
+@authentication_classes(())
+def clear_challenge_worker_state(request, challenge_pk):
+    """
+    Internal API for the challenge-cleanup Lambda to clear DB worker state
+    after ECS resources have been deleted.
+
+    Sets ``workers=None`` and ``task_def_arn=""`` so end-date extensions and
+    ``ensure_workers_for_submission`` can recreate the worker stack. Without
+    this sync, stale ``workers > 0`` blocks start/recreate paths after the
+    Lambda has already deleted the ECS service.
+    """
+    auth_error = _authenticate_lambda_request(request)
+    if auth_error:
+        return auth_error
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": f"Challenge with pk {challenge_pk} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    challenge.workers = None
+    challenge.task_def_arn = ""
+    challenge.save(update_fields=["workers", "task_def_arn"])
+
+    return Response(
+        {
+            "message": (
+                f"Worker state cleared for challenge {challenge_pk}."
+            ),
+            "challenge_pk": challenge.pk,
+            "workers": challenge.workers,
+            "task_def_arn": challenge.task_def_arn,
+        },
+        status=status.HTTP_200_OK,
+    )

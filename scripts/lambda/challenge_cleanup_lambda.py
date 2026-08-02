@@ -38,6 +38,7 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import boto3
@@ -90,6 +91,48 @@ def get_pending_submission_count(challenge_pk):
     with urlopen(request, timeout=10) as response:
         payload = json.loads(response.read().decode("utf-8"))
     return payload["pending_submissions"]
+
+
+def clear_challenge_worker_state(challenge_pk):
+    """
+    Clear Challenge.workers / task_def_arn after ECS resources are gone.
+
+    handle_end_date_change and ensure_workers_for_submission treat
+    workers is None as "stack was cleaned up; recreate on demand". Leaving
+    a stale workers > 0 after this Lambda deletes the ECS service blocks
+    that recreate path and leaves submissions with no consumers.
+    """
+    if not EVALAI_API_SERVER or not LAMBDA_AUTH_TOKEN:
+        raise RuntimeError(
+            "EVALAI_API_SERVER or LAMBDA_AUTH_TOKEN not configured."
+        )
+
+    challenge_pk = int(challenge_pk)
+    url = (
+        f"{EVALAI_API_SERVER.rstrip('/')}/api/challenges/challenge/"
+        f"{challenge_pk}/clear_worker_state/"
+    )
+    headers = {
+        "Authorization": f"Bearer {LAMBDA_AUTH_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    request = Request(
+        url=url, data=b"{}", headers=headers, method="POST"
+    )
+    try:
+        with urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"clear_worker_state failed for challenge {challenge_pk}: "
+            f"HTTP {e.code} {body}"
+        ) from e
+    except URLError as e:
+        raise RuntimeError(
+            f"clear_worker_state failed for challenge {challenge_pk}: {e}"
+        ) from e
+    return payload
 
 
 def reschedule_cleanup(challenge_pk, queue_name):
@@ -270,10 +313,15 @@ def handler(event, context):
             e.response["Error"]["Code"],
         )
 
+    # Track whether the ECS service is gone so we only clear DB state when
+    # AWS resources match the "cleaned up" contract expected by
+    # handle_end_date_change (workers is None => recreate stack).
+    service_gone = False
     try:
         response = ecs.delete_service(
             cluster=ECS_CLUSTER, service=service_name, force=True
         )
+        service_gone = True
         logger.info("Deleted ECS service %s", service_name)
 
         # Get task definition ARN from the service before it's gone
@@ -289,10 +337,17 @@ def handler(event, context):
                     e.response["Error"]["Code"],
                 )
     except ClientError as e:
+        error_code = e.response["Error"]["Code"]
+        # Already absent still means cleanup succeeded for DB sync purposes.
+        if error_code in (
+            "ServiceNotFoundException",
+            "ClusterNotFoundException",
+        ):
+            service_gone = True
         logger.info(
             "Service deletion skipped for %s: %s",
             service_name,
-            e.response["Error"]["Code"],
+            error_code,
         )
 
     # 4. Delete CloudWatch log group
@@ -305,6 +360,23 @@ def handler(event, context):
             log_group_name,
             e.response["Error"]["Code"],
         )
+
+    if not service_gone:
+        raise RuntimeError(
+            f"ECS service {service_name} still exists after cleanup attempt "
+            f"for challenge {challenge_pk}; refusing to clear DB worker state."
+        )
+
+    # 5. Sync Django state so end-date extensions / new submissions can
+    # recreate the worker stack (workers is None is the recreate signal).
+    try:
+        clear_challenge_worker_state(challenge_pk)
+    except Exception as e:  # noqa: BLE001 - surface any sync failure
+        raise RuntimeError(
+            f"ECS resources cleaned for challenge {challenge_pk} but failed "
+            f"to clear DB worker state; needs manual attention "
+            f"(set workers=None, task_def_arn='')."
+        ) from e
 
     logger.info(
         "Cleanup completed for challenge %s (service: %s)",

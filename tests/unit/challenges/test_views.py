@@ -9148,3 +9148,65 @@ class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
             "get_challenge_submission_metrics_by_pk. "
             f"Queries: {[q['sql'] for q in context.captured_queries]}",
         )
+
+
+class ClearChallengeWorkerStateAPITest(BaseAPITestClass):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse_lazy(
+            "challenges:clear_challenge_worker_state",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.auth_token = "test-lambda-secret-token"
+        self.challenge.workers = 2
+        self.challenge.task_def_arn = (
+            "arn:aws:ecs:us-east-1:123456789012:task-definition/chal:1"
+        )
+        self.challenge.save()
+
+    def _client_with_auth(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
+        return client
+
+    def test_missing_authorization_header(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = APIClient().post(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_invalid_auth_token(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION="Bearer wrong-token")
+            response = client.post(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_not_found(self):
+        url = reverse_lazy(
+            "challenges:clear_challenge_worker_state",
+            kwargs={"challenge_pk": 99999},
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().post(url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_clears_workers_and_task_def_arn(self):
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().post(
+                self.url, {}, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["workers"], None)
+        self.assertEqual(response.data["task_def_arn"], "")
+        self.challenge.refresh_from_db()
+        self.assertIsNone(self.challenge.workers)
+        self.assertEqual(self.challenge.task_def_arn, "")
