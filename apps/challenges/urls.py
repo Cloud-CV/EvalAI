@@ -344,6 +344,11 @@ urlpatterns = [
         views.update_evaluation_module_error,
         name="update_evaluation_module_error",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/clear_worker_state/$",
+        views.clear_challenge_worker_state,
+        name="clear_challenge_worker_state",
+    ),
 ]
 
 app_name = "challenges"
