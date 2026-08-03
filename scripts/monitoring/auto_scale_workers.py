@@ -3,7 +3,7 @@ import warnings
 from datetime import datetime
 
 import pytz
-from auto_stop_workers import start_worker, stop_worker
+import requests
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
@@ -15,6 +15,57 @@ ENV = os.environ.get("ENV", "dev")
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
 auth_token = os.environ.get("AUTH_TOKEN")
+authorization_header = {"Authorization": "Bearer {}".format(auth_token)}
+
+
+REQUEST_TIMEOUT_SECONDS = 10
+
+
+def start_worker(challenge_id):
+    start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start/".format(
+        evalai_endpoint, challenge_id
+    )
+    response = requests.put(
+        start_worker_endpoint,
+        headers=authorization_header,
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    return response
+
+
+def stop_worker(challenge_id):
+    stop_worker_endpoint = "{}/api/challenges/{}/manage_worker/stop/".format(
+        evalai_endpoint, challenge_id
+    )
+    response = requests.put(
+        stop_worker_endpoint,
+        headers=authorization_header,
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    return response
+
+
+def worker_action_result(response):
+    """
+    manage_worker returns HTTP 200 for both {"action": "Success"} and
+    {"action": "Failure", "error": ...}, so response.ok alone can't tell
+    them apart. Returns (succeeded, reason) - reason is the API's error
+    message on failure, or the HTTP status when the body can't be parsed.
+    """
+    if not response.ok:
+        return False, "HTTP {}".format(response.status_code)
+    try:
+        payload = response.json()
+    except ValueError:
+        return False, "HTTP {} (bad body)".format(response.status_code)
+    if isinstance(payload, dict) and payload.get("action") == "Success":
+        return True, None
+    reason = (
+        payload.get("error", "unknown error")
+        if isinstance(payload, dict)
+        else "unexpected response body"
+    )
+    return False, reason
 
 
 def get_pending_submission_count(challenge_metrics):
@@ -28,11 +79,20 @@ def scale_down_workers(challenge, num_workers):
     if num_workers > 0:
         response = stop_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        print(
-            "Stopped worker for Challenge ID: {}, Title: {}".format(
-                challenge["id"], challenge["title"]
+        succeeded, reason = worker_action_result(response)
+        if succeeded:
+            print(
+                "Stopped worker for Challenge ID: {}, Title: {}".format(
+                    challenge["id"], challenge["title"]
+                )
             )
-        )
+        else:
+            print(
+                "Failed to stop worker for Challenge ID: {}, Title: {}. "
+                "Reason: {}".format(
+                    challenge["id"], challenge["title"], reason
+                )
+            )
     else:
         print(
             "No workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
@@ -45,11 +105,20 @@ def scale_up_workers(challenge, num_workers):
     if num_workers == 0:
         response = start_worker(challenge["id"])
         print("AWS API Response: {}".format(response))
-        print(
-            "Started worker for Challenge ID: {}, Title: {}.".format(
-                challenge["id"], challenge["title"]
+        succeeded, reason = worker_action_result(response)
+        if succeeded:
+            print(
+                "Started worker for Challenge ID: {}, Title: {}.".format(
+                    challenge["id"], challenge["title"]
+                )
             )
-        )
+        else:
+            print(
+                "Failed to start worker for Challenge ID: {}, Title: {}. "
+                "Reason: {}".format(
+                    challenge["id"], challenge["title"], reason
+                )
+            )
     else:
         print(
             "Existing workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
