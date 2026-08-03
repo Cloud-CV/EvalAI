@@ -5030,6 +5030,28 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             {"Name": "QueueName", "Value": "test_queue"}
         ]
 
+        # Verify scale-down alarm evaluates visible + in-flight queue depth
+        # via metric math, and scales down (rather than getting stuck) when
+        # SQS stops publishing data for a genuinely idle queue.
+        scale_down_call = mock_cloudwatch.put_metric_alarm.call_args_list[1]
+        assert (
+            scale_down_call[1]["AlarmName"] == "test_queue_service_scale_down"
+        )
+        assert scale_down_call[1]["ComparisonOperator"] == (
+            "LessThanOrEqualToThreshold"
+        )
+        assert scale_down_call[1]["Threshold"] == 0
+        assert scale_down_call[1]["TreatMissingData"] == "breaching"
+        metric_ids = {metric["Id"] for metric in scale_down_call[1]["Metrics"]}
+        assert metric_ids == {"visible", "in_flight", "total_depth"}
+        total_depth_metric = next(
+            metric
+            for metric in scale_down_call[1]["Metrics"]
+            if metric["Id"] == "total_depth"
+        )
+        assert total_depth_metric["Expression"] == "visible + in_flight"
+        assert total_depth_metric["ReturnData"] is True
+
     @patch("challenges.aws_utils.get_boto3_client")
     def test_setup_auto_scaling_client_error(self, mock_get_boto3_client):
         mock_autoscaling = MagicMock()

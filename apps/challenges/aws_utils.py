@@ -684,6 +684,11 @@ def setup_auto_scaling_for_service(challenge):
             EvaluationPeriods=1,
             Threshold=0,
             ComparisonOperator="LessThanOrEqualToThreshold",
+            # SQS stops publishing these metrics once a queue's been idle for
+            # a while, which would otherwise leave this alarm stuck in
+            # INSUFFICIENT_DATA (and scale-down never firing) for the exact
+            # "genuinely idle" case this alarm exists to catch.
+            TreatMissingData="breaching",
             AlarmActions=[scale_down_policy_arn],
             Metrics=[
                 {
