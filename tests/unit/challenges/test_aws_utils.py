@@ -5168,10 +5168,10 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
-    def test_setup_auto_scaling_defaults_min_ecs_workers_to_one(
+    def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
         self, mock_get_boto3_client
     ):
-        """Challenges predating min_ecs_workers default to one worker."""
+        """Challenges predating min_ecs_workers default to scale-to-zero."""
         mock_autoscaling, result = self._run_setup(
             mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
         )
@@ -5181,7 +5181,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
-            1,
+            0,
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
