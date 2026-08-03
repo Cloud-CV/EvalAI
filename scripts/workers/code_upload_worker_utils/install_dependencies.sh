@@ -100,10 +100,29 @@ fi
 # expected to trigger today - it exists to stop a future version bump here
 # from silently attempting an unsupported jump. Upgrade Cilium manually,
 # one minor version at a time, before advancing this pin.
-current_release_version="$(helm list --namespace kube-system --filter '^cilium$' --output json 2>/dev/null \
-  | python3 -c 'import json, sys
+#
+# `helm list` failing (API unreachable, RBAC, corrupted Helm storage) and
+# "no release found" both leave the command substitution empty - they must
+# not be treated the same way. An empty result from a *failed* lookup would
+# silently skip this guard and fall through to an unattended install with no
+# idea whether an incompatible version is already there, defeating the point
+# of the check. Only an empty result from a lookup that *succeeded* means
+# "no release yet, safe to proceed."
+helm_list_output="$(helm list --namespace kube-system --filter '^cilium$' --output json 2>&1)"
+if [ $? -ne 0 ]; then
+  echo "### Could not check for an existing Cilium Helm release:" >&2
+  echo "$helm_list_output" >&2
+  exit 1
+fi
+
+current_release_version="$(printf '%s' "$helm_list_output" | python3 -c 'import json, sys
 releases = json.load(sys.stdin)
-print(releases[0]["app_version"] if releases else "")' 2>/dev/null)"
+print(releases[0]["app_version"] if releases else "")')"
+if [ $? -ne 0 ]; then
+  echo "### Could not parse Cilium release version from helm list output" >&2
+  exit 1
+fi
+
 if [ -n "$current_release_version" ] && [ "$current_release_version" != "$CILIUM_TARGET_VERSION" ]; then
   echo "### Cilium is Helm-managed at version ${current_release_version}, not ${CILIUM_TARGET_VERSION}." >&2
   echo "### Refusing to jump versions automatically - Cilium only supports upgrading" >&2
