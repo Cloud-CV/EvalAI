@@ -295,6 +295,31 @@ class BaseAPITestClass(APITestCase):
                 )
             )
 
+    @mock.patch("scripts.workers.submission_worker.load_challenge")
+    def test_load_challenge_and_return_max_submissions_for_expired_challenge(
+        self, mocked_load_challenge
+    ):
+        """
+        Regression test: a CHALLENGE_PK-pinned q_params (pk only, no
+        end_date filter) must load an already-expired, persisted
+        challenge successfully instead of raising DoesNotExist.
+        """
+        self.challenge.end_date = timezone.now() - timedelta(days=1)
+        self.challenge.save()
+
+        response = load_challenge_and_return_max_submissions(
+            {"pk": self.challenge.pk}
+        )
+
+        mocked_load_challenge.assert_called_with(self.challenge)
+        self.assertEqual(
+            response,
+            (
+                self.challenge.max_concurrent_submission_evaluation,
+                self.challenge,
+            ),
+        )
+
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
         self.sqs_client.create_queue(
@@ -1111,16 +1136,20 @@ class MainFunctionTest(BaseAPITestClass):
             "scripts.workers.submission_worker.settings"
         ) as mock_settings, patch(
             "scripts.workers.submission_worker.time.sleep", return_value=None
+        ), patch(
+            # LIMIT_CONCURRENT_SUBMISSION_PROCESSING is read from os.environ
+            # once at module import time, so patching os.environ here has no
+            # effect on it - the module-level name has to be patched
+            # directly to actually select the eval(...) branch below.
+            "scripts.workers.submission_worker.LIMIT_CONCURRENT_SUBMISSION_PROCESSING",
+            "True",
         ):
             mock_settings.DEBUG = True
             mock_settings.TEST = False
 
             with patch.dict(
                 "os.environ",
-                {
-                    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "True",
-                    "CHALLENGE_PK": str(self.challenge.pk),
-                },
+                {"CHALLENGE_PK": str(self.challenge.pk)},
             ):
                 killer_instance = MagicMock()
                 killer_instance.kill_now = True
@@ -1142,6 +1171,12 @@ class MainFunctionTest(BaseAPITestClass):
 
                 main()
 
+                # A CHALLENGE_PK-pinned lookup must not filter by end_date,
+                # so a worker can reload its challenge after it has expired
+                # (regression test for the crash-on-restart bug).
+                mock_load_challenge_and_return_max_submissions.assert_called_with(
+                    {"pk": str(self.challenge.pk)}
+                )
                 assert any(
                     str(call_args[0][0]).startswith("WORKER_LOG Using ")
                     for call_args in mock_logger_info.call_args_list
@@ -1154,6 +1189,65 @@ class MainFunctionTest(BaseAPITestClass):
                 )
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
+                )
+
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    @patch("scripts.workers.submission_worker.GracefulKiller")
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.delete_old_temp_directories")
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch(
+        "scripts.workers.submission_worker.load_challenge_and_return_max_submissions"
+    )
+    @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
+    @patch("scripts.workers.submission_worker.process_submission_callback")
+    @patch("scripts.workers.submission_worker.Submission")
+    def test_main_production_loads_expired_challenge_when_challenge_pk_set(
+        self,
+        mock_Submission,
+        mock_process_submission_callback,
+        mock_get_or_create_sqs_queue,
+        mock_load_challenge_and_return_max_submissions,
+        mock_create_dir_as_python_package,
+        mock_delete_old_temp_directories,
+        mock_logger_info,
+        mock_GracefulKiller,
+        mock_invalidate_caches,
+        mock_import_module,
+    ):
+        """
+        The production path (settings.DEBUG=False) must be able to load a
+        CHALLENGE_PK-pinned challenge even after its end_date has passed,
+        so a worker restarting after expiry doesn't crash-loop on
+        Challenge.DoesNotExist while pending submissions are still queued.
+        """
+        with patch.object(sys, "argv", ["worker"]), patch(
+            "scripts.workers.submission_worker.settings"
+        ) as mock_settings, patch(
+            "scripts.workers.submission_worker.time.sleep", return_value=None
+        ):
+            mock_settings.DEBUG = False
+            mock_settings.TEST = False
+
+            with patch.dict(
+                "os.environ", {"CHALLENGE_PK": str(self.challenge.pk)}
+            ):
+                killer_instance = MagicMock()
+                killer_instance.kill_now = True
+                mock_GracefulKiller.return_value = killer_instance
+                mock_load_challenge_and_return_max_submissions.return_value = (
+                    1,
+                    self.challenge,
+                )
+                mock_queue = MagicMock()
+                mock_queue.receive_messages.return_value = []
+                mock_get_or_create_sqs_queue.return_value = mock_queue
+
+                main()
+
+                mock_load_challenge_and_return_max_submissions.assert_called_with(
+                    {"pk": str(self.challenge.pk)}
                 )
 
     @patch("scripts.workers.submission_worker.importlib.import_module")
@@ -1187,41 +1281,46 @@ class MainFunctionTest(BaseAPITestClass):
             "scripts.workers.submission_worker.time.sleep", return_value=None
         ), patch(
             "scripts.workers.submission_worker.Challenge"
-        ) as mock_Challenge:
+        ) as mock_Challenge, patch(
+            # See test_main_debug_limit_concurrent - os.environ has no
+            # effect on this module-level name once imported.
+            "scripts.workers.submission_worker.LIMIT_CONCURRENT_SUBMISSION_PROCESSING",
+            "False",
+        ):
             mock_settings.DEBUG = True
             mock_settings.TEST = False
-            with patch.dict(
-                "os.environ",
-                {"LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "False"},
-            ):
-                killer_instance = MagicMock()
-                killer_instance.kill_now = True
-                mock_GracefulKiller.return_value = killer_instance
-                mock_challenge = MagicMock()
-                mock_Challenge.objects.filter.return_value = [mock_challenge]
-                mock_queue = MagicMock()
-                mock_message = MagicMock()
-                mock_message.body = (
-                    '{"is_static_dataset_code_upload_submission": false}'
-                )
-                mock_queue.receive_messages.return_value = [mock_message]
-                mock_get_or_create_sqs_queue.return_value = mock_queue
+            killer_instance = MagicMock()
+            killer_instance.kill_now = True
+            mock_GracefulKiller.return_value = killer_instance
+            mock_challenge = MagicMock()
+            mock_Challenge.objects.filter.return_value = [mock_challenge]
+            mock_queue = MagicMock()
+            mock_message = MagicMock()
+            mock_message.body = (
+                '{"is_static_dataset_code_upload_submission": false}'
+            )
+            mock_queue.receive_messages.return_value = [mock_message]
+            mock_get_or_create_sqs_queue.return_value = mock_queue
 
-                main()
+            main()
 
-                assert any(
-                    str(call_args[0][0]).startswith("WORKER_LOG Using ")
-                    for call_args in mock_logger_info.call_args_list
-                )
-                mock_delete_old_temp_directories.assert_called()
-                mock_create_dir_as_python_package.assert_any_call(mock.ANY)
-                mock_get_or_create_sqs_queue.assert_called()
-                mock_queue.receive_messages.assert_called_with(
-                    WaitTimeSeconds=20
-                )
-                mock_process_submission_callback.assert_called_with(
-                    mock_message.body
-                )
+            # Without a CHALLENGE_PK, this stays the multi-challenge
+            # dev/test loader and must keep excluding expired
+            # challenges - unlike the CHALLENGE_PK-pinned case above.
+            filter_call_kwargs = mock_Challenge.objects.filter.call_args.kwargs
+            self.assertIn("end_date__gte", filter_call_kwargs)
+            self.assertNotIn("pk", filter_call_kwargs)
+            assert any(
+                str(call_args[0][0]).startswith("WORKER_LOG Using ")
+                for call_args in mock_logger_info.call_args_list
+            )
+            mock_delete_old_temp_directories.assert_called()
+            mock_create_dir_as_python_package.assert_any_call(mock.ANY)
+            mock_get_or_create_sqs_queue.assert_called()
+            mock_queue.receive_messages.assert_called_with(WaitTimeSeconds=20)
+            mock_process_submission_callback.assert_called_with(
+                mock_message.body
+            )
 
 
 class DeleteOldTempDirectoriesTest(BaseAPITestClass):

@@ -16,6 +16,7 @@ from base.utils import (
     encode_data,
     get_boto3_client,
     get_or_create_sqs_queue,
+    get_sqs_queue,
     get_url_from_hostname,
     is_user_a_staff,
     mock_if_non_prod_aws,
@@ -376,6 +377,43 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
             Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
         )
         mock_logger.exception.assert_not_called()
+
+
+class TestGetSqsQueue(BaseAPITestClass):
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", False)
+    @patch("base.utils.settings.TEST", False)
+    def test_get_sqs_queue_returns_existing_queue(self, mock_boto3):
+        mock_sqs = MagicMock()
+        mock_queue = MagicMock()
+        mock_sqs.get_queue_by_name.return_value = mock_queue
+        mock_boto3.return_value = mock_sqs
+
+        queue = get_sqs_queue("test_queue")
+
+        mock_sqs.get_queue_by_name.assert_called_once_with(
+            QueueName="test_queue"
+        )
+        mock_sqs.create_queue.assert_not_called()
+        self.assertEqual(queue, mock_queue)
+
+    @patch("base.utils.boto3.resource")
+    @patch("base.utils.settings.DEBUG", False)
+    @patch("base.utils.settings.TEST", False)
+    def test_get_sqs_queue_raises_when_missing(self, mock_boto3):
+        mock_sqs = MagicMock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_by_name.side_effect = (
+            botocore.exceptions.ClientError(
+                {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+                "GetQueueUrl",
+            )
+        )
+
+        with self.assertRaises(botocore.exceptions.ClientError):
+            get_sqs_queue("missing_queue")
+
+        mock_sqs.create_queue.assert_not_called()
 
 
 class TestSendEmail(unittest.TestCase):

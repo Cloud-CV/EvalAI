@@ -1029,11 +1029,15 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {}
-    q_params["end_date__gte"] = timezone.now()
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
     if challenge_pk:
+        # A CHALLENGE_PK-pinned worker targets one specific challenge and
+        # must keep loading it past end_date, since it may still have
+        # pending submissions to drain instead of being torn down.
         q_params["pk"] = challenge_pk
+    else:
+        q_params["end_date__gte"] = timezone.now()
 
     if settings.DEBUG or settings.TEST:
         if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
