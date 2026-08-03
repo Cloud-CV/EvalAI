@@ -295,6 +295,31 @@ class BaseAPITestClass(APITestCase):
                 )
             )
 
+    @mock.patch("scripts.workers.submission_worker.load_challenge")
+    def test_load_challenge_and_return_max_submissions_for_expired_challenge(
+        self, mocked_load_challenge
+    ):
+        """
+        Regression test: a CHALLENGE_PK-pinned q_params (pk only, no
+        end_date filter) must load an already-expired, persisted
+        challenge successfully instead of raising DoesNotExist.
+        """
+        self.challenge.end_date = timezone.now() - timedelta(days=1)
+        self.challenge.save()
+
+        response = load_challenge_and_return_max_submissions(
+            {"pk": self.challenge.pk}
+        )
+
+        mocked_load_challenge.assert_called_with(self.challenge)
+        self.assertEqual(
+            response,
+            (
+                self.challenge.max_concurrent_submission_evaluation,
+                self.challenge,
+            ),
+        )
+
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
         self.sqs_client.create_queue(
