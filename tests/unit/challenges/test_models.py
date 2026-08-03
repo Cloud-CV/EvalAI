@@ -134,6 +134,10 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.refresh_from_db()
         self.assertTrue(self.challenge.is_approval_requested)
 
+    def test_min_ecs_workers_defaults_to_zero(self):
+        """New challenges default to an autoscaling floor of 0 (scale-to-zero)."""
+        self.assertEqual(0, self.challenge.min_ecs_workers)
+
     def test_challenge_usage_type_defaults_to_paid(self):
         self.assertEqual(Challenge.PAID, self.challenge.challenge_usage_type)
 

@@ -5030,6 +5030,42 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             {"Name": "QueueName", "Value": "test_queue"}
         ]
 
+        # Verify scale-down alarm evaluates visible + in-flight queue depth
+        # via metric math, and scales down (rather than getting stuck) when
+        # SQS stops publishing data for a genuinely idle queue.
+        scale_down_call = mock_cloudwatch.put_metric_alarm.call_args_list[1]
+        assert (
+            scale_down_call[1]["AlarmName"] == "test_queue_service_scale_down"
+        )
+        assert scale_down_call[1]["ComparisonOperator"] == (
+            "LessThanOrEqualToThreshold"
+        )
+        assert scale_down_call[1]["Threshold"] == 0
+        assert scale_down_call[1]["TreatMissingData"] == "breaching"
+        assert scale_down_call[1]["EvaluationPeriods"] == 1
+        metric_ids = {metric["Id"] for metric in scale_down_call[1]["Metrics"]}
+        assert metric_ids == {"visible", "in_flight", "total_depth"}
+        metrics_by_id = {
+            metric["Id"]: metric for metric in scale_down_call[1]["Metrics"]
+        }
+        expected_metric_names = {
+            "visible": "ApproximateNumberOfMessagesVisible",
+            "in_flight": "ApproximateNumberOfMessagesNotVisible",
+        }
+        for metric_id, metric_name in expected_metric_names.items():
+            metric_stat = metrics_by_id[metric_id]["MetricStat"]
+            assert metrics_by_id[metric_id]["ReturnData"] is False
+            assert metric_stat["Period"] == 120
+            assert metric_stat["Stat"] == "Sum"
+            assert metric_stat["Metric"]["Namespace"] == "AWS/SQS"
+            assert metric_stat["Metric"]["MetricName"] == metric_name
+            assert metric_stat["Metric"]["Dimensions"] == [
+                {"Name": "QueueName", "Value": "test_queue"}
+            ]
+        total_depth_metric = metrics_by_id["total_depth"]
+        assert total_depth_metric["Expression"] == "visible + in_flight"
+        assert total_depth_metric["ReturnData"] is True
+
     @patch("challenges.aws_utils.get_boto3_client")
     def test_setup_auto_scaling_client_error(self, mock_get_boto3_client):
         mock_autoscaling = MagicMock()
@@ -5168,10 +5204,10 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
-    def test_setup_auto_scaling_defaults_min_ecs_workers_to_one(
+    def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
         self, mock_get_boto3_client
     ):
-        """Challenges predating min_ecs_workers default to one worker."""
+        """Challenges predating min_ecs_workers default to scale-to-zero."""
         mock_autoscaling, result = self._run_setup(
             mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
         )
@@ -5181,7 +5217,16 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
-            1,
+            0,
+        )
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
+            0,
         )
 
     @patch("challenges.aws_utils.get_boto3_client")
