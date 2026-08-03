@@ -66,23 +66,53 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 # quick-install.yaml silently no-op'd on already-existing resources and
 # never advanced, which is how this cluster ended up permanently pinned to
 # a 2021-era Cilium build incompatible with current EKS AMI kernels.
+CILIUM_TARGET_VERSION="1.19.6"
+
 helm repo add --force-update cilium https://helm.cilium.io/
 helm repo update cilium
 
 # One-time migration: clusters bootstrapped before this change installed
 # Cilium via `kubectl create` against a raw quick-install.yaml, so those
-# resources carry no Helm ownership metadata. Helm refuses to adopt them
-# ("invalid ownership metadata") and errors out instead of upgrading. If no
-# Helm release named "cilium" is tracked yet but the legacy ConfigMap is
-# still present, this is one of those clusters - remove the legacy install
-# first so the Helm install below starts clean.
-if ! helm status cilium --namespace kube-system >/dev/null 2>&1 && \
-   kubectl get configmap cilium-config -n kube-system >/dev/null 2>&1; then
-  echo "### Migrating legacy (non-Helm) Cilium install"
-  kubectl delete -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml --ignore-not-found
+# resources carry no Helm ownership metadata and Helm refuses to adopt them
+# ("invalid ownership metadata") instead of upgrading them.
+#
+# Check the actual ownership annotation on the DaemonSet directly rather
+# than inferring "no release" from `helm status` failing - that command can
+# also fail for reasons that have nothing to do with a legacy install (Helm
+# storage, RBAC, API connectivity), and treating that failure as "legacy" is
+# how a real, working Helm-managed install would get deleted by mistake.
+if kubectl get daemonset cilium -n kube-system >/dev/null 2>&1; then
+  owner_release="$(kubectl get daemonset cilium -n kube-system \
+    -o jsonpath='{.metadata.annotations.meta\.helm\.sh/release-name}' 2>/dev/null)"
+  owner_namespace="$(kubectl get daemonset cilium -n kube-system \
+    -o jsonpath='{.metadata.annotations.meta\.helm\.sh/release-namespace}' 2>/dev/null)"
+  if [ "$owner_release" != "cilium" ] || [ "$owner_namespace" != "kube-system" ]; then
+    echo "### Migrating legacy (non-Helm) Cilium install"
+    kubectl delete -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml --ignore-not-found
+  fi
 fi
 
-if ! helm upgrade --install cilium cilium/cilium --version 1.19.6 \
+# Cilium's supported upgrade path only covers one minor version at a time;
+# jumping several minors in a single unattended `helm upgrade` isn't
+# supported and can leave the datapath broken with nobody watching. This
+# script has only ever installed CILIUM_TARGET_VERSION via Helm (everything
+# older was the unmanaged quick-install.yaml handled above), so this is not
+# expected to trigger today - it exists to stop a future version bump here
+# from silently attempting an unsupported jump. Upgrade Cilium manually,
+# one minor version at a time, before advancing this pin.
+current_release_version="$(helm list --namespace kube-system --filter '^cilium$' --output json 2>/dev/null \
+  | python3 -c 'import json, sys
+releases = json.load(sys.stdin)
+print(releases[0]["app_version"] if releases else "")' 2>/dev/null)"
+if [ -n "$current_release_version" ] && [ "$current_release_version" != "$CILIUM_TARGET_VERSION" ]; then
+  echo "### Cilium is Helm-managed at version ${current_release_version}, not ${CILIUM_TARGET_VERSION}." >&2
+  echo "### Refusing to jump versions automatically - Cilium only supports upgrading" >&2
+  echo "### one minor version at a time. Upgrade it manually first:" >&2
+  echo "### https://docs.cilium.io/en/stable/operations/upgrade/" >&2
+  exit 1
+fi
+
+if ! helm upgrade --install cilium cilium/cilium --version "$CILIUM_TARGET_VERSION" \
   --namespace kube-system \
   --set ipam.mode=cluster-pool \
   --set kubeProxyReplacement=false; then
@@ -92,6 +122,14 @@ fi
 
 if ! kubectl -n kube-system rollout status daemonset/cilium --timeout=120s; then
   echo "### Cilium daemonset failed to roll out" >&2
+  exit 1
+fi
+
+# ipam.mode=cluster-pool means agent pods wait on cilium-operator to
+# allocate their node's PodCIDR, so the DaemonSet rolling out successfully
+# doesn't guarantee the cluster is actually functional without this too.
+if ! kubectl -n kube-system rollout status deployment/cilium-operator --timeout=120s; then
+  echo "### Cilium operator failed to roll out" >&2
   exit 1
 fi
 
