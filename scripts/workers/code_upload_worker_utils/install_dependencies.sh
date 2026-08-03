@@ -102,33 +102,62 @@ fi
 # one minor version at a time, before advancing this pin.
 #
 # `helm list` failing (API unreachable, RBAC, corrupted Helm storage) and
-# "no release found" both leave the command substitution empty - they must
-# not be treated the same way. An empty result from a *failed* lookup would
-# silently skip this guard and fall through to an unattended install with no
-# idea whether an incompatible version is already there, defeating the point
-# of the check. Only an empty result from a lookup that *succeeded* means
-# "no release yet, safe to proceed."
-helm_list_output="$(helm list --namespace kube-system --filter '^cilium$' --output json 2>&1)"
-if [ $? -ne 0 ]; then
+# "no release found" both leave a lookup empty - they must not be treated
+# the same way. An empty result from a *failed* lookup would silently skip
+# this guard and fall through to an unattended install with no idea whether
+# an incompatible version is already there, defeating the point of the
+# check. Only an empty result from a lookup that *succeeded* means "no
+# release yet, safe to proceed."
+#
+# `--all` is required: plain `helm list` only shows deployed/failed releases
+# by default, so a release stuck pending-install/pending-upgrade/superseded
+# would otherwise be invisible here too, same failure mode as a lookup
+# error. Anything found that isn't cleanly "deployed" needs a human, not an
+# automatic upgrade over it.
+#
+# stdout and stderr are captured separately: `helm list --output json`
+# writes the JSON to stdout, but can still emit non-fatal warnings on
+# stderr even when it succeeds (e.g. insecure kubeconfig permissions).
+# Merging them would corrupt the JSON on an otherwise-successful call.
+helm_list_stdout="$(mktemp)"
+helm_list_stderr="$(mktemp)"
+if ! helm list --all --namespace kube-system --filter '^cilium$' --output json \
+    >"$helm_list_stdout" 2>"$helm_list_stderr"; then
   echo "### Could not check for an existing Cilium Helm release:" >&2
-  echo "$helm_list_output" >&2
+  cat "$helm_list_stderr" >&2
+  rm -f "$helm_list_stdout" "$helm_list_stderr"
   exit 1
 fi
+rm -f "$helm_list_stderr"
 
-current_release_version="$(printf '%s' "$helm_list_output" | python3 -c 'import json, sys
+parsed_release="$(mktemp)"
+if ! python3 -c 'import json, sys
 releases = json.load(sys.stdin)
-print(releases[0]["app_version"] if releases else "")')"
-if [ $? -ne 0 ]; then
-  echo "### Could not parse Cilium release version from helm list output" >&2
+release = releases[0] if releases else None
+print("{}\t{}".format(release["app_version"], release["status"]) if release else "")' \
+    <"$helm_list_stdout" >"$parsed_release"; then
+  echo "### Could not parse Cilium release info from helm list output" >&2
+  rm -f "$helm_list_stdout" "$parsed_release"
   exit 1
 fi
+rm -f "$helm_list_stdout"
+IFS=$'\t' read -r current_release_version current_release_status <"$parsed_release"
+rm -f "$parsed_release"
 
-if [ -n "$current_release_version" ] && [ "$current_release_version" != "$CILIUM_TARGET_VERSION" ]; then
-  echo "### Cilium is Helm-managed at version ${current_release_version}, not ${CILIUM_TARGET_VERSION}." >&2
-  echo "### Refusing to jump versions automatically - Cilium only supports upgrading" >&2
-  echo "### one minor version at a time. Upgrade it manually first:" >&2
-  echo "### https://docs.cilium.io/en/stable/operations/upgrade/" >&2
-  exit 1
+if [ -n "$current_release_version" ]; then
+  if [ "$current_release_status" != "deployed" ]; then
+    echo "### Existing Cilium Helm release is in state '${current_release_status}', not 'deployed'." >&2
+    echo "### Refusing to run an upgrade over a release that isn't in a stable state -" >&2
+    echo "### resolve it manually first (e.g. 'helm rollback' or 'helm delete')." >&2
+    exit 1
+  fi
+  if [ "$current_release_version" != "$CILIUM_TARGET_VERSION" ]; then
+    echo "### Cilium is Helm-managed at version ${current_release_version}, not ${CILIUM_TARGET_VERSION}." >&2
+    echo "### Refusing to jump versions automatically - Cilium only supports upgrading" >&2
+    echo "### one minor version at a time. Upgrade it manually first:" >&2
+    echo "### https://docs.cilium.io/en/stable/operations/upgrade/" >&2
+    exit 1
+  fi
 fi
 
 if ! helm upgrade --install cilium cilium/cilium --version "$CILIUM_TARGET_VERSION" \
