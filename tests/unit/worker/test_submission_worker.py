@@ -1142,6 +1142,12 @@ class MainFunctionTest(BaseAPITestClass):
 
                 main()
 
+                # A CHALLENGE_PK-pinned lookup must not filter by end_date,
+                # so a worker can reload its challenge after it has expired
+                # (regression test for the crash-on-restart bug).
+                mock_load_challenge_and_return_max_submissions.assert_called_with(
+                    {"pk": str(self.challenge.pk)}
+                )
                 assert any(
                     str(call_args[0][0]).startswith("WORKER_LOG Using ")
                     for call_args in mock_logger_info.call_args_list
@@ -1154,6 +1160,65 @@ class MainFunctionTest(BaseAPITestClass):
                 )
                 mock_process_submission_callback.assert_called_with(
                     mock_message.body
+                )
+
+    @patch("scripts.workers.submission_worker.importlib.import_module")
+    @patch("scripts.workers.submission_worker.importlib.invalidate_caches")
+    @patch("scripts.workers.submission_worker.GracefulKiller")
+    @patch("scripts.workers.submission_worker.logger.info")
+    @patch("scripts.workers.submission_worker.delete_old_temp_directories")
+    @patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @patch(
+        "scripts.workers.submission_worker.load_challenge_and_return_max_submissions"
+    )
+    @patch("scripts.workers.submission_worker.get_or_create_sqs_queue")
+    @patch("scripts.workers.submission_worker.process_submission_callback")
+    @patch("scripts.workers.submission_worker.Submission")
+    def test_main_production_loads_expired_challenge_when_challenge_pk_set(
+        self,
+        mock_Submission,
+        mock_process_submission_callback,
+        mock_get_or_create_sqs_queue,
+        mock_load_challenge_and_return_max_submissions,
+        mock_create_dir_as_python_package,
+        mock_delete_old_temp_directories,
+        mock_logger_info,
+        mock_GracefulKiller,
+        mock_invalidate_caches,
+        mock_import_module,
+    ):
+        """
+        The production path (settings.DEBUG=False) must be able to load a
+        CHALLENGE_PK-pinned challenge even after its end_date has passed,
+        so a worker restarting after expiry doesn't crash-loop on
+        Challenge.DoesNotExist while pending submissions are still queued.
+        """
+        with patch.object(sys, "argv", ["worker"]), patch(
+            "scripts.workers.submission_worker.settings"
+        ) as mock_settings, patch(
+            "scripts.workers.submission_worker.time.sleep", return_value=None
+        ):
+            mock_settings.DEBUG = False
+            mock_settings.TEST = False
+
+            with patch.dict(
+                "os.environ", {"CHALLENGE_PK": str(self.challenge.pk)}
+            ):
+                killer_instance = MagicMock()
+                killer_instance.kill_now = True
+                mock_GracefulKiller.return_value = killer_instance
+                mock_load_challenge_and_return_max_submissions.return_value = (
+                    1,
+                    self.challenge,
+                )
+                mock_queue = MagicMock()
+                mock_queue.receive_messages.return_value = []
+                mock_get_or_create_sqs_queue.return_value = mock_queue
+
+                main()
+
+                mock_load_challenge_and_return_max_submissions.assert_called_with(
+                    {"pk": str(self.challenge.pk)}
                 )
 
     @patch("scripts.workers.submission_worker.importlib.import_module")
@@ -1209,6 +1274,14 @@ class MainFunctionTest(BaseAPITestClass):
 
                 main()
 
+                # Without a CHALLENGE_PK, this stays the multi-challenge
+                # dev/test loader and must keep excluding expired
+                # challenges - unlike the CHALLENGE_PK-pinned case above.
+                filter_call_kwargs = (
+                    mock_Challenge.objects.filter.call_args.kwargs
+                )
+                self.assertIn("end_date__gte", filter_call_kwargs)
+                self.assertNotIn("pk", filter_call_kwargs)
                 assert any(
                     str(call_args[0][0]).startswith("WORKER_LOG Using ")
                     for call_args in mock_logger_info.call_args_list
