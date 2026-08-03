@@ -5042,13 +5042,27 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         )
         assert scale_down_call[1]["Threshold"] == 0
         assert scale_down_call[1]["TreatMissingData"] == "breaching"
+        assert scale_down_call[1]["EvaluationPeriods"] == 1
         metric_ids = {metric["Id"] for metric in scale_down_call[1]["Metrics"]}
         assert metric_ids == {"visible", "in_flight", "total_depth"}
-        total_depth_metric = next(
-            metric
-            for metric in scale_down_call[1]["Metrics"]
-            if metric["Id"] == "total_depth"
-        )
+        metrics_by_id = {
+            metric["Id"]: metric for metric in scale_down_call[1]["Metrics"]
+        }
+        expected_metric_names = {
+            "visible": "ApproximateNumberOfMessagesVisible",
+            "in_flight": "ApproximateNumberOfMessagesNotVisible",
+        }
+        for metric_id, metric_name in expected_metric_names.items():
+            metric_stat = metrics_by_id[metric_id]["MetricStat"]
+            assert metrics_by_id[metric_id]["ReturnData"] is False
+            assert metric_stat["Period"] == 120
+            assert metric_stat["Stat"] == "Sum"
+            assert metric_stat["Metric"]["Namespace"] == "AWS/SQS"
+            assert metric_stat["Metric"]["MetricName"] == metric_name
+            assert metric_stat["Metric"]["Dimensions"] == [
+                {"Name": "QueueName", "Value": "test_queue"}
+            ]
+        total_depth_metric = metrics_by_id["total_depth"]
         assert total_depth_metric["Expression"] == "visible + in_flight"
         assert total_depth_metric["ReturnData"] is True
 
@@ -5203,6 +5217,15 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
+            0,
+        )
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
             0,
         )
 
