@@ -562,7 +562,10 @@ def setup_auto_scaling_for_service(challenge):
     and creates CloudWatch alarms that scale the service based on SQS queue depth.
 
     Scale-up: when ApproximateNumberOfMessagesVisible > 0 for 1 minute.
-    Scale-down: when ApproximateNumberOfMessagesVisible = 0 for 2 minutes.
+    Scale-down: when ApproximateNumberOfMessagesVisible AND
+    ApproximateNumberOfMessagesNotVisible are both 0 for 2 minutes, so a
+    worker mid-submission (message received but not yet deleted, hence
+    invisible rather than gone) isn't scaled to 0 out from under it.
 
     The ceiling comes from challenge.max_ecs_workers so that a manual scale from the
     admin survives service recreation. All the AWS calls below are upserts keyed
@@ -671,18 +674,55 @@ def setup_auto_scaling_for_service(challenge):
             AlarmActions=[scale_up_policy_arn],
         )
 
-        # Scale-down alarm: queue depth = 0 for 2 minutes
+        # Scale-down alarm: visible + in-flight queue depth = 0 for 2 minutes.
+        # ApproximateNumberOfMessagesVisible alone would hit 0 as soon as a
+        # worker receives a message, even though it's still processing it
+        # (in-flight messages are "not visible", not gone) - a metric-math
+        # expression is used instead of a plain metric so both are checked.
         cloudwatch_client.put_metric_alarm(
             AlarmName=f"{service_name}_scale_down",
-            Namespace="AWS/SQS",
-            MetricName="ApproximateNumberOfMessagesVisible",
-            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
-            Statistic="Sum",
-            Period=120,
             EvaluationPeriods=1,
             Threshold=0,
             ComparisonOperator="LessThanOrEqualToThreshold",
             AlarmActions=[scale_down_policy_arn],
+            Metrics=[
+                {
+                    "Id": "visible",
+                    "MetricStat": {
+                        "Metric": {
+                            "Namespace": "AWS/SQS",
+                            "MetricName": "ApproximateNumberOfMessagesVisible",
+                            "Dimensions": [
+                                {"Name": "QueueName", "Value": queue_name}
+                            ],
+                        },
+                        "Period": 120,
+                        "Stat": "Sum",
+                    },
+                    "ReturnData": False,
+                },
+                {
+                    "Id": "in_flight",
+                    "MetricStat": {
+                        "Metric": {
+                            "Namespace": "AWS/SQS",
+                            "MetricName": "ApproximateNumberOfMessagesNotVisible",
+                            "Dimensions": [
+                                {"Name": "QueueName", "Value": queue_name}
+                            ],
+                        },
+                        "Period": 120,
+                        "Stat": "Sum",
+                    },
+                    "ReturnData": False,
+                },
+                {
+                    "Id": "total_depth",
+                    "Expression": "visible + in_flight",
+                    "Label": "Total queue depth (visible + in-flight)",
+                    "ReturnData": True,
+                },
+            ],
         )
 
         logger.info(
