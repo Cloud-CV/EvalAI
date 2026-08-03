@@ -1136,16 +1136,20 @@ class MainFunctionTest(BaseAPITestClass):
             "scripts.workers.submission_worker.settings"
         ) as mock_settings, patch(
             "scripts.workers.submission_worker.time.sleep", return_value=None
+        ), patch(
+            # LIMIT_CONCURRENT_SUBMISSION_PROCESSING is read from os.environ
+            # once at module import time, so patching os.environ here has no
+            # effect on it - the module-level name has to be patched
+            # directly to actually select the eval(...) branch below.
+            "scripts.workers.submission_worker.LIMIT_CONCURRENT_SUBMISSION_PROCESSING",
+            "True",
         ):
             mock_settings.DEBUG = True
             mock_settings.TEST = False
 
             with patch.dict(
                 "os.environ",
-                {
-                    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "True",
-                    "CHALLENGE_PK": str(self.challenge.pk),
-                },
+                {"CHALLENGE_PK": str(self.challenge.pk)},
             ):
                 killer_instance = MagicMock()
                 killer_instance.kill_now = True
@@ -1277,49 +1281,46 @@ class MainFunctionTest(BaseAPITestClass):
             "scripts.workers.submission_worker.time.sleep", return_value=None
         ), patch(
             "scripts.workers.submission_worker.Challenge"
-        ) as mock_Challenge:
+        ) as mock_Challenge, patch(
+            # See test_main_debug_limit_concurrent - os.environ has no
+            # effect on this module-level name once imported.
+            "scripts.workers.submission_worker.LIMIT_CONCURRENT_SUBMISSION_PROCESSING",
+            "False",
+        ):
             mock_settings.DEBUG = True
             mock_settings.TEST = False
-            with patch.dict(
-                "os.environ",
-                {"LIMIT_CONCURRENT_SUBMISSION_PROCESSING": "False"},
-            ):
-                killer_instance = MagicMock()
-                killer_instance.kill_now = True
-                mock_GracefulKiller.return_value = killer_instance
-                mock_challenge = MagicMock()
-                mock_Challenge.objects.filter.return_value = [mock_challenge]
-                mock_queue = MagicMock()
-                mock_message = MagicMock()
-                mock_message.body = (
-                    '{"is_static_dataset_code_upload_submission": false}'
-                )
-                mock_queue.receive_messages.return_value = [mock_message]
-                mock_get_or_create_sqs_queue.return_value = mock_queue
+            killer_instance = MagicMock()
+            killer_instance.kill_now = True
+            mock_GracefulKiller.return_value = killer_instance
+            mock_challenge = MagicMock()
+            mock_Challenge.objects.filter.return_value = [mock_challenge]
+            mock_queue = MagicMock()
+            mock_message = MagicMock()
+            mock_message.body = (
+                '{"is_static_dataset_code_upload_submission": false}'
+            )
+            mock_queue.receive_messages.return_value = [mock_message]
+            mock_get_or_create_sqs_queue.return_value = mock_queue
 
-                main()
+            main()
 
-                # Without a CHALLENGE_PK, this stays the multi-challenge
-                # dev/test loader and must keep excluding expired
-                # challenges - unlike the CHALLENGE_PK-pinned case above.
-                filter_call_kwargs = (
-                    mock_Challenge.objects.filter.call_args.kwargs
-                )
-                self.assertIn("end_date__gte", filter_call_kwargs)
-                self.assertNotIn("pk", filter_call_kwargs)
-                assert any(
-                    str(call_args[0][0]).startswith("WORKER_LOG Using ")
-                    for call_args in mock_logger_info.call_args_list
-                )
-                mock_delete_old_temp_directories.assert_called()
-                mock_create_dir_as_python_package.assert_any_call(mock.ANY)
-                mock_get_or_create_sqs_queue.assert_called()
-                mock_queue.receive_messages.assert_called_with(
-                    WaitTimeSeconds=20
-                )
-                mock_process_submission_callback.assert_called_with(
-                    mock_message.body
-                )
+            # Without a CHALLENGE_PK, this stays the multi-challenge
+            # dev/test loader and must keep excluding expired
+            # challenges - unlike the CHALLENGE_PK-pinned case above.
+            filter_call_kwargs = mock_Challenge.objects.filter.call_args.kwargs
+            self.assertIn("end_date__gte", filter_call_kwargs)
+            self.assertNotIn("pk", filter_call_kwargs)
+            assert any(
+                str(call_args[0][0]).startswith("WORKER_LOG Using ")
+                for call_args in mock_logger_info.call_args_list
+            )
+            mock_delete_old_temp_directories.assert_called()
+            mock_create_dir_as_python_package.assert_any_call(mock.ANY)
+            mock_get_or_create_sqs_queue.assert_called()
+            mock_queue.receive_messages.assert_called_with(WaitTimeSeconds=20)
+            mock_process_submission_callback.assert_called_with(
+                mock_message.body
+            )
 
 
 class DeleteOldTempDirectoriesTest(BaseAPITestClass):
