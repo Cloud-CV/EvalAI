@@ -27,6 +27,7 @@ from challenges.aws_utils import (
     get_code_upload_setup_meta_for_challenge,
     get_current_ecr_env,
     get_deployed_worker_image_urls,
+    get_ecs_service_name,
     get_evalai_code_upload_worker_ecr_image,
     get_evalai_submission_worker_ecr_image,
     get_evalai_submission_worker_ecr_prefixes,
@@ -41,6 +42,7 @@ from challenges.aws_utils import (
     restart_ec2_instance,
     restart_workers,
     restart_workers_signal_callback,
+    sanitize_ecs_resource_name,
     scale_resources,
     scale_workers,
     schedule_challenge_cleanup,
@@ -53,6 +55,7 @@ from challenges.aws_utils import (
     start_workers,
     stop_ec2_instance,
     stop_workers,
+    strip_fifo_suffix,
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
@@ -152,7 +155,7 @@ def mock_client():
 
 @pytest.fixture
 def mock_challenge():
-    return MagicMock()
+    return MagicMock(queue="dummy_queue")
 
 
 @pytest.fixture
@@ -5027,6 +5030,42 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             {"Name": "QueueName", "Value": "test_queue"}
         ]
 
+        # Verify scale-down alarm evaluates visible + in-flight queue depth
+        # via metric math, and scales down (rather than getting stuck) when
+        # SQS stops publishing data for a genuinely idle queue.
+        scale_down_call = mock_cloudwatch.put_metric_alarm.call_args_list[1]
+        assert (
+            scale_down_call[1]["AlarmName"] == "test_queue_service_scale_down"
+        )
+        assert scale_down_call[1]["ComparisonOperator"] == (
+            "LessThanOrEqualToThreshold"
+        )
+        assert scale_down_call[1]["Threshold"] == 0
+        assert scale_down_call[1]["TreatMissingData"] == "breaching"
+        assert scale_down_call[1]["EvaluationPeriods"] == 1
+        metric_ids = {metric["Id"] for metric in scale_down_call[1]["Metrics"]}
+        assert metric_ids == {"visible", "in_flight", "total_depth"}
+        metrics_by_id = {
+            metric["Id"]: metric for metric in scale_down_call[1]["Metrics"]
+        }
+        expected_metric_names = {
+            "visible": "ApproximateNumberOfMessagesVisible",
+            "in_flight": "ApproximateNumberOfMessagesNotVisible",
+        }
+        for metric_id, metric_name in expected_metric_names.items():
+            metric_stat = metrics_by_id[metric_id]["MetricStat"]
+            assert metrics_by_id[metric_id]["ReturnData"] is False
+            assert metric_stat["Period"] == 120
+            assert metric_stat["Stat"] == "Sum"
+            assert metric_stat["Metric"]["Namespace"] == "AWS/SQS"
+            assert metric_stat["Metric"]["MetricName"] == metric_name
+            assert metric_stat["Metric"]["Dimensions"] == [
+                {"Name": "QueueName", "Value": "test_queue"}
+            ]
+        total_depth_metric = metrics_by_id["total_depth"]
+        assert total_depth_metric["Expression"] == "visible + in_flight"
+        assert total_depth_metric["ReturnData"] is True
+
     @patch("challenges.aws_utils.get_boto3_client")
     def test_setup_auto_scaling_client_error(self, mock_get_boto3_client):
         mock_autoscaling = MagicMock()
@@ -5058,7 +5097,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         # No boto3 calls should be made in DEBUG mode
 
     def _run_setup(
-        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=0
+        self, mock_get_boto3_client, max_ecs_workers, min_ecs_workers=1
     ):
         """Run setup_auto_scaling_for_service and return the autoscaling mock."""
         mock_autoscaling = MagicMock()
@@ -5098,7 +5137,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs
         )
         self.assertEqual(register_kwargs["MaxCapacity"], 3)
-        self.assertEqual(register_kwargs["MinCapacity"], 0)
+        self.assertEqual(register_kwargs["MinCapacity"], 1)
 
         scale_up_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
             0
@@ -5168,7 +5207,7 @@ class TestSetupAutoScalingForService(unittest.TestCase):
     def test_setup_auto_scaling_defaults_min_ecs_workers_to_zero(
         self, mock_get_boto3_client
     ):
-        """Challenges predating min_ecs_workers keep scale-to-zero."""
+        """Challenges predating min_ecs_workers default to scale-to-zero."""
         mock_autoscaling, result = self._run_setup(
             mock_get_boto3_client, max_ecs_workers=2, min_ecs_workers=None
         )
@@ -5178,6 +5217,15 @@ class TestSetupAutoScalingForService(unittest.TestCase):
             mock_autoscaling.register_scalable_target.call_args.kwargs[
                 "MinCapacity"
             ],
+            0,
+        )
+        scale_down_kwargs = mock_autoscaling.put_scaling_policy.call_args_list[
+            1
+        ].kwargs
+        self.assertEqual(
+            scale_down_kwargs["StepScalingPolicyConfiguration"][
+                "StepAdjustments"
+            ][0]["ScalingAdjustment"],
             0,
         )
 
@@ -6836,10 +6884,10 @@ class TestWorkerImageHelpers(TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.build_task_definition_dict")
     @patch("challenges.aws_utils.get_image_settings_for_challenge")
-    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    @patch("challenges.aws_utils.service_manager")
     def test_refresh_task_definition_for_challenge(
         self,
-        mock_update_service,
+        mock_service_manager,
         mock_get_image_settings,
         mock_build_task_definition,
         mock_get_boto3_client,
@@ -6868,7 +6916,7 @@ class TestWorkerImageHelpers(TestCase):
                 "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
             },
         }
-        mock_update_service.return_value = {
+        mock_service_manager.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
         }
 
@@ -6880,9 +6928,78 @@ class TestWorkerImageHelpers(TestCase):
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
         )
         self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
-        mock_update_service.assert_called_once()
+        mock_service_manager.assert_called_once_with(
+            mock_client,
+            challenge,
+            num_of_tasks=1,
+            force_new_deployment=True,
+        )
         mock_client.deregister_task_definition.assert_called_once_with(
             taskDefinition="arn:aws:ecs:task-def/old:1"
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.aws_utils.build_task_definition_dict")
+    @patch("challenges.aws_utils.get_image_settings_for_challenge")
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_refresh_task_definition_for_challenge_service_not_found(
+        self,
+        mock_update_service,
+        mock_client_token_generator,
+        mock_create_service,
+        mock_get_image_settings,
+        mock_build_task_definition,
+        mock_get_boto3_client,
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            queue="test_queue",
+            workers=1,
+            uses_ec2_worker=False,
+            remote_evaluation=False,
+            task_def_arn="arn:aws:ecs:task-def/old:1",
+        )
+        mock_client = MagicMock()
+        mock_get_boto3_client.return_value = mock_client
+        mock_client.deregister_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+        mock_get_image_settings.return_value = {"WORKER_IMAGE": "image:tag"}
+        mock_build_task_definition.return_value = (
+            {"family": "test_queue"},
+            None,
+        )
+        mock_client.register_task_definition.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+            "taskDefinition": {
+                "taskDefinitionArn": "arn:aws:ecs:task-def/new:2"
+            },
+        }
+        mock_update_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": {
+                "Code": "ServiceNotFoundException",
+                "Message": "Service not found.",
+            },
+        }
+        mock_client_token_generator.return_value = "mock_client_token"
+        mock_create_service.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+        }
+
+        response = refresh_task_definition_for_challenge(
+            challenge, commit_id="abc123", client=mock_client
+        )
+
+        self.assertEqual(
+            response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK
+        )
+        self.assertEqual(challenge.task_def_arn, "arn:aws:ecs:task-def/new:2")
+        mock_client_token_generator.assert_called_once_with(challenge.pk)
+        mock_create_service.assert_called_once_with(
+            mock_client, challenge, "mock_client_token"
         )
 
     @patch.dict(
@@ -7319,6 +7436,85 @@ class TestWorkerImageHelpers(TestCase):
         )
         self.assertEqual(kwargs["cluster"], "evalai-prod-cluster")
         self.assertTrue(kwargs["forceNewDeployment"])
+
+    def test_strip_fifo_suffix_standard_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue"), "my-queue")
+
+    def test_strip_fifo_suffix_fifo_queue(self):
+        self.assertEqual(strip_fifo_suffix("my-queue.fifo"), "my-queue")
+
+    def test_strip_fifo_suffix_no_double_strip(self):
+        self.assertEqual(
+            strip_fifo_suffix("my-queue.fifo.fifo"), "my-queue.fifo"
+        )
+
+    def test_get_ecs_service_name_standard_queue(self):
+        self.assertEqual(get_ecs_service_name("my-queue"), "my-queue_service")
+
+    def test_get_ecs_service_name_fifo_queue(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo"), "my-queue_service"
+        )
+
+    def test_get_ecs_service_name_no_double_strip(self):
+        self.assertEqual(
+            get_ecs_service_name("my-queue.fifo.fifo"),
+            "my-queue-fifo_service",
+        )
+
+    def test_sanitize_ecs_resource_name_fifo_queue(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my-queue.fifo"),
+            "my-queue",
+        )
+
+    def test_sanitize_ecs_resource_name_removes_other_invalid_chars(self):
+        self.assertEqual(
+            sanitize_ecs_resource_name("my.queue_name.fifo"),
+            "my-queue_name",
+        )
+
+    @patch.dict(
+        "os.environ", {"CELERY_QUEUE_NAME": "evalai-celery"}, clear=False
+    )
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.task_definition")
+    def test_build_task_definition_dict_fifo_queue_uses_ecs_safe_family(
+        self, mock_task_definition, mock_get_aws_credentials
+    ):
+        challenge = MagicMock(
+            pk=2698,
+            is_docker_based=False,
+            worker_cpu_cores=1024,
+            worker_memory=2048,
+            ephemeral_storage=21,
+        )
+        mock_get_aws_credentials.return_value = {}
+        mock_task_definition.format.return_value = "{'family': 'ecs-safe'}"
+
+        with patch(
+            "challenges.aws_utils.load_aws_api_kwargs",
+            side_effect=lambda value: {"family": "ecs-safe"},
+        ):
+            task_def, error = build_task_definition_dict(
+                challenge, "mars2-challenge-2698-production-abc.fifo"
+            )
+
+        self.assertIsNone(error)
+        self.assertEqual(task_def["family"], "ecs-safe")
+        format_kwargs = mock_task_definition.format.call_args.kwargs
+        self.assertEqual(
+            format_kwargs["queue_name"],
+            "mars2-challenge-2698-production-abc",
+        )
+        self.assertEqual(
+            format_kwargs["sqs_queue_name"],
+            "mars2-challenge-2698-production-abc.fifo",
+        )
+        self.assertEqual(
+            format_kwargs["container_name"],
+            "worker_mars2-challenge-2698-production-abc",
+        )
 
     @patch.dict(
         "challenges.aws_utils.aws_keys",

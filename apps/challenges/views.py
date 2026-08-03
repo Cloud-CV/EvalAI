@@ -121,6 +121,7 @@ from .aws_utils import (
     get_logs_from_cloudwatch,
     restart_ec2_instance,
     restart_workers,
+    sanitize_ecs_resource_name,
     scale_resources,
     start_ec2_instance,
     start_workers,
@@ -3766,7 +3767,7 @@ def get_worker_logs(request, challenge_pk):
     response_data = []
 
     log_group_name = get_log_group_name(challenge.pk)
-    log_stream_prefix = challenge.queue
+    log_stream_prefix = sanitize_ecs_resource_name(challenge.queue)
     pattern = ""  # Empty string to get all logs including container logs.
 
     # This is to specify the time window for fetching logs: 3 days before from

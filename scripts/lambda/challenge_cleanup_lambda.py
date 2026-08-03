@@ -1,7 +1,11 @@
 """
 AWS Lambda function to clean up EvalAI challenge resources when a challenge ends.
 
-Triggered by EventBridge Scheduler at the challenge's end_date. Cleans up:
+Triggered by EventBridge Scheduler at the challenge's end_date. Before
+tearing anything down, checks whether the challenge still has pending
+submissions (running/submitted/queued/resuming). If so, cleanup is skipped
+and a new one-time schedule is created to re-check later — the worker stays
+up so it can keep draining the queue. Once nothing is pending, cleans up:
 - ECS Fargate service (scale to 0, then delete)
 - Application Auto Scaling (scalable target + policies)
 - CloudWatch alarms (scale-up and scale-down)
@@ -12,6 +16,15 @@ Environment variables required:
 - ECS_CLUSTER: The ECS cluster name (e.g., "evalai-prod-cluster")
 - AWS_REGION: The AWS region (e.g., "us-east-1")
 - ENVIRONMENT: The deployment environment (e.g., "staging" or "production")
+- EVALAI_API_SERVER: EvalAI API server URL (e.g. https://eval.ai), used to
+  check pending submissions before deleting anything
+- LAMBDA_AUTH_TOKEN: shared secret for internal Lambda-auth APIs
+- EVENTBRIDGE_SCHEDULER_ROLE_ARN: role EventBridge Scheduler assumes to
+  invoke this Lambda, needed to recreate the schedule on retry
+- CHALLENGE_CLEANUP_LAMBDA_ARN: this Lambda's own ARN, needed to recreate
+  the schedule on retry
+- CLEANUP_RETRY_DELAY_MINUTES: minutes to wait before re-checking pending
+  submissions (optional, defaults to 60)
 
 Event payload (from EventBridge Scheduler):
 {
@@ -23,9 +36,22 @@ Event payload (from EventBridge Scheduler):
 import json
 import logging
 import os
+import re
+from datetime import datetime, timedelta
+from urllib.request import Request, urlopen
 
 import boto3
 from botocore.exceptions import ClientError
+
+ECS_RESOURCE_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_-]+")
+
+
+def get_ecs_service_name(queue_name):
+    """Return ECS-safe service name from an SQS queue name."""
+    base = queue_name[:-5] if queue_name.endswith(".fifo") else queue_name
+    base = ECS_RESOURCE_NAME_PATTERN.sub("-", base)
+    return f"{base}_service"
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -33,6 +59,95 @@ logger.setLevel(logging.INFO)
 ECS_CLUSTER = os.environ.get("ECS_CLUSTER")
 AWS_REGION = os.environ.get("AWS_REGION")
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
+EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER")
+LAMBDA_AUTH_TOKEN = os.environ.get("LAMBDA_AUTH_TOKEN")
+EVENTBRIDGE_SCHEDULER_ROLE_ARN = os.environ.get(
+    "EVENTBRIDGE_SCHEDULER_ROLE_ARN"
+)
+CHALLENGE_CLEANUP_LAMBDA_ARN = os.environ.get("CHALLENGE_CLEANUP_LAMBDA_ARN")
+CLEANUP_RETRY_DELAY_MINUTES = int(
+    os.environ.get("CLEANUP_RETRY_DELAY_MINUTES", "60")
+)
+
+
+def get_pending_submission_count(challenge_pk):
+    """
+    Return pending submission count for a challenge via the internal EvalAI
+    API. Raises on failure so callers can fail safe (skip deletion).
+    """
+    if not EVALAI_API_SERVER or not LAMBDA_AUTH_TOKEN:
+        raise RuntimeError(
+            "EVALAI_API_SERVER or LAMBDA_AUTH_TOKEN not configured."
+        )
+
+    challenge_pk = int(challenge_pk)
+    url = (
+        f"{EVALAI_API_SERVER.rstrip('/')}/api/challenges/challenge/"
+        f"{challenge_pk}/pending_submission_count/"
+    )
+    headers = {"Authorization": f"Bearer {LAMBDA_AUTH_TOKEN}"}
+    request = Request(url=url, headers=headers, method="GET")
+    with urlopen(request, timeout=10) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return payload["pending_submissions"]
+
+
+def reschedule_cleanup(challenge_pk, queue_name):
+    """
+    Create a new one-time EventBridge schedule to re-check this challenge
+    for cleanup after CLEANUP_RETRY_DELAY_MINUTES. Mirrors
+    schedule_challenge_cleanup in apps/challenges/aws_utils.py. The schedule
+    that invoked this Lambda already self-deleted (ActionAfterCompletion is
+    DELETE on every schedule), so this always creates a fresh one.
+
+    Returns True on success, False on failure (logged) so the caller can
+    surface the failure instead of reporting a false success.
+    """
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.error(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN "
+            "not set. Cannot reschedule cleanup for challenge %s.",
+            challenge_pk,
+        )
+        return False
+
+    schedule_name = f"evalai-cleanup-challenge-{ENVIRONMENT}-{challenge_pk}"
+    retry_at = datetime.utcnow() + timedelta(
+        minutes=CLEANUP_RETRY_DELAY_MINUTES
+    )
+    schedule_expression = "at({})".format(
+        retry_at.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+
+    scheduler_client = boto3.client("scheduler", region_name=AWS_REGION)
+    try:
+        scheduler_client.create_schedule(
+            Name=schedule_name,
+            ScheduleExpression=schedule_expression,
+            ScheduleExpressionTimezone="UTC",
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+                "Input": json.dumps(
+                    {"challenge_pk": challenge_pk, "queue_name": queue_name}
+                ),
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info(
+            "Rescheduled cleanup for challenge %s at %s",
+            challenge_pk,
+            retry_at,
+        )
+        return True
+    except ClientError as e:
+        logger.exception(
+            "Failed to reschedule cleanup for challenge %s: %s",
+            challenge_pk,
+            e,
+        )
+        return False
 
 
 def handler(event, context):
@@ -46,7 +161,55 @@ def handler(event, context):
         logger.error("Missing challenge_pk or queue_name in event: %s", event)
         return {"statusCode": 400, "body": "Missing required fields"}
 
-    service_name = f"{queue_name}_service"
+    try:
+        pending_submissions = get_pending_submission_count(challenge_pk)
+    except Exception as e:  # noqa: BLE001 - any failure here must fail safe
+        logger.error(
+            "Failed to check pending submissions for challenge %s: %s. "
+            "Skipping cleanup and rescheduling to be safe.",
+            challenge_pk,
+            e,
+        )
+        if not reschedule_cleanup(challenge_pk, queue_name):
+            raise RuntimeError(
+                f"Could not verify pending submissions for challenge "
+                f"{challenge_pk} and failed to reschedule cleanup; "
+                f"needs manual attention."
+            ) from e
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {
+                    "message": f"Could not verify pending submissions for "
+                    f"challenge {challenge_pk}; rescheduled cleanup.",
+                }
+            ),
+        }
+
+    if pending_submissions > 0:
+        logger.info(
+            "Challenge %s has %s pending submission(s); skipping cleanup "
+            "and rescheduling.",
+            challenge_pk,
+            pending_submissions,
+        )
+        if not reschedule_cleanup(challenge_pk, queue_name):
+            raise RuntimeError(
+                f"Challenge {challenge_pk} has pending submissions but "
+                f"failed to reschedule cleanup; needs manual attention."
+            )
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {
+                    "message": f"Challenge {challenge_pk} has pending "
+                    f"submissions; rescheduled cleanup.",
+                    "pending_submissions": pending_submissions,
+                }
+            ),
+        }
+
+    service_name = get_ecs_service_name(queue_name)
     resource_id = f"service/{ECS_CLUSTER}/{service_name}"
     log_group_name = f"challenge-pk-{challenge_pk}-{ENVIRONMENT}-workers"
 

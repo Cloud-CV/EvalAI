@@ -62,6 +62,30 @@ def load_aws_api_kwargs(formatted_kwargs):
     return ast.literal_eval(formatted_kwargs)
 
 
+ECS_RESOURCE_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_-]+")
+
+
+def strip_fifo_suffix(queue_name):
+    """Strip the ``.fifo`` suffix from an SQS queue name.
+
+    The suffix contains a dot which is illegal in ECS resource names
+    (service names, task-definition families, container names).
+    """
+    if queue_name.endswith(".fifo"):
+        return queue_name[:-5]
+    return queue_name
+
+
+def sanitize_ecs_resource_name(name):
+    """Return a name safe for ECS families, services, and containers."""
+    return ECS_RESOURCE_NAME_PATTERN.sub("-", strip_fifo_suffix(name))
+
+
+def get_ecs_service_name(queue_name):
+    """Return ECS-safe service name from a queue name."""
+    return f"{sanitize_ecs_resource_name(queue_name)}_service"
+
+
 def get_evalai_submission_worker_ecr_prefixes():
     """
     Return accepted ECR URL prefixes for EvalAI-managed submission worker images.
@@ -323,6 +347,9 @@ def build_task_definition_dict(
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
+    sqs_queue_name = queue_name
+    queue_name = sanitize_ecs_resource_name(queue_name)
+
     container_name = f"worker_{queue_name}"
     code_upload_container_name = f"code_upload_worker_{queue_name}"
     worker_cpu_cores = (
@@ -373,6 +400,7 @@ def build_task_definition_dict(
             code_upload_container = (
                 container_definition_code_upload_worker.format(
                     queue_name=queue_name,
+                    sqs_queue_name=sqs_queue_name,
                     code_upload_container_name=code_upload_container_name,
                     auth_token=token.refresh_token,
                     cluster_name=cluster_name,
@@ -388,6 +416,7 @@ def build_task_definition_dict(
             submission_container = (
                 container_definition_submission_worker.format(
                     queue_name=queue_name,
+                    sqs_queue_name=sqs_queue_name,
                     container_name=container_name,
                     ENV=ENV,
                     challenge_pk=challenge.pk,
@@ -410,6 +439,7 @@ def build_task_definition_dict(
         else:
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
+                sqs_queue_name=sqs_queue_name,
                 code_upload_container_name=code_upload_container_name,
                 ENV=ENV,
                 challenge_pk=challenge.pk,
@@ -429,6 +459,7 @@ def build_task_definition_dict(
     else:
         definition = task_definition.format(
             queue_name=queue_name,
+            sqs_queue_name=sqs_queue_name,
             container_name=container_name,
             ENV=ENV,
             challenge_pk=challenge.pk,
@@ -531,7 +562,10 @@ def setup_auto_scaling_for_service(challenge):
     and creates CloudWatch alarms that scale the service based on SQS queue depth.
 
     Scale-up: when ApproximateNumberOfMessagesVisible > 0 for 1 minute.
-    Scale-down: when ApproximateNumberOfMessagesVisible = 0 for 2 minutes.
+    Scale-down: when ApproximateNumberOfMessagesVisible AND
+    ApproximateNumberOfMessagesNotVisible are both 0 for 2 minutes, so a
+    worker mid-submission (message received but not yet deleted, hence
+    invisible rather than gone) isn't scaled to 0 out from under it.
 
     The ceiling comes from challenge.max_ecs_workers so that a manual scale from the
     admin survives service recreation. All the AWS calls below are upserts keyed
@@ -553,14 +587,22 @@ def setup_auto_scaling_for_service(challenge):
         return True
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     cluster = COMMON_SETTINGS_DICT["CLUSTER"]
     resource_id = f"service/{cluster}/{service_name}"
     # A ceiling of 0 would leave the service permanently switched off, since the
     # scale-up policy sets ExactCapacity to this value.
     max_ecs_workers = max(challenge.max_ecs_workers or 1, 1)
     min_ecs_workers = min(
-        max(challenge.min_ecs_workers or 0, 0), max_ecs_workers
+        max(
+            (
+                challenge.min_ecs_workers
+                if challenge.min_ecs_workers is not None
+                else 0
+            ),
+            0,
+        ),
+        max_ecs_workers,
     )
 
     autoscaling_client = get_boto3_client("application-autoscaling", aws_keys)
@@ -632,18 +674,60 @@ def setup_auto_scaling_for_service(challenge):
             AlarmActions=[scale_up_policy_arn],
         )
 
-        # Scale-down alarm: queue depth = 0 for 2 minutes
+        # Scale-down alarm: visible + in-flight queue depth = 0 for 2 minutes.
+        # ApproximateNumberOfMessagesVisible alone would hit 0 as soon as a
+        # worker receives a message, even though it's still processing it
+        # (in-flight messages are "not visible", not gone) - a metric-math
+        # expression is used instead of a plain metric so both are checked.
         cloudwatch_client.put_metric_alarm(
             AlarmName=f"{service_name}_scale_down",
-            Namespace="AWS/SQS",
-            MetricName="ApproximateNumberOfMessagesVisible",
-            Dimensions=[{"Name": "QueueName", "Value": queue_name}],
-            Statistic="Sum",
-            Period=120,
             EvaluationPeriods=1,
             Threshold=0,
             ComparisonOperator="LessThanOrEqualToThreshold",
+            # SQS stops publishing these metrics once a queue's been idle for
+            # a while, which would otherwise leave this alarm stuck in
+            # INSUFFICIENT_DATA (and scale-down never firing) for the exact
+            # "genuinely idle" case this alarm exists to catch.
+            TreatMissingData="breaching",
             AlarmActions=[scale_down_policy_arn],
+            Metrics=[
+                {
+                    "Id": "visible",
+                    "MetricStat": {
+                        "Metric": {
+                            "Namespace": "AWS/SQS",
+                            "MetricName": "ApproximateNumberOfMessagesVisible",
+                            "Dimensions": [
+                                {"Name": "QueueName", "Value": queue_name}
+                            ],
+                        },
+                        "Period": 120,
+                        "Stat": "Sum",
+                    },
+                    "ReturnData": False,
+                },
+                {
+                    "Id": "in_flight",
+                    "MetricStat": {
+                        "Metric": {
+                            "Namespace": "AWS/SQS",
+                            "MetricName": "ApproximateNumberOfMessagesNotVisible",
+                            "Dimensions": [
+                                {"Name": "QueueName", "Value": queue_name}
+                            ],
+                        },
+                        "Period": 120,
+                        "Stat": "Sum",
+                    },
+                    "ReturnData": False,
+                },
+                {
+                    "Id": "total_depth",
+                    "Expression": "visible + in_flight",
+                    "Label": "Total queue depth (visible + in-flight)",
+                    "ReturnData": True,
+                },
+            ],
         )
 
         logger.info(
@@ -682,7 +766,7 @@ def cleanup_auto_scaling_for_service(challenge):
         return
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     cluster = COMMON_SETTINGS_DICT["CLUSTER"]
     resource_id = f"service/{cluster}/{service_name}"
 
@@ -1170,10 +1254,10 @@ def refresh_task_definition_for_challenge(
             )
 
         if force_redeploy and challenge.workers and challenge.workers > 0:
-            return update_service_by_challenge_pk(
+            return service_manager(
                 client,
                 challenge,
-                challenge.workers,
+                num_of_tasks=challenge.workers,
                 force_new_deployment=True,
             )
         return response
@@ -1263,7 +1347,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     """
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     if (
         challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
@@ -1361,7 +1445,7 @@ def update_service_by_challenge_pk(
     """
 
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     task_def_arn = challenge.task_def_arn
 
     kwargs = update_service_args.format(
@@ -1400,7 +1484,7 @@ def delete_service_by_challenge_pk(challenge):
     """
     client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
-    service_name = f"{queue_name}_service"
+    service_name = get_ecs_service_name(queue_name)
     kwargs = delete_service_args.format(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
@@ -2108,7 +2192,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         challenge.task_def_arn = task_def_arn
         challenge.save()
         force_new_deployment = False
-        service_name = f"{challenge.queue}_service"
+        service_name = get_ecs_service_name(challenge.queue)
         num_of_tasks = challenge.workers
         kwargs = update_service_args.format(
             CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],

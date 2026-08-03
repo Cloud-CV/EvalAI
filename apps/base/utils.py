@@ -350,7 +350,8 @@ def get_boto3_client(resource, aws_keys):
     return None
 
 
-def get_or_create_sqs_queue(queue_name, challenge=None):
+def _get_sqs_resource_and_queue_name(queue_name, challenge=None):
+    """Build an SQS resource and normalize the queue name for lookup/create."""
     is_fifo = queue_name.endswith(".fifo")
 
     if settings.DEBUG or settings.TEST:
@@ -385,6 +386,28 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     if queue_name == "":
         queue_name = "evalai_submission_queue"
         is_fifo = False
+
+    return sqs, queue_name, is_fifo
+
+
+def get_sqs_queue(queue_name, challenge=None):
+    """
+    Look up an existing SQS queue; never create one.
+
+    Raises:
+        botocore.exceptions.ClientError: if the queue does not exist or
+            another AWS error occurs.
+    """
+    sqs, queue_name, _ = _get_sqs_resource_and_queue_name(
+        queue_name, challenge
+    )
+    return sqs.get_queue_by_name(QueueName=queue_name)
+
+
+def get_or_create_sqs_queue(queue_name, challenge=None):
+    sqs, queue_name, is_fifo = _get_sqs_resource_and_queue_name(
+        queue_name, challenge
+    )
 
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
