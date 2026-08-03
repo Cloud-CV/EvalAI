@@ -595,7 +595,7 @@ def setup_auto_scaling_for_service(challenge):
             (
                 challenge.min_ecs_workers
                 if challenge.min_ecs_workers is not None
-                else 1
+                else 0
             ),
             0,
         ),
