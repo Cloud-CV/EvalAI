@@ -403,6 +403,7 @@ def test_update_service_success_when_sync_describe_services_fails(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
     assert mock_challenge.workers == num_of_tasks
     assert mock_challenge.task_def_arn == "valid_task_def_arn"
+    mock_client.describe_services.assert_called_once()
 
 
 def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
@@ -445,6 +446,8 @@ def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
     assert mock_client.update_service.call_count == 2
     assert mock_challenge.task_def_arn == "active_task_def_arn"
+    retry_call_kwargs = mock_client.update_service.call_args_list[1].kwargs
+    assert retry_call_kwargs["taskDefinition"] == "active_task_def_arn"
 
 
 def test_update_service_redeploy_does_not_raise_when_sync_describe_services_fails(
@@ -493,6 +496,7 @@ def test_update_service_redeploy_does_not_raise_when_sync_describe_services_fail
     )
     assert mock_client.update_service.call_count == 1
     assert mock_challenge.task_def_arn == "inactive_task_def_arn"
+    mock_client.describe_services.assert_called_once()
 
 
 @patch("challenges.aws_utils.cleanup_auto_scaling_for_service")

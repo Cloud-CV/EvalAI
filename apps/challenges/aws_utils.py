@@ -1487,6 +1487,19 @@ def _sync_challenge_task_def_from_service(client, challenge, service_name):
     return True
 
 
+def _build_update_service_kwargs(
+    service_name, task_def_arn, num_of_tasks, force_new_deployment
+):
+    kwargs = update_service_args.format(
+        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+        service_name=service_name,
+        task_def_arn=task_def_arn,
+        force_new_deployment=force_new_deployment,
+        num_of_tasks=num_of_tasks,
+    )
+    return load_aws_api_kwargs(kwargs)
+
+
 def update_service_by_challenge_pk(
     client, challenge, num_of_tasks, force_new_deployment=False
 ):
@@ -1510,12 +1523,8 @@ def update_service_by_challenge_pk(
     task_def_arn = challenge.task_def_arn
 
     if force_new_deployment:
-        kwargs = update_service_args.format(
-            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-            service_name=service_name,
-            task_def_arn=task_def_arn,
-            force_new_deployment=force_new_deployment,
-            num_of_tasks=num_of_tasks,
+        kwargs = _build_update_service_kwargs(
+            service_name, task_def_arn, num_of_tasks, force_new_deployment
         )
     else:
         # Scale/stop without sending taskDefinition so stale DB ARNs do not
@@ -1525,7 +1534,7 @@ def update_service_by_challenge_pk(
             service_name=service_name,
             num_of_tasks=num_of_tasks,
         )
-    kwargs = load_aws_api_kwargs(kwargs)
+        kwargs = load_aws_api_kwargs(kwargs)
 
     try:
         response = client.update_service(**kwargs)
@@ -1534,14 +1543,12 @@ def update_service_by_challenge_pk(
             if _sync_challenge_task_def_from_service(
                 client, challenge, service_name
             ):
-                kwargs = update_service_args.format(
-                    CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-                    service_name=service_name,
-                    task_def_arn=challenge.task_def_arn,
-                    force_new_deployment=force_new_deployment,
-                    num_of_tasks=num_of_tasks,
+                kwargs = _build_update_service_kwargs(
+                    service_name,
+                    challenge.task_def_arn,
+                    num_of_tasks,
+                    force_new_deployment,
                 )
-                kwargs = load_aws_api_kwargs(kwargs)
                 try:
                     response = client.update_service(**kwargs)
                     if (
