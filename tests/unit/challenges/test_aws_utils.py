@@ -9,6 +9,9 @@ import pytest
 from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
 from challenges.aws_utils import (
     _file_content_changed,
+    _get_ecs_service_task_definition_arn,
+    _is_inactive_task_definition_error,
+    _sync_challenge_task_def_from_service,
     build_task_definition_dict,
     challenge_approval_callback,
     cleanup_auto_scaling_for_service,
@@ -497,6 +500,106 @@ def test_update_service_redeploy_does_not_raise_when_sync_describe_services_fail
     assert mock_client.update_service.call_count == 1
     assert mock_challenge.task_def_arn == "inactive_task_def_arn"
     mock_client.describe_services.assert_called_once()
+
+
+def test_update_service_redeploy_retry_client_error_returns_retry_response(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """If the retried update_service call (after a successful sync) itself
+    fails with a ClientError, that error's response must be returned."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    retry_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="UpdateService",
+    )
+    mock_client.update_service.side_effect = [inactive_error, retry_error]
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.TOO_MANY_REQUESTS
+    )
+    assert mock_client.update_service.call_count == 2
+
+
+def test_is_inactive_task_definition_error_with_plain_dict():
+    error_response = {
+        "Error": {
+            "Code": "ClientException",
+            "Message": "TaskDefinition is inactive",
+        }
+    }
+    assert _is_inactive_task_definition_error(error_response) is True
+    assert (
+        _is_inactive_task_definition_error({"Error": {"Code": "Other"}})
+        is False
+    )
+
+
+def test_get_ecs_service_task_definition_arn_no_services(mock_client):
+    mock_client.describe_services.return_value = {"services": []}
+    assert (
+        _get_ecs_service_task_definition_arn(mock_client, "dummy_service")
+        is None
+    )
+
+
+def test_get_ecs_service_task_definition_arn_inactive_service(mock_client):
+    mock_client.describe_services.return_value = {
+        "services": [{"status": "INACTIVE", "taskDefinition": "some_arn"}]
+    }
+    assert (
+        _get_ecs_service_task_definition_arn(mock_client, "dummy_service")
+        is None
+    )
+
+
+def test_sync_challenge_task_def_from_service_no_active_service(
+    mock_client, mock_challenge
+):
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+    mock_client.describe_services.return_value = {"services": []}
+
+    result = _sync_challenge_task_def_from_service(
+        mock_client, mock_challenge, "dummy_service"
+    )
+
+    assert result is False
+    assert mock_challenge.task_def_arn == "inactive_task_def_arn"
 
 
 @patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
