@@ -19,7 +19,12 @@ def _load_auto_scale_workers():
     """
     monitoring_dir = os.path.abspath(
         os.path.join(
-            os.path.dirname(__file__), "..", "..", "..", "scripts", "monitoring"
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "..",
+            "scripts",
+            "monitoring",
         )
     )
     if monitoring_dir not in sys.path:
