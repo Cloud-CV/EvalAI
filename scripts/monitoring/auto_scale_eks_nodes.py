@@ -214,11 +214,23 @@ def scale_up_or_down_workers(
         )
     )
 
-    if pending_submissions == 0 or parse(
-        challenge["end_date"]
-    ) < pytz.UTC.localize(datetime.utcnow()):
+    challenge_ended = parse(challenge["end_date"]) < pytz.UTC.localize(
+        datetime.utcnow()
+    )
+
+    # Never scale the nodegroup to zero while submissions are still pending —
+    # including after end_date — or in-flight code-upload eval pods die and
+    # queued work has no capacity until something else scales back up.
+    if pending_submissions == 0:
         scale_down_workers(
             challenge, original_desired_size, evalai_interface, aws_keys
+        )
+    elif challenge_ended:
+        print(
+            "Challenge ID: {}, Title: {} has ended but still has {} "
+            "pending submission(s); leaving nodegroup running to drain.".format(
+                challenge["id"], challenge["title"], pending_submissions
+            )
         )
     else:
         if pending_submissions > original_desired_size:
