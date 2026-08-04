@@ -1625,13 +1625,14 @@ def delete_service_by_challenge_pk(challenge):
                     if not _is_inactive_task_definition_error(
                         deregister_error
                     ):
-                        logger.warning(
-                            "Failed to deregister task definition %s for "
-                            "challenge %s: %s",
-                            challenge.task_def_arn,
-                            challenge.pk,
-                            deregister_error,
-                        )
+                        logger.exception(deregister_error)
+                        return deregister_error.response
+                    logger.warning(
+                        "Task definition %s for challenge %s was already "
+                        "inactive; treating deregistration as successful",
+                        challenge.task_def_arn,
+                        challenge.pk,
+                    )
             challenge.task_def_arn = ""
             challenge.save()
         return response
