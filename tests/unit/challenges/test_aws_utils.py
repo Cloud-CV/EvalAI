@@ -371,6 +371,40 @@ def test_update_service_scale_only_omits_task_definition(
     assert mock_challenge.task_def_arn == "active_task_def_arn"
 
 
+def test_update_service_success_when_sync_describe_services_fails(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """A describe_services hiccup during self-heal must not mask a
+    successful scale (previously this returned describe_services'
+    ClientError instead of the real success response)."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.side_effect = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="DescribeServices",
+    )
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks
+    )
+
+    assert response is response_metadata
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_challenge.workers == num_of_tasks
+    assert mock_challenge.task_def_arn == "valid_task_def_arn"
+
+
 def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
     mock_client, mock_challenge, num_of_tasks
 ):
@@ -391,7 +425,10 @@ def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
         operation_name="UpdateService",
     )
     response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
-    mock_client.update_service.side_effect = [inactive_error, response_metadata]
+    mock_client.update_service.side_effect = [
+        inactive_error,
+        response_metadata,
+    ]
     mock_client.describe_services.return_value = {
         "services": [
             {
@@ -408,6 +445,54 @@ def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
     assert mock_client.update_service.call_count == 2
     assert mock_challenge.task_def_arn == "active_task_def_arn"
+
+
+def test_update_service_redeploy_does_not_raise_when_sync_describe_services_fails(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """A describe_services hiccup while syncing before the forced-redeploy
+    retry must not propagate unhandled out of update_service_by_challenge_pk
+    (this call sits directly inside the except block with no nested try)."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    mock_client.update_service.side_effect = inactive_error
+    mock_client.describe_services.side_effect = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="DescribeServices",
+    )
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.BAD_REQUEST
+    )
+    assert mock_client.update_service.call_count == 1
+    assert mock_challenge.task_def_arn == "inactive_task_def_arn"
 
 
 @patch("challenges.aws_utils.cleanup_auto_scaling_for_service")

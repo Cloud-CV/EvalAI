@@ -1461,9 +1461,17 @@ def _sync_challenge_task_def_from_service(client, challenge, service_name):
 
     Returns True when the challenge record was updated.
     """
-    service_task_def_arn = _get_ecs_service_task_definition_arn(
-        client, service_name
-    )
+    try:
+        service_task_def_arn = _get_ecs_service_task_definition_arn(
+            client, service_name
+        )
+    except ClientError as e:
+        logger.warning(
+            "Failed to fetch active task definition for service %s: %s",
+            service_name,
+            e,
+        )
+        return False
     if not service_task_def_arn:
         return False
     if challenge.task_def_arn == service_task_def_arn:
@@ -1521,14 +1529,6 @@ def update_service_by_challenge_pk(
 
     try:
         response = client.update_service(**kwargs)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-            challenge.workers = num_of_tasks
-            challenge.save()
-            if not force_new_deployment:
-                _sync_challenge_task_def_from_service(
-                    client, challenge, service_name
-                )
-        return response
     except ClientError as e:
         if force_new_deployment and _is_inactive_task_definition_error(e):
             if _sync_challenge_task_def_from_service(
@@ -1556,6 +1556,15 @@ def update_service_by_challenge_pk(
                     return retry_error.response
         logger.exception(e)
         return e.response
+
+    if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+        challenge.workers = num_of_tasks
+        challenge.save()
+        if not force_new_deployment:
+            _sync_challenge_task_def_from_service(
+                client, challenge, service_name
+            )
+    return response
 
 
 def delete_service_by_challenge_pk(challenge):
