@@ -137,9 +137,14 @@ def reschedule_cleanup(challenge_pk, queue_name):
     """
     Create a new one-time EventBridge schedule to re-check this challenge
     for cleanup after CLEANUP_RETRY_DELAY_MINUTES. Mirrors
-    schedule_challenge_cleanup in apps/challenges/aws_utils.py. The schedule
-    that invoked this Lambda already self-deleted (ActionAfterCompletion is
-    DELETE on every schedule), so this always creates a fresh one.
+    schedule_challenge_cleanup in apps/challenges/aws_utils.py.
+
+    Important: ActionAfterCompletion=DELETE only removes the *invoking*
+    schedule after this Lambda invocation completes. During the run the
+    original name still exists, so create_schedule with the same name
+    raises ConflictException. Use a unique retry name so pending
+    challenges keep getting re-checked instead of permanently losing
+    their cleanup schedule after EventBridge exhausts retries.
 
     Returns True on success, False on failure (logged) so the caller can
     surface the failure instead of reporting a false success.
@@ -152,10 +157,21 @@ def reschedule_cleanup(challenge_pk, queue_name):
         )
         return False
 
-    schedule_name = f"evalai-cleanup-challenge-{ENVIRONMENT}-{challenge_pk}"
     retry_at = datetime.utcnow() + timedelta(
         minutes=CLEANUP_RETRY_DELAY_MINUTES
     )
+    # Unique suffix avoids ConflictException with the still-active invoking
+    # schedule. Keep within EventBridge Scheduler's 64-char name limit.
+    schedule_name = (
+        f"evalai-cleanup-challenge-{ENVIRONMENT}-{challenge_pk}"
+        f"-r{int(retry_at.timestamp())}"
+    )
+    if len(schedule_name) > 64:
+        # Fall back to a shorter unique name if env/pk are unusually long.
+        schedule_name = (
+            f"evalai-cln-{challenge_pk}-r{int(retry_at.timestamp())}"
+        )
+        schedule_name = schedule_name[:64]
     schedule_expression = "at({})".format(
         retry_at.strftime("%Y-%m-%dT%H:%M:%S")
     )
@@ -177,9 +193,10 @@ def reschedule_cleanup(challenge_pk, queue_name):
             ActionAfterCompletion="DELETE",
         )
         logger.info(
-            "Rescheduled cleanup for challenge %s at %s",
+            "Rescheduled cleanup for challenge %s at %s (schedule %s)",
             challenge_pk,
             retry_at,
+            schedule_name,
         )
         return True
     except ClientError as e:
