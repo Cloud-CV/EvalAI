@@ -851,9 +851,7 @@ def _put_challenge_cleanup_schedule(challenge, run_at, *, create):
         return
 
     schedule_name = _challenge_cleanup_schedule_name(challenge)
-    schedule_expression = "at({})".format(
-        run_at.strftime("%Y-%m-%dT%H:%M:%S")
-    )
+    schedule_expression = "at({})".format(run_at.strftime("%Y-%m-%dT%H:%M:%S"))
     target = {
         "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
         "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
@@ -893,9 +891,7 @@ def _put_challenge_cleanup_schedule(challenge, run_at, *, create):
             error_code = e.response.get("Error", {}).get("Code")
             if error_code == "ResourceNotFoundException":
                 # Schedule was already fired and auto-deleted; create a new one
-                _put_challenge_cleanup_schedule(
-                    challenge, run_at, create=True
-                )
+                _put_challenge_cleanup_schedule(challenge, run_at, create=True)
                 return
         logger.exception(
             "Failed to %s cleanup schedule for challenge %s: %s",
@@ -916,9 +912,7 @@ def schedule_challenge_cleanup(challenge):
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge to schedule cleanup for.
     """
-    _put_challenge_cleanup_schedule(
-        challenge, challenge.end_date, create=True
-    )
+    _put_challenge_cleanup_schedule(challenge, challenge.end_date, create=True)
 
 
 def update_challenge_cleanup_schedule(challenge):
