@@ -1000,9 +1000,7 @@ def schedule_challenge_cleanup_soon(challenge, delay_minutes=1):
     schedule_name = (
         f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
     )
-    schedule_expression = "at({})".format(
-        run_at.strftime("%Y-%m-%dT%H:%M:%S")
-    )
+    schedule_expression = "at({})".format(run_at.strftime("%Y-%m-%dT%H:%M:%S"))
     target = {
         "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
         "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
