@@ -46,6 +46,7 @@ from challenges.aws_utils import (
     scale_resources,
     scale_workers,
     schedule_challenge_cleanup,
+    schedule_challenge_cleanup_soon,
     service_manager,
     setup_auto_scaling_for_service,
     setup_ec2,
@@ -5560,6 +5561,93 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
         mock_scheduler.update_schedule.assert_called_once()
 
 
+class TestScheduleChallengeCleanupSoon(unittest.TestCase):
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_soon_updates_existing_schedule(
+        self, mock_get_boto3_client
+    ):
+        mock_scheduler = MagicMock()
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+
+        schedule_challenge_cleanup_soon(challenge, delay_minutes=1)
+
+        mock_scheduler.update_schedule.assert_called_once()
+        mock_scheduler.create_schedule.assert_not_called()
+        call_kwargs = mock_scheduler.update_schedule.call_args[1]
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
+        assert call_kwargs["ScheduleExpression"].startswith("at(")
+        assert call_kwargs["ScheduleExpressionTimezone"] == "UTC"
+        assert call_kwargs["ActionAfterCompletion"] == "DELETE"
+        assert "challenge_pk" in call_kwargs["Target"]["Input"]
+
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_soon_creates_when_missing(self, mock_get_boto3_client):
+        mock_scheduler = MagicMock()
+        mock_scheduler.update_schedule.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "ResourceNotFoundException"},
+                "ResponseMetadata": {"HTTPStatusCode": 404},
+            },
+            operation_name="UpdateSchedule",
+        )
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+
+        schedule_challenge_cleanup_soon(challenge)
+
+        mock_scheduler.create_schedule.assert_called_once()
+        call_kwargs = mock_scheduler.create_schedule.call_args[1]
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
+        assert call_kwargs["ScheduleExpression"].startswith("at(")
+
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "",
+    )
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_schedule_soon_skipped_without_lambda_arn(
+        self, mock_get_boto3_client
+    ):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        schedule_challenge_cleanup_soon(challenge)
+
+        mock_get_boto3_client.assert_not_called()
+
+    @patch("challenges.aws_utils.settings", DEBUG=True)
+    def test_schedule_soon_skipped_in_debug(self, mock_settings):
+        challenge = MagicMock()
+        challenge.pk = 42
+
+        schedule_challenge_cleanup_soon(challenge)
+
+
 class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
     @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
     @patch("challenges.aws_utils.get_boto3_client")
@@ -5659,8 +5747,11 @@ class TestHandleEndDateChange(TestCase):
         mock_update_schedule.assert_called_once_with(challenge)
 
     @patch("challenges.aws_utils.delete_workers")
-    def test_end_date_set_to_past_triggers_cleanup(self, mock_delete_workers):
-        """When end_date is changed to the past, trigger cleanup."""
+    @patch("challenges.aws_utils.schedule_challenge_cleanup_soon")
+    def test_end_date_set_to_past_triggers_cleanup(
+        self, mock_cleanup_soon, mock_delete_workers
+    ):
+        """Past end_date uses pending-aware cleanup, not force-delete."""
         from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
@@ -5675,13 +5766,14 @@ class TestHandleEndDateChange(TestCase):
         challenge._original_end_date = timezone.now() + timedelta(days=30)
         challenge.end_date = timezone.now() - timedelta(days=1)
 
-        mock_delete_workers.return_value = {"count": 1, "failures": []}
-
         handle_end_date_change_for_challenge(
             sender=None, instance=challenge, created=False
         )
 
-        mock_delete_workers.assert_called_once_with([challenge])
+        # Force-deleting here would kill queued/running submissions that the
+        # cleanup Lambda (#5179) is designed to drain past end_date.
+        mock_cleanup_soon.assert_called_once_with(challenge)
+        mock_delete_workers.assert_not_called()
 
     def test_end_date_change_skipped_for_docker_based(self):
         """Docker-based challenges should be skipped."""

@@ -910,9 +910,12 @@ def handle_end_date_change_for_challenge(sender, instance, created, **kwargs):
                 # Resources still exist; just reschedule the cleanup.
                 aws.update_challenge_cleanup_schedule(challenge)
         else:
-            # New end_date is in the past; trigger cleanup if resources exist.
+            # New end_date is in the past. Do not force-delete workers —
+            # that kills in-flight/queued evaluations. Route through the
+            # pending-aware cleanup Lambda (#5179) so the queue can drain
+            # before ECS resources are removed.
             if challenge.workers is not None:
-                aws.delete_workers([challenge])
+                aws.schedule_challenge_cleanup_soon(challenge)
 
 
 class DatasetSplit(TimeStampedModel):

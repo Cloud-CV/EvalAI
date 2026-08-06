@@ -962,6 +962,95 @@ def delete_challenge_cleanup_schedule(challenge):
         pass  # Schedule already deleted or never created
 
 
+def schedule_challenge_cleanup_soon(challenge, delay_minutes=1):
+    """
+    Schedule the pending-aware cleanup Lambda to run shortly after now.
+
+    Used when a challenge's end_date is moved into the past. EventBridge
+    Scheduler rejects ``at()`` expressions in the past, so we cannot reuse
+    ``schedule_challenge_cleanup`` / ``update_challenge_cleanup_schedule``
+    with the new end_date. The Lambda still checks pending submissions
+    before deleting ECS resources, so queued/running work can drain.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): Challenge to clean up.
+    delay_minutes (int): Minutes from now to fire the schedule (default 1).
+    """
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    if settings.DEBUG:
+        logger.info(
+            "Skipping soon-cleanup schedule for challenge %s in development "
+            "environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN "
+            "not set. Skipping soon-cleanup schedule for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    run_at = timezone.now() + timedelta(minutes=delay_minutes)
+    schedule_name = (
+        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+    )
+    schedule_expression = "at({})".format(
+        run_at.strftime("%Y-%m-%dT%H:%M:%S")
+    )
+    target = {
+        "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+        "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+        "Input": json.dumps(
+            {
+                "challenge_pk": challenge.pk,
+                "queue_name": challenge.queue,
+            }
+        ),
+    }
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        try:
+            scheduler_client.update_schedule(
+                Name=schedule_name,
+                ScheduleExpression=schedule_expression,
+                ScheduleExpressionTimezone="UTC",
+                FlexibleTimeWindow={"Mode": "OFF"},
+                Target=target,
+                ActionAfterCompletion="DELETE",
+            )
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code")
+            if error_code != "ResourceNotFoundException":
+                raise
+            # Schedule already fired/auto-deleted; create a fresh one.
+            scheduler_client.create_schedule(
+                Name=schedule_name,
+                ScheduleExpression=schedule_expression,
+                ScheduleExpressionTimezone="UTC",
+                FlexibleTimeWindow={"Mode": "OFF"},
+                Target=target,
+                ActionAfterCompletion="DELETE",
+            )
+        logger.info(
+            "Scheduled soon-cleanup for challenge %s at %s",
+            challenge.pk,
+            run_at,
+        )
+    except ClientError as e:
+        logger.exception(
+            "Failed to schedule soon-cleanup for challenge %s: %s",
+            challenge.pk,
+            e,
+        )
+
+
 def ensure_workers_for_submission(challenge):
     """
     Ensures the worker stack (ECS service, auto-scaling, EventBridge cleanup)
