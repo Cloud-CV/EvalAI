@@ -328,3 +328,17 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(
             self.url, "/api/challenges/{}/phases/".format(self.challenge.pk)
         )
+
+    def test_fifo_queue_name_resolves_for_get_challenge_by_queue_name(self):
+        """
+        Per-challenge FIFO queues end with '.fifo'. code-upload/remote
+        workers call get_challenge_by_queue_name with QUEUE_NAME, so the
+        pattern must accept a dot.
+        """
+        fifo_queue = "challenge-title-1-production-abcd.fifo"
+        url = "/api/challenges/challenge/queues/{}/".format(fifo_queue)
+        resolver = resolve(url)
+        self.assertEqual(
+            resolver.view_name, "challenges:get_challenge_by_queue_name"
+        )
+        self.assertEqual(resolver.kwargs["queue_name"], fifo_queue)
