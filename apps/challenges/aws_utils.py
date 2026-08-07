@@ -566,6 +566,9 @@ def setup_auto_scaling_for_service(challenge):
     ApproximateNumberOfMessagesNotVisible are both 0 for 2 minutes, so a
     worker mid-submission (message received but not yet deleted, hence
     invisible rather than gone) isn't scaled to 0 out from under it.
+    The scale-down expression uses FILL(..., 0) on each metric so a sparse
+    gap in only one SQS metric cannot make the whole expression missing
+    (which, with TreatMissingData=breaching, would false-trigger scale-to-zero).
 
     The ceiling comes from challenge.max_ecs_workers so that a manual scale from the
     admin survives service recreation. All the AWS calls below are upserts keyed
@@ -679,6 +682,17 @@ def setup_auto_scaling_for_service(challenge):
         # worker receives a message, even though it's still processing it
         # (in-flight messages are "not visible", not gone) - a metric-math
         # expression is used instead of a plain metric so both are checked.
+        #
+        # FILL(..., 0) is required: CloudWatch metric math returns no data for
+        # a period when either operand is missing, and with
+        # TreatMissingData=breaching that false-triggers ALARM -> ExactCapacity
+        # to min_ecs_workers (often 0), killing workers mid-submission whenever
+        # one of the two SQS metrics has a sparse/gap period. FILL makes a gap
+        # in only one metric evaluate as 0 + <other>, so an in-flight message
+        # still keeps total_depth > 0. When both are absent (genuinely idle /
+        # SQS stopped publishing), FILL yields 0 and scale-down still fires;
+        # TreatMissingData=breaching remains a backstop if the expression
+        # itself produces no time series.
         cloudwatch_client.put_metric_alarm(
             AlarmName=f"{service_name}_scale_down",
             EvaluationPeriods=1,
@@ -723,7 +737,7 @@ def setup_auto_scaling_for_service(challenge):
                 },
                 {
                     "Id": "total_depth",
-                    "Expression": "visible + in_flight",
+                    "Expression": "FILL(visible, 0) + FILL(in_flight, 0)",
                     "Label": "Total queue depth (visible + in-flight)",
                     "ReturnData": True,
                 },
