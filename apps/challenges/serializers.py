@@ -5,6 +5,7 @@ from challenges.constants import (
     DEFAULT_WORKER_PYTHON_VERSION,
     SUPPORTED_WORKER_PYTHON_VERSIONS,
 )
+from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from hosts.serializers import ChallengeHostTeamSerializer
@@ -629,7 +630,10 @@ class ChallengeInvitationRegisterSerializer(serializers.Serializer):
     last_name = serializers.CharField(
         max_length=150, required=False, allow_blank=True
     )
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        write_only=True,
+        max_length=getattr(settings, "PASSWORD_MAX_LENGTH", 128),
+    )
 
     def validate(self, attrs):
         user = self.context.get("user")
