@@ -3356,9 +3356,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response.data,
-            {
-                "error": "Submission does not belong to your participant team"
-            },
+            {"error": "Submission does not belong to your participant team"},
         )
         mock_publish.assert_not_called()
 
@@ -3395,8 +3393,6 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response.data,
-            {
-                "error": "Submission does not belong to this challenge phase"
-            },
+            {"error": "Submission does not belong to this challenge phase"},
         )
         mock_publish.assert_not_called()
