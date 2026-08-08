@@ -3204,6 +3204,20 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     response = {}
     try:
         submission = get_submission_model(submission_pk)
+        # Same ownership contract as send_submission_message: callers must
+        # only finish uploads for their own team's submission in this phase.
+        if submission.challenge_phase_id != challenge_phase.pk:
+            response_data = {
+                "error": "Submission does not belong to this challenge phase"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        if submission.participant_team_id != participant_team.pk:
+            response_data = {
+                "error": (
+                    "Submission does not belong to your participant team"
+                )
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         file_key_on_s3 = "{}/{}".format(
             settings.MEDIAFILES_LOCATION, submission.input_file.name
         )
@@ -3318,14 +3332,30 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     try:
-        get_submission_model(submission_pk)
+        submission = get_submission_model(submission_pk)
     except Submission.DoesNotExist:
         response_data = {"error": "Submission does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # Reject cross-phase / cross-team enqueue. Without this check any
+    # participant of the challenge can publish an arbitrary submission_pk
+    # onto this phase's queue; the worker then evaluates that submission
+    # under this phase's annotation/script and mutates its status.
+    if submission.challenge_phase_id != challenge_phase.pk:
+        response_data = {
+            "error": "Submission does not belong to this challenge phase"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if submission.participant_team_id != participant_team.pk:
+        response_data = {
+            "error": "Submission does not belong to your participant team"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     submission_message = {
-        "submission_pk": submission_pk,
-        "phase_pk": challenge_phase_pk,
+        "submission_pk": submission.pk,
+        "phase_pk": submission.challenge_phase_id,
         "challenge_pk": challenge.pk,
     }
 
@@ -3333,7 +3363,7 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     trigger_eks_node_autoscale(
         challenge.pk,
         trigger_source="submission_created",
-        submission_pk=submission_pk,
+        submission_pk=submission.pk,
         submission_status=Submission.SUBMITTED,
     )
     response_data = {}

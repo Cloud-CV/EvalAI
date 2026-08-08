@@ -17,8 +17,10 @@ def publish_submission_message(message):
     Publish a submission evaluation message to the challenge SQS queue.
 
     For FIFO queues (queue name ends with ``.fifo``), sets:
-    - ``MessageGroupId`` to ``{phase_pk}-{participant_team_pk}`` so
-      submissions from the same team stay ordered within a phase while
+    - ``MessageGroupId`` to ``{phase_pk}-{participant_team_pk}`` taken
+      from the Submission row (not the message body) so a mismatched
+      ``phase_pk`` in the payload cannot mis-group or cross-associate
+      teams. Same-team submissions stay ordered within a phase while
       different teams can be processed in parallel by ECS workers.
     - ``MessageDeduplicationId`` to ``{submission_pk}-{uuid4}`` so each
       intentional enqueue (including resume/republish) is unique. SQS only
@@ -67,10 +69,12 @@ def publish_submission_message(message):
         # - different teams can be evaluated in parallel by ECS workers
         # SQS FIFO allows only one in-flight message per MessageGroupId;
         # phase_pk alone serialized an entire phase to a single worker.
+        # Always derive ids from the Submission row. Trusting message
+        # phase_pk would let a forged/mismatched body place another
+        # team's submission into the wrong group.
         team_pk = submission.participant_team_id
-        send_kwargs["MessageGroupId"] = "{}-{}".format(
-            message["phase_pk"], team_pk
-        )
+        phase_pk = submission.challenge_phase_id
+        send_kwargs["MessageGroupId"] = "{}-{}".format(phase_pk, team_pk)
         # FIFO deduplicates on MessageDeduplicationId for 5 minutes. Using
         # only submission_pk silently drops resume/republish of the same
         # submission. Include a UUID so each intentional enqueue is unique.
