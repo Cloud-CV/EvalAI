@@ -15,7 +15,14 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import mock
 import responses
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import (
+    Challenge,
+    ChallengePhase,
+    ChallengePhaseSplit,
+    DatasetSplit,
+    Leaderboard,
+    LeaderboardData,
+)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -23,6 +30,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from jobs.utils import get_leaderboard_data_model
 from moto import mock_sqs
 from participants.models import ParticipantTeam
 from rest_framework.test import APITestCase
@@ -1038,6 +1046,95 @@ class RunSubmissionLeaderboardDataTest(BaseAPITestClass):
         assert submission.status in [Submission.FINISHED, Submission.FAILED]
         assert submission.completed_at is not None
         mock_rmtree.assert_called_with(temp_run_dir)
+
+
+class RunSubmissionLeaderboardDataReevalTest(BaseAPITestClass):
+    """Re-evaluating the same Submission must not duplicate LeaderboardData."""
+
+    def setUp(self):
+        super().setUp()
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Split 1", codename="split_codename_1"
+        )
+        self.leaderboard = Leaderboard.objects.create(
+            schema={"labels": ["key1"], "default_order_by": "key1"}
+        )
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.leaderboard,
+        )
+        LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result={"key1": 1},
+            is_disabled=False,
+        )
+
+    @patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
+    @patch("scripts.workers.submission_worker.MultiOut")
+    @patch("scripts.workers.submission_worker.stdout_redirect")
+    @patch("scripts.workers.submission_worker.stderr_redirect")
+    @patch(
+        "scripts.workers.submission_worker.open",
+        new_callable=mock.mock_open,
+        read_data="log content",
+    )
+    @patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_reeval_disables_prior_leaderboard_data_before_bulk_create(
+        self,
+        mock_rmtree,
+        mock_open_builtin,
+        mock_stderr_redirect,
+        mock_stdout_redirect,
+        mock_multiout,
+        mock_evaluation_scripts,
+    ):
+        challenge_id = self.challenge.id
+        challenge_phase = self.challenge_phase
+        submission = self.submission
+        submission.challenge_phase.challenge.remote_evaluation = False
+        user_annotation_file_path = "dummy/path"
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge_id] = {
+            challenge_phase.id: "dummy_annotation.txt"
+        }
+
+        mock_evaluation_scripts.__getitem__.return_value.evaluate.return_value = {
+            "result": [{"split_codename_1": {"key1": 99}}]
+        }
+
+        with patch(
+            "scripts.workers.submission_worker.ContentFile",
+            side_effect=lambda x: ContentFile(x),
+        ):
+            run_submission(
+                challenge_id,
+                challenge_phase,
+                submission,
+                user_annotation_file_path,
+            )
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, Submission.FINISHED)
+
+        active = LeaderboardData.objects.filter(
+            submission=submission, is_disabled=False
+        )
+        self.assertEqual(active.count(), 1)
+        self.assertEqual(active.first().result["key1"], 99)
+
+        disabled = LeaderboardData.objects.filter(
+            submission=submission, is_disabled=True
+        )
+        self.assertEqual(disabled.count(), 1)
+        self.assertEqual(disabled.first().result["key1"], 1)
+
+        # get_leaderboard_data_model must remain unambiguous after re-eval.
+        leaderboard_data = get_leaderboard_data_model(
+            submission.pk, self.challenge_phase_split.pk
+        )
+        self.assertEqual(leaderboard_data.result["key1"], 99)
 
 
 class ProcessAddChallengeMessageTest(BaseAPITestClass):

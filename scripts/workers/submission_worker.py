@@ -790,6 +790,16 @@ def run_submission(
                 leaderboard_data_list.append(leaderboard_data)
 
             if successful_submission_flag:
+                # Re-evaluating the same Submission (send_submission_message,
+                # resume, or SQS redelivery) must not leave duplicate
+                # LeaderboardData rows. get_leaderboard_data_model() uses
+                # .get(is_disabled=False) and raises MultipleObjectsReturned
+                # when duplicates exist; leaderboard ranking can also pick a
+                # stale score. Soft-disable prior rows first (same pattern as
+                # host disable APIs), then insert the new results.
+                LeaderboardData.objects.filter(submission=submission).update(
+                    is_disabled=True
+                )
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
 
         # Once the submission_output is processed, then save the submission
