@@ -30,7 +30,6 @@ django.setup()  # isort:skip noqa:E402
 
 from base.utils import get_or_create_sqs_queue  # noqa:E402
 from challenges.aws_utils import trigger_eks_node_autoscale  # noqa:E402
-from challenges.models import ChallengePhase  # noqa:E402
 from challenges.models import (  # noqa:E402
     Challenge,
     ChallengePhaseSplit,
@@ -919,15 +918,29 @@ def process_submission_message(message):
     if not submission_instance:
         return
 
-    try:
-        challenge_phase = ChallengePhase.objects.get(id=phase_id)
-    except ChallengePhase.DoesNotExist:
-        logger.exception(
-            "{} Challenge Phase {} does not exist".format(
-                WORKER_LOGS_PREFIX, phase_id
+    # Never evaluate under a phase/challenge from the message body when it
+    # disagrees with the Submission row. A mismatched body would run the
+    # wrong annotation/script against another team's submission and then
+    # write status/leaderboard for that foreign row.
+    challenge_phase = submission_instance.challenge_phase
+    if (
+        challenge_phase.id != phase_id
+        or challenge_phase.challenge_id != challenge_id
+    ):
+        logger.error(
+            "{} Submission {} belongs to challenge {} phase {}, "
+            "but message claimed challenge {} phase {}. Skipping.".format(
+                WORKER_LOGS_PREFIX,
+                submission_id,
+                challenge_phase.challenge_id,
+                challenge_phase.id,
+                challenge_id,
+                phase_id,
             )
         )
-        raise
+        return
+
+    challenge_id = challenge_phase.challenge_id
 
     if (
         submission_instance.challenge_phase.challenge.is_static_dataset_code_upload

@@ -3317,3 +3317,86 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.challenge_phase.is_submission_paused = False
         self.challenge_phase.save()
+
+    @mock.patch("jobs.views.publish_submission_message")
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    def test_send_submission_message_rejects_other_teams_submission(
+        self, mock_ensure_workers, mock_publish
+    ):
+        """Participants must not enqueue another team's submission_pk.
+
+        Without ownership checks, any challenge participant could publish an
+        arbitrary submission onto this phase's queue; the worker would then
+        evaluate/mutate that foreign submission under this phase.
+        """
+        self.challenge.approved_by_admin = True
+        self.challenge.published = True
+        self.challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+
+        foreign_submission = Submission.objects.create(
+            participant_team=self.host_participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host.user,
+            status=Submission.SUBMITTED,
+            input_file=SimpleUploadedFile(
+                "foreign.txt", b"x", content_type="text/plain"
+            ),
+        )
+
+        send_url = reverse_lazy(
+            "jobs:send_submission_message",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": foreign_submission.pk,
+            },
+        )
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(send_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Submission does not belong to your participant team"
+            },
+        )
+        mock_publish.assert_not_called()
+
+    @mock.patch("jobs.views.publish_submission_message")
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    def test_send_submission_message_rejects_wrong_phase_submission(
+        self, mock_ensure_workers, mock_publish
+    ):
+        """submission_pk must belong to the challenge_phase in the URL."""
+        self.challenge.approved_by_admin = True
+        self.challenge.published = True
+        self.challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+
+        other_phase_submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase_restricted_to_one_submission,
+            created_by=self.user1,
+            status=Submission.SUBMITTED,
+            input_file=SimpleUploadedFile(
+                "other_phase.txt", b"x", content_type="text/plain"
+            ),
+        )
+
+        send_url = reverse_lazy(
+            "jobs:send_submission_message",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": other_phase_submission.pk,
+            },
+        )
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(send_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Submission does not belong to this challenge phase"
+            },
+        )
+        mock_publish.assert_not_called()

@@ -48,6 +48,7 @@ from scripts.workers.submission_worker import (
     load_challenge_and_return_max_submissions,
     main,
     process_add_challenge_message,
+    process_submission_message,
     return_file_url_per_environment,
     run_submission,
     serialize_submission_artifact,
@@ -264,6 +265,29 @@ class BaseAPITestClass(APITestCase):
             )
         )
         self.assertEqual(value, None)
+
+    @mock.patch("scripts.workers.submission_worker.run_submission")
+    @mock.patch("scripts.workers.submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.submission_worker.logger.error")
+    def test_process_submission_message_skips_mismatched_phase(
+        self, mock_logger_error, mock_extract, mock_run_submission
+    ):
+        """Reject SQS bodies whose phase/challenge disagree with the Submission.
+
+        A forged message could otherwise evaluate another team's submission
+        under the wrong annotation script and mutate its status/leaderboard.
+        """
+        mock_extract.return_value = self.submission
+        forged_phase_pk = self.challenge_phase.pk + 999
+        process_submission_message(
+            {
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": forged_phase_pk,
+                "submission_pk": self.submission.pk,
+            }
+        )
+        mock_run_submission.assert_not_called()
+        self.assertTrue(mock_logger_error.called)
 
     @mock.patch("scripts.workers.submission_worker.load_challenge")
     def test_load_challenge_and_return_max_submissions(
