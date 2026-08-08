@@ -44,7 +44,6 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
-from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
@@ -1067,13 +1066,11 @@ def get_submission_by_pk(request, submission_id):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    host_team = submission.challenge_phase.challenge.creator
-    if (
-        request.user.id == submission.created_by.id
-        or ChallengeHost.objects.filter(
-            user=request.user.id, team_name__pk=host_team.pk
-        ).exists()
-    ):
+    is_owner = request.user.id == submission.created_by.id
+    is_host = is_user_a_host_of_challenge(
+        request.user, submission.challenge_phase.challenge_id
+    )
+    if is_owner or is_host:
         if request.method == "GET":
             serializer = SubmissionSerializer(
                 submission, context={"request": request}
