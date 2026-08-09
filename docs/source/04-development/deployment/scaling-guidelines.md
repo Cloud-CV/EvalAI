@@ -19,16 +19,22 @@ Code-upload challenges run submissions as Kubernetes Jobs on a per-challenge EKS
 It runs in two modes:
 
 - **Event-driven** — Django invokes it asynchronously via `trigger_eks_node_autoscale()` when a submission is created or crosses the pending/terminal boundary.
-- **Scheduled sweep** — an EventBridge rule invokes it with `{"sweep": true}` to reconcile every eligible challenge. Event-driven invocations are best-effort, so this sweep is what prevents a single dropped invoke from leaving a nodegroup stuck at zero nodes with submissions pending.
+- **Scheduled sweep** — an EventBridge rule invokes it with `{"sweep": true}` to reconcile every eligible challenge. Event-driven invocations are best-effort, so this sweep is what prevents a single dropped invoke from leaving a nodegroup running with nothing left to scale it down, or stuck at zero nodes with submissions pending.
 
-Deploy both with:
+The `Deploy EKS node autoscale Lambda` step of the `ci-cd` workflow runs the deploy script on every staging and production deployment, so the Lambda's code and its sweep schedule stay in step with the repository. Deploying by hand is only needed outside that pipeline:
 
 ```bash
 ENVIRONMENT=production EVALAI_API_SERVER=https://eval.ai LAMBDA_AUTH_TOKEN=xxx \
   ./scripts/lambda/deploy_auto_scale_eks_nodes_lambda.sh
 ```
 
+The deployment OIDC role needs `lambda:GetFunction`, `lambda:UpdateFunctionCode`, `lambda:UpdateFunctionConfiguration`, `lambda:AddPermission`, `events:PutRule`, `events:DescribeRule`, `events:PutTargets`, and `events:ListTargetsByRule`.
+
 Pass `DLQ_ARN` to route failed asynchronous invocations to a dead-letter queue. The handler raises on unrecoverable failures rather than returning an error status code, so those failures appear in the Lambda `Errors` metric — alarm on it.
+
+### Which challenges the sweep covers
+
+The sweep reconciles approved, docker-based, non-remote challenges that have an evaluation cluster, excluding any that ended more than `EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS` (default 30) ago. The grace period keeps a just-ended challenge in the sweep long enough for its nodegroup to be forced to zero. Past that, the host is free to delete the cluster or revoke the cross-account role, so sweeping it would fail on every scheduled run and bury genuine failures on live challenges.
 
 ### Challenges in a host's own AWS account
 

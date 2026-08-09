@@ -8925,6 +8925,47 @@ class AutoscaleEligibleChallengesAPITest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn(self.challenge.pk, response.data["challenge_pks"])
 
+    def test_excludes_challenge_ended_beyond_grace_period(self):
+        """
+        A long-ended challenge has nothing left to reconcile, and its cluster
+        or cross-account role may already be gone. Sweeping it forever turns
+        every scheduled run into a failure.
+        """
+        grace_days = settings.EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS
+        self._make_challenge_eligible(
+            end_date=timezone.now() - timedelta(days=grace_days + 1)
+        )
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge, name="long-ended-cluster"
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.challenge.pk, response.data["challenge_pks"])
+
+    def test_includes_challenge_ended_within_grace_period(self):
+        """
+        A just-ended challenge must stay in the sweep so its nodegroup is
+        still forced to zero nodes.
+        """
+        grace_days = settings.EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS
+        self._make_challenge_eligible(
+            end_date=timezone.now() - timedelta(days=max(grace_days - 1, 0))
+        )
+        ChallengeEvaluationCluster.objects.create(
+            challenge=self.challenge, name="recently-ended-cluster"
+        )
+        with mock.patch.dict(
+            os.environ, {"LAMBDA_AUTH_TOKEN": self.auth_token}
+        ):
+            response = self._client_with_auth().get(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.challenge.pk, response.data["challenge_pks"])
+
 
 class GetChallengeSubmissionMetricsByPkTest(BaseAPITestClass):
     """Tests for the get_challenge_submission_metrics_by_pk endpoint."""

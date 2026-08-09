@@ -518,6 +518,16 @@ EKS_AUTOSCALE_LAMBDA_ROLE_ARN = os.environ.get(
     "EKS_AUTOSCALE_LAMBDA_ROLE_ARN", ""
 )
 
+# Challenges that ended longer ago than this are dropped from the autoscale
+# Lambda's reconciliation sweep. A just-ended challenge is kept so the sweep
+# can still force its nodegroup to zero; once that is done there is nothing
+# left to reconcile, and the host is free to delete the cluster or revoke the
+# cross-account role. Sweeping those forever turns every scheduled run into a
+# failed invocation, which masks real failures on live challenges.
+EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS = int(
+    os.environ.get("EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS", "30")
+)
+
 EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME = "evalai-autoscale-nodegroup-access"
 
 EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_DOCUMENT = {
