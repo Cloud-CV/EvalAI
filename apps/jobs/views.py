@@ -998,44 +998,49 @@ def get_remaining_submissions(request, challenge_pk):
     ).order_by("pk")
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         challenge_phases = challenge_phases.filter(is_public=True)
+    challenge_phases = list(challenge_phases)
 
     now = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    # Omitting submissions__challenge_phase__challenge here intentionally:
-    # challenge_phases is already filtered to this challenge, so the JOIN
-    # on submission.challenge_phase_id already scopes submissions correctly.
-    # Including it caused Django ORM to emit a redundant self-join on
-    # challenge_phase (T4 alias), inflating query cost significantly.
-    submission_filter = Q(
-        submissions__participant_team=participant_team,
-    ) & ~Q(submissions__status__in=submission_status_to_exclude)
-
-    challenge_phases = challenge_phases.annotate(
-        submissions_count=Count(
-            "submissions",
-            filter=submission_filter,
-        ),
-        submissions_this_month_count=Count(
-            "submissions",
-            filter=submission_filter
-            & Q(submissions__submitted_at__gte=month_start),
-        ),
-        submissions_today_count=Count(
-            "submissions",
-            filter=submission_filter
-            & Q(submissions__submitted_at__gte=today_start),
-        ),
+    # Aggregate from the submission side instead of annotating the phase
+    # queryset. Annotating phases emits a LEFT JOIN whose only join predicate
+    # is challenge_phase_id, so the participant_team check ends up inside
+    # FILTER (WHERE ...) and is applied during aggregation, not to prune the
+    # join. Postgres therefore reads every submission of the challenge to
+    # count the handful belonging to one team. Driving the query from
+    # submission puts participant_team_id in the WHERE clause, where its index
+    # narrows the scan to this team's rows before any grouping happens.
+    phase_counts = (
+        Submission.objects.filter(
+            participant_team=participant_team,
+            challenge_phase_id__in=[phase.pk for phase in challenge_phases],
+        )
+        .exclude(status__in=submission_status_to_exclude)
+        .values("challenge_phase_id")
+        .annotate(
+            submissions_count=Count("id"),
+            submissions_this_month_count=Count(
+                "id", filter=Q(submitted_at__gte=month_start)
+            ),
+            submissions_today_count=Count(
+                "id", filter=Q(submitted_at__gte=today_start)
+            ),
+        )
     )
+    counts_by_phase_id = {
+        row["challenge_phase_id"]: row for row in phase_counts
+    }
 
     phase_data_list = []
     for phase in challenge_phases:
+        counts = counts_by_phase_id.get(phase.pk, {})
         limits = _compute_remaining_limits(
             phase,
-            phase.submissions_count,
-            phase.submissions_this_month_count,
-            phase.submissions_today_count,
+            counts.get("submissions_count", 0),
+            counts.get("submissions_this_month_count", 0),
+            counts.get("submissions_today_count", 0),
             now,
         )
         phase_data_list.append(

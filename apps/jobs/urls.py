@@ -61,12 +61,14 @@ urlpatterns = [
         name="get_submissions_for_challenge",
     ),
     url(
-        r"^queues/(?P<queue_name>[\w-]+)/$",
+        # Include '.' so per-challenge FIFO queue names (*.fifo) resolve.
+        # code-upload/remote workers call these paths with QUEUE_NAME.
+        r"^queues/(?P<queue_name>[\w.-]+)/$",
         views.delete_submission_message_from_queue,
         name="delete_submission_message_from_queue",
     ),
     url(
-        r"^challenge/queues/(?P<queue_name>[\w-]+)/$",
+        r"^challenge/queues/(?P<queue_name>[\w.-]+)/$",
         views.get_submission_message_from_queue,
         name="get_submission_message_from_queue",
     ),
