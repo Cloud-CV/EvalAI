@@ -2659,8 +2659,16 @@ def create_nodegroup_for_challenge(
     except DatabaseError as e:
         logger.exception(e)
 
-    waiter = client.get_waiter("nodegroup_active")
-    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    try:
+        waiter = client.get_waiter("nodegroup_active")
+        waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    except (ClientError, BotoCoreError) as e:
+        # WaiterError is a BotoCoreError. Without this the exception escapes
+        # to the caller, which would skip both the failure logging here and
+        # the code-upload worker start in create_eks_nodegroup.
+        logger.exception(e)
+        return None
+
     return response
 
 
@@ -2791,15 +2799,15 @@ def _version_at_least(version, minimum):
     return parsed >= floor
 
 
-def _get_challenge_nodegroup(challenge_pk):
+def _get_challenge_cluster(challenge_pk):
     """
-    Resolve the challenge, cluster name and nodegroup name for a sync task.
+    Resolve the challenge and its evaluation cluster for a sync task.
 
     Arguments:
         challenge_pk {int} -- challenge primary key
     Returns:
-        {tuple} -- (challenge, cluster_name, nodegroup_name), or
-            (None, None, None) when the challenge has no nodegroup yet
+        {tuple} -- (challenge, cluster), or (None, None) when the challenge
+            has no evaluation cluster
     """
     from .models import ChallengeEvaluationCluster
 
@@ -2813,16 +2821,74 @@ def _get_challenge_nodegroup(challenge_pk):
             "sync.",
             challenge_pk,
         )
-        return None, None, None
+        return None, None
     except DatabaseError as e:
         logger.exception(e)
-        return None, None, None
+        return None, None
 
-    challenge = cluster.challenge
-    nodegroup_name = cluster.nodegroup_name or (
-        get_nodegroup_name_for_challenge(challenge)
-    )
-    return challenge, cluster.name, nodegroup_name
+    return cluster.challenge, cluster
+
+
+def _resolve_nodegroup_name(client, challenge_pk, cluster):
+    """
+    Find the name of a challenge's live nodegroup.
+
+    nodegroup_name is nullable and was only added recently, so clusters
+    provisioned before then have none recorded. The name cannot be re-derived
+    from the challenge, because it embeds the title as it was at creation time:
+    a renamed challenge would derive a name that matches nothing, delete
+    nothing, and then create a second nodegroup alongside the live one.
+    Ask AWS instead.
+
+    Arguments:
+        client -- boto3 EKS client authenticated for the challenge
+        challenge_pk {int} -- challenge primary key
+        cluster {<class 'apps.challenges.models.ChallengeEvaluationCluster'>}
+    Returns:
+        {str or None} -- nodegroup name, or None when it cannot be pinned down
+    """
+    from .models import ChallengeEvaluationCluster
+
+    if cluster.nodegroup_name:
+        return cluster.nodegroup_name
+
+    try:
+        nodegroups = client.list_nodegroups(clusterName=cluster.name).get(
+            "nodegroups", []
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(e)
+        return None
+
+    if not nodegroups:
+        # Also the state during initial cluster setup, before
+        # create_eks_nodegroup has run. Nothing to replace yet.
+        logger.info(
+            "Cluster %s for challenge %s has no nodegroup yet. Skipping.",
+            cluster.name,
+            challenge_pk,
+        )
+        return None
+
+    if len(nodegroups) > 1:
+        logger.error(
+            "Cluster %s for challenge %s has %s nodegroups and none recorded. "
+            "Refusing to guess which one to replace.",
+            cluster.name,
+            challenge_pk,
+            len(nodegroups),
+        )
+        return None
+
+    nodegroup_name = nodegroups[0]
+    try:
+        ChallengeEvaluationCluster.objects.filter(
+            challenge_id=challenge_pk
+        ).update(nodegroup_name=nodegroup_name)
+    except DatabaseError as e:
+        logger.exception(e)
+
+    return nodegroup_name
 
 
 @app.task
@@ -2844,15 +2910,37 @@ def recreate_eks_nodegroup(challenge_pk):
     """
     from .utils import get_aws_credentials_for_challenge
 
-    challenge, cluster_name, nodegroup_name = _get_challenge_nodegroup(
-        challenge_pk
-    )
+    challenge, cluster = _get_challenge_cluster(challenge_pk)
     if challenge is None:
         return {"error": "No nodegroup to recreate."}
 
+    cluster_name = cluster.name
     client = get_boto3_client(
         "eks", get_aws_credentials_for_challenge(challenge_pk)
     )
+    nodegroup_name = _resolve_nodegroup_name(client, challenge_pk, cluster)
+    if nodegroup_name is None:
+        return {"error": "No nodegroup to recreate."}
+
+    # A nodegroup that is not ACTIVE is being created, updated or deleted by
+    # someone else, most likely the initial setup_eks_cluster chain still in
+    # flight. Deleting it here would make create_eks_nodegroup fail on a
+    # duplicate name and skip starting the code-upload worker.
+    try:
+        status = client.describe_nodegroup(
+            clusterName=cluster_name, nodegroupName=nodegroup_name
+        )["nodegroup"]["status"]
+    except (ClientError, BotoCoreError, KeyError) as e:
+        logger.exception(e)
+        return {"error": str(e)}
+
+    if status != "ACTIVE":
+        message = (
+            "Nodegroup {} for challenge {} is {}, not ACTIVE. Skipping "
+            "recreate.".format(nodegroup_name, challenge_pk, status)
+        )
+        logger.warning(message)
+        return {"error": message}
 
     errors = validate_eks_nodegroup_config(challenge, client, cluster_name)
     if errors:
@@ -2916,9 +3004,13 @@ def update_eks_nodegroup_scaling(challenge_pk):
     Push a challenge's scaling bounds to its existing EKS nodegroup.
 
     Unlike instance type, scaling config is mutable, so this needs no
-    recreation. The autoscale Lambda rewrites minSize and desiredSize from the
-    pending submission count on its next run; maxSize is the durable one, since
-    the Lambda caps scale-up at the challenge's max_worker_instance.
+    recreation. Only the bounds are pushed: the live desiredSize is preserved,
+    because the autoscale Lambda owns it and will have raised it for pending
+    submissions. Sending the challenge's stored desired_worker_instance instead
+    would shrink a busy nodegroup and kill running submissions.
+
+    maxSize is the durable field here, since the Lambda caps scale-up at the
+    challenge's max_worker_instance.
 
     Arguments:
         challenge_pk {int} -- challenge primary key
@@ -2927,23 +3019,41 @@ def update_eks_nodegroup_scaling(challenge_pk):
     """
     from .utils import get_aws_credentials_for_challenge
 
-    challenge, cluster_name, nodegroup_name = _get_challenge_nodegroup(
-        challenge_pk
-    )
+    challenge, cluster = _get_challenge_cluster(challenge_pk)
     if challenge is None:
         return {"error": "No nodegroup to update."}
 
+    cluster_name = cluster.name
     client = get_boto3_client(
         "eks", get_aws_credentials_for_challenge(challenge_pk)
     )
+    nodegroup_name = _resolve_nodegroup_name(client, challenge_pk, cluster)
+    if nodegroup_name is None:
+        return {"error": "No nodegroup to update."}
+
+    min_size = challenge.min_worker_instance
+    max_size = challenge.max_worker_instance
+    try:
+        current = client.describe_nodegroup(
+            clusterName=cluster_name, nodegroupName=nodegroup_name
+        )["nodegroup"]["scalingConfig"]
+        # Keep whatever the Lambda last decided, but inside the new bounds so
+        # AWS does not reject the update.
+        desired_size = min(
+            max(int(current["desiredSize"]), min_size), max_size
+        )
+    except (ClientError, BotoCoreError, KeyError, TypeError, ValueError) as e:
+        logger.exception(e)
+        return {"error": str(e)}
+
     try:
         client.update_nodegroup_config(
             clusterName=cluster_name,
             nodegroupName=nodegroup_name,
             scalingConfig={
-                "minSize": challenge.min_worker_instance,
-                "maxSize": challenge.max_worker_instance,
-                "desiredSize": challenge.desired_worker_instance,
+                "minSize": min_size,
+                "maxSize": max_size,
+                "desiredSize": desired_size,
             },
         )
     except (ClientError, BotoCoreError) as e:

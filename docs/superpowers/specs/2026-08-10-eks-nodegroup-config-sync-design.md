@@ -98,22 +98,32 @@ existing nodegroup untouched.
 ### Recreate
 
 `recreate_eks_nodegroup(challenge_pk)` takes a primary key rather than a
-serialized challenge, so it always reads current database state. This is the
-same staleness that caused the original problem.
+serialized challenge, so it always reads current database state. This avoids
+the staleness that caused the original problem.
 
-1. Resolve challenge, cluster name and nodegroup name via
-   `_get_challenge_nodegroup`. No `ChallengeEvaluationCluster` means no-op.
-2. Validate; abort on any error.
-3. Log a warning that submissions on the nodegroup's nodes will be terminated.
-4. `delete_nodegroup`, then wait on `nodegroup_deleted`.
+1. Resolve the challenge and cluster via `_get_challenge_cluster`. No
+   `ChallengeEvaluationCluster` means no-op.
+2. Resolve the nodegroup name via `_resolve_nodegroup_name`: the recorded
+   `nodegroup_name` when set, otherwise the cluster's single nodegroup from
+   `list_nodegroups`. The name is never re-derived from the challenge, because
+   it embeds the title as it was at creation time — a renamed challenge would
+   derive a name matching nothing, delete nothing, and then create a second
+   nodegroup alongside the live one. Zero nodegroups or more than one is a
+   no-op.
+3. Require the nodegroup to be `ACTIVE`. Any other status means someone else is
+   working on it, most likely the initial `setup_eks_cluster` chain still in
+   flight; deleting it there would make `create_eks_nodegroup` fail on a
+   duplicate name and skip starting the code-upload worker.
+4. Validate; abort on any error.
+5. Log a warning that submissions on the nodegroup's nodes will be terminated.
+6. `delete_nodegroup`, then wait on `nodegroup_deleted`.
    `ResourceNotFoundException` falls through to create; any other error aborts
    before create, since creating over a half-deleted nodegroup would fail.
-5. `create_nodegroup_for_challenge`, extracted from `create_eks_nodegroup` so
+7. `create_nodegroup_for_challenge`, extracted from `create_eks_nodegroup` so
    both paths always send the same argument set.
-6. On create failure, log that the challenge now has no worker capacity.
+8. On create failure, log that the challenge now has no worker capacity.
 
-The nodegroup name is derived from title, pk and environment by
-`get_nodegroup_name_for_challenge`, so a recreate reuses the same name and
+A recreate reuses the resolved name, so
 `ChallengeEvaluationCluster.nodegroup_name` — which the autoscale Lambda
 targets — stays valid.
 
@@ -123,11 +133,16 @@ only, so hosts do not get a second "cluster created" email per edit.
 
 ### Scaling update
 
-`update_eks_nodegroup_scaling(challenge_pk)` calls `update_nodegroup_config`
-with the challenge's three scaling values. The autoscale Lambda rewrites
-`minSize` and `desiredSize` from the pending submission count on its next run.
-`maxSize` is the durable one: the Lambda caps scale-up at the challenge's
-`max_worker_instance`, read through the autoscale meta endpoint.
+`update_eks_nodegroup_scaling(challenge_pk)` pushes only the bounds. It reads
+the live `scalingConfig` first and preserves the current `desiredSize`, clamped
+into the new `[minSize, maxSize]` so AWS does not reject the update.
+
+The autoscale Lambda owns `desiredSize` and will have raised it for pending
+submissions. Sending the challenge's stored `desired_worker_instance` instead
+would shrink a busy nodegroup and kill running submissions the moment an
+unrelated scaling field was edited. `maxSize` is the durable field: the Lambda
+caps scale-up at the challenge's `max_worker_instance`, read through the
+autoscale meta endpoint.
 
 ### Admin action
 

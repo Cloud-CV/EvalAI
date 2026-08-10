@@ -553,7 +553,10 @@ EKS_NODEGROUP_SCALING_FIELDS = (
     "desired_worker_instance",
 )
 
-# amiType values accepted by the EKS CreateNodegroup API.
+# amiType values accepted by the EKS CreateNodegroup API. CUSTOM is
+# deliberately excluded: it requires a launch template, which
+# create_nodegroup_for_challenge does not use, so it would fail at create time
+# after the old nodegroup had already been deleted.
 EKS_SUPPORTED_AMI_TYPES = (
     "AL2_x86_64",
     "AL2_x86_64_GPU",
@@ -565,12 +568,18 @@ EKS_SUPPORTED_AMI_TYPES = (
     "AL2023_ARM_64_NVIDIA",
     "BOTTLEROCKET_ARM_64",
     "BOTTLEROCKET_x86_64",
+    "BOTTLEROCKET_ARM_64_FIPS",
+    "BOTTLEROCKET_x86_64_FIPS",
     "BOTTLEROCKET_ARM_64_NVIDIA",
     "BOTTLEROCKET_x86_64_NVIDIA",
+    "BOTTLEROCKET_ARM_64_NVIDIA_FIPS",
+    "BOTTLEROCKET_x86_64_NVIDIA_FIPS",
     "WINDOWS_CORE_2019_x86_64",
     "WINDOWS_FULL_2019_x86_64",
     "WINDOWS_CORE_2022_x86_64",
     "WINDOWS_FULL_2022_x86_64",
+    "WINDOWS_CORE_2025_x86_64",
+    "WINDOWS_FULL_2025_x86_64",
 )
 
 # Subset of the above that ships NVIDIA drivers. A GPU challenge on any other
@@ -581,6 +590,8 @@ EKS_GPU_AMI_TYPES = (
     "AL2023_ARM_64_NVIDIA",
     "BOTTLEROCKET_ARM_64_NVIDIA",
     "BOTTLEROCKET_x86_64_NVIDIA",
+    "BOTTLEROCKET_ARM_64_NVIDIA_FIPS",
+    "BOTTLEROCKET_x86_64_NVIDIA_FIPS",
 )
 
 # First Kubernetes version that no longer offers Amazon Linux 2 AMIs.

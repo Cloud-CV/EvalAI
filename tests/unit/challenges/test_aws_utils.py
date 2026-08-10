@@ -9,9 +9,12 @@ import pytest
 from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
 from challenges.aws_utils import (
     _file_content_changed,
+    _get_challenge_cluster,
     _get_ecs_service_task_definition_arn,
     _is_inactive_task_definition_error,
+    _resolve_nodegroup_name,
     _sync_challenge_task_def_from_service,
+    _version_at_least,
     build_task_definition_dict,
     challenge_approval_callback,
     cleanup_auto_scaling_for_service,
@@ -19,6 +22,7 @@ from challenges.aws_utils import (
     create_eks_cluster,
     create_eks_cluster_subnets,
     create_eks_nodegroup,
+    create_nodegroup_for_challenge,
     create_service_by_challenge_pk,
     delete_challenge_cleanup_schedule,
     delete_log_group,
@@ -8259,6 +8263,61 @@ class TestValidateEKSNodegroupConfig(unittest.TestCase):
         self.assertIn("worker_instance_type is empty", errors[0])
 
 
+class TestValidateEKSNodegroupConfigErrors(unittest.TestCase):
+    """AWS lookups inside validation must degrade to an error, not an abort."""
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_instance_type_lookup_failure_is_an_error(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        self.ec2_client.describe_instance_type_offerings.side_effect = (
+            ClientError(
+                {"Error": {"Code": "AccessDenied", "Message": "no"}},
+                "DescribeInstanceTypeOfferings",
+            )
+        )
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Could not verify instance type", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_cluster_version_lookup_failure_is_an_error(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.eks_client.describe_cluster.return_value = {}
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Could not read cluster version", errors[0])
+
+
 class TestRecreateEKSNodegroup(unittest.TestCase):
     def setUp(self):
         self.challenge = MagicMock()
@@ -8272,9 +8331,12 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
         self.client = MagicMock()
 
     def _patch_lookup(self):
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {"status": "ACTIVE"}
+        }
         return patch(
-            "challenges.aws_utils._get_challenge_nodegroup",
-            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(self.challenge, self.cluster),
         )
 
     @patch("challenges.aws_utils.create_nodegroup_for_challenge")
@@ -8408,13 +8470,133 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
     @patch("challenges.aws_utils.get_boto3_client")
     def test_no_cluster_is_a_noop(self, mock_get_boto3_client):
         with patch(
-            "challenges.aws_utils._get_challenge_nodegroup",
-            return_value=(None, None, None),
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(None, None),
         ):
             result = recreate_eks_nodegroup(1)
 
         mock_get_boto3_client.assert_not_called()
         self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_non_active_nodegroup_is_left_alone(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """
+        A CREATING nodegroup means setup_eks_cluster is still in flight.
+        Deleting it would make create_eks_nodegroup fail on a duplicate name
+        and never start the code-upload worker.
+        """
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup():
+            self.client.describe_nodegroup.return_value = {
+                "nodegroup": {"status": "CREATING"}
+            }
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn("not ACTIVE", result["error"])
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_describe_error_aborts_before_delete(
+        self, mock_credentials, mock_get_boto3_client, mock_create
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            self.client.describe_nodegroup.side_effect = ClientError(
+                {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+                "DescribeNodegroup",
+            )
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils._resolve_nodegroup_name", return_value=None)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unresolvable_nodegroup_is_a_noop(
+        self, mock_credentials, mock_get_boto3_client, mock_resolve
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_delete_waiter_timeout_aborts_before_create(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """Creating over a half-deleted nodegroup would fail."""
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup():
+            self.client.get_waiter.return_value.wait.side_effect = WaiterError(
+                name="nodegroup_deleted",
+                reason="max attempts exceeded",
+                last_response={},
+            )
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+
+class TestCreateNodegroupForChallenge(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    def test_active_waiter_failure_returns_none(
+        self, mock_meta, mock_evaluation_cluster
+    ):
+        """
+        WaiterError escaping here would skip the caller's failure handling and,
+        in create_eks_nodegroup, silently stop the code-upload worker start.
+        """
+        mock_meta.return_value = {
+            "SUBNET_1": "subnet-123",
+            "SUBNET_2": "subnet-456",
+            "EKS_NODEGROUP_ROLE_ARN": "arn:aws:iam::123456789012:role/ng",
+        }
+        challenge = MagicMock()
+        challenge.pk = 1
+        client = MagicMock()
+        client.get_waiter.return_value.wait.side_effect = WaiterError(
+            name="nodegroup_active",
+            reason="max attempts exceeded",
+            last_response={},
+        )
+
+        result = create_nodegroup_for_challenge(
+            client, challenge, "test-cluster", "test-nodegroup"
+        )
+
+        self.assertIsNone(result)
 
 
 class TestUpdateEKSNodegroupScaling(unittest.TestCase):
@@ -8424,27 +8606,81 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
         self.challenge.min_worker_instance = 0
         self.challenge.max_worker_instance = 4
         self.challenge.desired_worker_instance = 0
+
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = "test-nodegroup"
+
         self.client = MagicMock()
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "scalingConfig": {
+                    "minSize": 1,
+                    "maxSize": 2,
+                    "desiredSize": 2,
+                }
+            }
+        }
+
+    def _patch_lookup(self):
+        return patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(self.challenge, self.cluster),
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_pushes_scaling_config(
+    def test_pushes_bounds_and_preserves_live_desired_size(
         self, mock_credentials, mock_get_boto3_client
     ):
+        """
+        The autoscale Lambda owns desiredSize. Pushing the challenge's stored
+        value would shrink a busy nodegroup and kill running submissions.
+        """
         mock_get_boto3_client.return_value = self.client
 
-        with patch(
-            "challenges.aws_utils._get_challenge_nodegroup",
-            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
-        ):
+        with self._patch_lookup():
             result = update_eks_nodegroup_scaling(1)
 
         self.client.update_nodegroup_config.assert_called_once_with(
             clusterName="test-cluster",
             nodegroupName="test-nodegroup",
-            scalingConfig={"minSize": 0, "maxSize": 4, "desiredSize": 0},
+            scalingConfig={"minSize": 0, "maxSize": 4, "desiredSize": 2},
         )
         self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_live_desired_size_clamped_into_new_bounds(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {"scalingConfig": {"desiredSize": 9}}
+        }
+
+        with self._patch_lookup():
+            update_eks_nodegroup_scaling(1)
+
+        sent = self.client.update_nodegroup_config.call_args.kwargs
+        self.assertEqual(sent["scalingConfig"]["desiredSize"], 4)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_describe_error_is_reported(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "ResourceNotFoundException", "Message": "no"}},
+            "DescribeNodegroup",
+        )
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -8457,13 +8693,158 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
             "UpdateNodegroupConfig",
         )
 
-        with patch(
-            "challenges.aws_utils._get_challenge_nodegroup",
-            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
-        ):
+        with self._patch_lookup():
             result = update_eks_nodegroup_scaling(1)
 
         self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_no_cluster_is_a_noop(self, mock_get_boto3_client):
+        with patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(None, None),
+        ):
+            result = update_eks_nodegroup_scaling(1)
+
+        mock_get_boto3_client.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils._resolve_nodegroup_name", return_value=None)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unresolvable_nodegroup_is_a_noop(
+        self, mock_credentials, mock_get_boto3_client, mock_resolve
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+
+
+class TestGetChallengeCluster(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_missing_cluster_returns_nothing(self, mock_cluster):
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.side_effect = (
+            ChallengeEvaluationCluster.DoesNotExist
+        )
+
+        self.assertEqual(_get_challenge_cluster(1), (None, None))
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_database_error_returns_nothing(self, mock_cluster):
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.side_effect = (
+            DatabaseError("connection lost")
+        )
+
+        self.assertEqual(_get_challenge_cluster(1), (None, None))
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_returns_challenge_and_cluster(self, mock_cluster):
+        cluster = MagicMock()
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.return_value = (
+            cluster
+        )
+
+        self.assertEqual(
+            _get_challenge_cluster(1), (cluster.challenge, cluster)
+        )
+
+
+class TestVersionAtLeast(unittest.TestCase):
+    def test_compares_dotted_versions(self):
+        self.assertTrue(_version_at_least("1.36", "1.33"))
+        self.assertTrue(_version_at_least("1.33", "1.33"))
+        self.assertFalse(_version_at_least("1.29", "1.33"))
+
+    def test_unparseable_version_is_not_at_least(self):
+        """
+        An unreadable cluster version must not be treated as modern, or a valid
+        AL2 nodegroup would be rejected on an old cluster.
+        """
+        self.assertFalse(_version_at_least("unknown", "1.33"))
+        self.assertFalse(_version_at_least(None, "1.33"))
+
+
+class TestResolveNodegroupName(unittest.TestCase):
+    """
+    The name must never be re-derived from the challenge title: a renamed
+    challenge would derive a name matching nothing, delete nothing, and then
+    create a second nodegroup beside the live one.
+    """
+
+    def setUp(self):
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = None
+        self.client = MagicMock()
+
+    def test_recorded_name_is_used_without_calling_aws(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "recorded-nodegroup")
+        self.client.list_nodegroups.assert_not_called()
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_single_nodegroup_is_resolved_and_recorded(self, mock_cluster):
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+        mock_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="live-nodegroup"
+        )
+
+    def test_no_nodegroup_returns_none(self):
+        """Also the state during initial setup, before the nodegroup exists."""
+        self.client.list_nodegroups.return_value = {"nodegroups": []}
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+
+    def test_multiple_nodegroups_refuses_to_guess(self):
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["one", "two"]
+        }
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_recording_failure_still_returns_name(self, mock_cluster):
+        """Persisting the name is a convenience; the recreate must go ahead."""
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+        mock_cluster.objects.filter.return_value.update.side_effect = (
+            DatabaseError("connection lost")
+        )
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+
+    def test_list_error_returns_none(self):
+        self.client.list_nodegroups.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+            "ListNodegroups",
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
 
 
 class TestEKSNodegroupConfigChangeCallback(unittest.TestCase):
