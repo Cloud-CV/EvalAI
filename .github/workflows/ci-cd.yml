@@ -363,7 +363,7 @@ jobs:
           rule_name="${function_name}-sweep"
 
           if [ "${DRY_RUN_DEPLOYMENT}" = "true" ]; then
-            echo "Dry run: checking the autoscale Lambda and its sweep schedule exist."
+            echo "Dry run: checking the autoscale Lambda and its sweep schedule."
 
             if ! aws lambda get-function --region "${AWS_REGION}" \
                 --function-name "${function_name}" >/dev/null; then
@@ -371,10 +371,34 @@ jobs:
               exit 1
             fi
 
-            if ! aws events describe-rule --region "${AWS_REGION}" \
-                --name "${rule_name}" >/dev/null; then
+            # Existence alone is too weak a check. A disabled rule matches
+            # nothing and never self-triggers on its schedule, and a target
+            # registered without the sweep input makes EventBridge invoke the
+            # Lambda with an empty event, which the handler rejects as a
+            # malformed single-challenge request. Either leaves autoscaling
+            # with no reconciliation while looking correctly configured.
+            if ! rule_state="$(aws events describe-rule \
+                --region "${AWS_REGION}" --name "${rule_name}" \
+                --query State --output text)"; then
               echo "Sweep schedule '${rule_name}' is missing. Autoscaling has" >&2
               echo "no reconciliation safety net until a real deployment runs." >&2
+              exit 1
+            fi
+
+            if [ "${rule_state}" != "ENABLED" ]; then
+              echo "Sweep schedule '${rule_name}' is ${rule_state}, so it never" >&2
+              echo "fires and no challenge is ever reconciled." >&2
+              exit 1
+            fi
+
+            sweep_input="$(aws events list-targets-by-rule \
+              --region "${AWS_REGION}" --rule "${rule_name}" \
+              --query "Targets[?Id=='1'].Input | [0]" --output text)"
+
+            if [ "${sweep_input}" != '{"sweep":true}' ]; then
+              echo "Sweep target input is '${sweep_input}', expected" >&2
+              echo "'{\"sweep\":true}'. The schedule would invoke the Lambda" >&2
+              echo "without asking it to sweep." >&2
               exit 1
             fi
 

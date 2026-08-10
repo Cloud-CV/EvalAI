@@ -28,9 +28,9 @@ ENVIRONMENT=production EVALAI_API_SERVER=https://eval.ai LAMBDA_AUTH_TOKEN=xxx \
   ./scripts/lambda/deploy_auto_scale_eks_nodes_lambda.sh
 ```
 
-The deployment OIDC role needs `lambda:GetFunction`, `lambda:UpdateFunctionCode`, `lambda:UpdateFunctionConfiguration`, `lambda:AddPermission`, `events:PutRule`, `events:DescribeRule`, `events:PutTargets`, and `events:ListTargetsByRule`.
+The deployment OIDC role needs `lambda:GetFunction`, `lambda:GetFunctionConfiguration`, `lambda:UpdateFunctionCode`, `lambda:UpdateFunctionConfiguration`, `lambda:AddPermission`, `events:PutRule`, `events:DescribeRule`, `events:PutTargets`, and `events:ListTargetsByRule`. `lambda:GetFunctionConfiguration` is what the `aws lambda wait function-updated` waiter polls, so a role without it fails mid-deployment even though the update itself succeeded.
 
-Pass `DLQ_ARN` to route failed asynchronous invocations to a dead-letter queue. The handler raises on unrecoverable failures rather than returning an error status code, so those failures appear in the Lambda `Errors` metric — alarm on it.
+Pass `DLQ_ARN` to route failed asynchronous invocations to a dead-letter queue. The script only sets the dead-letter configuration; the Lambda's own execution role still needs `sqs:SendMessage` on that queue, or `sns:Publish` on that topic, or failed invocations are counted as `DeadLetterErrors` instead of arriving. The handler raises on unrecoverable failures rather than returning an error status code, so those failures appear in the Lambda `Errors` metric — alarm on it.
 
 ### Which challenges the sweep covers
 

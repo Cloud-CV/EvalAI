@@ -16,6 +16,7 @@ import sys
 from datetime import timedelta
 
 from celery.schedules import crontab
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -527,6 +528,15 @@ EKS_AUTOSCALE_LAMBDA_ROLE_ARN = os.environ.get(
 EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS = int(
     os.environ.get("EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS", "30")
 )
+
+# A negative value moves the sweep cutoff into the future, which would drop
+# every challenge ending before that point — including live ones still
+# accepting submissions — and silently leave them with no reconciliation.
+if EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS < 0:
+    raise ImproperlyConfigured(
+        "EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS must be zero or greater, got "
+        f"{EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS}."
+    )
 
 EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_NAME = "evalai-autoscale-nodegroup-access"
 
