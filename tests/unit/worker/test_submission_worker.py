@@ -1106,7 +1106,7 @@ class RunSubmissionLeaderboardDataReevalTest(BaseAPITestClass):
 
         with patch(
             "scripts.workers.submission_worker.ContentFile",
-            side_effect=lambda x: ContentFile(x),
+            side_effect=ContentFile,
         ):
             run_submission(
                 challenge_id,
