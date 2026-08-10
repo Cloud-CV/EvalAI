@@ -167,7 +167,9 @@ urlpatterns = [
         name="accept_challenge_invitation",
     ),
     url(
-        r"^challenge/queues/(?P<queue_name>[\w-]+)/$",
+        # Include '.' so per-challenge FIFO queue names (*.fifo) resolve.
+        # code-upload/remote workers look up the challenge by QUEUE_NAME.
+        r"^challenge/queues/(?P<queue_name>[\w.-]+)/$",
         views.get_challenge_by_queue_name,
         name="get_challenge_by_queue_name",
     ),
