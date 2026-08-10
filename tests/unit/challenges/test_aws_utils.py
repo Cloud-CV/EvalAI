@@ -25,6 +25,7 @@ from challenges.aws_utils import (
     delete_service_by_challenge_pk,
     delete_workers,
     describe_ec2_instance,
+    eks_nodegroup_config_change_callback,
     ensure_workers_for_submission,
     get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
@@ -39,6 +40,7 @@ from challenges.aws_utils import (
     get_worker_image_for_challenge,
     is_evalai_managed_submission_worker_image,
     load_aws_api_kwargs,
+    recreate_eks_nodegroup,
     refresh_task_definition_for_challenge,
     refresh_worker_task_definitions,
     register_task_def_by_challenge_pk,
@@ -62,10 +64,12 @@ from challenges.aws_utils import (
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
+    update_eks_nodegroup_scaling,
     update_evalai_worker_image_tag,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
     update_sqs_retention_period_task,
+    validate_eks_nodegroup_config,
 )
 from challenges.models import Challenge, ChallengeEvaluationCluster
 from challenges.worker_utils import (
@@ -8087,3 +8091,556 @@ class TestWorkerImageHelpers(TestCase):
             "evalai-production-worker-py",
             next(iter(prefixes)),
         )
+
+
+class TestValidateEKSNodegroupConfig(unittest.TestCase):
+    """
+    The validation gate runs before the old nodegroup is deleted, so a false
+    negative here destroys a challenge's capacity.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_valid_config_returns_no_errors(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_instance_type_not_offered_in_region(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": []
+        }
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("not offered in this region", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unknown_ami_type_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "NOT_A_REAL_AMI"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Unknown worker_ami_type", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_al2_ami_rejected_on_modern_kubernetes(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        """
+        AL2 AMIs no longer exist on Kubernetes 1.33+, so create_nodegroup would
+        fail after the old nodegroup had already been deleted.
+        """
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2_x86_64_GPU"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("not available on Kubernetes 1.36", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_al2_ami_allowed_on_old_kubernetes(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2_x86_64_GPU"
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.29"}
+        }
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_gpu_challenge_on_non_gpu_ami_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2023_x86_64_STANDARD"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("has no GPU driver", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_cpu_only_challenge_on_non_gpu_ami_allowed(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2023_x86_64_STANDARD"
+        self.challenge.cpu_only_jobs = True
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_invalid_disk_size_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_disk_size = 0
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("worker_disk_size", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_empty_instance_type_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_instance_type = None
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("worker_instance_type is empty", errors[0])
+
+
+class TestRecreateEKSNodegroup(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.title = "Test Challenge"
+
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = "test-nodegroup"
+
+        self.client = MagicMock()
+
+    def _patch_lookup(self):
+        return patch(
+            "challenges.aws_utils._get_challenge_nodegroup",
+            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
+        )
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_deletes_then_creates_on_valid_config(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = {"nodegroup": "created"}
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_called_once_with(
+            clusterName="test-cluster", nodegroupName="test-nodegroup"
+        )
+        self.client.get_waiter.assert_called_once_with("nodegroup_deleted")
+        mock_create.assert_called_once_with(
+            self.client, self.challenge, "test-cluster", "test-nodegroup"
+        )
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_invalid_config_leaves_nodegroup_untouched(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """
+        A failed precheck must abort before delete_nodegroup, otherwise the
+        challenge is left with no capacity at all.
+        """
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = ["Instance type bogus.type is not valid."]
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn("left untouched", result["error"])
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_missing_nodegroup_still_creates(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = {"nodegroup": "created"}
+        self.client.delete_nodegroup.side_effect = ClientError(
+            {
+                "Error": {
+                    "Code": "ResourceNotFoundException",
+                    "Message": "gone",
+                }
+            },
+            "DeleteNodegroup",
+        )
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_called_once()
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_delete_error_aborts_before_create(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        self.client.delete_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "nope"}},
+            "DeleteNodegroup",
+        )
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_failed_create_reports_lost_capacity(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = None
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.assertIn("error", result)
+        self.assertIn("no worker capacity", result["error"])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_no_cluster_is_a_noop(self, mock_get_boto3_client):
+        with patch(
+            "challenges.aws_utils._get_challenge_nodegroup",
+            return_value=(None, None, None),
+        ):
+            result = recreate_eks_nodegroup(1)
+
+        mock_get_boto3_client.assert_not_called()
+        self.assertIn("error", result)
+
+
+class TestUpdateEKSNodegroupScaling(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 0
+        self.client = MagicMock()
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_pushes_scaling_config(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with patch(
+            "challenges.aws_utils._get_challenge_nodegroup",
+            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
+        ):
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_called_once_with(
+            clusterName="test-cluster",
+            nodegroupName="test-nodegroup",
+            scalingConfig={"minSize": 0, "maxSize": 4, "desiredSize": 0},
+        )
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_client_error_is_reported(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.update_nodegroup_config.side_effect = ClientError(
+            {"Error": {"Code": "InvalidParameterException", "Message": "bad"}},
+            "UpdateNodegroupConfig",
+        )
+
+        with patch(
+            "challenges.aws_utils._get_challenge_nodegroup",
+            return_value=(self.challenge, "test-cluster", "test-nodegroup"),
+        ):
+            result = update_eks_nodegroup_scaling(1)
+
+        self.assertIn("error", result)
+
+
+class TestEKSNodegroupConfigChangeCallback(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        # Start with every tracked field unchanged.
+        for field in (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        ):
+            value = "unchanged-{}".format(field)
+            setattr(self.challenge, field, value)
+            setattr(self.challenge, "_original_{}".format(field), value)
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_no_change_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_instance_type_change_triggers_recreate(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "recreate")
+        mock_recreate.delay.assert_called_once_with(1)
+        mock_scale.delay.assert_not_called()
+        # The snapshot is refreshed so a second save is not a second recreate.
+        self.assertEqual(
+            self.challenge._original_worker_instance_type, "g5.xlarge"
+        )
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_scaling_change_triggers_update_only(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.max_worker_instance = 8
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "scale")
+        mock_scale.delay.assert_called_once_with(1)
+        mock_recreate.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_recreate_wins_when_both_change(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        """
+        create_nodegroup already sends the new scalingConfig, so dispatching an
+        update as well would be a redundant AWS call.
+        """
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.max_worker_instance = 8
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "recreate")
+        mock_recreate.delay.assert_called_once_with(1)
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_non_code_upload_challenge_ignored(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.is_docker_based = False
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=True, TEST=False)
+    def test_debug_mode_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=True)
+    def test_test_mode_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        """
+        The hook fires on every Challenge save, so without this guard the whole
+        test suite would dispatch Celery tasks at a broker that is not running.
+        """
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()

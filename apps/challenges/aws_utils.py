@@ -2592,28 +2592,45 @@ def delete_log_group(log_group_name):
             logger.exception(e)
 
 
-@app.task
-def create_eks_nodegroup(challenge, cluster_name):
+def get_nodegroup_name_for_challenge(challenge_obj):
     """
-    Creates a nodegroup when a EKS cluster is created by the EvalAI admin
-    Arguments:
-        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
-        cluster_name {str} -- name of eks cluster
-    """
-    from .models import ChallengeEvaluationCluster
-    from .utils import get_aws_credentials_for_challenge
+    Build the deterministic nodegroup name for a challenge.
 
-    for obj in serializers.deserialize("json", challenge):
-        challenge_obj = obj.object
+    The name is derived from the challenge rather than stored, so recreating a
+    nodegroup reuses the same name and leaves
+    ChallengeEvaluationCluster.nodegroup_name (which autoscaling targets) valid.
+
+    Arguments:
+        challenge_obj {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+    Returns:
+        {str} -- nodegroup name
+    """
     environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
-    nodegroup_name = "{}-{}-nodegroup".format(
+    return "{}-{}-nodegroup".format(
         challenge_obj.title.replace(" ", "-")[:20], environment_suffix
     )
-    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
-    client = get_boto3_client("eks", challenge_aws_keys)
+
+
+def create_nodegroup_for_challenge(
+    client, challenge_obj, cluster_name, nodegroup_name
+):
+    """
+    Issue the create_nodegroup call for a challenge and record the name.
+
+    Shared by initial cluster setup and by recreation after an immutable
+    nodegroup field changes, so both paths always send the same argument set.
+
+    Arguments:
+        client -- boto3 EKS client authenticated for the challenge
+        challenge_obj {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+        cluster_name {str} -- name of eks cluster
+        nodegroup_name {str} -- name of the nodegroup to create
+    Returns:
+        {dict or None} -- the create_nodegroup response, or None on failure
+    """
+    from .models import ChallengeEvaluationCluster
+
     cluster_meta = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
-    # TODO: Move the hardcoded cluster configuration such as the
-    # instance_type, subnets, AMI to challenge configuration later.
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
@@ -2632,7 +2649,7 @@ def create_eks_nodegroup(challenge, cluster_name):
         logger.info("Nodegroup create: {}".format(response))
     except ClientError as e:
         logger.exception(e)
-        return
+        return None
 
     # Record the name so autoscaling targets this nodegroup explicitly.
     try:
@@ -2644,11 +2661,363 @@ def create_eks_nodegroup(challenge, cluster_name):
 
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    return response
+
+
+@app.task
+def create_eks_nodegroup(challenge, cluster_name):
+    """
+    Creates a nodegroup when a EKS cluster is created by the EvalAI admin
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+        cluster_name {str} -- name of eks cluster
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    nodegroup_name = get_nodegroup_name_for_challenge(challenge_obj)
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("eks", challenge_aws_keys)
+    response = create_nodegroup_for_challenge(
+        client, challenge_obj, cluster_name, nodegroup_name
+    )
+    if response is None:
+        return
+
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
     # starting the code-upload-worker
     client = get_boto3_client("ecs", aws_keys)
     client_token = client_token_generator(challenge_obj.pk)
     create_service_by_challenge_pk(client, challenge_obj, client_token)
+
+
+def validate_eks_nodegroup_config(challenge_obj, eks_client, cluster_name):
+    """
+    Check a challenge's nodegroup configuration before it is applied to AWS.
+
+    Recreating a nodegroup deletes the existing one first, so an invalid
+    configuration would leave the challenge with no capacity at all. Every
+    problem that can be detected up front is detected here instead.
+
+    Arguments:
+        challenge_obj {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+        eks_client -- boto3 EKS client authenticated for the challenge
+        cluster_name {str} -- name of eks cluster
+    Returns:
+        {list} -- human readable problems, empty when the config is usable
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    errors = []
+
+    instance_type = challenge_obj.worker_instance_type
+    if not instance_type:
+        errors.append("worker_instance_type is empty.")
+    else:
+        try:
+            ec2_client = get_boto3_client(
+                "ec2", get_aws_credentials_for_challenge(challenge_obj.pk)
+            )
+            offerings = ec2_client.describe_instance_type_offerings(
+                LocationType="region",
+                Filters=[{"Name": "instance-type", "Values": [instance_type]}],
+            )
+            if not offerings.get("InstanceTypeOfferings"):
+                errors.append(
+                    "Instance type {} is not offered in this region.".format(
+                        instance_type
+                    )
+                )
+        except (ClientError, BotoCoreError) as e:
+            logger.exception(e)
+            errors.append(
+                "Could not verify instance type {}: {}".format(
+                    instance_type, e
+                )
+            )
+
+    ami_type = challenge_obj.worker_ami_type
+    if ami_type not in settings.EKS_SUPPORTED_AMI_TYPES:
+        errors.append("Unknown worker_ami_type {}.".format(ami_type))
+    else:
+        if (
+            not challenge_obj.cpu_only_jobs
+            and ami_type not in settings.EKS_GPU_AMI_TYPES
+        ):
+            errors.append(
+                "AMI type {} has no GPU driver, but cpu_only_jobs is "
+                "disabled.".format(ami_type)
+            )
+        try:
+            cluster_version = eks_client.describe_cluster(name=cluster_name)[
+                "cluster"
+            ]["version"]
+            if ami_type.startswith("AL2_") and _version_at_least(
+                cluster_version, settings.EKS_AL2_REMOVED_IN_VERSION
+            ):
+                errors.append(
+                    "AMI type {} is not available on Kubernetes {}. Use an "
+                    "AL2023 or Bottlerocket AMI type.".format(
+                        ami_type, cluster_version
+                    )
+                )
+        except (ClientError, BotoCoreError, KeyError) as e:
+            logger.exception(e)
+            errors.append("Could not read cluster version: {}".format(e))
+
+    disk_size = challenge_obj.worker_disk_size
+    if not isinstance(disk_size, int) or disk_size <= 0:
+        errors.append("worker_disk_size must be a positive integer.")
+
+    return errors
+
+
+def _version_at_least(version, minimum):
+    """
+    Compare two dotted Kubernetes version strings.
+
+    Arguments:
+        version {str} -- version reported by EKS, e.g. "1.36"
+        minimum {str} -- version to compare against, e.g. "1.33"
+    Returns:
+        {bool} -- True when version >= minimum, False when unparseable
+    """
+    try:
+        parsed = tuple(int(part) for part in str(version).split(".")[:2])
+        floor = tuple(int(part) for part in str(minimum).split(".")[:2])
+    except (TypeError, ValueError):
+        return False
+    return parsed >= floor
+
+
+def _get_challenge_nodegroup(challenge_pk):
+    """
+    Resolve the challenge, cluster name and nodegroup name for a sync task.
+
+    Arguments:
+        challenge_pk {int} -- challenge primary key
+    Returns:
+        {tuple} -- (challenge, cluster_name, nodegroup_name), or
+            (None, None, None) when the challenge has no nodegroup yet
+    """
+    from .models import ChallengeEvaluationCluster
+
+    try:
+        cluster = ChallengeEvaluationCluster.objects.select_related(
+            "challenge"
+        ).get(challenge_id=challenge_pk)
+    except ChallengeEvaluationCluster.DoesNotExist:
+        logger.info(
+            "Challenge %s has no evaluation cluster yet. Skipping nodegroup "
+            "sync.",
+            challenge_pk,
+        )
+        return None, None, None
+    except DatabaseError as e:
+        logger.exception(e)
+        return None, None, None
+
+    challenge = cluster.challenge
+    nodegroup_name = cluster.nodegroup_name or (
+        get_nodegroup_name_for_challenge(challenge)
+    )
+    return challenge, cluster.name, nodegroup_name
+
+
+@app.task
+def recreate_eks_nodegroup(challenge_pk):
+    """
+    Replace a challenge's EKS nodegroup so immutable config changes take effect.
+
+    instanceTypes, amiType and diskSize cannot be changed on an existing
+    managed nodegroup, so editing those fields on the challenge has no effect
+    on AWS until the nodegroup is recreated. The configuration is validated
+    before the old nodegroup is deleted, because deletion is not reversible.
+
+    Deleting the nodegroup terminates any nodes currently running submissions.
+
+    Arguments:
+        challenge_pk {int} -- challenge primary key
+    Returns:
+        {dict} -- {"message": ...} on success, {"error": ...} otherwise
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    challenge, cluster_name, nodegroup_name = _get_challenge_nodegroup(
+        challenge_pk
+    )
+    if challenge is None:
+        return {"error": "No nodegroup to recreate."}
+
+    client = get_boto3_client(
+        "eks", get_aws_credentials_for_challenge(challenge_pk)
+    )
+
+    errors = validate_eks_nodegroup_config(challenge, client, cluster_name)
+    if errors:
+        message = (
+            "Refusing to recreate nodegroup {} for challenge {}. The existing "
+            "nodegroup was left untouched. Problems: {}".format(
+                nodegroup_name, challenge_pk, "; ".join(errors)
+            )
+        )
+        logger.error(message)
+        return {"error": message}
+
+    logger.warning(
+        "Recreating nodegroup %s for challenge %s. Any submissions running on "
+        "its nodes will be terminated.",
+        nodegroup_name,
+        challenge_pk,
+    )
+
+    try:
+        client.delete_nodegroup(
+            clusterName=cluster_name, nodegroupName=nodegroup_name
+        )
+        client.get_waiter("nodegroup_deleted").wait(
+            clusterName=cluster_name, nodegroupName=nodegroup_name
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "ResourceNotFoundException":
+            logger.exception(e)
+            return {"error": str(e)}
+        # Nothing to delete; fall through and create the nodegroup.
+        logger.info("Nodegroup %s did not exist. Creating it.", nodegroup_name)
+    except BotoCoreError as e:
+        # Covers WaiterError when deletion outlasts the poll budget. Creating
+        # over a half-deleted nodegroup would fail, so stop here.
+        logger.exception(e)
+        return {"error": str(e)}
+
+    response = create_nodegroup_for_challenge(
+        client, challenge, cluster_name, nodegroup_name
+    )
+    if response is None:
+        message = (
+            "Deleted nodegroup {} for challenge {} but could not recreate it. "
+            "The challenge has no worker capacity until this is "
+            "resolved.".format(nodegroup_name, challenge_pk)
+        )
+        logger.error(message)
+        return {"error": message}
+
+    message = "Recreated nodegroup {} for challenge {}.".format(
+        nodegroup_name, challenge_pk
+    )
+    logger.info(message)
+    return {"message": message}
+
+
+@app.task
+def update_eks_nodegroup_scaling(challenge_pk):
+    """
+    Push a challenge's scaling bounds to its existing EKS nodegroup.
+
+    Unlike instance type, scaling config is mutable, so this needs no
+    recreation. The autoscale Lambda rewrites minSize and desiredSize from the
+    pending submission count on its next run; maxSize is the durable one, since
+    the Lambda caps scale-up at the challenge's max_worker_instance.
+
+    Arguments:
+        challenge_pk {int} -- challenge primary key
+    Returns:
+        {dict} -- {"message": ...} on success, {"error": ...} otherwise
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    challenge, cluster_name, nodegroup_name = _get_challenge_nodegroup(
+        challenge_pk
+    )
+    if challenge is None:
+        return {"error": "No nodegroup to update."}
+
+    client = get_boto3_client(
+        "eks", get_aws_credentials_for_challenge(challenge_pk)
+    )
+    try:
+        client.update_nodegroup_config(
+            clusterName=cluster_name,
+            nodegroupName=nodegroup_name,
+            scalingConfig={
+                "minSize": challenge.min_worker_instance,
+                "maxSize": challenge.max_worker_instance,
+                "desiredSize": challenge.desired_worker_instance,
+            },
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(e)
+        return {"error": str(e)}
+
+    message = (
+        "Updated scaling config for nodegroup {} of challenge {}.".format(
+            nodegroup_name, challenge_pk
+        )
+    )
+    logger.info(message)
+    return {"message": message}
+
+
+def eks_nodegroup_config_change_callback(instance):
+    """
+    Dispatch nodegroup work when a challenge's worker configuration changes.
+
+    Called from the Challenge post_save hook. Immutable fields require a full
+    recreate; scaling fields only need an update. When both changed, the
+    recreate already applies the new scaling config, so only it is dispatched.
+
+    Arguments:
+        instance {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+    Returns:
+        {str or None} -- the action dispatched, for logging and tests
+    """
+    from base.utils import is_model_field_changed
+
+    if settings.DEBUG or settings.TEST:
+        return None
+
+    if not instance.is_docker_based or instance.remote_evaluation:
+        return None
+
+    immutable_changed = [
+        field
+        for field in settings.EKS_NODEGROUP_IMMUTABLE_FIELDS
+        if is_model_field_changed(instance, field)
+    ]
+    scaling_changed = [
+        field
+        for field in settings.EKS_NODEGROUP_SCALING_FIELDS
+        if is_model_field_changed(instance, field)
+    ]
+
+    if not immutable_changed and not scaling_changed:
+        return None
+
+    for field in (
+        settings.EKS_NODEGROUP_IMMUTABLE_FIELDS
+        + settings.EKS_NODEGROUP_SCALING_FIELDS
+    ):
+        setattr(
+            instance, "_original_{}".format(field), getattr(instance, field)
+        )
+
+    if immutable_changed:
+        logger.info(
+            "Challenge %s changed %s. Recreating its EKS nodegroup.",
+            instance.pk,
+            ", ".join(immutable_changed),
+        )
+        recreate_eks_nodegroup.delay(instance.pk)
+        return "recreate"
+
+    logger.info(
+        "Challenge %s changed %s. Updating its EKS nodegroup scaling.",
+        instance.pk,
+        ", ".join(scaling_changed),
+    )
+    update_eks_nodegroup_scaling.delay(instance.pk)
+    return "scale"
 
 
 def setup_eks_autoscale_cross_account_role(iam_client, challenge_obj):

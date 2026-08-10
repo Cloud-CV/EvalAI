@@ -536,5 +536,55 @@ EKS_AUTOSCALE_CROSS_ACCOUNT_POLICY_DOCUMENT = {
     ],
 }
 
+# Challenge fields that map to create_nodegroup arguments AWS cannot change on
+# an existing managed nodegroup. Editing one of these requires deleting and
+# recreating the nodegroup for the change to reach AWS.
+EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+    "worker_instance_type",
+    "worker_ami_type",
+    "worker_disk_size",
+)
+
+# Challenge fields that map to the nodegroup's scalingConfig, which
+# UpdateNodegroupConfig can change in place.
+EKS_NODEGROUP_SCALING_FIELDS = (
+    "min_worker_instance",
+    "max_worker_instance",
+    "desired_worker_instance",
+)
+
+# amiType values accepted by the EKS CreateNodegroup API.
+EKS_SUPPORTED_AMI_TYPES = (
+    "AL2_x86_64",
+    "AL2_x86_64_GPU",
+    "AL2_ARM_64",
+    "AL2023_x86_64_STANDARD",
+    "AL2023_ARM_64_STANDARD",
+    "AL2023_x86_64_NEURON",
+    "AL2023_x86_64_NVIDIA",
+    "AL2023_ARM_64_NVIDIA",
+    "BOTTLEROCKET_ARM_64",
+    "BOTTLEROCKET_x86_64",
+    "BOTTLEROCKET_ARM_64_NVIDIA",
+    "BOTTLEROCKET_x86_64_NVIDIA",
+    "WINDOWS_CORE_2019_x86_64",
+    "WINDOWS_FULL_2019_x86_64",
+    "WINDOWS_CORE_2022_x86_64",
+    "WINDOWS_FULL_2022_x86_64",
+)
+
+# Subset of the above that ships NVIDIA drivers. A GPU challenge on any other
+# AMI type schedules pods that can never see a GPU.
+EKS_GPU_AMI_TYPES = (
+    "AL2_x86_64_GPU",
+    "AL2023_x86_64_NVIDIA",
+    "AL2023_ARM_64_NVIDIA",
+    "BOTTLEROCKET_ARM_64_NVIDIA",
+    "BOTTLEROCKET_x86_64_NVIDIA",
+)
+
+# First Kubernetes version that no longer offers Amazon Linux 2 AMIs.
+EKS_AL2_REMOVED_IN_VERSION = "1.33"
+
 # SQS Queue Message Retention Period
 SQS_RETENTION_PERIOD = "345600"
