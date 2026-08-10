@@ -3097,7 +3097,8 @@ def update_eks_nodegroup_scaling(self, challenge_pk):
         except MaxRetriesExceededError:
             logger.error(
                 "Nodegroup %s for challenge %s never became ACTIVE. Its "
-                "scaling change was not applied.",
+                "scaling change was not applied; use the 'Recreate EKS "
+                "nodegroup' admin action to retry.",
                 nodegroup_name,
                 challenge_pk,
             )

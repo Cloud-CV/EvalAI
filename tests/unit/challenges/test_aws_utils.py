@@ -81,6 +81,7 @@ from challenges.worker_utils import (
     ensure_challenge_worker_python_version,
     normalize_worker_python_version,
 )
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.db import DatabaseError
@@ -8519,7 +8520,13 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
             }
             result = recreate_eks_nodegroup(1)
 
-        mock_retry.assert_called_once()
+        mock_retry.assert_called_once_with(
+            countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS
+        )
+        self.assertEqual(
+            recreate_eks_nodegroup.max_retries,
+            settings.EKS_NODEGROUP_SYNC_MAX_RETRIES,
+        )
         self.client.delete_nodegroup.assert_not_called()
         mock_create.assert_not_called()
         self.assertIn("error", result)
@@ -8543,7 +8550,7 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
             recreate_eks_nodegroup,
             "retry",
             side_effect=MaxRetriesExceededError,
-        ):
+        ), patch("challenges.aws_utils.logger") as mock_logger:
             self.client.describe_nodegroup.return_value = {
                 "nodegroup": {"status": "CREATING"}
             }
@@ -8552,6 +8559,10 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
         self.client.delete_nodegroup.assert_not_called()
         mock_create.assert_not_called()
         self.assertIn("error", result)
+        # The edit is lost at this point, so the log must say how to recover.
+        self.assertIn(
+            "Recreate EKS nodegroup", mock_logger.error.call_args.args[0]
+        )
 
     @patch("challenges.aws_utils.create_nodegroup_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
@@ -8853,7 +8864,13 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
         ) as mock_retry:
             result = update_eks_nodegroup_scaling(1)
 
-        mock_retry.assert_called_once()
+        mock_retry.assert_called_once_with(
+            countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS
+        )
+        self.assertEqual(
+            update_eks_nodegroup_scaling.max_retries,
+            settings.EKS_NODEGROUP_SYNC_MAX_RETRIES,
+        )
         self.client.update_nodegroup_config.assert_not_called()
         self.assertIn("error", result)
 
@@ -8874,11 +8891,14 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
             update_eks_nodegroup_scaling,
             "retry",
             side_effect=MaxRetriesExceededError,
-        ):
+        ), patch("challenges.aws_utils.logger") as mock_logger:
             result = update_eks_nodegroup_scaling(1)
 
         self.client.update_nodegroup_config.assert_not_called()
         self.assertIn("error", result)
+        self.assertIn(
+            "Recreate EKS nodegroup", mock_logger.error.call_args.args[0]
+        )
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
