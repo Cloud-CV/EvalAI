@@ -13,6 +13,7 @@ import yaml
 from accounts.models import JwtToken
 from base.utils import get_boto3_client
 from botocore.exceptions import BotoCoreError, ClientError
+from celery.exceptions import MaxRetriesExceededError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
@@ -2912,8 +2913,8 @@ def _resolve_nodegroup_name(client, challenge_pk, cluster):
     return nodegroup_name
 
 
-@app.task
-def recreate_eks_nodegroup(challenge_pk):
+@app.task(bind=True, max_retries=settings.EKS_NODEGROUP_SYNC_MAX_RETRIES)
+def recreate_eks_nodegroup(self, challenge_pk):
     """
     Replace a challenge's EKS nodegroup so immutable config changes take effect.
 
@@ -2956,11 +2957,25 @@ def recreate_eks_nodegroup(challenge_pk):
         return {"error": str(e)}
 
     if status != "ACTIVE":
+        # Most often the initial setup_eks_cluster chain is still building this
+        # nodegroup. Giving up here would drop the edit for good: the callback
+        # has already refreshed its snapshots, so saving the same value again
+        # dispatches nothing. Retry until the nodegroup settles instead.
         message = (
-            "Nodegroup {} for challenge {} is {}, not ACTIVE. Skipping "
+            "Nodegroup {} for challenge {} is {}, not ACTIVE. Retrying "
             "recreate.".format(nodegroup_name, challenge_pk, status)
         )
         logger.warning(message)
+        try:
+            self.retry(countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS)
+        except MaxRetriesExceededError:
+            logger.error(
+                "Nodegroup %s for challenge %s never became ACTIVE. Its "
+                "worker configuration change was not applied; use the "
+                "'Recreate EKS nodegroup' admin action to retry.",
+                nodegroup_name,
+                challenge_pk,
+            )
         return {"error": message}
 
     errors = validate_eks_nodegroup_config(challenge, client, cluster_name)
@@ -3019,8 +3034,8 @@ def recreate_eks_nodegroup(challenge_pk):
     return {"message": message}
 
 
-@app.task
-def update_eks_nodegroup_scaling(challenge_pk):
+@app.task(bind=True, max_retries=settings.EKS_NODEGROUP_SYNC_MAX_RETRIES)
+def update_eks_nodegroup_scaling(self, challenge_pk):
     """
     Push a challenge's scaling bounds to its existing EKS nodegroup.
 
@@ -3055,17 +3070,38 @@ def update_eks_nodegroup_scaling(challenge_pk):
     min_size = challenge.min_worker_instance
     max_size = challenge.max_worker_instance
     try:
-        current = client.describe_nodegroup(
+        nodegroup = client.describe_nodegroup(
             clusterName=cluster_name, nodegroupName=nodegroup_name
-        )["nodegroup"]["scalingConfig"]
+        )["nodegroup"]
+        status = nodegroup["status"]
         # Keep whatever the Lambda last decided, but inside the new bounds so
         # AWS does not reject the update.
         desired_size = min(
-            max(int(current["desiredSize"]), min_size), max_size
+            max(int(nodegroup["scalingConfig"]["desiredSize"]), min_size),
+            max_size,
         )
     except (ClientError, BotoCoreError, KeyError, TypeError, ValueError) as e:
         logger.exception(e)
         return {"error": str(e)}
+
+    if status != "ACTIVE":
+        # Same window as recreate_eks_nodegroup: the snapshots are already
+        # refreshed, so dropping this would lose the edit permanently.
+        message = (
+            "Nodegroup {} for challenge {} is {}, not ACTIVE. Retrying "
+            "scaling update.".format(nodegroup_name, challenge_pk, status)
+        )
+        logger.warning(message)
+        try:
+            self.retry(countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS)
+        except MaxRetriesExceededError:
+            logger.error(
+                "Nodegroup %s for challenge %s never became ACTIVE. Its "
+                "scaling change was not applied.",
+                nodegroup_name,
+                challenge_pk,
+            )
+        return {"error": message}
 
     try:
         client.update_nodegroup_config(

@@ -597,5 +597,14 @@ EKS_GPU_AMI_TYPES = (
 # First Kubernetes version that no longer offers Amazon Linux 2 AMIs.
 EKS_AL2_REMOVED_IN_VERSION = "1.33"
 
+# A nodegroup sync can only run against an ACTIVE nodegroup, and a worker
+# config edit made while one is still being created would otherwise be lost:
+# the post_save hook refreshes its snapshots on dispatch, so saving the same
+# value again does nothing. The sync tasks retry instead. The defaults cover a
+# nodegroup creation comfortably, which usually settles within a few minutes.
+EKS_NODEGROUP_SYNC_RETRY_SECONDS = 60
+
+EKS_NODEGROUP_SYNC_MAX_RETRIES = 20
+
 # SQS Queue Message Retention Period
 SQS_RETENTION_PERIOD = "345600"

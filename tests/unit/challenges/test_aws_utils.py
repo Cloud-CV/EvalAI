@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
+from celery.exceptions import MaxRetriesExceededError
 from challenges.aws_utils import (
     _file_content_changed,
     _get_challenge_cluster,
@@ -8493,7 +8494,7 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
     @patch("challenges.aws_utils.validate_eks_nodegroup_config")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")
-    def test_non_active_nodegroup_is_left_alone(
+    def test_non_active_nodegroup_is_retried_not_dropped(
         self,
         mock_credentials,
         mock_get_boto3_client,
@@ -8503,12 +8504,46 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
         """
         A CREATING nodegroup means setup_eks_cluster is still in flight.
         Deleting it would make create_eks_nodegroup fail on a duplicate name
-        and never start the code-upload worker.
+        and never start the code-upload worker. Abandoning the task instead
+        would lose the edit for good, because the callback has already
+        refreshed its snapshots, so the task must retry.
         """
         mock_get_boto3_client.return_value = self.client
         mock_validate.return_value = []
 
-        with self._patch_lookup():
+        with self._patch_lookup(), patch.object(
+            recreate_eks_nodegroup, "retry"
+        ) as mock_retry:
+            self.client.describe_nodegroup.return_value = {
+                "nodegroup": {"status": "CREATING"}
+            }
+            result = recreate_eks_nodegroup(1)
+
+        mock_retry.assert_called_once()
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn("not ACTIVE", result["error"])
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_exhausted_retries_do_not_touch_the_nodegroup(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup(), patch.object(
+            recreate_eks_nodegroup,
+            "retry",
+            side_effect=MaxRetriesExceededError,
+        ):
             self.client.describe_nodegroup.return_value = {
                 "nodegroup": {"status": "CREATING"}
             }
@@ -8517,7 +8552,6 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
         self.client.delete_nodegroup.assert_not_called()
         mock_create.assert_not_called()
         self.assertIn("error", result)
-        self.assertIn("not ACTIVE", result["error"])
 
     @patch("challenges.aws_utils.create_nodegroup_for_challenge")
     @patch("challenges.aws_utils.get_boto3_client")
@@ -8732,11 +8766,12 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
         self.client = MagicMock()
         self.client.describe_nodegroup.return_value = {
             "nodegroup": {
+                "status": "ACTIVE",
                 "scalingConfig": {
                     "minSize": 1,
                     "maxSize": 2,
                     "desiredSize": 2,
-                }
+                },
             }
         }
 
@@ -8774,7 +8809,10 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
     ):
         mock_get_boto3_client.return_value = self.client
         self.client.describe_nodegroup.return_value = {
-            "nodegroup": {"scalingConfig": {"desiredSize": 9}}
+            "nodegroup": {
+                "status": "ACTIVE",
+                "scalingConfig": {"desiredSize": 9},
+            }
         }
 
         with self._patch_lookup():
@@ -8796,6 +8834,51 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
 
         sent = self.client.update_nodegroup_config.call_args.kwargs
         self.assertEqual(sent["scalingConfig"]["desiredSize"], 3)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_non_active_nodegroup_is_retried(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "CREATING",
+                "scalingConfig": {"desiredSize": 1},
+            }
+        }
+
+        with self._patch_lookup(), patch.object(
+            update_eks_nodegroup_scaling, "retry"
+        ) as mock_retry:
+            result = update_eks_nodegroup_scaling(1)
+
+        mock_retry.assert_called_once()
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_exhausted_retries_skip_the_update(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "CREATING",
+                "scalingConfig": {"desiredSize": 1},
+            }
+        }
+
+        with self._patch_lookup(), patch.object(
+            update_eks_nodegroup_scaling,
+            "retry",
+            side_effect=MaxRetriesExceededError,
+        ):
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")

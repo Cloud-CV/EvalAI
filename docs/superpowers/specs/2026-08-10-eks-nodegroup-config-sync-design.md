@@ -141,6 +141,19 @@ building the nodegroup, falling back to the serialized snapshot if the row has
 since been deleted. Cluster setup takes many minutes, which is ample time for an
 edit to land in that window.
 
+That re-read alone is not enough. An edit can still land after the read and
+before `CreateNodegroup` is sent, and more importantly anywhere in the several
+minutes a new nodegroup spends `CREATING`. In both cases the callback dispatches
+a sync, the sync finds a nodegroup that is not `ACTIVE`, and the snapshots have
+already been refreshed — so simply returning would lose the edit permanently,
+with no second dispatch to recover it.
+
+Both sync tasks therefore retry rather than abandon: a non-`ACTIVE` nodegroup
+schedules another attempt `EKS_NODEGROUP_SYNC_RETRY_SECONDS` later, up to
+`EKS_NODEGROUP_SYNC_MAX_RETRIES`. Each attempt re-reads the challenge, so the
+newest configuration is the one that lands. Exhausting the retries logs an error
+naming the admin action as the manual recovery path.
+
 A recreate reuses the resolved name, so
 `ChallengeEvaluationCluster.nodegroup_name` — which the autoscale Lambda
 targets — stays valid.
