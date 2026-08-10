@@ -204,3 +204,26 @@ class TestJobsUrls(BaseAPITestClass):
         )
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, "jobs:get_remaining_submissions")
+
+    def test_fifo_queue_name_resolves_for_sqs_worker_apis(self):
+        """
+        Per-challenge FIFO queues end with '.fifo'. Worker HTTP clients
+        interpolate QUEUE_NAME into these paths, so the URL patterns must
+        accept a dot or every FIFO code-upload/remote worker 404s.
+        """
+        fifo_queue = "challenge-title-1-production-abcd.fifo"
+
+        get_url = "/api/jobs/challenge/queues/{}/".format(fifo_queue)
+        get_resolver = resolve(get_url)
+        self.assertEqual(
+            get_resolver.view_name, "jobs:get_submission_message_from_queue"
+        )
+        self.assertEqual(get_resolver.kwargs["queue_name"], fifo_queue)
+
+        delete_url = "/api/jobs/queues/{}/".format(fifo_queue)
+        delete_resolver = resolve(delete_url)
+        self.assertEqual(
+            delete_resolver.view_name,
+            "jobs:delete_submission_message_from_queue",
+        )
+        self.assertEqual(delete_resolver.kwargs["queue_name"], fifo_queue)
