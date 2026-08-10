@@ -163,7 +163,8 @@ fi
 if ! helm upgrade --install cilium cilium/cilium --version "$CILIUM_TARGET_VERSION" \
   --namespace kube-system \
   --set ipam.mode=cluster-pool \
-  --set kubeProxyReplacement=false; then
+  --set kubeProxyReplacement=false \
+  --set operator.replicas=1; then
   echo "### Cilium Helm install failed" >&2
   exit 1
 fi
