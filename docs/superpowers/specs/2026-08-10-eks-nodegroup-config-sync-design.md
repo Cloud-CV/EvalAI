@@ -123,6 +123,24 @@ the staleness that caused the original problem.
    both paths always send the same argument set.
 8. On create failure, log that the challenge now has no worker capacity.
 
+`create_nodegroup_for_challenge` returns `None` only when the nodegroup was not
+created. A `create_nodegroup` that succeeds but whose `nodegroup_active` waiter
+times out still returns the response: the nodegroup exists, and reporting it as
+missing would both produce a false "no worker capacity" log and invite the next
+recreate to delete a nodegroup that was merely still `CREATING`.
+
+### Edits during initial cluster setup
+
+The post_save hook cannot recreate a nodegroup that does not exist yet, so an
+edit landing while `setup_eks_cluster` is still running would otherwise be
+consumed by the snapshot refresh and lost — the chain would go on to create the
+nodegroup from the approval-time snapshot, leaving AWS permanently out of sync.
+
+`create_eks_nodegroup` therefore re-reads the challenge from the database before
+building the nodegroup, falling back to the serialized snapshot if the row has
+since been deleted. Cluster setup takes many minutes, which is ample time for an
+edit to land in that window.
+
 A recreate reuses the resolved name, so
 `ChallengeEvaluationCluster.nodegroup_name` — which the autoscale Lambda
 targets — stays valid.

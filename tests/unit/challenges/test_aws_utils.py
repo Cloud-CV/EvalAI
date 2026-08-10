@@ -3801,6 +3801,17 @@ class TestGetLogsFromCloudwatch(TestCase):
 
 
 class TestCreateEKSNodegroup(unittest.TestCase):
+    def setUp(self):
+        # create_eks_nodegroup re-reads the challenge so a config edit made
+        # while cluster setup is still running is not lost. These tests supply
+        # the challenge through the serialized snapshot, so make that lookup
+        # miss and fall back to it.
+        patcher = patch("challenges.models.Challenge")
+        mock_model = patcher.start()
+        mock_model.DoesNotExist = Challenge.DoesNotExist
+        mock_model.objects.get.side_effect = Challenge.DoesNotExist
+        self.addCleanup(patcher.stop)
+
     @patch("challenges.models.ChallengeEvaluationCluster")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
@@ -8571,12 +8582,16 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
 class TestCreateNodegroupForChallenge(unittest.TestCase):
     @patch("challenges.models.ChallengeEvaluationCluster")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
-    def test_active_waiter_failure_returns_none(
+    def test_active_waiter_failure_still_reports_the_nodegroup(
         self, mock_meta, mock_evaluation_cluster
     ):
         """
-        WaiterError escaping here would skip the caller's failure handling and,
-        in create_eks_nodegroup, silently stop the code-upload worker start.
+        The nodegroup exists once create_nodegroup succeeds. Returning None on
+        a waiter timeout would make callers report it as missing, and the next
+        recreate would delete a nodegroup that was merely still CREATING.
+
+        WaiterError must also not escape, or the caller's error handling and
+        the code-upload worker start in create_eks_nodegroup are both skipped.
         """
         mock_meta.return_value = {
             "SUBNET_1": "subnet-123",
@@ -8586,6 +8601,7 @@ class TestCreateNodegroupForChallenge(unittest.TestCase):
         challenge = MagicMock()
         challenge.pk = 1
         client = MagicMock()
+        client.create_nodegroup.return_value = {"nodegroup": "created"}
         client.get_waiter.return_value.wait.side_effect = WaiterError(
             name="nodegroup_active",
             reason="max attempts exceeded",
@@ -8596,7 +8612,109 @@ class TestCreateNodegroupForChallenge(unittest.TestCase):
             client, challenge, "test-cluster", "test-nodegroup"
         )
 
+        self.assertEqual(result, {"nodegroup": "created"})
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    def test_create_failure_returns_none(
+        self, mock_meta, mock_evaluation_cluster
+    ):
+        mock_meta.return_value = {
+            "SUBNET_1": "subnet-123",
+            "SUBNET_2": "subnet-456",
+            "EKS_NODEGROUP_ROLE_ARN": "arn:aws:iam::123456789012:role/ng",
+        }
+        challenge = MagicMock()
+        challenge.pk = 1
+        client = MagicMock()
+        client.create_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "InvalidParameterException", "Message": "bad"}},
+            "CreateNodegroup",
+        )
+
+        result = create_nodegroup_for_challenge(
+            client, challenge, "test-cluster", "test-nodegroup"
+        )
+
         self.assertIsNone(result)
+
+
+class TestCreateEKSNodegroupReadsCurrentConfig(unittest.TestCase):
+    """
+    Cluster setup takes many minutes, and the chain carries a challenge
+    serialized at approval time. An edit landing in that window cannot be
+    applied by the post_save hook, because there is no nodegroup to recreate
+    yet, so the create must read the current row instead of the snapshot.
+    """
+
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.construct_and_send_eks_cluster_creation_mail")
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.models.Challenge")
+    def test_uses_database_row_not_serialized_snapshot(
+        self,
+        mock_challenge_model,
+        mock_deserialize,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_create,
+        mock_mail,
+        mock_token,
+        mock_service,
+    ):
+        stale = MagicMock()
+        stale.pk = 1
+        stale.title = "Test Challenge"
+        stale.worker_instance_type = "g5.4xlarge"
+        mock_deserialize.return_value = [MagicMock(object=stale)]
+
+        current = MagicMock()
+        current.pk = 1
+        current.title = "Test Challenge"
+        current.worker_instance_type = "g5.xlarge"
+        mock_challenge_model.DoesNotExist = Challenge.DoesNotExist
+        mock_challenge_model.objects.get.return_value = current
+        mock_create.return_value = {"nodegroup": "created"}
+
+        create_eks_nodegroup("[]", "test-cluster")
+
+        mock_challenge_model.objects.get.assert_called_once_with(pk=1)
+        self.assertIs(mock_create.call_args.args[1], current)
+
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.construct_and_send_eks_cluster_creation_mail")
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.models.Challenge")
+    def test_falls_back_to_snapshot_when_row_is_gone(
+        self,
+        mock_challenge_model,
+        mock_deserialize,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_create,
+        mock_mail,
+        mock_token,
+        mock_service,
+    ):
+        stale = MagicMock()
+        stale.pk = 1
+        stale.title = "Test Challenge"
+        mock_deserialize.return_value = [MagicMock(object=stale)]
+        mock_challenge_model.DoesNotExist = Challenge.DoesNotExist
+        mock_challenge_model.objects.get.side_effect = Challenge.DoesNotExist
+        mock_create.return_value = {"nodegroup": "created"}
+
+        create_eks_nodegroup("[]", "test-cluster")
+
+        self.assertIs(mock_create.call_args.args[1], stale)
 
 
 class TestUpdateEKSNodegroupScaling(unittest.TestCase):
@@ -8664,6 +8782,20 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
 
         sent = self.client.update_nodegroup_config.call_args.kwargs
         self.assertEqual(sent["scalingConfig"]["desiredSize"], 4)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_live_desired_size_raised_to_new_minimum(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.challenge.min_worker_instance = 3
+
+        with self._patch_lookup():
+            update_eks_nodegroup_scaling(1)
+
+        sent = self.client.update_nodegroup_config.call_args.kwargs
+        self.assertEqual(sent["scalingConfig"]["desiredSize"], 3)
 
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.utils.get_aws_credentials_for_challenge")

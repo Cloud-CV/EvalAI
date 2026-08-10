@@ -2626,7 +2626,10 @@ def create_nodegroup_for_challenge(
         cluster_name {str} -- name of eks cluster
         nodegroup_name {str} -- name of the nodegroup to create
     Returns:
-        {dict or None} -- the create_nodegroup response, or None on failure
+        {dict or None} -- the create_nodegroup response, or None when the
+            nodegroup was not created. A nodegroup that was created but did
+            not reach ACTIVE within the waiter's budget still returns the
+            response, because it exists and must not be treated as absent.
     """
     from .models import ChallengeEvaluationCluster
 
@@ -2663,11 +2666,17 @@ def create_nodegroup_for_challenge(
         waiter = client.get_waiter("nodegroup_active")
         waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     except (ClientError, BotoCoreError) as e:
-        # WaiterError is a BotoCoreError. Without this the exception escapes
-        # to the caller, which would skip both the failure logging here and
-        # the code-upload worker start in create_eks_nodegroup.
+        # WaiterError is a BotoCoreError. Letting it escape would skip the
+        # caller's error handling entirely; returning None would be worse
+        # still, since the nodegroup does exist and the caller would report it
+        # as missing and may delete it on the next attempt.
         logger.exception(e)
-        return None
+        logger.warning(
+            "Nodegroup %s for challenge %s was created but has not reached "
+            "ACTIVE yet. Treating it as created.",
+            nodegroup_name,
+            challenge_obj.pk,
+        )
 
     return response
 
@@ -2680,10 +2689,22 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
+    from .models import Challenge
     from .utils import get_aws_credentials_for_challenge
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
+
+    # The serialized challenge is a snapshot taken when approved_by_admin
+    # flipped, and cluster setup takes many minutes. Re-read the worker
+    # configuration so an edit made in that window is not silently dropped:
+    # the post_save hook cannot recreate a nodegroup that does not exist yet,
+    # so this is the only place that edit can still be applied.
+    try:
+        challenge_obj = Challenge.objects.get(pk=challenge_obj.pk)
+    except (Challenge.DoesNotExist, DatabaseError) as e:
+        logger.exception(e)
+
     nodegroup_name = get_nodegroup_name_for_challenge(challenge_obj)
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("eks", challenge_aws_keys)
