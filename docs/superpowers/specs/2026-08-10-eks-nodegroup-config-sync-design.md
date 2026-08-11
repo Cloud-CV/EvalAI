@@ -91,6 +91,11 @@ list of human-readable problems:
   (1.33), where they no longer exist. The cluster version comes from
   `describe_cluster`.
 - `worker_disk_size` is a positive integer.
+- The scaling bounds are usable: all three fields are non-negative integers
+  (they are nullable on the model), `max_worker_instance` is at least 1, and
+  `min <= desired <= max`. Nothing stops an admin saving a minimum above the
+  maximum, and `CreateNodegroup` only rejects that after the live nodegroup has
+  already been deleted.
 
 A non-empty result aborts the recreate with a logged error and leaves the
 existing nodegroup untouched.
@@ -104,12 +109,14 @@ the staleness that caused the original problem.
 1. Resolve the challenge and cluster via `_get_challenge_cluster`. No
    `ChallengeEvaluationCluster` means no-op.
 2. Resolve the nodegroup name via `_resolve_nodegroup_name`: the recorded
-   `nodegroup_name` when set, otherwise the cluster's single nodegroup from
-   `list_nodegroups`. The name is never re-derived from the challenge, because
-   it embeds the title as it was at creation time — a renamed challenge would
-   derive a name matching nothing, delete nothing, and then create a second
-   nodegroup alongside the live one. Zero nodegroups or more than one is a
-   no-op.
+   `nodegroup_name` when it is set *and* still exists in AWS, otherwise the
+   cluster's single nodegroup from `list_nodegroups`. A recorded name that no
+   longer resolves is re-resolved rather than trusted, since a nodegroup
+   replaced by hand would otherwise break every sync until the row was edited
+   manually. The name is never re-derived from the challenge, because it embeds
+   the title as it was at creation time — a renamed challenge would derive a
+   name matching nothing, delete nothing, and then create a second nodegroup
+   alongside the live one. Zero nodegroups or more than one is a no-op.
 3. Require the nodegroup to be `ACTIVE`. Any other status means someone else is
    working on it, most likely the initial `setup_eks_cluster` chain still in
    flight; deleting it there would make `create_eks_nodegroup` fail on a

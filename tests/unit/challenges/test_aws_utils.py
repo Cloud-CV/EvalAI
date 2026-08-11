@@ -8123,6 +8123,9 @@ class TestValidateEKSNodegroupConfig(unittest.TestCase):
         self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
         self.challenge.worker_disk_size = 100
         self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
 
         self.eks_client = MagicMock()
         self.eks_client.describe_cluster.return_value = {
@@ -8286,6 +8289,9 @@ class TestValidateEKSNodegroupConfigErrors(unittest.TestCase):
         self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
         self.challenge.worker_disk_size = 100
         self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
         self.eks_client = MagicMock()
         self.eks_client.describe_cluster.return_value = {
             "cluster": {"version": "1.36"}
@@ -8329,6 +8335,108 @@ class TestValidateEKSNodegroupConfigErrors(unittest.TestCase):
 
         self.assertEqual(len(errors), 1)
         self.assertIn("Could not read cluster version", errors[0])
+
+
+class TestValidateNodegroupScaling(unittest.TestCase):
+    """
+    Scaling bounds are sent to CreateNodegroup after the live nodegroup has
+    already been deleted, so an invalid combination must be caught up front.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
+
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    def _validate(self):
+        with patch(
+            "challenges.aws_utils.get_boto3_client",
+            return_value=self.ec2_client,
+        ), patch("challenges.utils.get_aws_credentials_for_challenge"):
+            return validate_eks_nodegroup_config(
+                self.challenge, self.eks_client, "test-cluster"
+            )
+
+    def test_valid_bounds_pass(self):
+        self.assertEqual(self._validate(), [])
+
+    def test_min_above_max_is_rejected(self):
+        self.challenge.min_worker_instance = 5
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any("cannot exceed max_worker_instance" in e for e in errors)
+        )
+
+    def test_desired_outside_bounds_is_rejected(self):
+        self.challenge.desired_worker_instance = 9
+
+        errors = self._validate()
+
+        self.assertTrue(any("must be between" in e for e in errors))
+
+    def test_zero_max_is_rejected(self):
+        self.challenge.max_worker_instance = 0
+        self.challenge.desired_worker_instance = 0
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any("max_worker_instance must be at least 1" in e for e in errors)
+        )
+
+    def test_null_scaling_field_is_rejected(self):
+        """All three fields are nullable on the model."""
+        self.challenge.desired_worker_instance = None
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "desired_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
+
+    def test_negative_scaling_field_is_rejected(self):
+        self.challenge.min_worker_instance = -1
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "min_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
+
+    def test_boolean_is_not_accepted_as_an_integer(self):
+        self.challenge.max_worker_instance = True
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "max_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
 
 
 class TestRecreateEKSNodegroup(unittest.TestCase):
@@ -8577,6 +8685,27 @@ class TestRecreateEKSNodegroup(unittest.TestCase):
                 {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
                 "DescribeNodegroup",
             )
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_malformed_describe_response_aborts_before_delete(
+        self, mock_credentials, mock_get_boto3_client, mock_create
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            # Resolution succeeds, then the status lookup comes back without
+            # the key the task needs.
+            self.client.describe_nodegroup.side_effect = [
+                {"nodegroup": {"status": "ACTIVE"}},
+                {"nodegroup": {}},
+            ]
             result = recreate_eks_nodegroup(1)
 
         self.client.delete_nodegroup.assert_not_called()
@@ -8906,10 +9035,15 @@ class TestUpdateEKSNodegroupScaling(unittest.TestCase):
         self, mock_credentials, mock_get_boto3_client
     ):
         mock_get_boto3_client.return_value = self.client
-        self.client.describe_nodegroup.side_effect = ClientError(
-            {"Error": {"Code": "ResourceNotFoundException", "Message": "no"}},
-            "DescribeNodegroup",
-        )
+        # The first call resolves the nodegroup name; the task's own lookup is
+        # the second one.
+        self.client.describe_nodegroup.side_effect = [
+            {"nodegroup": {"status": "ACTIVE"}},
+            ClientError(
+                {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+                "DescribeNodegroup",
+            ),
+        ]
 
         with self._patch_lookup():
             result = update_eks_nodegroup_scaling(1)
@@ -9019,14 +9153,6 @@ class TestResolveNodegroupName(unittest.TestCase):
         self.cluster.nodegroup_name = None
         self.client = MagicMock()
 
-    def test_recorded_name_is_used_without_calling_aws(self):
-        self.cluster.nodegroup_name = "recorded-nodegroup"
-
-        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
-
-        self.assertEqual(name, "recorded-nodegroup")
-        self.client.list_nodegroups.assert_not_called()
-
     @patch("challenges.models.ChallengeEvaluationCluster")
     def test_single_nodegroup_is_resolved_and_recorded(self, mock_cluster):
         self.client.list_nodegroups.return_value = {
@@ -9039,6 +9165,62 @@ class TestResolveNodegroupName(unittest.TestCase):
         mock_cluster.objects.filter.return_value.update.assert_called_once_with(
             nodegroup_name="live-nodegroup"
         )
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_stale_recorded_name_is_re_resolved(self, mock_cluster):
+        """
+        A nodegroup replaced by hand leaves the recorded name pointing at
+        nothing. Trusting it would break every sync until the row was edited.
+        """
+        self.cluster.nodegroup_name = "stale-nodegroup"
+        self.client.describe_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "ResourceNotFoundException", "Message": "no"}},
+            "DescribeNodegroup",
+        )
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+        mock_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="live-nodegroup"
+        )
+
+    def test_recorded_name_is_verified_before_use(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "recorded-nodegroup")
+        self.client.describe_nodegroup.assert_called_once_with(
+            clusterName="test-cluster", nodegroupName="recorded-nodegroup"
+        )
+        self.client.list_nodegroups.assert_not_called()
+
+    def test_describe_boto_error_returns_none(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+        self.client.describe_nodegroup.side_effect = WaiterError(
+            name="describe", reason="connection reset", last_response={}
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+        self.client.list_nodegroups.assert_not_called()
+
+    def test_describe_error_other_than_missing_returns_none(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+        self.client.describe_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+            "DescribeNodegroup",
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+        self.client.list_nodegroups.assert_not_called()
 
     def test_no_nodegroup_returns_none(self):
         """Also the state during initial setup, before the nodegroup exists."""

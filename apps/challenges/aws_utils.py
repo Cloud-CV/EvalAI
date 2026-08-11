@@ -2800,6 +2800,57 @@ def validate_eks_nodegroup_config(challenge_obj, eks_client, cluster_name):
     if not isinstance(disk_size, int) or disk_size <= 0:
         errors.append("worker_disk_size must be a positive integer.")
 
+    errors.extend(_validate_nodegroup_scaling(challenge_obj))
+
+    return errors
+
+
+def _validate_nodegroup_scaling(challenge_obj):
+    """
+    Check the scaling bounds CreateNodegroup will be given.
+
+    All three fields are nullable on the model and nothing stops an admin
+    saving a minimum above the maximum. Left unchecked, an invalid combination
+    passes validation, the live nodegroup is deleted, and only then does
+    CreateNodegroup reject it, leaving the challenge with no workers at all.
+
+    Arguments:
+        challenge_obj {<class 'apps.challenges.models.Challenge'>} -- challenge instance
+    Returns:
+        {list} -- human readable problems, empty when the bounds are usable
+    """
+    errors = []
+    bounds = {}
+    for field in settings.EKS_NODEGROUP_SCALING_FIELDS:
+        value = getattr(challenge_obj, field)
+        # bool is an int subclass, and True would silently become 1.
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            errors.append("{} must be a non-negative integer.".format(field))
+        else:
+            bounds[field] = value
+
+    if len(bounds) != len(settings.EKS_NODEGROUP_SCALING_FIELDS):
+        return errors
+
+    min_size = bounds["min_worker_instance"]
+    max_size = bounds["max_worker_instance"]
+    desired_size = bounds["desired_worker_instance"]
+
+    if max_size < 1:
+        errors.append("max_worker_instance must be at least 1.")
+    if min_size > max_size:
+        errors.append(
+            "min_worker_instance ({}) cannot exceed max_worker_instance "
+            "({}).".format(min_size, max_size)
+        )
+    if not min_size <= desired_size <= max_size:
+        errors.append(
+            "desired_worker_instance ({}) must be between "
+            "min_worker_instance ({}) and max_worker_instance ({}).".format(
+                desired_size, min_size, max_size
+            )
+        )
+
     return errors
 
 
@@ -2872,7 +2923,30 @@ def _resolve_nodegroup_name(client, challenge_pk, cluster):
     from .models import ChallengeEvaluationCluster
 
     if cluster.nodegroup_name:
-        return cluster.nodegroup_name
+        # A recorded name can still be wrong: the nodegroup may have been
+        # replaced by hand under a different name. Trusting it blindly would
+        # make every sync fail on describe_nodegroup until someone edited the
+        # database, so confirm it exists and re-resolve when it does not.
+        try:
+            client.describe_nodegroup(
+                clusterName=cluster.name,
+                nodegroupName=cluster.nodegroup_name,
+            )
+            return cluster.nodegroup_name
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "ResourceNotFoundException":
+                logger.exception(e)
+                return None
+            logger.warning(
+                "Recorded nodegroup %s no longer exists on cluster %s for "
+                "challenge %s. Re-resolving from AWS.",
+                cluster.nodegroup_name,
+                cluster.name,
+                challenge_pk,
+            )
+        except BotoCoreError as e:
+            logger.exception(e)
+            return None
 
     try:
         nodegroups = client.list_nodegroups(clusterName=cluster.name).get(
