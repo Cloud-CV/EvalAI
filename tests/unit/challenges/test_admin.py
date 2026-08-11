@@ -237,6 +237,65 @@ class TestChallengeAdminActions(TestCase):
         messages = list(self.request._messages)
         assert any("successfully unfrozen" in str(m) for m in messages)
 
+    @staticmethod
+    def _code_upload_challenge(pk):
+        challenge = MagicMock()
+        challenge.pk = pk
+        challenge.is_docker_based = True
+        challenge.remote_evaluation = False
+        return challenge
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_queues_each_challenge(
+        self, mock_recreate
+    ):
+        self.admin.recreate_selected_eks_nodegroups(
+            self.request,
+            [self._code_upload_challenge(1), self._code_upload_challenge(2)],
+        )
+
+        self.assertEqual(mock_recreate.delay.call_count, 2)
+        mock_recreate.delay.assert_any_call(1)
+        mock_recreate.delay.assert_any_call(2)
+        messages = list(self.request._messages)
+        assert any(
+            "Queued nodegroup recreation for 2" in str(m) for m in messages
+        )
+        # The action destroys running work, so the warning must be surfaced.
+        assert any("will be terminated" in str(m) for m in messages)
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_skips_non_code_upload(
+        self, mock_recreate
+    ):
+        remote = self._code_upload_challenge(2)
+        remote.remote_evaluation = True
+        non_docker = self._code_upload_challenge(3)
+        non_docker.is_docker_based = False
+
+        self.admin.recreate_selected_eks_nodegroups(
+            self.request,
+            [self._code_upload_challenge(1), remote, non_docker],
+        )
+
+        mock_recreate.delay.assert_called_once_with(1)
+        messages = list(self.request._messages)
+        assert any("2 challenge(s) skipped" in str(m) for m in messages)
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_all_skipped(self, mock_recreate):
+        non_docker = self._code_upload_challenge(1)
+        non_docker.is_docker_based = False
+
+        self.admin.recreate_selected_eks_nodegroups(self.request, [non_docker])
+
+        mock_recreate.delay.assert_not_called()
+        messages = list(self.request._messages)
+        assert not any(
+            "Queued nodegroup recreation" in str(m) for m in messages
+        )
+        assert any("1 challenge(s) skipped" in str(m) for m in messages)
+
 
 class TestChallengeAdminListDisplay(TestCase):
     """Tests for ChallengeAdmin list_display configuration."""
