@@ -307,6 +307,7 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
 
     mock_submission = MagicMock()
     mock_submission.participant_team_id = 42
+    mock_submission.challenge_phase_id = message["phase_pk"]
     mock_get_submission_model.return_value = mock_submission
 
     mock_queue = MagicMock()
@@ -316,9 +317,11 @@ def test_publish_submission_message_fifo_sends_group_and_dedup_id(
     publish_submission_message(message)
 
     call_kwargs = mock_queue.send_message.call_args[1]
-    # phase_pk-team_pk: order within a team, parallel across teams.
+    # phase_pk-team_pk from the Submission row: order within a team,
+    # parallel across teams.
     assert call_kwargs["MessageGroupId"] == "{}-{}".format(
-        message["phase_pk"], mock_submission.participant_team_id
+        mock_submission.challenge_phase_id,
+        mock_submission.participant_team_id,
     )
     dedup_id = call_kwargs["MessageDeduplicationId"]
     assert dedup_id.startswith("{}-".format(message["submission_pk"]))
@@ -347,6 +350,7 @@ def test_publish_submission_message_fifo_dedup_id_unique_on_reenqueue(
 
     mock_submission = MagicMock()
     mock_submission.participant_team_id = 42
+    mock_submission.challenge_phase_id = message["phase_pk"]
     mock_get_submission_model.return_value = mock_submission
 
     mock_queue = MagicMock()
@@ -384,6 +388,7 @@ def test_publish_submission_message_fifo_group_id_same_team_same_phase(
 
     mock_submission = MagicMock()
     mock_submission.participant_team_id = 7
+    mock_submission.challenge_phase_id = message["phase_pk"]
     mock_get_submission_model.return_value = mock_submission
 
     mock_queue = MagicMock()
@@ -430,8 +435,10 @@ def test_publish_submission_message_fifo_group_id_differs_by_team(
 
     team_a = MagicMock()
     team_a.participant_team_id = 7
+    team_a.challenge_phase_id = message["phase_pk"]
     team_b = MagicMock()
     team_b.participant_team_id = 8
+    team_b.challenge_phase_id = message["phase_pk"]
     mock_get_submission_model.side_effect = [team_a, team_b]
 
     mock_queue = MagicMock()
@@ -473,9 +480,13 @@ def test_publish_submission_message_fifo_group_id_differs_by_phase(
     mock_challenge.slack_webhook_url = ""
     mock_challenge_get.return_value = mock_challenge
 
-    mock_submission = MagicMock()
-    mock_submission.participant_team_id = 7
-    mock_get_submission_model.return_value = mock_submission
+    phase_10 = MagicMock()
+    phase_10.participant_team_id = 7
+    phase_10.challenge_phase_id = 10
+    phase_20 = MagicMock()
+    phase_20.participant_team_id = 7
+    phase_20.challenge_phase_id = 20
+    mock_get_submission_model.side_effect = [phase_10, phase_20]
 
     mock_queue = MagicMock()
     mock_queue.send_message.return_value = {"MessageId": "12345"}
@@ -498,6 +509,43 @@ def test_publish_submission_message_fifo_group_id_differs_by_phase(
     assert first_group == "10-7"
     assert second_group == "20-7"
     assert first_group != second_group
+
+
+@patch("jobs.sender.get_or_create_sqs_queue")
+@patch("jobs.sender.get_submission_model")
+@patch("jobs.sender.Challenge.objects.get")
+def test_publish_submission_message_fifo_group_id_ignores_message_phase_pk(
+    mock_challenge_get,
+    mock_get_submission_model,
+    mock_get_or_create_sqs_queue,
+    message,
+):
+    """MessageGroupId must come from the Submission row, not message body.
+
+    A forged/mismatched phase_pk in the SQS body must not regroup another
+    team's submission under the caller's phase.
+    """
+    mock_challenge = MagicMock()
+    mock_challenge.queue = "test-queue.fifo"
+    mock_challenge.slack_webhook_url = ""
+    mock_challenge_get.return_value = mock_challenge
+
+    mock_submission = MagicMock()
+    mock_submission.participant_team_id = 7
+    mock_submission.challenge_phase_id = 99
+    mock_get_submission_model.return_value = mock_submission
+
+    mock_queue = MagicMock()
+    mock_queue.send_message.return_value = {"MessageId": "12345"}
+    mock_get_or_create_sqs_queue.return_value = mock_queue
+
+    forged = dict(message)
+    forged["phase_pk"] = 1  # does not match submission.challenge_phase_id
+
+    publish_submission_message(forged)
+
+    call_kwargs = mock_queue.send_message.call_args[1]
+    assert call_kwargs["MessageGroupId"] == "99-7"
 
 
 @patch("jobs.sender.get_or_create_sqs_queue")

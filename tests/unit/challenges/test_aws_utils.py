@@ -7,8 +7,15 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
+from celery.exceptions import MaxRetriesExceededError
 from challenges.aws_utils import (
     _file_content_changed,
+    _get_challenge_cluster,
+    _get_ecs_service_task_definition_arn,
+    _is_inactive_task_definition_error,
+    _resolve_nodegroup_name,
+    _sync_challenge_task_def_from_service,
+    _version_at_least,
     build_task_definition_dict,
     challenge_approval_callback,
     cleanup_auto_scaling_for_service,
@@ -16,12 +23,14 @@ from challenges.aws_utils import (
     create_eks_cluster,
     create_eks_cluster_subnets,
     create_eks_nodegroup,
+    create_nodegroup_for_challenge,
     create_service_by_challenge_pk,
     delete_challenge_cleanup_schedule,
     delete_log_group,
     delete_service_by_challenge_pk,
     delete_workers,
     describe_ec2_instance,
+    eks_nodegroup_config_change_callback,
     ensure_workers_for_submission,
     get_capacity_provider_strategy,
     get_code_upload_setup_meta_for_challenge,
@@ -36,6 +45,7 @@ from challenges.aws_utils import (
     get_worker_image_for_challenge,
     is_evalai_managed_submission_worker_image,
     load_aws_api_kwargs,
+    recreate_eks_nodegroup,
     refresh_task_definition_for_challenge,
     refresh_worker_task_definitions,
     register_task_def_by_challenge_pk,
@@ -59,16 +69,19 @@ from challenges.aws_utils import (
     terminate_ec2_instance,
     trigger_eks_node_autoscale,
     update_challenge_cleanup_schedule,
+    update_eks_nodegroup_scaling,
     update_evalai_worker_image_tag,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
     update_sqs_retention_period_task,
+    validate_eks_nodegroup_config,
 )
 from challenges.models import Challenge, ChallengeEvaluationCluster
 from challenges.worker_utils import (
     ensure_challenge_worker_python_version,
     normalize_worker_python_version,
 )
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.db import DatabaseError
@@ -280,6 +293,14 @@ def test_update_service_success(mock_client, mock_challenge, num_of_tasks):
 
     response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
     mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "valid_task_def_arn",
+            }
+        ]
+    }
 
     response = update_service_by_challenge_pk(
         mock_client, mock_challenge, num_of_tasks
@@ -331,6 +352,300 @@ def test_update_service_force_new_deployment(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
     mock_challenge.save.assert_called_once()
     assert mock_challenge.workers == num_of_tasks
+
+
+def test_update_service_scale_only_omits_task_definition(
+    mock_client, mock_challenge, num_of_tasks
+):
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks
+    )
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    mock_client.update_service.assert_called_once_with(
+        cluster=mock.ANY,
+        service="dummy_queue_service",
+        desiredCount=num_of_tasks,
+    )
+    assert mock_challenge.task_def_arn == "active_task_def_arn"
+
+
+def test_update_service_success_when_sync_describe_services_fails(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """A describe_services hiccup during self-heal must not mask a
+    successful scale (previously this returned describe_services'
+    ClientError instead of the real success response)."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "valid_task_def_arn"
+
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.return_value = response_metadata
+    mock_client.describe_services.side_effect = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="DescribeServices",
+    )
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks
+    )
+
+    assert response is response_metadata
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_challenge.workers == num_of_tasks
+    assert mock_challenge.task_def_arn == "valid_task_def_arn"
+    mock_client.describe_services.assert_called_once()
+
+
+def test_update_service_inactive_task_def_retries_after_sync_on_redeploy(
+    mock_client, mock_challenge, num_of_tasks
+):
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    response_metadata = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
+    mock_client.update_service.side_effect = [
+        inactive_error,
+        response_metadata,
+    ]
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_client.update_service.call_count == 2
+    assert mock_challenge.task_def_arn == "active_task_def_arn"
+    retry_call_kwargs = mock_client.update_service.call_args_list[1].kwargs
+    assert retry_call_kwargs["taskDefinition"] == "active_task_def_arn"
+
+
+def test_update_service_redeploy_does_not_raise_when_sync_describe_services_fails(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """A describe_services hiccup while syncing before the forced-redeploy
+    retry must not propagate unhandled out of update_service_by_challenge_pk
+    (this call sits directly inside the except block with no nested try)."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    mock_client.update_service.side_effect = inactive_error
+    mock_client.describe_services.side_effect = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="DescribeServices",
+    )
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.BAD_REQUEST
+    )
+    assert mock_client.update_service.call_count == 1
+    assert mock_challenge.task_def_arn == "inactive_task_def_arn"
+    mock_client.describe_services.assert_called_once()
+
+
+def test_update_service_redeploy_retry_client_error_returns_retry_response(
+    mock_client, mock_challenge, num_of_tasks
+):
+    """If the retried update_service call (after a successful sync) itself
+    fails with a ClientError, that error's response must be returned."""
+    mock_challenge.queue = "dummy_queue"
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "UpdateService operation: TaskDefinition is inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="UpdateService",
+    )
+    retry_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ThrottlingException",
+                "Message": "Rate exceeded",
+            },
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.TOO_MANY_REQUESTS
+            },
+        },
+        operation_name="UpdateService",
+    )
+    mock_client.update_service.side_effect = [inactive_error, retry_error]
+    mock_client.describe_services.return_value = {
+        "services": [
+            {
+                "status": "ACTIVE",
+                "taskDefinition": "active_task_def_arn",
+            }
+        ]
+    }
+
+    response = update_service_by_challenge_pk(
+        mock_client, mock_challenge, num_of_tasks, force_new_deployment=True
+    )
+
+    assert (
+        response["ResponseMetadata"]["HTTPStatusCode"]
+        == HTTPStatus.TOO_MANY_REQUESTS
+    )
+    assert mock_client.update_service.call_count == 2
+
+
+def test_is_inactive_task_definition_error_with_plain_dict():
+    error_response = {
+        "Error": {
+            "Code": "ClientException",
+            "Message": "TaskDefinition is inactive",
+        }
+    }
+    assert _is_inactive_task_definition_error(error_response) is True
+    assert (
+        _is_inactive_task_definition_error({"Error": {"Code": "Other"}})
+        is False
+    )
+
+
+def test_get_ecs_service_task_definition_arn_no_services(mock_client):
+    mock_client.describe_services.return_value = {"services": []}
+    assert (
+        _get_ecs_service_task_definition_arn(mock_client, "dummy_service")
+        is None
+    )
+
+
+def test_get_ecs_service_task_definition_arn_inactive_service(mock_client):
+    mock_client.describe_services.return_value = {
+        "services": [{"status": "INACTIVE", "taskDefinition": "some_arn"}]
+    }
+    assert (
+        _get_ecs_service_task_definition_arn(mock_client, "dummy_service")
+        is None
+    )
+
+
+def test_sync_challenge_task_def_from_service_no_active_service(
+    mock_client, mock_challenge
+):
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+    mock_client.describe_services.return_value = {"services": []}
+
+    result = _sync_challenge_task_def_from_service(
+        mock_client, mock_challenge, "dummy_service"
+    )
+
+    assert result is False
+    assert mock_challenge.task_def_arn == "inactive_task_def_arn"
+
+
+@patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
+def test_delete_service_continues_when_task_def_inactive(
+    mock_cleanup, mock_challenge, mock_client
+):
+    mock_challenge.workers = 0
+    mock_challenge.task_def_arn = "inactive_task_def_arn"
+    response_metadata_ok = {
+        "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
+    }
+    inactive_error = ClientError(
+        error_response={
+            "Error": {
+                "Code": "ClientException",
+                "Message": (
+                    "An error occurred (ClientException) when calling the "
+                    "DeregisterTaskDefinition operation: TaskDefinition is "
+                    "inactive"
+                ),
+            },
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        },
+        operation_name="DeregisterTaskDefinition",
+    )
+
+    with patch(
+        "challenges.aws_utils.get_boto3_client", return_value=mock_client
+    ):
+        mock_client.delete_service.return_value = response_metadata_ok
+        mock_client.deregister_task_definition.side_effect = inactive_error
+
+        response = delete_service_by_challenge_pk(mock_challenge)
+
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+    assert mock_challenge.task_def_arn == ""
 
 
 @patch("challenges.aws_utils.cleanup_auto_scaling_for_service")
@@ -3488,6 +3803,17 @@ class TestGetLogsFromCloudwatch(TestCase):
 
 
 class TestCreateEKSNodegroup(unittest.TestCase):
+    def setUp(self):
+        # create_eks_nodegroup re-reads the challenge so a config edit made
+        # while cluster setup is still running is not lost. These tests supply
+        # the challenge through the serialized snapshot, so make that lookup
+        # miss and fall back to it.
+        patcher = patch("challenges.models.Challenge")
+        mock_model = patcher.start()
+        mock_model.DoesNotExist = Challenge.DoesNotExist
+        mock_model.objects.get.side_effect = Challenge.DoesNotExist
+        self.addCleanup(patcher.stop)
+
     @patch("challenges.models.ChallengeEvaluationCluster")
     @patch("challenges.aws_utils.get_boto3_client")
     @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
@@ -7782,3 +8108,1337 @@ class TestWorkerImageHelpers(TestCase):
             "evalai-production-worker-py",
             next(iter(prefixes)),
         )
+
+
+class TestValidateEKSNodegroupConfig(unittest.TestCase):
+    """
+    The validation gate runs before the old nodegroup is deleted, so a false
+    negative here destroys a challenge's capacity.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
+
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_valid_config_returns_no_errors(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_instance_type_not_offered_in_region(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": []
+        }
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("not offered in this region", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unknown_ami_type_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "NOT_A_REAL_AMI"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Unknown worker_ami_type", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_al2_ami_rejected_on_modern_kubernetes(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        """
+        AL2 AMIs no longer exist on Kubernetes 1.33+, so create_nodegroup would
+        fail after the old nodegroup had already been deleted.
+        """
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2_x86_64_GPU"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("not available on Kubernetes 1.36", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_al2_ami_allowed_on_old_kubernetes(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2_x86_64_GPU"
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.29"}
+        }
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_gpu_challenge_on_non_gpu_ami_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2023_x86_64_STANDARD"
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("has no GPU driver", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_cpu_only_challenge_on_non_gpu_ami_allowed(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_ami_type = "AL2023_x86_64_STANDARD"
+        self.challenge.cpu_only_jobs = True
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(errors, [])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_invalid_disk_size_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_disk_size = 0
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("worker_disk_size", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_empty_instance_type_rejected(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.challenge.worker_instance_type = None
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("worker_instance_type is empty", errors[0])
+
+
+class TestValidateEKSNodegroupConfigErrors(unittest.TestCase):
+    """AWS lookups inside validation must degrade to an error, not an abort."""
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_instance_type_lookup_failure_is_an_error(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        self.ec2_client.describe_instance_type_offerings.side_effect = (
+            ClientError(
+                {"Error": {"Code": "AccessDenied", "Message": "no"}},
+                "DescribeInstanceTypeOfferings",
+            )
+        )
+        mock_get_boto3_client.return_value = self.ec2_client
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Could not verify instance type", errors[0])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_cluster_version_lookup_failure_is_an_error(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.ec2_client
+        self.eks_client.describe_cluster.return_value = {}
+
+        errors = validate_eks_nodegroup_config(
+            self.challenge, self.eks_client, "test-cluster"
+        )
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Could not read cluster version", errors[0])
+
+
+class TestValidateNodegroupScaling(unittest.TestCase):
+    """
+    Scaling bounds are sent to CreateNodegroup after the live nodegroup has
+    already been deleted, so an invalid combination must be caught up front.
+    """
+
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.worker_ami_type = "AL2023_x86_64_NVIDIA"
+        self.challenge.worker_disk_size = 100
+        self.challenge.cpu_only_jobs = False
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 1
+
+        self.eks_client = MagicMock()
+        self.eks_client.describe_cluster.return_value = {
+            "cluster": {"version": "1.36"}
+        }
+        self.ec2_client = MagicMock()
+        self.ec2_client.describe_instance_type_offerings.return_value = {
+            "InstanceTypeOfferings": [{"InstanceType": "g5.xlarge"}]
+        }
+
+    def _validate(self):
+        with patch(
+            "challenges.aws_utils.get_boto3_client",
+            return_value=self.ec2_client,
+        ), patch("challenges.utils.get_aws_credentials_for_challenge"):
+            return validate_eks_nodegroup_config(
+                self.challenge, self.eks_client, "test-cluster"
+            )
+
+    def test_valid_bounds_pass(self):
+        self.assertEqual(self._validate(), [])
+
+    def test_min_above_max_is_rejected(self):
+        self.challenge.min_worker_instance = 5
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any("cannot exceed max_worker_instance" in e for e in errors)
+        )
+
+    def test_desired_outside_bounds_is_rejected(self):
+        self.challenge.desired_worker_instance = 9
+
+        errors = self._validate()
+
+        self.assertTrue(any("must be between" in e for e in errors))
+
+    def test_zero_max_is_rejected(self):
+        self.challenge.max_worker_instance = 0
+        self.challenge.desired_worker_instance = 0
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any("max_worker_instance must be at least 1" in e for e in errors)
+        )
+
+    def test_null_scaling_field_is_rejected(self):
+        """All three fields are nullable on the model."""
+        self.challenge.desired_worker_instance = None
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "desired_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
+
+    def test_negative_scaling_field_is_rejected(self):
+        self.challenge.min_worker_instance = -1
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "min_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
+
+    def test_boolean_is_not_accepted_as_an_integer(self):
+        self.challenge.max_worker_instance = True
+
+        errors = self._validate()
+
+        self.assertTrue(
+            any(
+                "max_worker_instance must be a non-negative integer" in e
+                for e in errors
+            )
+        )
+
+
+class TestRecreateEKSNodegroup(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.title = "Test Challenge"
+
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = "test-nodegroup"
+
+        self.client = MagicMock()
+
+    def _patch_lookup(self):
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {"status": "ACTIVE"}
+        }
+        return patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(self.challenge, self.cluster),
+        )
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_deletes_then_creates_on_valid_config(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = {"nodegroup": "created"}
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_called_once_with(
+            clusterName="test-cluster", nodegroupName="test-nodegroup"
+        )
+        self.client.get_waiter.assert_called_once_with("nodegroup_deleted")
+        mock_create.assert_called_once_with(
+            self.client, self.challenge, "test-cluster", "test-nodegroup"
+        )
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_invalid_config_leaves_nodegroup_untouched(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """
+        A failed precheck must abort before delete_nodegroup, otherwise the
+        challenge is left with no capacity at all.
+        """
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = ["Instance type bogus.type is not valid."]
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn("left untouched", result["error"])
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_missing_nodegroup_still_creates(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = {"nodegroup": "created"}
+        self.client.delete_nodegroup.side_effect = ClientError(
+            {
+                "Error": {
+                    "Code": "ResourceNotFoundException",
+                    "Message": "gone",
+                }
+            },
+            "DeleteNodegroup",
+        )
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_called_once()
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_delete_error_aborts_before_create(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        self.client.delete_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "nope"}},
+            "DeleteNodegroup",
+        )
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_failed_create_reports_lost_capacity(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+        mock_create.return_value = None
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.assertIn("error", result)
+        self.assertIn("no worker capacity", result["error"])
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_no_cluster_is_a_noop(self, mock_get_boto3_client):
+        with patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(None, None),
+        ):
+            result = recreate_eks_nodegroup(1)
+
+        mock_get_boto3_client.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_non_active_nodegroup_is_retried_not_dropped(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """
+        A CREATING nodegroup means setup_eks_cluster is still in flight.
+        Deleting it would make create_eks_nodegroup fail on a duplicate name
+        and never start the code-upload worker. Abandoning the task instead
+        would lose the edit for good, because the callback has already
+        refreshed its snapshots, so the task must retry.
+        """
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup(), patch.object(
+            recreate_eks_nodegroup, "retry"
+        ) as mock_retry:
+            self.client.describe_nodegroup.return_value = {
+                "nodegroup": {"status": "CREATING"}
+            }
+            result = recreate_eks_nodegroup(1)
+
+        mock_retry.assert_called_once_with(
+            countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS
+        )
+        self.assertEqual(
+            recreate_eks_nodegroup.max_retries,
+            settings.EKS_NODEGROUP_SYNC_MAX_RETRIES,
+        )
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn("not ACTIVE", result["error"])
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_exhausted_retries_do_not_touch_the_nodegroup(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup(), patch.object(
+            recreate_eks_nodegroup,
+            "retry",
+            side_effect=MaxRetriesExceededError,
+        ), patch("challenges.aws_utils.logger") as mock_logger:
+            self.client.describe_nodegroup.return_value = {
+                "nodegroup": {"status": "CREATING"}
+            }
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+        # The edit is lost at this point, so the log must say how to recover.
+        self.assertIn(
+            "Recreate EKS nodegroup", mock_logger.error.call_args.args[0]
+        )
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_describe_error_aborts_before_delete(
+        self, mock_credentials, mock_get_boto3_client, mock_create
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            self.client.describe_nodegroup.side_effect = ClientError(
+                {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+                "DescribeNodegroup",
+            )
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_malformed_describe_response_aborts_before_delete(
+        self, mock_credentials, mock_get_boto3_client, mock_create
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            # Resolution succeeds, then the status lookup comes back without
+            # the key the task needs.
+            self.client.describe_nodegroup.side_effect = [
+                {"nodegroup": {"status": "ACTIVE"}},
+                {"nodegroup": {}},
+            ]
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils._resolve_nodegroup_name", return_value=None)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unresolvable_nodegroup_is_a_noop(
+        self, mock_credentials, mock_get_boto3_client, mock_resolve
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            result = recreate_eks_nodegroup(1)
+
+        self.client.delete_nodegroup.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.validate_eks_nodegroup_config")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_delete_waiter_timeout_aborts_before_create(
+        self,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_validate,
+        mock_create,
+    ):
+        """Creating over a half-deleted nodegroup would fail."""
+        mock_get_boto3_client.return_value = self.client
+        mock_validate.return_value = []
+
+        with self._patch_lookup():
+            self.client.get_waiter.return_value.wait.side_effect = WaiterError(
+                name="nodegroup_deleted",
+                reason="max attempts exceeded",
+                last_response={},
+            )
+            result = recreate_eks_nodegroup(1)
+
+        mock_create.assert_not_called()
+        self.assertIn("error", result)
+
+
+class TestCreateNodegroupForChallenge(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    def test_active_waiter_failure_still_reports_the_nodegroup(
+        self, mock_meta, mock_evaluation_cluster
+    ):
+        """
+        The nodegroup exists once create_nodegroup succeeds. Returning None on
+        a waiter timeout would make callers report it as missing, and the next
+        recreate would delete a nodegroup that was merely still CREATING.
+
+        WaiterError must also not escape, or the caller's error handling and
+        the code-upload worker start in create_eks_nodegroup are both skipped.
+        """
+        mock_meta.return_value = {
+            "SUBNET_1": "subnet-123",
+            "SUBNET_2": "subnet-456",
+            "EKS_NODEGROUP_ROLE_ARN": "arn:aws:iam::123456789012:role/ng",
+        }
+        challenge = MagicMock()
+        challenge.pk = 1
+        client = MagicMock()
+        client.create_nodegroup.return_value = {"nodegroup": "created"}
+        client.get_waiter.return_value.wait.side_effect = WaiterError(
+            name="nodegroup_active",
+            reason="max attempts exceeded",
+            last_response={},
+        )
+
+        result = create_nodegroup_for_challenge(
+            client, challenge, "test-cluster", "test-nodegroup"
+        )
+
+        self.assertEqual(result, {"nodegroup": "created"})
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    @patch("challenges.aws_utils.get_code_upload_setup_meta_for_challenge")
+    def test_create_failure_returns_none(
+        self, mock_meta, mock_evaluation_cluster
+    ):
+        mock_meta.return_value = {
+            "SUBNET_1": "subnet-123",
+            "SUBNET_2": "subnet-456",
+            "EKS_NODEGROUP_ROLE_ARN": "arn:aws:iam::123456789012:role/ng",
+        }
+        challenge = MagicMock()
+        challenge.pk = 1
+        client = MagicMock()
+        client.create_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "InvalidParameterException", "Message": "bad"}},
+            "CreateNodegroup",
+        )
+
+        result = create_nodegroup_for_challenge(
+            client, challenge, "test-cluster", "test-nodegroup"
+        )
+
+        self.assertIsNone(result)
+
+
+class TestCreateEKSNodegroupReadsCurrentConfig(unittest.TestCase):
+    """
+    Cluster setup takes many minutes, and the chain carries a challenge
+    serialized at approval time. An edit landing in that window cannot be
+    applied by the post_save hook, because there is no nodegroup to recreate
+    yet, so the create must read the current row instead of the snapshot.
+    """
+
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.construct_and_send_eks_cluster_creation_mail")
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.models.Challenge")
+    def test_uses_database_row_not_serialized_snapshot(
+        self,
+        mock_challenge_model,
+        mock_deserialize,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_create,
+        mock_mail,
+        mock_token,
+        mock_service,
+    ):
+        stale = MagicMock()
+        stale.pk = 1
+        stale.title = "Test Challenge"
+        stale.worker_instance_type = "g5.4xlarge"
+        mock_deserialize.return_value = [MagicMock(object=stale)]
+
+        current = MagicMock()
+        current.pk = 1
+        current.title = "Test Challenge"
+        current.worker_instance_type = "g5.xlarge"
+        mock_challenge_model.DoesNotExist = Challenge.DoesNotExist
+        mock_challenge_model.objects.get.return_value = current
+        mock_create.return_value = {"nodegroup": "created"}
+
+        create_eks_nodegroup("[]", "test-cluster")
+
+        mock_challenge_model.objects.get.assert_called_once_with(pk=1)
+        self.assertIs(mock_create.call_args.args[1], current)
+
+    @patch("challenges.aws_utils.create_service_by_challenge_pk")
+    @patch("challenges.aws_utils.client_token_generator")
+    @patch("challenges.aws_utils.construct_and_send_eks_cluster_creation_mail")
+    @patch("challenges.aws_utils.create_nodegroup_for_challenge")
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    @patch("challenges.aws_utils.serializers.deserialize")
+    @patch("challenges.models.Challenge")
+    def test_falls_back_to_snapshot_when_row_is_gone(
+        self,
+        mock_challenge_model,
+        mock_deserialize,
+        mock_credentials,
+        mock_get_boto3_client,
+        mock_create,
+        mock_mail,
+        mock_token,
+        mock_service,
+    ):
+        stale = MagicMock()
+        stale.pk = 1
+        stale.title = "Test Challenge"
+        mock_deserialize.return_value = [MagicMock(object=stale)]
+        mock_challenge_model.DoesNotExist = Challenge.DoesNotExist
+        mock_challenge_model.objects.get.side_effect = Challenge.DoesNotExist
+        mock_create.return_value = {"nodegroup": "created"}
+
+        create_eks_nodegroup("[]", "test-cluster")
+
+        self.assertIs(mock_create.call_args.args[1], stale)
+
+
+class TestUpdateEKSNodegroupScaling(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.min_worker_instance = 0
+        self.challenge.max_worker_instance = 4
+        self.challenge.desired_worker_instance = 0
+
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = "test-nodegroup"
+
+        self.client = MagicMock()
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "ACTIVE",
+                "scalingConfig": {
+                    "minSize": 1,
+                    "maxSize": 2,
+                    "desiredSize": 2,
+                },
+            }
+        }
+
+    def _patch_lookup(self):
+        return patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(self.challenge, self.cluster),
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_pushes_bounds_and_preserves_live_desired_size(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        """
+        The autoscale Lambda owns desiredSize. Pushing the challenge's stored
+        value would shrink a busy nodegroup and kill running submissions.
+        """
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_called_once_with(
+            clusterName="test-cluster",
+            nodegroupName="test-nodegroup",
+            scalingConfig={"minSize": 0, "maxSize": 4, "desiredSize": 2},
+        )
+        self.assertIn("message", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_live_desired_size_clamped_into_new_bounds(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "ACTIVE",
+                "scalingConfig": {"desiredSize": 9},
+            }
+        }
+
+        with self._patch_lookup():
+            update_eks_nodegroup_scaling(1)
+
+        sent = self.client.update_nodegroup_config.call_args.kwargs
+        self.assertEqual(sent["scalingConfig"]["desiredSize"], 4)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_live_desired_size_raised_to_new_minimum(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.challenge.min_worker_instance = 3
+
+        with self._patch_lookup():
+            update_eks_nodegroup_scaling(1)
+
+        sent = self.client.update_nodegroup_config.call_args.kwargs
+        self.assertEqual(sent["scalingConfig"]["desiredSize"], 3)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_non_active_nodegroup_is_retried(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "CREATING",
+                "scalingConfig": {"desiredSize": 1},
+            }
+        }
+
+        with self._patch_lookup(), patch.object(
+            update_eks_nodegroup_scaling, "retry"
+        ) as mock_retry:
+            result = update_eks_nodegroup_scaling(1)
+
+        mock_retry.assert_called_once_with(
+            countdown=settings.EKS_NODEGROUP_SYNC_RETRY_SECONDS
+        )
+        self.assertEqual(
+            update_eks_nodegroup_scaling.max_retries,
+            settings.EKS_NODEGROUP_SYNC_MAX_RETRIES,
+        )
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_exhausted_retries_skip_the_update(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "status": "CREATING",
+                "scalingConfig": {"desiredSize": 1},
+            }
+        }
+
+        with self._patch_lookup(), patch.object(
+            update_eks_nodegroup_scaling,
+            "retry",
+            side_effect=MaxRetriesExceededError,
+        ), patch("challenges.aws_utils.logger") as mock_logger:
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+        self.assertIn(
+            "Recreate EKS nodegroup", mock_logger.error.call_args.args[0]
+        )
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_describe_error_is_reported(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        # The first call resolves the nodegroup name; the task's own lookup is
+        # the second one.
+        self.client.describe_nodegroup.side_effect = [
+            {"nodegroup": {"status": "ACTIVE"}},
+            ClientError(
+                {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+                "DescribeNodegroup",
+            ),
+        ]
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_client_error_is_reported(
+        self, mock_credentials, mock_get_boto3_client
+    ):
+        mock_get_boto3_client.return_value = self.client
+        self.client.update_nodegroup_config.side_effect = ClientError(
+            {"Error": {"Code": "InvalidParameterException", "Message": "bad"}},
+            "UpdateNodegroupConfig",
+        )
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_no_cluster_is_a_noop(self, mock_get_boto3_client):
+        with patch(
+            "challenges.aws_utils._get_challenge_cluster",
+            return_value=(None, None),
+        ):
+            result = update_eks_nodegroup_scaling(1)
+
+        mock_get_boto3_client.assert_not_called()
+        self.assertIn("error", result)
+
+    @patch("challenges.aws_utils._resolve_nodegroup_name", return_value=None)
+    @patch("challenges.aws_utils.get_boto3_client")
+    @patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_unresolvable_nodegroup_is_a_noop(
+        self, mock_credentials, mock_get_boto3_client, mock_resolve
+    ):
+        mock_get_boto3_client.return_value = self.client
+
+        with self._patch_lookup():
+            result = update_eks_nodegroup_scaling(1)
+
+        self.client.update_nodegroup_config.assert_not_called()
+        self.assertIn("error", result)
+
+
+class TestGetChallengeCluster(unittest.TestCase):
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_missing_cluster_returns_nothing(self, mock_cluster):
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.side_effect = (
+            ChallengeEvaluationCluster.DoesNotExist
+        )
+
+        self.assertEqual(_get_challenge_cluster(1), (None, None))
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_database_error_returns_nothing(self, mock_cluster):
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.side_effect = (
+            DatabaseError("connection lost")
+        )
+
+        self.assertEqual(_get_challenge_cluster(1), (None, None))
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_returns_challenge_and_cluster(self, mock_cluster):
+        cluster = MagicMock()
+        mock_cluster.DoesNotExist = ChallengeEvaluationCluster.DoesNotExist
+        mock_cluster.objects.select_related.return_value.get.return_value = (
+            cluster
+        )
+
+        self.assertEqual(
+            _get_challenge_cluster(1), (cluster.challenge, cluster)
+        )
+
+
+class TestVersionAtLeast(unittest.TestCase):
+    def test_compares_dotted_versions(self):
+        self.assertTrue(_version_at_least("1.36", "1.33"))
+        self.assertTrue(_version_at_least("1.33", "1.33"))
+        self.assertFalse(_version_at_least("1.29", "1.33"))
+
+    def test_unparseable_version_is_not_at_least(self):
+        """
+        An unreadable cluster version must not be treated as modern, or a valid
+        AL2 nodegroup would be rejected on an old cluster.
+        """
+        self.assertFalse(_version_at_least("unknown", "1.33"))
+        self.assertFalse(_version_at_least(None, "1.33"))
+
+
+class TestResolveNodegroupName(unittest.TestCase):
+    """
+    The name must never be re-derived from the challenge title: a renamed
+    challenge would derive a name matching nothing, delete nothing, and then
+    create a second nodegroup beside the live one.
+    """
+
+    def setUp(self):
+        self.cluster = MagicMock()
+        self.cluster.name = "test-cluster"
+        self.cluster.nodegroup_name = None
+        self.client = MagicMock()
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_single_nodegroup_is_resolved_and_recorded(self, mock_cluster):
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+        mock_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="live-nodegroup"
+        )
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_stale_recorded_name_is_re_resolved(self, mock_cluster):
+        """
+        A nodegroup replaced by hand leaves the recorded name pointing at
+        nothing. Trusting it would break every sync until the row was edited.
+        """
+        self.cluster.nodegroup_name = "stale-nodegroup"
+        self.client.describe_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "ResourceNotFoundException", "Message": "no"}},
+            "DescribeNodegroup",
+        )
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+        mock_cluster.objects.filter.return_value.update.assert_called_once_with(
+            nodegroup_name="live-nodegroup"
+        )
+
+    def test_recorded_name_is_verified_before_use(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "recorded-nodegroup")
+        self.client.describe_nodegroup.assert_called_once_with(
+            clusterName="test-cluster", nodegroupName="recorded-nodegroup"
+        )
+        self.client.list_nodegroups.assert_not_called()
+
+    def test_describe_boto_error_returns_none(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+        self.client.describe_nodegroup.side_effect = WaiterError(
+            name="describe", reason="connection reset", last_response={}
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+        self.client.list_nodegroups.assert_not_called()
+
+    def test_describe_error_other_than_missing_returns_none(self):
+        self.cluster.nodegroup_name = "recorded-nodegroup"
+        self.client.describe_nodegroup.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+            "DescribeNodegroup",
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+        self.client.list_nodegroups.assert_not_called()
+
+    def test_no_nodegroup_returns_none(self):
+        """Also the state during initial setup, before the nodegroup exists."""
+        self.client.list_nodegroups.return_value = {"nodegroups": []}
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+
+    def test_multiple_nodegroups_refuses_to_guess(self):
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["one", "two"]
+        }
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+
+    @patch("challenges.models.ChallengeEvaluationCluster")
+    def test_recording_failure_still_returns_name(self, mock_cluster):
+        """Persisting the name is a convenience; the recreate must go ahead."""
+        self.client.list_nodegroups.return_value = {
+            "nodegroups": ["live-nodegroup"]
+        }
+        mock_cluster.objects.filter.return_value.update.side_effect = (
+            DatabaseError("connection lost")
+        )
+
+        name = _resolve_nodegroup_name(self.client, 1, self.cluster)
+
+        self.assertEqual(name, "live-nodegroup")
+
+    def test_list_error_returns_none(self):
+        self.client.list_nodegroups.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "no"}},
+            "ListNodegroups",
+        )
+
+        self.assertIsNone(
+            _resolve_nodegroup_name(self.client, 1, self.cluster)
+        )
+
+
+class TestEKSNodegroupConfigChangeCallback(unittest.TestCase):
+    def setUp(self):
+        self.challenge = MagicMock()
+        self.challenge.pk = 1
+        self.challenge.is_docker_based = True
+        self.challenge.remote_evaluation = False
+        # Start with every tracked field unchanged.
+        for field in (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        ):
+            value = "unchanged-{}".format(field)
+            setattr(self.challenge, field, value)
+            setattr(self.challenge, "_original_{}".format(field), value)
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_no_change_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_instance_type_change_triggers_recreate(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "recreate")
+        mock_recreate.delay.assert_called_once_with(1)
+        mock_scale.delay.assert_not_called()
+        # The snapshot is refreshed so a second save is not a second recreate.
+        self.assertEqual(
+            self.challenge._original_worker_instance_type, "g5.xlarge"
+        )
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_scaling_change_triggers_update_only(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.max_worker_instance = 8
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "scale")
+        mock_scale.delay.assert_called_once_with(1)
+        mock_recreate.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_recreate_wins_when_both_change(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        """
+        create_nodegroup already sends the new scalingConfig, so dispatching an
+        update as well would be a redundant AWS call.
+        """
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.worker_instance_type = "g5.xlarge"
+        self.challenge.max_worker_instance = 8
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertEqual(action, "recreate")
+        mock_recreate.delay.assert_called_once_with(1)
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=False)
+    def test_non_code_upload_challenge_ignored(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        mock_settings.EKS_NODEGROUP_IMMUTABLE_FIELDS = (
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+        )
+        mock_settings.EKS_NODEGROUP_SCALING_FIELDS = (
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance",
+        )
+        self.challenge.is_docker_based = False
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=True, TEST=False)
+    def test_debug_mode_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()
+
+    @patch("challenges.aws_utils.update_eks_nodegroup_scaling")
+    @patch("challenges.aws_utils.recreate_eks_nodegroup")
+    @patch("challenges.aws_utils.settings", DEBUG=False, TEST=True)
+    def test_test_mode_dispatches_nothing(
+        self, mock_settings, mock_recreate, mock_scale
+    ):
+        """
+        The hook fires on every Challenge save, so without this guard the whole
+        test suite would dispatch Celery tasks at a broker that is not running.
+        """
+        self.challenge.worker_instance_type = "g5.xlarge"
+
+        action = eks_nodegroup_config_change_callback(self.challenge)
+
+        self.assertIsNone(action)
+        mock_recreate.delay.assert_not_called()
+        mock_scale.delay.assert_not_called()

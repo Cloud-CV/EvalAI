@@ -178,6 +178,53 @@ class TestChallengeCleanupLambda(unittest.TestCase):
         mock_clear_state.assert_not_called()
         mock_scheduler.create_schedule.assert_called_once()
 
+    @patch("boto3.client")
+    def test_reschedule_cleanup_uses_unique_schedule_name(
+        self, mock_boto_client
+    ):
+        """
+        ActionAfterCompletion=DELETE only removes the invoking schedule
+        after the Lambda finishes. create_schedule with the fixed base
+        name therefore conflicts; retries must use a distinct name.
+        """
+        mock_scheduler = MagicMock()
+        mock_boto_client.return_value = mock_scheduler
+
+        ok = self.module.reschedule_cleanup(42, "chal-queue")
+
+        self.assertTrue(ok)
+        mock_scheduler.create_schedule.assert_called_once()
+        kwargs = mock_scheduler.create_schedule.call_args.kwargs
+        schedule_name = kwargs["Name"]
+        base_name = "evalai-cleanup-challenge-production-42"
+        self.assertNotEqual(schedule_name, base_name)
+        self.assertTrue(schedule_name.startswith(base_name + "-r"))
+        self.assertLessEqual(len(schedule_name), 64)
+        self.assertEqual(kwargs["ActionAfterCompletion"], "DELETE")
+        self.assertIn("chal-queue", kwargs["Target"]["Input"])
+
+    @patch("boto3.client")
+    @patch("challenge_cleanup_lambda.clear_challenge_worker_state")
+    @patch("challenge_cleanup_lambda.get_pending_submission_count")
+    def test_pending_check_failure_reschedules_with_unique_name(
+        self, mock_pending, mock_clear_state, mock_boto_client
+    ):
+        mock_pending.side_effect = RuntimeError("API down")
+        mock_scheduler = MagicMock()
+        mock_boto_client.return_value = mock_scheduler
+
+        response = self.module.handler(
+            {"challenge_pk": 42, "queue_name": "chal-queue"}, None
+        )
+
+        self.assertEqual(response["statusCode"], 200)
+        mock_clear_state.assert_not_called()
+        kwargs = mock_scheduler.create_schedule.call_args.kwargs
+        self.assertNotEqual(
+            kwargs["Name"],
+            "evalai-cleanup-challenge-production-42",
+        )
+
     @patch("challenge_cleanup_lambda.urlopen")
     def test_clear_challenge_worker_state_posts_to_api(self, mock_urlopen):
         mock_response = MagicMock()

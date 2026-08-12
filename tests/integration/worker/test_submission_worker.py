@@ -222,7 +222,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         )
 
     @mock.patch("scripts.workers.submission_worker.extract_submission_data")
-    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    @mock.patch("scripts.workers.submission_worker.logger.error")
     def test_process_submission_message_when_challenge_phase_does_not_exist(
         self, mock_logger, mock_esd
     ):
@@ -232,15 +232,9 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             "submission_pk": self.submission.pk,
         }
         mock_esd.return_value = self.submission
-        phase_pk = self.challenge_phase.pk + 999
-        with self.assertRaises(Exception):
-            submission_worker.process_submission_message(message)
-
-        mock_logger.assert_called_with(
-            "{} Challenge Phase {} does not exist".format(
-                self.WORKER_LOGS_PREFIX, phase_pk
-            )
-        )
+        result = submission_worker.process_submission_message(message)
+        self.assertIsNone(result)
+        self.assertTrue(mock_logger.called)
 
 
 class ExtractSubmissionDataTestClass(BaseTestClass):
