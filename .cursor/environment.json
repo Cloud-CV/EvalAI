@@ -1,4 +1,4 @@
 {
   "install": "bash cloud-agent/install.sh && sudo docker compose build db sqs django",
-  "start": "sudo docker compose up -d db sqs django"
+  "start": "bash cloud-agent/install.sh && sudo docker compose up -d db sqs django"
 }
