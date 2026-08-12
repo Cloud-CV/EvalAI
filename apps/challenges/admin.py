@@ -6,6 +6,7 @@ from django.contrib.admin.helpers import ActionForm
 from .admin_filters import ChallengeFilter
 from .aws_utils import (
     delete_workers,
+    recreate_eks_nodegroup,
     refresh_worker_task_definitions,
     restart_workers,
     scale_workers,
@@ -98,6 +99,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "unfreeze_selected_challenges",
         "pause_selected_challenge_submissions",
         "unpause_selected_challenge_submissions",
+        "recreate_selected_eks_nodegroups",
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -318,6 +320,35 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     unpause_selected_challenge_submissions.short_description = (
         "Unpause submissions for selected challenges."
+    )
+
+    def recreate_selected_eks_nodegroups(self, request, queryset):
+        skipped = 0
+        queued = 0
+        for challenge in queryset:
+            if not challenge.is_docker_based or challenge.remote_evaluation:
+                skipped += 1
+                continue
+            recreate_eks_nodegroup.delay(challenge.pk)
+            queued += 1
+
+        if queued:
+            messages.success(
+                request,
+                "Queued nodegroup recreation for {} challenge(s). Nodes "
+                "running submissions will be terminated. Check the worker "
+                "logs for the outcome.".format(queued),
+            )
+        if skipped:
+            messages.warning(
+                request,
+                "{} challenge(s) skipped: not code-upload challenges.".format(
+                    skipped
+                ),
+            )
+
+    recreate_selected_eks_nodegroups.short_description = (
+        "Recreate EKS nodegroup (applies instance type, AMI and disk size)."
     )
 
 

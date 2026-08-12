@@ -1,9 +1,11 @@
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from challenges.admin import ChallengeAdmin
 from challenges.models import Challenge
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
+from django.contrib.messages import constants as message_constants
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
 from hosts.models import ChallengeHostTeam
@@ -236,6 +238,94 @@ class TestChallengeAdminActions(TestCase):
         self.queryset.update.assert_called_once_with(is_frozen=False)
         messages = list(self.request._messages)
         assert any("successfully unfrozen" in str(m) for m in messages)
+
+    # A plain MagicMock would invent any attribute asked of it, so a renamed
+    # field on Challenge would keep these tests green while the action silently
+    # stopped filtering. Only the fields the action reads are provided.
+    @staticmethod
+    def _code_upload_challenge(pk, is_docker_based=True, remote=False):
+        return SimpleNamespace(
+            pk=pk,
+            is_docker_based=is_docker_based,
+            remote_evaluation=remote,
+        )
+
+    def _sent_messages(self):
+        return [(m.level, str(m)) for m in list(self.request._messages)]
+
+    QUEUED_2 = (
+        "Queued nodegroup recreation for 2 challenge(s). Nodes running "
+        "submissions will be terminated. Check the worker logs for the "
+        "outcome."
+    )
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_queues_each_challenge(
+        self, mock_recreate
+    ):
+        self.admin.recreate_selected_eks_nodegroups(
+            self.request,
+            [self._code_upload_challenge(1), self._code_upload_challenge(2)],
+        )
+
+        self.assertEqual(mock_recreate.delay.call_count, 2)
+        mock_recreate.delay.assert_any_call(1)
+        mock_recreate.delay.assert_any_call(2)
+        # Exact text, so a wrong count cannot pass as a substring, and the
+        # destructive warning has to reach the operator.
+        self.assertEqual(
+            self._sent_messages(),
+            [(message_constants.SUCCESS, self.QUEUED_2)],
+        )
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_skips_non_code_upload(
+        self, mock_recreate
+    ):
+        self.admin.recreate_selected_eks_nodegroups(
+            self.request,
+            [
+                self._code_upload_challenge(1),
+                self._code_upload_challenge(2, remote=True),
+                self._code_upload_challenge(3, is_docker_based=False),
+            ],
+        )
+
+        mock_recreate.delay.assert_called_once_with(1)
+        self.assertEqual(
+            self._sent_messages(),
+            [
+                (
+                    message_constants.SUCCESS,
+                    "Queued nodegroup recreation for 1 challenge(s). Nodes "
+                    "running submissions will be terminated. Check the worker "
+                    "logs for the outcome.",
+                ),
+                (
+                    message_constants.WARNING,
+                    "2 challenge(s) skipped: not code-upload challenges.",
+                ),
+            ],
+        )
+
+    @patch("challenges.admin.recreate_eks_nodegroup")
+    def test_recreate_selected_eks_nodegroups_all_skipped(self, mock_recreate):
+        self.admin.recreate_selected_eks_nodegroups(
+            self.request,
+            [self._code_upload_challenge(1, is_docker_based=False)],
+        )
+
+        mock_recreate.delay.assert_not_called()
+        # No success message at all, rather than one reporting zero.
+        self.assertEqual(
+            self._sent_messages(),
+            [
+                (
+                    message_constants.WARNING,
+                    "1 challenge(s) skipped: not code-upload challenges.",
+                )
+            ],
+        )
 
 
 class TestChallengeAdminListDisplay(TestCase):

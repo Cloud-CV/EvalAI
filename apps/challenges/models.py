@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
@@ -38,6 +39,11 @@ class Challenge(TimeStampedModel):
         self._original_approved_by_admin = self.approved_by_admin
         self._original_sqs_retention_period = self.sqs_retention_period
         self._original_end_date = self.end_date
+        for field in (
+            settings.EKS_NODEGROUP_IMMUTABLE_FIELDS
+            + settings.EKS_NODEGROUP_SCALING_FIELDS
+        ):
+            setattr(self, "_original_{}".format(field), getattr(self, field))
 
     title = models.CharField(
         max_length=100,
@@ -840,6 +846,24 @@ def create_eks_cluster_or_ec2_for_challenge(
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def sync_eks_nodegroup_config_for_challenge(
+    sender, instance, created, **kwargs
+):
+    """
+    Keep a challenge's EKS nodegroup in sync with its worker configuration.
+
+    instanceTypes, amiType and diskSize are fixed at nodegroup creation, so
+    without this hook editing them changes only the database while AWS keeps
+    running the old hardware.
+    """
+    import challenges.aws_utils as aws
+
+    if created:
+        return
+    aws.eks_nodegroup_config_change_callback(instance)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
