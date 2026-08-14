@@ -4823,6 +4823,13 @@ class UpdateParticularChallengePhase(
         response = self.client.put(self.url, self.data, format="multipart")
 
         self.assert_only_the_sent_fields_changed(response)
+        # A 200 alone would not prove the upload survived the view, so read
+        # the stored file back. upload_to is RandomFileName, which replaces
+        # the name with a uuid and keeps only the extension.
+        annotation = self.challenge_phase.test_annotation
+        self.assertTrue(annotation.name.endswith(".txt"))
+        with annotation.open("rb") as stored:
+            self.assertEqual(stored.read(), b"Dummy update file content")
 
     def test_particular_challenge_update_with_no_data(self):
         self.data = {"name": ""}
