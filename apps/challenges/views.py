@@ -281,8 +281,15 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 
         # A form body is an immutable QueryDict unless the request carried an
         # upload, and both this view and ChallengeSerializer.__init__ write to
-        # it. Copy once so a file-less form body does not raise.
-        data = request.data.copy()
+        # it. Copy the fields and re-attach any uploads by reference:
+        # request.data.copy() deep-copies its values, which raises
+        # "cannot pickle 'BufferedRandom' instances" for a file big enough to
+        # have been spooled to a TemporaryUploadedFile.
+        if request.FILES:
+            data = request.POST.copy()
+            data.update(request.FILES)
+        else:
+            data = request.data.copy()
 
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
@@ -1253,23 +1260,32 @@ def challenge_phase_detail(request, challenge_pk, pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # See challenge_detail: request.data.copy() deep-copies uploads, which
+        # raises once a file is large enough to be spooled to disk. Annotation
+        # files routinely are.
+        if request.FILES:
+            data = request.POST.copy()
+            data.update(request.FILES)
+        else:
+            data = request.data.copy()
+
         if request.method == "PATCH":
             if "phase_description_file" in request.FILES:
                 phase_description_file = request.FILES[
                     "phase_description_file"
                 ]
                 phase_description = phase_description_file.read()
-                request.data["description"] = phase_description
+                data["description"] = phase_description
                 serializer = ChallengePhaseCreateSerializer(
                     challenge_phase,
-                    data=request.data.copy(),
+                    data=data,
                     context={"challenge": challenge},
                     partial=True,
                 )
             else:
                 serializer = ChallengePhaseCreateSerializer(
                     challenge_phase,
-                    data=request.data.copy(),
+                    data=data,
                     context={"challenge": challenge},
                     partial=True,
                 )
@@ -1280,7 +1296,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
             # cleared its submission settings.
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data.copy(),
+                data=data,
                 context={"challenge": challenge},
                 partial=True,
             )

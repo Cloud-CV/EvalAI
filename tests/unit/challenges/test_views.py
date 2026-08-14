@@ -4806,6 +4806,24 @@ class UpdateParticularChallengePhase(
 
         self.assert_only_the_sent_fields_changed(response)
 
+    @override_settings(MEDIA_ROOT="/tmp/evalai", FILE_UPLOAD_MAX_MEMORY_SIZE=0)
+    def test_update_accepts_an_annotation_spooled_to_disk(self):
+        """Annotation files are routinely too big to hold in memory.
+
+        Django then hands the view a TemporaryUploadedFile wrapping an open
+        file handle, which cannot be deep-copied, so the view has to carry
+        uploads by reference.
+        """
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "update_test_sample_file.txt",
+            b"Dummy update file content",
+            content_type="text/plain",
+        )
+
+        response = self.client.put(self.url, self.data, format="multipart")
+
+        self.assert_only_the_sent_fields_changed(response)
+
     def test_particular_challenge_update_with_no_data(self):
         self.data = {"name": ""}
         response = self.client.put(self.url, self.data)
