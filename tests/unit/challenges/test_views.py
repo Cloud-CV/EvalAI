@@ -8,6 +8,7 @@ import zipfile
 from datetime import timedelta
 from os.path import join
 from smtplib import SMTPException
+from urllib.parse import urlencode
 
 import boto3
 import mock
@@ -1010,30 +1011,42 @@ class UpdateParticularChallenge(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_form_encoded_update_keeps_flags_the_host_did_not_send(self):
-        """A form-encoded update must not silently flip boolean flags.
+    def assert_only_the_title_changed(self, response):
+        """The renamed challenge keeps every flag the request left out.
 
         Hosts and host tooling send only the fields they are changing. An
         HTML form body cannot represent a missing checkbox, so DRF fills in
         False for every BooleanField absent from the payload. On a
         non-partial update that turned off registration, the forum and every
         other flag behind the host's back.
-
-        The suite sends JSON by default (TEST_REQUEST_DEFAULT_FORMAT), which
-        takes the safe code path, so this case has to ask for multipart
-        explicitly.
         """
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.title, self.update_challenge_title)
+        self.assertTrue(self.challenge.is_registration_open)
+        self.assertTrue(self.challenge.enable_forum)
+
+    def test_multipart_update_keeps_flags_the_host_did_not_send(self):
+        # The suite sends JSON by default (TEST_REQUEST_DEFAULT_FORMAT),
+        # which takes the safe code path, so ask for multipart explicitly.
         response = self.client.put(
             self.url,
             {"title": self.update_challenge_title},
             format="multipart",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.challenge.refresh_from_db()
-        self.assertEqual(self.challenge.title, self.update_challenge_title)
-        self.assertTrue(self.challenge.is_registration_open)
-        self.assertTrue(self.challenge.enable_forum)
+        self.assert_only_the_title_changed(response)
+
+    def test_urlencoded_update_keeps_flags_the_host_did_not_send(self):
+        # Same QueryDict handling as multipart, reached through FormParser
+        # rather than MultiPartParser.
+        response = self.client.put(
+            self.url,
+            urlencode({"title": self.update_challenge_title}),
+            content_type="application/x-www-form-urlencoded",
+        )
+
+        self.assert_only_the_title_changed(response)
 
 
 class FrozenChallengeTest(BaseAPITestClass):
@@ -4747,9 +4760,8 @@ class UpdateParticularChallengePhase(
         response = self.client.put(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @override_settings(MEDIA_ROOT="/tmp/evalai")
-    def test_form_encoded_update_keeps_flags_the_host_did_not_send(self):
-        """A form-encoded update must not silently flip boolean flags.
+    def assert_only_the_sent_fields_changed(self, response):
+        """The renamed phase keeps every flag the request left out.
 
         Same defect as the challenge endpoint: an HTML form body cannot
         represent a missing checkbox, so DRF fills in False for every
@@ -4757,6 +4769,21 @@ class UpdateParticularChallengePhase(
         took a public phase private and dropped its submission restrictions
         without the host asking for either.
         """
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge_phase.refresh_from_db()
+        self.assertEqual(
+            self.challenge_phase.name, self.update_challenge_phase_title
+        )
+        self.assertEqual(
+            self.challenge_phase.description, self.update_description
+        )
+        self.assertTrue(self.challenge_phase.is_public)
+        self.assertTrue(
+            self.challenge_phase.is_restricted_to_select_one_submission
+        )
+
+    @override_settings(MEDIA_ROOT="/tmp/evalai")
+    def test_multipart_update_keeps_flags_the_host_did_not_send(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "update_test_sample_file.txt",
             b"Dummy update file content",
@@ -4765,15 +4792,19 @@ class UpdateParticularChallengePhase(
 
         response = self.client.put(self.url, self.data, format="multipart")
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.challenge_phase.refresh_from_db()
-        self.assertEqual(
-            self.challenge_phase.name, self.update_challenge_phase_title
+        self.assert_only_the_sent_fields_changed(response)
+
+    def test_urlencoded_update_keeps_flags_the_host_did_not_send(self):
+        # Same QueryDict handling as multipart, reached through FormParser
+        # rather than MultiPartParser. No annotation file, so this one needs
+        # no media root.
+        response = self.client.put(
+            self.url,
+            urlencode(self.data),
+            content_type="application/x-www-form-urlencoded",
         )
-        self.assertTrue(self.challenge_phase.is_public)
-        self.assertTrue(
-            self.challenge_phase.is_restricted_to_select_one_submission
-        )
+
+        self.assert_only_the_sent_fields_changed(response)
 
     def test_particular_challenge_update_with_no_data(self):
         self.data = {"name": ""}
