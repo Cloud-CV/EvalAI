@@ -279,14 +279,26 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
 
+        # A form body is an immutable QueryDict unless the request carried an
+        # upload, and both this view and ChallengeSerializer.__init__ write to
+        # it. Copy the fields and re-attach any uploads by reference:
+        # request.data.copy() deep-copies its values, which raises
+        # "cannot pickle 'BufferedRandom' instances" for a file big enough to
+        # have been spooled to a TemporaryUploadedFile.
+        if request.FILES:
+            data = request.POST.copy()
+            data.update(request.FILES)
+        else:
+            data = request.data.copy()
+
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
                 overview_file = request.FILES["overview_file"]
                 overview = overview_file.read()
-                request.data["description"] = overview
+                data["description"] = overview
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -298,10 +310,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "terms_and_conditions_file"
                 ]
                 terms_and_conditions = terms_and_conditions_file.read()
-                request.data["terms_and_conditions"] = terms_and_conditions
+                data["terms_and_conditions"] = terms_and_conditions
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -313,10 +325,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "submission_guidelines_file"
                 ]
                 submission_guidelines = submission_guidelines_file.read()
-                request.data["submission_guidelines"] = submission_guidelines
+                data["submission_guidelines"] = submission_guidelines
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -328,10 +340,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "evaluation_criteria_file"
                 ]
                 evaluation_criteria = evaluation_criteria_file.read()
-                request.data["evaluation_details"] = evaluation_criteria
+                data["evaluation_details"] = evaluation_criteria
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -341,7 +353,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
             else:
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -349,13 +361,20 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
         else:
+            # PUT is treated as a partial update on purpose. Callers only ever
+            # send the fields they are changing, and an HTML form body cannot
+            # represent a missing checkbox: DRF substitutes False for every
+            # BooleanField absent from a non-partial form-encoded payload, so a
+            # PUT that renamed a challenge also closed its registration, forum
+            # and every other flag.
             serializer = ZipChallengeSerializer(
                 challenge,
-                data=request.data,
+                data=data,
                 context={
                     "challenge_host_team": challenge_host_team,
                     "request": request,
                 },
+                partial=True,
             )
         if serializer.is_valid():
             serializer.save()
@@ -1241,31 +1260,45 @@ def challenge_phase_detail(request, challenge_pk, pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
+        # See challenge_detail: request.data.copy() deep-copies uploads, which
+        # raises once a file is large enough to be spooled to disk. Annotation
+        # files routinely are.
+        if request.FILES:
+            data = request.POST.copy()
+            data.update(request.FILES)
+        else:
+            data = request.data.copy()
+
         if request.method == "PATCH":
             if "phase_description_file" in request.FILES:
                 phase_description_file = request.FILES[
                     "phase_description_file"
                 ]
                 phase_description = phase_description_file.read()
-                request.data["description"] = phase_description
+                data["description"] = phase_description
                 serializer = ChallengePhaseCreateSerializer(
                     challenge_phase,
-                    data=request.data.copy(),
+                    data=data,
                     context={"challenge": challenge},
                     partial=True,
                 )
             else:
                 serializer = ChallengePhaseCreateSerializer(
                     challenge_phase,
-                    data=request.data.copy(),
+                    data=data,
                     context={"challenge": challenge},
                     partial=True,
                 )
         else:
+            # Partial for the same reason as challenge_detail: a non-partial
+            # form-encoded payload makes DRF write False for every BooleanField
+            # it omits, so a PUT that renamed a phase also took it private and
+            # cleared its submission settings.
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data.copy(),
+                data=data,
                 context={"challenge": challenge},
+                partial=True,
             )
         if serializer.is_valid():
             serializer.save()

@@ -8,6 +8,7 @@ import zipfile
 from datetime import timedelta
 from os.path import join
 from smtplib import SMTPException
+from urllib.parse import urlencode
 
 import boto3
 import mock
@@ -1009,6 +1010,43 @@ class UpdateParticularChallenge(BaseAPITestClass):
         self.data = {"title": ""}
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def assert_only_the_title_changed(self, response):
+        """The renamed challenge keeps every flag the request left out.
+
+        Hosts and host tooling send only the fields they are changing. An
+        HTML form body cannot represent a missing checkbox, so DRF fills in
+        False for every BooleanField absent from the payload. On a
+        non-partial update that turned off registration, the forum and every
+        other flag behind the host's back.
+        """
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.title, self.update_challenge_title)
+        self.assertTrue(self.challenge.is_registration_open)
+        self.assertTrue(self.challenge.enable_forum)
+
+    def test_multipart_update_keeps_flags_the_host_did_not_send(self):
+        # The suite sends JSON by default (TEST_REQUEST_DEFAULT_FORMAT),
+        # which takes the safe code path, so ask for multipart explicitly.
+        response = self.client.put(
+            self.url,
+            {"title": self.update_challenge_title},
+            format="multipart",
+        )
+
+        self.assert_only_the_title_changed(response)
+
+    def test_urlencoded_update_keeps_flags_the_host_did_not_send(self):
+        # Same QueryDict handling as multipart, reached through FormParser
+        # rather than MultiPartParser.
+        response = self.client.put(
+            self.url,
+            urlencode({"title": self.update_challenge_title}),
+            content_type="application/x-www-form-urlencoded",
+        )
+
+        self.assert_only_the_title_changed(response)
 
 
 class FrozenChallengeTest(BaseAPITestClass):
@@ -4721,6 +4759,77 @@ class UpdateParticularChallengePhase(
         self.data["test_annotation"] = self.update_test_annotation
         response = self.client.put(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def assert_only_the_sent_fields_changed(self, response):
+        """The renamed phase keeps every flag the request left out.
+
+        Same defect as the challenge endpoint: an HTML form body cannot
+        represent a missing checkbox, so DRF fills in False for every
+        BooleanField absent from the payload. On a non-partial update that
+        took a public phase private and dropped its submission restrictions
+        without the host asking for either.
+        """
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge_phase.refresh_from_db()
+        self.assertEqual(
+            self.challenge_phase.name, self.update_challenge_phase_title
+        )
+        self.assertEqual(
+            self.challenge_phase.description, self.update_description
+        )
+        self.assertTrue(self.challenge_phase.is_public)
+        self.assertTrue(
+            self.challenge_phase.is_restricted_to_select_one_submission
+        )
+
+    @override_settings(MEDIA_ROOT="/tmp/evalai")
+    def test_multipart_update_keeps_flags_the_host_did_not_send(self):
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "update_test_sample_file.txt",
+            b"Dummy update file content",
+            content_type="text/plain",
+        )
+
+        response = self.client.put(self.url, self.data, format="multipart")
+
+        self.assert_only_the_sent_fields_changed(response)
+
+    def test_urlencoded_update_keeps_flags_the_host_did_not_send(self):
+        # Same QueryDict handling as multipart, reached through FormParser
+        # rather than MultiPartParser. No annotation file, so this one needs
+        # no media root.
+        response = self.client.put(
+            self.url,
+            urlencode(self.data),
+            content_type="application/x-www-form-urlencoded",
+        )
+
+        self.assert_only_the_sent_fields_changed(response)
+
+    @override_settings(MEDIA_ROOT="/tmp/evalai", FILE_UPLOAD_MAX_MEMORY_SIZE=0)
+    def test_update_accepts_an_annotation_spooled_to_disk(self):
+        """Annotation files are routinely too big to hold in memory.
+
+        Django then hands the view a TemporaryUploadedFile wrapping an open
+        file handle, which cannot be deep-copied, so the view has to carry
+        uploads by reference.
+        """
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "update_test_sample_file.txt",
+            b"Dummy update file content",
+            content_type="text/plain",
+        )
+
+        response = self.client.put(self.url, self.data, format="multipart")
+
+        self.assert_only_the_sent_fields_changed(response)
+        # A 200 alone would not prove the upload survived the view, so read
+        # the stored file back. upload_to is RandomFileName, which replaces
+        # the name with a uuid and keeps only the extension.
+        annotation = self.challenge_phase.test_annotation
+        self.assertTrue(annotation.name.endswith(".txt"))
+        with annotation.open("rb") as stored:
+            self.assertEqual(stored.read(), b"Dummy update file content")
 
     def test_particular_challenge_update_with_no_data(self):
         self.data = {"name": ""}
