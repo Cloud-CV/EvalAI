@@ -279,14 +279,19 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
 
+        # A form body is an immutable QueryDict unless the request carried an
+        # upload, and both this view and ChallengeSerializer.__init__ write to
+        # it. Copy once so a file-less form body does not raise.
+        data = request.data.copy()
+
         if request.method == "PATCH":
             if "overview_file" in request.FILES:
                 overview_file = request.FILES["overview_file"]
                 overview = overview_file.read()
-                request.data["description"] = overview
+                data["description"] = overview
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -298,10 +303,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "terms_and_conditions_file"
                 ]
                 terms_and_conditions = terms_and_conditions_file.read()
-                request.data["terms_and_conditions"] = terms_and_conditions
+                data["terms_and_conditions"] = terms_and_conditions
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -313,10 +318,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "submission_guidelines_file"
                 ]
                 submission_guidelines = submission_guidelines_file.read()
-                request.data["submission_guidelines"] = submission_guidelines
+                data["submission_guidelines"] = submission_guidelines
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -328,10 +333,10 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "evaluation_criteria_file"
                 ]
                 evaluation_criteria = evaluation_criteria_file.read()
-                request.data["evaluation_details"] = evaluation_criteria
+                data["evaluation_details"] = evaluation_criteria
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -341,7 +346,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
             else:
                 serializer = ZipChallengeSerializer(
                     challenge,
-                    data=request.data,
+                    data=data,
                     context={
                         "challenge_host_team": challenge_host_team,
                         "request": request,
@@ -357,7 +362,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
             # and every other flag.
             serializer = ZipChallengeSerializer(
                 challenge,
-                data=request.data,
+                data=data,
                 context={
                     "challenge_host_team": challenge_host_team,
                     "request": request,
