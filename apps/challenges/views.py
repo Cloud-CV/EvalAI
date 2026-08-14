@@ -8,7 +8,7 @@ import tempfile
 import time
 import uuid
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from os.path import basename, isfile, join
 
 import pytz
@@ -5830,11 +5830,21 @@ def get_autoscale_eligible_challenges(request):
     Autoscaling is otherwise purely event-driven, so a single dropped Lambda
     invocation can leave a nodegroup stuck at zero nodes with submissions
     pending indefinitely. A scheduled sweep over this list reconciles that.
+
+    Challenges that ended more than EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS ago
+    are excluded. The grace period keeps a recently ended challenge in the
+    sweep long enough to be forced to zero nodes; past that its cluster may
+    already be deleted or its cross-account role revoked, so every sweep would
+    fail on it forever and bury genuine failures on live challenges.
+    Challenges with no end_date are never excluded by this filter.
     """
     auth_error = _authenticate_lambda_request(request)
     if auth_error:
         return auth_error
 
+    sweep_cutoff = timezone.now() - timedelta(
+        days=settings.EKS_AUTOSCALE_SWEEP_GRACE_PERIOD_DAYS
+    )
     challenges = (
         Challenge.objects.filter(
             is_docker_based=True,
@@ -5842,6 +5852,7 @@ def get_autoscale_eligible_challenges(request):
             approved_by_admin=True,
         )
         .exclude(challengeevaluationcluster__isnull=True)
+        .exclude(end_date__lt=sweep_cutoff)
         .values_list("pk", flat=True)
     )
     challenge_pks = list(challenges)
