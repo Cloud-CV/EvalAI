@@ -349,6 +349,12 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
         else:
+            # PUT is treated as a partial update on purpose. Callers only ever
+            # send the fields they are changing, and an HTML form body cannot
+            # represent a missing checkbox: DRF substitutes False for every
+            # BooleanField absent from a non-partial form-encoded payload, so a
+            # PUT that renamed a challenge also closed its registration, forum
+            # and every other flag.
             serializer = ZipChallengeSerializer(
                 challenge,
                 data=request.data,
@@ -356,6 +362,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     "challenge_host_team": challenge_host_team,
                     "request": request,
                 },
+                partial=True,
             )
         if serializer.is_valid():
             serializer.save()

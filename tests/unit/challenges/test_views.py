@@ -1010,6 +1010,31 @@ class UpdateParticularChallenge(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_form_encoded_update_keeps_flags_the_host_did_not_send(self):
+        """A form-encoded update must not silently flip boolean flags.
+
+        Hosts and host tooling send only the fields they are changing. An
+        HTML form body cannot represent a missing checkbox, so DRF fills in
+        False for every BooleanField absent from the payload. On a
+        non-partial update that turned off registration, the forum and every
+        other flag behind the host's back.
+
+        The suite sends JSON by default (TEST_REQUEST_DEFAULT_FORMAT), which
+        takes the safe code path, so this case has to ask for multipart
+        explicitly.
+        """
+        response = self.client.put(
+            self.url,
+            {"title": self.update_challenge_title},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.title, self.update_challenge_title)
+        self.assertTrue(self.challenge.is_registration_open)
+        self.assertTrue(self.challenge.enable_forum)
+
 
 class FrozenChallengeTest(BaseAPITestClass):
     def setUp(self):
