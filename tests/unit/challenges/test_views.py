@@ -4747,6 +4747,34 @@ class UpdateParticularChallengePhase(
         response = self.client.put(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @override_settings(MEDIA_ROOT="/tmp/evalai")
+    def test_form_encoded_update_keeps_flags_the_host_did_not_send(self):
+        """A form-encoded update must not silently flip boolean flags.
+
+        Same defect as the challenge endpoint: an HTML form body cannot
+        represent a missing checkbox, so DRF fills in False for every
+        BooleanField absent from the payload. On a non-partial update that
+        took a public phase private and dropped its submission restrictions
+        without the host asking for either.
+        """
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "update_test_sample_file.txt",
+            b"Dummy update file content",
+            content_type="text/plain",
+        )
+
+        response = self.client.put(self.url, self.data, format="multipart")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.challenge_phase.refresh_from_db()
+        self.assertEqual(
+            self.challenge_phase.name, self.update_challenge_phase_title
+        )
+        self.assertTrue(self.challenge_phase.is_public)
+        self.assertTrue(
+            self.challenge_phase.is_restricted_to_select_one_submission
+        )
+
     def test_particular_challenge_update_with_no_data(self):
         self.data = {"name": ""}
         response = self.client.put(self.url, self.data)

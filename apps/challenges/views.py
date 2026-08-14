@@ -1269,10 +1269,15 @@ def challenge_phase_detail(request, challenge_pk, pk):
                     partial=True,
                 )
         else:
+            # Partial for the same reason as challenge_detail: a non-partial
+            # form-encoded payload makes DRF write False for every BooleanField
+            # it omits, so a PUT that renamed a phase also took it private and
+            # cleared its submission settings.
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
                 data=request.data.copy(),
                 context={"challenge": challenge},
+                partial=True,
             )
         if serializer.is_valid():
             serializer.save()
