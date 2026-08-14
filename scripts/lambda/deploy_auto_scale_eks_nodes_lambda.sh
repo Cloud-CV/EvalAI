@@ -116,8 +116,32 @@ if ! ADD_PERMISSION_OUTPUT="$(aws_cli lambda add-permission \
     echo "    invoke permission already present"
 fi
 
+# The target must be passed as JSON, not CLI shorthand: shorthand cannot
+# express an Input value containing braces and quotes, and rejects it with
+# "Expected: '=', received: '\"'". A target registered without this Input
+# makes EventBridge invoke the Lambda with an empty event, which the handler
+# treats as a malformed single-challenge invocation, so the sweep never runs.
+TARGETS_PATH="${BUILD_DIR}/sweep-target.json"
+cat > "${TARGETS_PATH}" <<EOF
+[{"Id":"1","Arn":"${FUNCTION_ARN}","Input":"{\"sweep\":true}"}]
+EOF
+
 aws_cli events put-targets \
     --rule "${RULE_NAME}" \
-    --targets "Id=1,Arn=${FUNCTION_ARN},Input={\"sweep\":true}" >/dev/null
+    --targets "file://${TARGETS_PATH}" >/dev/null
+
+# put-targets reports per-entry failures in the response body instead of a
+# non-zero exit code, so a silently unregistered target would otherwise look
+# like a successful deploy.
+REGISTERED_INPUT="$(aws_cli events list-targets-by-rule \
+    --rule "${RULE_NAME}" \
+    --query "Targets[?Id=='1'].Input | [0]" --output text)"
+
+if [ "${REGISTERED_INPUT}" != '{"sweep":true}' ]; then
+    echo "Sweep target is not registered with the expected input." >&2
+    echo "Expected: {\"sweep\":true}" >&2
+    echo "Found:    ${REGISTERED_INPUT}" >&2
+    exit 1
+fi
 
 echo "==> Done: ${FUNCTION_NAME}"
