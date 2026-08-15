@@ -746,6 +746,16 @@ class ChallengeInvitationRegisterSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("password", serializer.errors)
 
+    def test_validate_rejects_password_over_max_length(self):
+        serializer = ChallengeInvitationRegisterSerializer(
+            data={
+                "password": "a" * 129,
+            },
+            context={"user": self.user},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
+
 
 @pytest.mark.django_db
 class AddSponsorsToChallengeTests(TestCase):

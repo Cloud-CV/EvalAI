@@ -4,12 +4,14 @@ from unittest.mock import MagicMock, patch
 from accounts.models import JwtToken
 from accounts.views import PASSWORD_RESET_GENERIC_MESSAGE
 from allauth.account.models import EmailAddress
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import caches
 from django.db import IntegrityError
 from django.urls import reverse_lazy
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
+from rest_framework_expiring_authtoken.models import ExpiringToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -323,6 +325,78 @@ class SafeRegisterViewTest(APITestCase):
                     },
                     format="json",
                 )
+
+    @patch("accounts.adapter.dns.resolver.resolve")
+    def test_register_rejects_password_over_max_length(self, mock_resolve):
+        """Oversized passwords are rejected before hashing."""
+        mock_resolve.return_value = [MagicMock()]
+        long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)
+        response = self.client.post(
+            self.url,
+            {
+                "username": "longpassuser",
+                "email": "longpass@example.com",
+                "password1": long_password,
+                "password2": long_password,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password1", response.data)
+
+
+class LoginPasswordLengthTest(APITestCase):
+    url = reverse_lazy("obtain_expiring_auth_token")
+
+    def test_login_rejects_password_over_max_length(self):
+        long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)
+        response = self.client.post(
+            self.url,
+            {
+                "username": "someuser",
+                "password": long_password,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+
+
+class SafeObtainExpiringAuthTokenTest(APITestCase):
+    url = reverse_lazy("obtain_expiring_auth_token")
+
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.user = User.objects.create_user(
+            username="tokenuser",
+            email="token@example.com",
+            password="validpass1",
+        )
+
+    def test_login_returns_token_for_valid_credentials(self):
+        response = self.client.post(
+            self.url,
+            {"username": "tokenuser", "password": "validpass1"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("token", response.data)
+        self.assertTrue(ExpiringToken.objects.filter(user=self.user).exists())
+
+    @patch.object(ExpiringToken, "expired", return_value=True)
+    def test_login_refreshes_expired_token(self, mock_expired):
+        old_token = ExpiringToken.objects.create(user=self.user)
+        old_key = old_token.key
+
+        response = self.client.post(
+            self.url,
+            {"username": "tokenuser", "password": "validpass1"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data["token"], old_key)
+        mock_expired.assert_called()
 
 
 class PasswordResetViewTest(APITestCase):
