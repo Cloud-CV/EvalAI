@@ -489,7 +489,9 @@ class TestConfigFunctions(unittest.TestCase):
         )
 
         MockV1JobSpec.assert_called_once_with(
-            backoff_limit=1, template="mock-podtemplatespec"
+            backoff_limit=1,
+            template="mock-podtemplatespec",
+            active_deadline_seconds=3900,
         )
 
     @patch("scripts.workers.code_upload_submission_worker.get_job_object")
@@ -645,7 +647,9 @@ class TestConfigFunctions(unittest.TestCase):
 
         # Verify job creation
         MockV1JobSpec.assert_called_once_with(
-            backoff_limit=1, template="mock-podtemplatespec"
+            backoff_limit=1,
+            template="mock-podtemplatespec",
+            active_deadline_seconds=3900,
         )
         MockGetJobObject.assert_called_once_with(123, "mock-jobspec")
 

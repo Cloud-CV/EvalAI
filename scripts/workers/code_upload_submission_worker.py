@@ -44,6 +44,18 @@ EVALAI_API_SERVER = os.environ.get(
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 script_config_map_name = "evalai-scripts-cm"
 
+# Extra seconds added on top of a challenge's submission_time_limit when
+# setting the Kubernetes Job activeDeadlineSeconds. The in-pod cooperative
+# timeout (monitor_submission.sh for static challenges, or the environment
+# image for code-upload challenges) is expected to mark the submission
+# "failed" at submission_time_limit. This buffer lets that status update land
+# before Kubernetes hard-kills the Job, and also absorbs init-container setup
+# time, since activeDeadlineSeconds is measured from Job start (including init
+# containers). Kubernetes only terminates the Job if the in-pod timeout hangs.
+ACTIVE_DEADLINE_BUFFER_SECONDS = int(
+    os.environ.get("ACTIVE_DEADLINE_BUFFER_SECONDS", "300")
+)
+
 
 def get_volume_mount_object(mount_path, name, read_only=False):
     volume_mount = client.V1VolumeMount(
@@ -266,8 +278,17 @@ def create_job_object(message, environment_image, challenge):
             volumes=volume_list,
         ),
     )
-    # Create the specification of deployment
-    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Create the specification of deployment. activeDeadlineSeconds is a hard
+    # backstop: Kubernetes terminates the Job if it outlives the per-submission
+    # time limit (plus a buffer) even when the in-pod timeout fails to.
+    spec = client.V1JobSpec(
+        backoff_limit=1,
+        template=template,
+        active_deadline_seconds=(
+            int(submission_meta["submission_time_limit"])
+            + ACTIVE_DEADLINE_BUFFER_SECONDS
+        ),
+    )
     # Instantiate the job object
     job = get_job_object(submission_pk, spec)
     return job
@@ -382,8 +403,17 @@ def create_static_code_upload_submission_job_object(message, challenge):
             volumes=volume_list,
         ),
     )
-    # Create the specification of deployment
-    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Create the specification of deployment. activeDeadlineSeconds is a hard
+    # backstop: Kubernetes terminates the Job if it outlives the per-submission
+    # time limit (plus a buffer) even when the in-pod timeout fails to.
+    spec = client.V1JobSpec(
+        backoff_limit=1,
+        template=template,
+        active_deadline_seconds=(
+            int(submission_meta["submission_time_limit"])
+            + ACTIVE_DEADLINE_BUFFER_SECONDS
+        ),
+    )
     # Instantiate the job object
     job = get_job_object(submission_pk, spec)
     return job
