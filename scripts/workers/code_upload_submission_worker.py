@@ -52,9 +52,52 @@ script_config_map_name = "evalai-scripts-cm"
 # before Kubernetes hard-kills the Job, and also absorbs init-container setup
 # time, since activeDeadlineSeconds is measured from Job start (including init
 # containers). Kubernetes only terminates the Job if the in-pod timeout hangs.
-ACTIVE_DEADLINE_BUFFER_SECONDS = int(
-    os.environ.get("ACTIVE_DEADLINE_BUFFER_SECONDS", "300")
-)
+DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS = 300
+
+
+def get_active_deadline_buffer_seconds():
+    """Read and validate the activeDeadlineSeconds buffer from the environment.
+
+    A malformed or negative ACTIVE_DEADLINE_BUFFER_SECONDS would otherwise
+    crash the worker at import or push a non-positive activeDeadlineSeconds to
+    the Kubernetes Job API (which rejects it, leaving the submission stuck).
+    Invalid values fall back to the default with a warning so the worker keeps
+    processing submissions.
+    """
+    raw_value = os.environ.get(
+        "ACTIVE_DEADLINE_BUFFER_SECONDS",
+        str(DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS),
+    )
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        logger.warning(
+            "Invalid ACTIVE_DEADLINE_BUFFER_SECONDS=%r; falling back to %s",
+            raw_value,
+            DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+        )
+        return DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS
+    if value < 0:
+        logger.warning(
+            "Negative ACTIVE_DEADLINE_BUFFER_SECONDS=%s; falling back to %s",
+            value,
+            DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+        )
+        return DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS
+    return value
+
+
+ACTIVE_DEADLINE_BUFFER_SECONDS = get_active_deadline_buffer_seconds()
+
+
+def get_active_deadline_seconds(submission_time_limit):
+    """Return a strictly positive Kubernetes Job activeDeadlineSeconds value.
+
+    Combines the per-submission wall-clock limit with the configured buffer.
+    The Kubernetes Job API rejects a non-positive activeDeadlineSeconds, so the
+    result is clamped to at least 1 to guard against a zero submission limit.
+    """
+    return max(1, int(submission_time_limit) + ACTIVE_DEADLINE_BUFFER_SECONDS)
 
 
 def get_volume_mount_object(mount_path, name, read_only=False):
@@ -284,9 +327,8 @@ def create_job_object(message, environment_image, challenge):
     spec = client.V1JobSpec(
         backoff_limit=1,
         template=template,
-        active_deadline_seconds=(
-            int(submission_meta["submission_time_limit"])
-            + ACTIVE_DEADLINE_BUFFER_SECONDS
+        active_deadline_seconds=get_active_deadline_seconds(
+            submission_meta["submission_time_limit"]
         ),
     )
     # Instantiate the job object
@@ -406,12 +448,16 @@ def create_static_code_upload_submission_job_object(message, challenge):
     # Create the specification of deployment. activeDeadlineSeconds is a hard
     # backstop: Kubernetes terminates the Job if it outlives the per-submission
     # time limit (plus a buffer) even when the in-pod timeout fails to.
+    # Worst-case resource usage is active_deadline_seconds + the Pod's
+    # termination_grace_period_seconds (600 above): once the deadline is hit,
+    # Kubernetes SIGTERMs the Pod and waits up to the grace period before
+    # SIGKILL. The grace window is retained deliberately so the sidecar can PUT
+    # the "failed" status before it is torn down.
     spec = client.V1JobSpec(
         backoff_limit=1,
         template=template,
-        active_deadline_seconds=(
-            int(submission_meta["submission_time_limit"])
-            + ACTIVE_DEADLINE_BUFFER_SECONDS
+        active_deadline_seconds=get_active_deadline_seconds(
+            submission_meta["submission_time_limit"]
         ),
     )
     # Instantiate the job object
