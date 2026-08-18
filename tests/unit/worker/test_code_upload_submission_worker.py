@@ -482,7 +482,15 @@ class TestConfigFunctions(unittest.TestCase):
         MockGetJobObject.return_value = "mock-job-object"
 
         # Act
-        result = create_job_object(message, environment_image, challenge)
+        # Pin the buffer to the default so the active_deadline_seconds
+        # assertion below is independent of any ACTIVE_DEADLINE_BUFFER_SECONDS
+        # set in the host/CI environment at module import.
+        with patch(
+            "scripts.workers.code_upload_submission_worker."
+            "ACTIVE_DEADLINE_BUFFER_SECONDS",
+            300,
+        ):
+            result = create_job_object(message, environment_image, challenge)
 
         # Assert
         self.assertEqual(result, "mock-job-object")
@@ -613,9 +621,17 @@ class TestConfigFunctions(unittest.TestCase):
         MockGetJobObject.return_value = "mock-job-object"
 
         # Act
-        result = create_static_code_upload_submission_job_object(
-            message, challenge
-        )
+        # Pin the buffer to the default so the active_deadline_seconds
+        # assertion below is independent of any ACTIVE_DEADLINE_BUFFER_SECONDS
+        # set in the host/CI environment at module import.
+        with patch(
+            "scripts.workers.code_upload_submission_worker."
+            "ACTIVE_DEADLINE_BUFFER_SECONDS",
+            300,
+        ):
+            result = create_static_code_upload_submission_job_object(
+                message, challenge
+            )
 
         # Assert
         self.assertEqual(result, "mock-job-object")
