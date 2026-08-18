@@ -64,17 +64,25 @@ class TestActiveDeadlineConfig(unittest.TestCase):
 
     def test_buffer_rejects_negative_value(self):
         with patch.dict(os.environ, {self.ENV_KEY: "-500"}):
-            self.assertEqual(
-                get_active_deadline_buffer_seconds(),
-                DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
-            )
+            with patch(
+                "scripts.workers.code_upload_submission_worker.logger"
+            ) as mock_logger:
+                self.assertEqual(
+                    get_active_deadline_buffer_seconds(),
+                    DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+                )
+                mock_logger.warning.assert_called_once()
 
     def test_buffer_rejects_malformed_value(self):
         with patch.dict(os.environ, {self.ENV_KEY: "not-an-int"}):
-            self.assertEqual(
-                get_active_deadline_buffer_seconds(),
-                DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
-            )
+            with patch(
+                "scripts.workers.code_upload_submission_worker.logger"
+            ) as mock_logger:
+                self.assertEqual(
+                    get_active_deadline_buffer_seconds(),
+                    DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+                )
+                mock_logger.warning.assert_called_once()
 
     def test_active_deadline_uses_default_buffer(self):
         with patch(self.BUFFER_ATTR, 300):
