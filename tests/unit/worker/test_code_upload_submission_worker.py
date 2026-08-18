@@ -1,3 +1,4 @@
+import os
 import signal
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
@@ -7,6 +8,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 
 from scripts.workers.code_upload_submission_worker import (
+    DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
     EVALAI_API_SERVER,
     GracefulKiller,
     cleanup_submission,
@@ -17,6 +19,8 @@ from scripts.workers.code_upload_submission_worker import (
     create_script_config_map,
     create_static_code_upload_submission_job_object,
     delete_job,
+    get_active_deadline_buffer_seconds,
+    get_active_deadline_seconds,
     get_api_client,
     get_api_object,
     get_config_map_volume_object,
@@ -37,6 +41,62 @@ from scripts.workers.code_upload_submission_worker import (
     read_job,
     update_failed_jobs_and_send_logs,
 )
+
+
+class TestActiveDeadlineConfig(unittest.TestCase):
+    ENV_KEY = "ACTIVE_DEADLINE_BUFFER_SECONDS"
+    BUFFER_ATTR = (
+        "scripts.workers.code_upload_submission_worker."
+        "ACTIVE_DEADLINE_BUFFER_SECONDS"
+    )
+
+    def test_buffer_defaults_when_unset(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(self.ENV_KEY, None)
+            self.assertEqual(
+                get_active_deadline_buffer_seconds(),
+                DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+            )
+
+    def test_buffer_reads_valid_value(self):
+        with patch.dict(os.environ, {self.ENV_KEY: "120"}):
+            self.assertEqual(get_active_deadline_buffer_seconds(), 120)
+
+    def test_buffer_rejects_negative_value(self):
+        with patch.dict(os.environ, {self.ENV_KEY: "-500"}):
+            with patch(
+                "scripts.workers.code_upload_submission_worker.logger"
+            ) as mock_logger:
+                self.assertEqual(
+                    get_active_deadline_buffer_seconds(),
+                    DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+                )
+                mock_logger.warning.assert_called_once()
+
+    def test_buffer_rejects_malformed_value(self):
+        with patch.dict(os.environ, {self.ENV_KEY: "not-an-int"}):
+            with patch(
+                "scripts.workers.code_upload_submission_worker.logger"
+            ) as mock_logger:
+                self.assertEqual(
+                    get_active_deadline_buffer_seconds(),
+                    DEFAULT_ACTIVE_DEADLINE_BUFFER_SECONDS,
+                )
+                mock_logger.warning.assert_called_once()
+
+    def test_active_deadline_uses_default_buffer(self):
+        with patch(self.BUFFER_ATTR, 300):
+            self.assertEqual(get_active_deadline_seconds(3600), 3900)
+
+    def test_active_deadline_uses_custom_buffer(self):
+        with patch(self.BUFFER_ATTR, 120):
+            self.assertEqual(get_active_deadline_seconds(3600), 3720)
+
+    def test_active_deadline_is_clamped_positive(self):
+        # A zero submission limit with a zero buffer must not yield a
+        # non-positive activeDeadlineSeconds, which Kubernetes rejects.
+        with patch(self.BUFFER_ATTR, 0):
+            self.assertEqual(get_active_deadline_seconds(0), 1)
 
 
 class TestGracefulKiller(unittest.TestCase):
@@ -430,7 +490,15 @@ class TestConfigFunctions(unittest.TestCase):
         MockGetJobObject.return_value = "mock-job-object"
 
         # Act
-        result = create_job_object(message, environment_image, challenge)
+        # Pin the buffer to the default so the active_deadline_seconds
+        # assertion below is independent of any ACTIVE_DEADLINE_BUFFER_SECONDS
+        # set in the host/CI environment at module import.
+        with patch(
+            "scripts.workers.code_upload_submission_worker."
+            "ACTIVE_DEADLINE_BUFFER_SECONDS",
+            300,
+        ):
+            result = create_job_object(message, environment_image, challenge)
 
         # Assert
         self.assertEqual(result, "mock-job-object")
@@ -489,7 +557,9 @@ class TestConfigFunctions(unittest.TestCase):
         )
 
         MockV1JobSpec.assert_called_once_with(
-            backoff_limit=1, template="mock-podtemplatespec"
+            backoff_limit=1,
+            template="mock-podtemplatespec",
+            active_deadline_seconds=3900,
         )
 
     @patch("scripts.workers.code_upload_submission_worker.get_job_object")
@@ -559,9 +629,17 @@ class TestConfigFunctions(unittest.TestCase):
         MockGetJobObject.return_value = "mock-job-object"
 
         # Act
-        result = create_static_code_upload_submission_job_object(
-            message, challenge
-        )
+        # Pin the buffer to the default so the active_deadline_seconds
+        # assertion below is independent of any ACTIVE_DEADLINE_BUFFER_SECONDS
+        # set in the host/CI environment at module import.
+        with patch(
+            "scripts.workers.code_upload_submission_worker."
+            "ACTIVE_DEADLINE_BUFFER_SECONDS",
+            300,
+        ):
+            result = create_static_code_upload_submission_job_object(
+                message, challenge
+            )
 
         # Assert
         self.assertEqual(result, "mock-job-object")
@@ -645,7 +723,9 @@ class TestConfigFunctions(unittest.TestCase):
 
         # Verify job creation
         MockV1JobSpec.assert_called_once_with(
-            backoff_limit=1, template="mock-podtemplatespec"
+            backoff_limit=1,
+            template="mock-podtemplatespec",
+            active_deadline_seconds=3900,
         )
         MockGetJobObject.assert_called_once_with(123, "mock-jobspec")
 
