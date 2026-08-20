@@ -403,6 +403,9 @@ HOSTNAME = os.environ.get("HOSTNAME")
 YUTORI_API_KEY = os.environ.get("YUTORI_API_KEY", "")
 YUTORI_API_BASE = os.environ.get("YUTORI_API_BASE", "https://api.yutori.com")
 DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("DEFAULT_TIMEOUT_SECONDS", "30"))
+DEFAULT_MAX_CHALLENGE_PHASES = int(
+    os.environ.get("DEFAULT_MAX_CHALLENGE_PHASES", "2")
+)
 # Webhook URL base for Yutori callbacks. Defaults to EVALAI_API_SERVER;
 # set SCOUT_PUBLIC_BASE_URL only when it must differ (e.g. ngrok in local dev).
 SCOUT_PUBLIC_BASE_URL = (

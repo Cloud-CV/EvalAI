@@ -242,6 +242,17 @@ class Challenge(TimeStampedModel):
         help_text="Maximum number of members allowed per participant team. "
         "Leave blank for no limit.",
     )
+    max_allowed_phases = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=2,
+        verbose_name="Maximum Allowed Phases",
+        help_text=(
+            "Maximum number of challenge phases a host may configure. "
+            "Leave blank for no limit (legacy challenges). New challenges "
+            "default to 2; increase this after host approval."
+        ),
+    )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
         blank=True,

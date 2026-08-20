@@ -26,15 +26,23 @@ from .models import (
     StarChallenge,
     UserInvitation,
 )
+from .phase_limit_utils import (
+    get_challenge_phase_count,
+    get_challenge_phase_limit_error,
+)
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
     domain_name = serializers.SerializerMethodField()
+    phase_count = serializers.SerializerMethodField()
 
     def get_domain_name(self, obj):
         return obj.get_domain_display()
+
+    def get_phase_count(self, obj):
+        return get_challenge_phase_count(obj)
 
     def validate_worker_python_version(self, value):
         if value in (None, ""):
@@ -119,6 +127,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "banned_email_ids",
             "require_complete_profile",
             "max_team_members",
+            "max_allowed_phases",
+            "phase_count",
             "approved_by_admin",
             "is_approval_requested",
             "forum_url",
@@ -489,6 +499,22 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
         return super(ChallengePhaseCreateSerializer, self).create(
             validated_data
         )
+
+    def validate(self, attrs):
+        if self.instance is not None:
+            return attrs
+
+        challenge = self.context.get("challenge") or attrs.get("challenge")
+        if not challenge:
+            return attrs
+
+        proposed_phase_count = get_challenge_phase_count(challenge) + 1
+        phase_limit_error = get_challenge_phase_limit_error(
+            challenge, proposed_phase_count
+        )
+        if phase_limit_error:
+            raise serializers.ValidationError(phase_limit_error)
+        return attrs
 
     class Meta:
         model = ChallengePhase
