@@ -3,7 +3,6 @@ from django.db.models import Count
 
 from .models import ChallengePhase
 
-
 CHALLENGE_PHASE_LIMIT_CONTACT_MESSAGE = (
     "This challenge is limited to {limit} phase(s). Contact us at "
     "team@eval.ai if you need more phases."
@@ -29,7 +28,13 @@ def get_challenge_phase_count(challenge):
 
 
 def with_challenge_phase_count(queryset):
-    return queryset.annotate(_phase_count=Count("challengephase"))
+    # distinct=True so the phase count stays correct when the queryset also
+    # joins another multi-valued relation (e.g. participant_teams__pk__in in
+    # get_all_participated_challenges), which would otherwise multiply rows and
+    # inflate the count.
+    return queryset.annotate(
+        _phase_count=Count("challengephase", distinct=True)
+    )
 
 
 def get_challenge_phase_limit_error(challenge, proposed_phase_count):

@@ -30,6 +30,13 @@ def get_default_eval_metric():
     return ["Accuracy"]
 
 
+def get_default_max_challenge_phases():
+    """Default phase cap for new challenges, sourced from settings so the
+    model default and the config-validation fallback
+    (get_challenge_phase_limit) stay in agreement."""
+    return settings.DEFAULT_MAX_CHALLENGE_PHASES
+
+
 class Challenge(TimeStampedModel):
     """Model representing a hosted Challenge"""
 
@@ -245,7 +252,7 @@ class Challenge(TimeStampedModel):
     max_allowed_phases = models.PositiveIntegerField(
         null=True,
         blank=True,
-        default=2,
+        default=get_default_max_challenge_phases,
         verbose_name="Maximum Allowed Phases",
         help_text=(
             "Maximum number of challenge phases a host may configure. "
