@@ -17,7 +17,21 @@ if (
 
 
 def _sentry_before_send(event, hint):
-    """Filter out OSError: write error (broken pipe) - harmless client disconnects."""
+    """Drop noise before it becomes a Sentry issue.
+
+    1. OSError write/broken-pipe errors - harmless client disconnects.
+    2. Log records emitted by challenge evaluation scripts. The submission
+       worker imports and runs host-uploaded scripts in-process under the
+       ``challenge_data.challenge_<id>`` logger namespace, so any
+       ``logger.error(...)`` a challenge host leaves in their code would
+       otherwise surface as a high-priority EvalAI issue we cannot fix.
+       Genuine evaluate() failures still reach Sentry via the worker's own
+       ``logger.exception(...)`` wrappers and the ``evaluation_module_error``
+       field on the Challenge.
+    """
+    if str(event.get("logger", "")).startswith("challenge_data"):
+        return None
+
     exc_info = hint.get("exc_info")
     if exc_info:
         exc_type, exc_value = exc_info[0], exc_info[1]
