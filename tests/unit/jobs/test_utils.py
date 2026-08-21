@@ -731,6 +731,7 @@ class TestReorderSubmissionsComparator(TestCase):
         # Test data for leaderboard entries
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -739,6 +740,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 10, "time": 5},
             },
             {
+                "id": 2,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -747,6 +749,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 8, "time": 6},
             },
             {
+                "id": 3,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Team2",
                 "submission__is_baseline": False,
@@ -756,12 +759,14 @@ class TestReorderSubmissionsComparator(TestCase):
             },
         ]
 
-        # Set up chainable mock for:
-        # .filter().exclude().filter().filter().order_by().annotate().values()
+        # Stage 1 chain: .filter().exclude().filter().filter().order_by()
+        #                .annotate().values()
+        # Stage 2 chain: .filter(id__in=...).annotate().values()
         mock_qs = MagicMock()
         mock_filter_result = MagicMock()
         mock_leaderboard_data_objects.filter.return_value = mock_filter_result
         mock_filter_result.exclude.return_value = mock_qs
+        mock_filter_result.annotate.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
@@ -823,6 +828,7 @@ class TestReorderSubmissionsComparator(TestCase):
         # Test data for leaderboard entries
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -831,6 +837,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 10, "time": 5},
             },
             {
+                "id": 2,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Team2",
                 "submission__is_baseline": False,
@@ -840,16 +847,9 @@ class TestReorderSubmissionsComparator(TestCase):
             },
         ]
 
-        # Set up chainable mock for:
-        # .filter().exclude().filter().filter().order_by().annotate().values()
-        mock_qs = MagicMock()
-        mock_filter_result = MagicMock()
-        mock_leaderboard_data_objects.filter.return_value = mock_filter_result
-        mock_filter_result.exclude.return_value = mock_qs
-        mock_qs.filter.return_value = mock_qs
-        mock_qs.order_by.return_value = mock_qs
-        mock_qs.annotate.return_value = mock_qs
-        mock_qs.values.return_value = test_data
+        self._create_mock_leaderboard_chain(
+            mock_leaderboard_data_objects, test_data
+        )
 
         # Team 1 has one banned participant among multiple
         mock_team1 = Mock()
@@ -905,6 +905,7 @@ class TestReorderSubmissionsComparator(TestCase):
 
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -913,6 +914,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 10, "time": 5},
             },
             {
+                "id": 2,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Team2",
                 "submission__is_baseline": False,
@@ -974,6 +976,7 @@ class TestReorderSubmissionsComparator(TestCase):
 
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -1010,6 +1013,7 @@ class TestReorderSubmissionsComparator(TestCase):
 
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -1018,6 +1022,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": 10, "time": 5},
             },
             {
+                "id": 2,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Team2",
                 "submission__is_baseline": False,
@@ -1079,6 +1084,7 @@ class TestReorderSubmissionsComparator(TestCase):
         # Many entries from same teams - Team1 appears 5x, Team2 appears 3x
         test_data = [
             {
+                "id": i,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -1089,6 +1095,7 @@ class TestReorderSubmissionsComparator(TestCase):
             for i in range(10, 5, -1)
         ] + [
             {
+                "id": 100 + i,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Team2",
                 "submission__is_baseline": False,
@@ -1157,6 +1164,7 @@ class TestReorderSubmissionsComparator(TestCase):
 
         test_data = [
             {
+                "id": 1,
                 "submission__participant_team": 1,
                 "submission__participant_team__team_name": "Team1",
                 "submission__is_baseline": False,
@@ -1165,6 +1173,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": "10", "time": "0"},
             },
             {
+                "id": 2,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Baseline",
                 "submission__is_baseline": True,
@@ -1173,6 +1182,7 @@ class TestReorderSubmissionsComparator(TestCase):
                 "result": {"score": "5", "time": "0"},
             },
             {
+                "id": 3,
                 "submission__participant_team": 2,
                 "submission__participant_team__team_name": "Baseline",
                 "submission__is_baseline": True,
@@ -1218,11 +1228,17 @@ class TestReorderSubmissionsComparator(TestCase):
     def _create_mock_leaderboard_chain(
         self, mock_leaderboard_data_objects, test_data
     ):
-        """Helper to create mock chain for LeaderboardData queryset."""
+        """Helper to create mock chain for LeaderboardData queryset.
+
+        Stage 1: .filter().exclude().filter().filter().order_by()
+                 .annotate().values() -> test_data
+        Stage 2: .filter(id__in=...).annotate().values() -> test_data
+        """
         mock_qs = MagicMock()
         mock_filter_result = MagicMock()
         mock_leaderboard_data_objects.filter.return_value = mock_filter_result
         mock_filter_result.exclude.return_value = mock_qs
+        mock_filter_result.annotate.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.order_by.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
