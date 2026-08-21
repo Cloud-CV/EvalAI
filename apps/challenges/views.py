@@ -166,6 +166,7 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
 )
+from .phase_limit_utils import with_challenge_phase_count
 from .utils import (
     extract_team_member_info,
     get_aws_credentials_for_submission,
@@ -198,8 +199,10 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
-        challenge = Challenge.objects.filter(
-            creator=challenge_host_team, is_disabled=False
+        challenge = with_challenge_phase_count(
+            Challenge.objects.filter(
+                creator=challenge_host_team, is_disabled=False
+            )
         ).order_by("-id")
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
@@ -967,11 +970,11 @@ def get_all_challenges(
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    challenge = (
-        Challenge.objects.select_related("creator", "creator__created_by")
-        .filter(**q_params)
-        .order_by("-pk")
-    )
+    challenge = with_challenge_phase_count(
+        Challenge.objects.select_related(
+            "creator", "creator__created_by"
+        ).filter(**q_params)
+    ).order_by("-pk")
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -1053,16 +1056,16 @@ def get_featured_challenges(request):
     """
     Returns the list of featured challenges
     """
-    challenge = (
-        Challenge.objects.select_related("creator", "creator__created_by")
-        .filter(
+    challenge = with_challenge_phase_count(
+        Challenge.objects.select_related(
+            "creator", "creator__created_by"
+        ).filter(
             featured=True,
             published=True,
             approved_by_admin=True,
             is_disabled=False,
         )
-        .order_by("-id")
-    )
+    ).order_by("-id")
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -1079,11 +1082,15 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         if is_user_a_host_of_challenge(request.user, pk):
-            challenge = Challenge.objects.get(pk=pk)
+            challenge = with_challenge_phase_count(
+                Challenge.objects.filter(pk=pk)
+            ).get()
         else:
-            challenge = Challenge.objects.get(
-                pk=pk, approved_by_admin=True, published=True
-            )
+            challenge = with_challenge_phase_count(
+                Challenge.objects.filter(
+                    pk=pk, approved_by_admin=True, published=True
+                )
+            ).get()
         if challenge.is_disabled:
             response_data = {"error": "Sorry, the challenge was removed!"}
             return Response(
@@ -1125,7 +1132,9 @@ def get_all_participated_challenges(request, challenge_time):
     q_params["is_disabled"] = False
     participant_team_ids = get_participant_teams_for_user(request.user)
     q_params["participant_teams__pk__in"] = participant_team_ids
-    challenges = Challenge.objects.filter(**q_params).order_by("-pk")
+    challenges = with_challenge_phase_count(
+        Challenge.objects.filter(**q_params)
+    ).order_by("-pk")
     paginator, result_page = paginated_queryset(challenges, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -1166,7 +1175,9 @@ def get_challenges_based_on_teams(request):
         host_team_ids = get_challenge_host_teams_for_user(request.user)
         q_params["creator__id__in"] = host_team_ids
 
-    challenge = Challenge.objects.filter(**q_params).order_by("id")
+    challenge = with_challenge_phase_count(
+        Challenge.objects.filter(**q_params)
+    ).order_by("id")
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
@@ -5608,6 +5619,7 @@ def update_challenge_attributes(request):
         "start_date",
         "max_concurrent_submission_evaluation",
         "sqs_retention_period",
+        "max_allowed_phases",
     }
 
     for key, value in request.data.items():

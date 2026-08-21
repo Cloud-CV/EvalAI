@@ -29,6 +29,7 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
 )
+from .phase_limit_utils import get_challenge_phase_limit
 from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
@@ -284,6 +285,10 @@ error_message_dict = {
     "leaderboard_deletion_after_creation": "ERROR: The leaderboard with ID: {} not found in config. Deletion of an existing leaderboard after challenge creation is not allowed.",
     "missing_leaderboard_labels": "ERROR: There is no 'labels' key in the schema for the leaderboard with ID: {}.",
     "missing_challenge_phases": "ERROR: No challenge phase key found. Please add challenge phases in the YAML file and try again!",
+    "challenge_phase_limit_exceeded": (
+        "ERROR: This challenge is limited to {} phase(s). Contact us at "
+        "team@eval.ai if you need more phases."
+    ),
     "missing_challenge_phase_codename": "ERROR: No codename found for the challenge phase. Please add the codename and try again!",
     "missing_test_annotation_file": "ERROR: No test annotation file found in the zip file for challenge phase {}.",
     "missing_submission_meta_attribute_keys": "ERROR: Please enter the following keys to the submission meta attribute in challenge phase {}: {}",
@@ -819,6 +824,17 @@ class ValidateChallengeConfigUtil:
         challenge_phases_data = self.yaml_file_data.get("challenge_phases")
         if not challenge_phases_data:
             message = self.error_messages_dict["missing_challenge_phases"]
+            self.error_messages.append(message)
+            return self.error_messages, self.yaml_file_data, self.files
+
+        phase_limit = get_challenge_phase_limit(self.current_challenge)
+        if (
+            phase_limit is not None
+            and len(challenge_phases_data) > phase_limit
+        ):
+            message = self.error_messages_dict[
+                "challenge_phase_limit_exceeded"
+            ].format(phase_limit)
             self.error_messages.append(message)
             return self.error_messages, self.yaml_file_data, self.files
 

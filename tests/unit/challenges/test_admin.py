@@ -346,6 +346,7 @@ class TestChallengeAdminListDisplay(TestCase):
             "challenge_usage_type",
             "published",
             "approved_by_admin",
+            "max_allowed_phases",
             "is_frozen",
             "is_submission_paused",
             "remote_evaluation",

@@ -30,6 +30,13 @@ def get_default_eval_metric():
     return ["Accuracy"]
 
 
+def get_default_max_challenge_phases():
+    """Default phase cap for new challenges, sourced from settings so the
+    model default and the config-validation fallback
+    (get_challenge_phase_limit) stay in agreement."""
+    return settings.DEFAULT_MAX_CHALLENGE_PHASES
+
+
 class Challenge(TimeStampedModel):
     """Model representing a hosted Challenge"""
 
@@ -241,6 +248,17 @@ class Challenge(TimeStampedModel):
         verbose_name="Maximum Team Members",
         help_text="Maximum number of members allowed per participant team. "
         "Leave blank for no limit.",
+    )
+    max_allowed_phases = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=get_default_max_challenge_phases,
+        verbose_name="Maximum Allowed Phases",
+        help_text=(
+            "Maximum number of challenge phases a host may configure. "
+            "Leave blank for no limit (legacy challenges). New challenges "
+            "default to 2; increase this after host approval."
+        ),
     )
     approved_participant_teams = models.ManyToManyField(
         ParticipantTeam,
