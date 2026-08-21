@@ -24,6 +24,7 @@ RUN apt-get update && \
      libfreetype6-dev \
      liblcms2-dev \
      libwebp-dev \
+     default-jre-headless \
      git \
      cmake \
      libeigen3-dev \
@@ -48,6 +49,7 @@ RUN apt-get update && \
          libfreetype6-dev \
          liblcms2-dev \
          libwebp-dev \
+         default-jre-headless \
          git \
          cmake \
          libeigen3-dev \
@@ -100,6 +102,7 @@ ENV PYTHONUNBUFFERED=1 \
 # Note: We copy OpenCV libs from builder to avoid python3-opencv dependency issues
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    default-jre-headless \
     libpq5 \
     libcurl4 \
     libjpeg62-turbo \
