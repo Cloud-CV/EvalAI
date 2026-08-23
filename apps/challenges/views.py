@@ -1221,23 +1221,34 @@ def challenge_phase_list(request, challenge_pk):
         # Lock the challenge row so two concurrent phase creations cannot both
         # pass the max_allowed_phases check and exceed the cap: the count in
         # the serializer's validate() and the insert run in one transaction.
-        with transaction.atomic():
-            locked_challenge = Challenge.objects.select_for_update().get(
-                pk=challenge.pk
-            )
-            serializer = ChallengePhaseCreateSerializer(
-                data=request.data, context={"challenge": locked_challenge}
-            )
-            if serializer.is_valid():
-                serializer.save()
-                challenge_phase = get_challenge_phase_model(
-                    serializer.instance.pk
+        try:
+            with transaction.atomic():
+                locked_challenge = Challenge.objects.select_for_update().get(
+                    pk=challenge.pk
                 )
-                serializer = ChallengePhaseSerializer(challenge_phase)
-                response_data = serializer.data
-                return Response(response_data, status=status.HTTP_201_CREATED)
+                serializer = ChallengePhaseCreateSerializer(
+                    data=request.data,
+                    context={"challenge": locked_challenge},
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                    challenge_phase = get_challenge_phase_model(
+                        serializer.instance.pk
+                    )
+                    serializer = ChallengePhaseSerializer(challenge_phase)
+                    response_data = serializer.data
+                    return Response(
+                        response_data, status=status.HTTP_201_CREATED
+                    )
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+        except Challenge.DoesNotExist:
+            # Challenge was deleted between the lookup above and this locked
+            # re-fetch; return the same missing-challenge response.
+            response_data = {"error": "Challenge does not exist"}
             return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
 
