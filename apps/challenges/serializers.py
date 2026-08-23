@@ -96,6 +96,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challenge
+        # max_allowed_phases is a staff-controlled cap; hosts must not raise or
+        # clear it through the challenge API (only Django admin and the
+        # staff-only update_challenge_attributes endpoint may change it).
+        read_only_fields = ("max_allowed_phases",)
         fields = (
             "id",
             "title",

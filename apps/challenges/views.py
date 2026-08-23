@@ -144,6 +144,7 @@ from .models import (
     UserInvitation,
 )
 from .permissions import IsChallengeCreator
+from .phase_limit_utils import with_challenge_phase_count
 from .queryset import get_submissions_queryset
 from .serializers import (
     ChallengeConfigSerializer,
@@ -166,7 +167,6 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
 )
-from .phase_limit_utils import with_challenge_phase_count
 from .utils import (
     extract_team_member_info,
     get_aws_credentials_for_submission,
@@ -1218,16 +1218,27 @@ def challenge_phase_list(request, challenge_pk):
         return paginator.get_paginated_response(response_data)
 
     elif request.method == "POST":
-        serializer = ChallengePhaseCreateSerializer(
-            data=request.data, context={"challenge": challenge}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
-            serializer = ChallengePhaseSerializer(challenge_phase)
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Lock the challenge row so two concurrent phase creations cannot both
+        # pass the max_allowed_phases check and exceed the cap: the count in
+        # the serializer's validate() and the insert run in one transaction.
+        with transaction.atomic():
+            locked_challenge = Challenge.objects.select_for_update().get(
+                pk=challenge.pk
+            )
+            serializer = ChallengePhaseCreateSerializer(
+                data=request.data, context={"challenge": locked_challenge}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                challenge_phase = get_challenge_phase_model(
+                    serializer.instance.pk
+                )
+                serializer = ChallengePhaseSerializer(challenge_phase)
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])

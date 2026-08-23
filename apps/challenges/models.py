@@ -257,7 +257,7 @@ class Challenge(TimeStampedModel):
         help_text=(
             "Maximum number of challenge phases a host may configure. "
             "Leave blank for no limit (legacy challenges). New challenges "
-            "default to 2; increase this after host approval."
+            "use the configured default; increase this after host approval."
         ),
     )
     approved_participant_teams = models.ManyToManyField(

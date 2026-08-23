@@ -22,6 +22,10 @@ from django.core.files.base import ContentFile
 from rest_framework import status
 from yaml.scanner import ScannerError
 
+from .phase_limit_utils import (
+    get_challenge_phase_count,
+    get_challenge_phase_limit,
+)
 from .serializers import (
     ChallengePhaseCreateSerializer,
     DatasetSplitSerializer,
@@ -29,7 +33,6 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
 )
-from .phase_limit_utils import get_challenge_phase_limit
 from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
@@ -828,15 +831,29 @@ class ValidateChallengeConfigUtil:
             return self.error_messages, self.yaml_file_data, self.files
 
         phase_limit = get_challenge_phase_limit(self.current_challenge)
-        if (
-            phase_limit is not None
-            and len(challenge_phases_data) > phase_limit
-        ):
-            message = self.error_messages_dict[
-                "challenge_phase_limit_exceeded"
-            ].format(phase_limit)
-            self.error_messages.append(message)
-            return self.error_messages, self.yaml_file_data, self.files
+        if phase_limit is not None:
+            existing_phase_count = (
+                get_challenge_phase_count(self.current_challenge)
+                if self.current_challenge is not None
+                else 0
+            )
+            # Only reject configs that would grow the challenge beyond the cap.
+            # GitHub sync never drops phases, so an existing challenge already
+            # at (or above) its cap must still be able to sync edits to its
+            # current phases instead of having the whole config rejected.
+            if (
+                len(challenge_phases_data) > phase_limit
+                and len(challenge_phases_data) > existing_phase_count
+            ):
+                message = self.error_messages_dict[
+                    "challenge_phase_limit_exceeded"
+                ].format(phase_limit)
+                self.error_messages.append(message)
+                return (
+                    self.error_messages,
+                    self.yaml_file_data,
+                    self.files,
+                )
 
         self.phase_ids = []
         phase_codenames = []

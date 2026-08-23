@@ -1212,6 +1212,35 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             ].format(2),
         )
 
+    def test_challenge_phase_limit_allows_exactly_the_limit(self):
+        self.util.current_challenge = None
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {"id": 1, "codename": "phase1", "name": "Phase 1"},
+                {"id": 2, "codename": "phase2", "name": "Phase 2"},
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertFalse(
+            any("limited to" in msg for msg in self.util.error_messages)
+        )
+
+    def test_challenge_phase_limit_skipped_for_grandfathered_challenge(self):
+        # Legacy challenges carry max_allowed_phases=None (unlimited), so the
+        # cap must never fire regardless of how many phases the config lists.
+        self.util.current_challenge = Mock(max_allowed_phases=None)
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {"id": 1, "codename": "phase1", "name": "Phase 1"},
+                {"id": 2, "codename": "phase2", "name": "Phase 2"},
+                {"id": 3, "codename": "phase3", "name": "Phase 3"},
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertFalse(
+            any("limited to" in msg for msg in self.util.error_messages)
+        )
+
     def test_no_codename_for_challenge_phase(self):
         self.util.yaml_file_data = {
             "challenge_phases": [{"name": "Phase 1", "id": 1}]

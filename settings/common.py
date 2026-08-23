@@ -406,6 +406,10 @@ DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("DEFAULT_TIMEOUT_SECONDS", "30"))
 DEFAULT_MAX_CHALLENGE_PHASES = int(
     os.environ.get("DEFAULT_MAX_CHALLENGE_PHASES", "2")
 )
+if DEFAULT_MAX_CHALLENGE_PHASES < 1:
+    raise ImproperlyConfigured(
+        "DEFAULT_MAX_CHALLENGE_PHASES must be at least 1"
+    )
 # Webhook URL base for Yutori callbacks. Defaults to EVALAI_API_SERVER;
 # set SCOUT_PUBLIC_BASE_URL only when it must differ (e.g. ngrok in local dev).
 SCOUT_PUBLIC_BASE_URL = (
