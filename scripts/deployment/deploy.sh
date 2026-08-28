@@ -5,6 +5,12 @@ operation_name="${1:-}"
 target_environment="${2:-${DEPLOYMENT_BRANCH_NAME:-${GITHUB_REF_NAME:-}}}"
 dry_run_deployment="${DRY_RUN_DEPLOYMENT:-false}"
 aws_region="${AWS_REGION:-us-east-1}"
+# The compose files pin every image to a dkr.ecr.us-east-1 host, so ECR
+# authentication has to target that region even when AWS_REGION points
+# elsewhere. Logging in against AWS_REGION mints a token for a different
+# registry and the pull then fails to authenticate. AWS_REGION still drives
+# the CLI default region for everything else (s3, ecs, ...).
+ecr_registry_region="us-east-1"
 
 if [[ -z "${COMMIT_ID:-}" ]]; then
     export COMMIT_ID="latest"
@@ -54,8 +60,8 @@ resolve_deployment_instance_host() {
 aws_login() {
     require_variable AWS_ACCOUNT_ID
     aws configure set default.region "${aws_region}"
-    aws ecr get-login-password --region "${aws_region}" | \
-        docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com"
+    aws ecr get-login-password --region "${ecr_registry_region}" | \
+        docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${ecr_registry_region}.amazonaws.com"
 }
 
 prepare_release_for_environment() {
@@ -181,10 +187,13 @@ cd ~/Projects/EvalAI
 export AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
 export COMMIT_ID="${COMMIT_ID}"
 export AWS_DEFAULT_REGION="${aws_region}"
+export ECR_REGISTRY_REGION="${ecr_registry_region}"
 export TARGET_ENVIRONMENT="${target_environment}"
 export DRY_RUN_DEPLOYMENT="${dry_run_deployment}"
 
-aws ecr get-login-password --region "\${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "\${AWS_ACCOUNT_ID}.dkr.ecr.\${AWS_DEFAULT_REGION}.amazonaws.com"
+# Authenticate against the registry region the compose files actually pin, not
+# AWS_DEFAULT_REGION -- see ecr_registry_region in scripts/deployment/deploy.sh.
+aws ecr get-login-password --region "\${ECR_REGISTRY_REGION}" | docker login --username AWS --password-stdin "\${AWS_ACCOUNT_ID}.dkr.ecr.\${ECR_REGISTRY_REGION}.amazonaws.com"
 aws s3 cp "s3://cloudcv-secrets/evalai/\${TARGET_ENVIRONMENT}/docker_\${TARGET_ENVIRONMENT}.env" "./docker/prod/docker_\${TARGET_ENVIRONMENT}.env"
 
 if [[ "\${DRY_RUN_DEPLOYMENT}" == "true" ]]; then
