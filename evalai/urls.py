@@ -16,6 +16,7 @@ Including another URLconf
 
 from accounts.views import SafePasswordResetView, SafeRegisterView
 from allauth.account.views import ConfirmEmailView
+from base.views import health_check
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
@@ -39,6 +40,9 @@ redoc_view = SpectacularRedocView.as_view(url_name="schema")
 
 urlpatterns = [
     url(r"^$", views.home, name="home"),
+    # Kept under /api/ so the same URL answers both a direct load balancer
+    # target check and a request routed through the CDN's /api/* behaviour.
+    url(r"^api/health/$", health_check, name="health_check"),
     url(r"^api/allauth/accounts/", include("allauth.urls")),
     url(r"^api/admin/", admin.site.urls),
     url(

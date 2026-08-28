@@ -171,11 +171,14 @@ if [[ "\${DRY_RUN_DEPLOYMENT}" == "true" ]]; then
 fi
 
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs celery memcached
-# Run migrations before starting django. container-start.sh also calls migrate on
-# startup; running both concurrently races on CREATE TABLE (pg_type_typname_nsp_index).
-# Detach stdin so compose cannot consume the remaining commands from the SSH heredoc.
+# Release steps run once here, before any application container starts, because
+# container-start.sh no longer runs them per container. Detach stdin so compose
+# cannot consume the remaining commands from the SSH heredoc.
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
   django python manage.py migrate --noinput \
+  </dev/null
+docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
+  django python manage.py collectstatic --noinput \
   </dev/null
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
 
@@ -206,8 +209,22 @@ case "${operation_name}" in
         docker compose -f "docker-compose-${target_environment}.yml" pull
         echo "Completed pull operation."
         ;;
+    prepare-release)
+        validate_target_environment
+        echo "Applying database migrations..."
+        docker compose -f "docker-compose-${target_environment}.yml" run --rm \
+            django python manage.py migrate --noinput \
+            </dev/null
+        echo "Collecting static files..."
+        docker compose -f "docker-compose-${target_environment}.yml" run --rm \
+            django python manage.py collectstatic --noinput \
+            </dev/null
+        echo "Completed prepare-release operation."
+        ;;
     deploy-django)
         validate_target_environment
+        # Run prepare-release first when the image carries new migrations or
+        # static assets; the django container no longer applies them on start.
         echo "Deploying django docker container..."
         docker compose -f "docker-compose-${target_environment}.yml" up -d django
         echo "Completed deploy operation."
@@ -347,11 +364,12 @@ case "${operation_name}" in
         ;;
     *)
         echo "EvalAI deployment utility script"
-        echo "Usage: $0 {auto_deploy|pull|deploy-django|deploy-nodejs|deploy-nodejs-v2|deploy-celery|deploy-worker|deploy-worker-py3-8|deploy-remote-worker|deploy-workers|scale|clean} [environment]"
+        echo "Usage: $0 {auto_deploy|pull|prepare-release|deploy-django|deploy-nodejs|deploy-nodejs-v2|deploy-celery|deploy-worker|deploy-worker-py3-8|deploy-remote-worker|deploy-workers|scale|clean} [environment]"
         echo
         echo "Examples:"
         echo "  ./scripts/deployment/deploy.sh auto_deploy"
         echo "  ./scripts/deployment/deploy.sh pull production"
+        echo "  ./scripts/deployment/deploy.sh prepare-release production"
         echo "  ./scripts/deployment/deploy.sh deploy-django production"
         echo "  ./scripts/deployment/deploy.sh deploy-nodejs production"
         echo "  ./scripts/deployment/deploy.sh deploy-celery production"
