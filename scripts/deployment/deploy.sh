@@ -58,6 +58,29 @@ aws_login() {
         docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com"
 }
 
+prepare_release_for_environment() {
+    local environment="$1"
+
+    # Pull before migrating. container-start.sh no longer runs these, so the
+    # image resolved here is the one whose migrations get applied -- and
+    # COMMIT_ID falls back to "latest", so a stale local image would otherwise
+    # write a schema nobody asked for. aws_login also fails fast when
+    # AWS_ACCOUNT_ID is unset.
+    aws_login
+    echo "Pulling django image (COMMIT_ID=${COMMIT_ID})..."
+    docker compose -f "docker-compose-${environment}.yml" pull django
+
+    # Detach stdin so compose cannot swallow the caller's remaining input.
+    echo "Applying database migrations..."
+    docker compose -f "docker-compose-${environment}.yml" run --rm \
+        django python manage.py migrate --noinput \
+        </dev/null
+    echo "Collecting static files..."
+    docker compose -f "docker-compose-${environment}.yml" run --rm \
+        django python manage.py collectstatic --noinput \
+        </dev/null
+}
+
 get_evalai_api_base_url() {
     if [[ "${target_environment}" == "staging" ]]; then
         echo "https://staging.eval.ai"
@@ -211,20 +234,15 @@ case "${operation_name}" in
         ;;
     prepare-release)
         validate_target_environment
-        echo "Applying database migrations..."
-        docker compose -f "docker-compose-${target_environment}.yml" run --rm \
-            django python manage.py migrate --noinput \
-            </dev/null
-        echo "Collecting static files..."
-        docker compose -f "docker-compose-${target_environment}.yml" run --rm \
-            django python manage.py collectstatic --noinput \
-            </dev/null
+        prepare_release_for_environment "${target_environment}"
         echo "Completed prepare-release operation."
         ;;
     deploy-django)
         validate_target_environment
-        # Run prepare-release first when the image carries new migrations or
-        # static assets; the django container no longer applies them on start.
+        # container-start.sh no longer migrates or collects static on boot, so
+        # this standalone path has to do it or it would start django against an
+        # unapplied schema and stale static assets.
+        prepare_release_for_environment "${target_environment}"
         echo "Deploying django docker container..."
         docker compose -f "docker-compose-${target_environment}.yml" up -d django
         echo "Completed deploy operation."
