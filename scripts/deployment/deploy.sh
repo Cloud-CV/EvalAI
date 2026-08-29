@@ -5,6 +5,12 @@ operation_name="${1:-}"
 target_environment="${2:-${DEPLOYMENT_BRANCH_NAME:-${GITHUB_REF_NAME:-}}}"
 dry_run_deployment="${DRY_RUN_DEPLOYMENT:-false}"
 aws_region="${AWS_REGION:-us-east-1}"
+# The compose files pin every image to a dkr.ecr.us-east-1 host, so ECR
+# authentication has to target that region even when AWS_REGION points
+# elsewhere. Logging in against AWS_REGION mints a token for a different
+# registry and the pull then fails to authenticate. AWS_REGION still drives
+# the CLI default region for everything else (s3, ecs, ...).
+ecr_registry_region="us-east-1"
 
 if [[ -z "${COMMIT_ID:-}" ]]; then
     export COMMIT_ID="latest"
@@ -54,8 +60,31 @@ resolve_deployment_instance_host() {
 aws_login() {
     require_variable AWS_ACCOUNT_ID
     aws configure set default.region "${aws_region}"
-    aws ecr get-login-password --region "${aws_region}" | \
-        docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com"
+    aws ecr get-login-password --region "${ecr_registry_region}" | \
+        docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${ecr_registry_region}.amazonaws.com"
+}
+
+prepare_release_for_environment() {
+    local environment="$1"
+
+    # Pull before migrating. container-start.sh no longer runs these, so the
+    # image resolved here is the one whose migrations get applied -- and
+    # COMMIT_ID falls back to "latest", so a stale local image would otherwise
+    # write a schema nobody asked for. aws_login also fails fast when
+    # AWS_ACCOUNT_ID is unset.
+    aws_login
+    echo "Pulling django image (COMMIT_ID=${COMMIT_ID})..."
+    docker compose -f "docker-compose-${environment}.yml" pull django
+
+    # Detach stdin so compose cannot swallow the caller's remaining input.
+    echo "Applying database migrations..."
+    docker compose -f "docker-compose-${environment}.yml" run --rm \
+        django python manage.py migrate --noinput \
+        </dev/null
+    echo "Collecting static files..."
+    docker compose -f "docker-compose-${environment}.yml" run --rm \
+        django python manage.py collectstatic --noinput \
+        </dev/null
 }
 
 get_evalai_api_base_url() {
@@ -158,10 +187,13 @@ cd ~/Projects/EvalAI
 export AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
 export COMMIT_ID="${COMMIT_ID}"
 export AWS_DEFAULT_REGION="${aws_region}"
+export ECR_REGISTRY_REGION="${ecr_registry_region}"
 export TARGET_ENVIRONMENT="${target_environment}"
 export DRY_RUN_DEPLOYMENT="${dry_run_deployment}"
 
-aws ecr get-login-password --region "\${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "\${AWS_ACCOUNT_ID}.dkr.ecr.\${AWS_DEFAULT_REGION}.amazonaws.com"
+# Authenticate against the registry region the compose files actually pin, not
+# AWS_DEFAULT_REGION -- see ecr_registry_region in scripts/deployment/deploy.sh.
+aws ecr get-login-password --region "\${ECR_REGISTRY_REGION}" | docker login --username AWS --password-stdin "\${AWS_ACCOUNT_ID}.dkr.ecr.\${ECR_REGISTRY_REGION}.amazonaws.com"
 aws s3 cp "s3://cloudcv-secrets/evalai/\${TARGET_ENVIRONMENT}/docker_\${TARGET_ENVIRONMENT}.env" "./docker/prod/docker_\${TARGET_ENVIRONMENT}.env"
 
 if [[ "\${DRY_RUN_DEPLOYMENT}" == "true" ]]; then
@@ -171,11 +203,14 @@ if [[ "\${DRY_RUN_DEPLOYMENT}" == "true" ]]; then
 fi
 
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" pull django nodejs celery memcached
-# Run migrations before starting django. container-start.sh also calls migrate on
-# startup; running both concurrently races on CREATE TABLE (pg_type_typname_nsp_index).
-# Detach stdin so compose cannot consume the remaining commands from the SSH heredoc.
+# Release steps run once here, before any application container starts, because
+# container-start.sh no longer runs them per container. Detach stdin so compose
+# cannot consume the remaining commands from the SSH heredoc.
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
   django python manage.py migrate --noinput \
+  </dev/null
+docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" run --rm \
+  django python manage.py collectstatic --noinput \
   </dev/null
 docker compose -f "docker-compose-\${TARGET_ENVIRONMENT}.yml" up -d --force-recreate --remove-orphans django nodejs celery memcached
 
@@ -206,8 +241,17 @@ case "${operation_name}" in
         docker compose -f "docker-compose-${target_environment}.yml" pull
         echo "Completed pull operation."
         ;;
+    prepare-release)
+        validate_target_environment
+        prepare_release_for_environment "${target_environment}"
+        echo "Completed prepare-release operation."
+        ;;
     deploy-django)
         validate_target_environment
+        # container-start.sh no longer migrates or collects static on boot, so
+        # this standalone path has to do it or it would start django against an
+        # unapplied schema and stale static assets.
+        prepare_release_for_environment "${target_environment}"
         echo "Deploying django docker container..."
         docker compose -f "docker-compose-${target_environment}.yml" up -d django
         echo "Completed deploy operation."
@@ -347,11 +391,12 @@ case "${operation_name}" in
         ;;
     *)
         echo "EvalAI deployment utility script"
-        echo "Usage: $0 {auto_deploy|pull|deploy-django|deploy-nodejs|deploy-nodejs-v2|deploy-celery|deploy-worker|deploy-worker-py3-8|deploy-remote-worker|deploy-workers|scale|clean} [environment]"
+        echo "Usage: $0 {auto_deploy|pull|prepare-release|deploy-django|deploy-nodejs|deploy-nodejs-v2|deploy-celery|deploy-worker|deploy-worker-py3-8|deploy-remote-worker|deploy-workers|scale|clean} [environment]"
         echo
         echo "Examples:"
         echo "  ./scripts/deployment/deploy.sh auto_deploy"
         echo "  ./scripts/deployment/deploy.sh pull production"
+        echo "  ./scripts/deployment/deploy.sh prepare-release production"
         echo "  ./scripts/deployment/deploy.sh deploy-django production"
         echo "  ./scripts/deployment/deploy.sh deploy-nodejs production"
         echo "  ./scripts/deployment/deploy.sh deploy-celery production"

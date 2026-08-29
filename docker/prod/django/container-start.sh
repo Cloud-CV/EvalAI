@@ -9,8 +9,13 @@ if [ -z "$UWSGI_PROCESSES" ]; then
     fi
 fi
 
-python manage.py migrate --noinput  && \
-python manage.py collectstatic --noinput  && \
+# No migrate/collectstatic here on purpose. Both are release steps that must
+# run exactly once per deploy, not once per container: two containers booting
+# together race on CREATE TABLE (pg_type_typname_nsp_index), and collectstatic
+# uploads to S3, so every extra container repeats the same upload. The deploy
+# pipeline runs them as one-off tasks before starting the service -- see the
+# prepare-release operation in scripts/deployment/deploy.sh. This is also what
+# lets the service run more than one container at a time.
 if [ "$UWSGI_PROCESSES" -eq 1 ]; then
     # Don't use cheaper autoscaling when only 1 process (cheaper must be < processes)
     uwsgi --ini /code/docker/prod/django/uwsgi.ini --processes ${UWSGI_PROCESSES}
