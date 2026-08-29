@@ -7,8 +7,11 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies only
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     libpq-dev \
     libcurl4-openssl-dev \
@@ -20,7 +23,21 @@ RUN apt-get update && \
     libfreetype6-dev \
     liblcms2-dev \
     libwebp-dev \
-    && rm -rf /var/lib/apt/lists/*
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
+        build-essential \
+        libpq-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+        libpng-dev \
+        libtiff-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libwebp-dev)) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -45,8 +62,11 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     libpq5 \
     libcurl4 \
     libjpeg62-turbo \
@@ -55,7 +75,19 @@ RUN apt-get update && \
     libtiff5 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 && \
+    libwebp6 \
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
+        libpq5 \
+        libcurl4 \
+        libjpeg62-turbo \
+        zlib1g \
+        libpng16-16 \
+        libtiff5 \
+        libfreetype6 \
+        liblcms2-2 \
+        libwebp6)) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 

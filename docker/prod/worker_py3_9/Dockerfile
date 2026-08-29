@@ -105,8 +105,11 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: We copy OpenCV libs from builder to avoid python3-opencv dependency issues
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     default-jre-headless \
     libpq5 \
     libcurl4 \
@@ -119,7 +122,23 @@ RUN apt-get update && \
     libwebp6 \
     libgmp10 \
     libgl1 \
-    libglib2.0-0 && \
+    libglib2.0-0 \
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
+        default-jre-headless \
+        libpq5 \
+        libcurl4 \
+        libjpeg62-turbo \
+        zlib1g \
+        libpng16-16 \
+        libtiff5 \
+        libfreetype6 \
+        liblcms2-2 \
+        libwebp6 \
+        libgmp10 \
+        libgl1 \
+        libglib2.0-0)) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
