@@ -7,11 +7,19 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     unzip \
-    && rm -rf /var/lib/apt/lists/*
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
+        build-essential \
+        unzip)) && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -37,12 +45,22 @@ ENV PYTHONUNBUFFERED=1 \
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: curl and unzip are needed by install_dependencies.sh; git is required
 # for kubectl apply -k with github.com kustomize remote bases.
+# Add retry logic and --fix-missing to handle transient network issues
+# Fix any broken dependencies first (from partial installs)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt --fix-broken install -y || true && \
+    (apt-get install -y --no-install-recommends --fix-missing \
     curl \
     unzip \
     git \
-    ca-certificates && \
+    ca-certificates \
+    || (apt-get update && \
+        apt --fix-broken install -y || true && \
+        apt-get install -y --no-install-recommends --fix-missing \
+        curl \
+        unzip \
+        git \
+        ca-certificates)) && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
