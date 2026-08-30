@@ -85,6 +85,10 @@ THIRD_PARTY_APPS = [
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
+    # Must stay first. It answers the load balancer health check on path
+    # alone, before anything below can reject the request for having a Host
+    # header that is not in ALLOWED_HOSTS. See base.middleware for why.
+    "base.middleware.HealthCheckMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
