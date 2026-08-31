@@ -72,20 +72,26 @@ class TestStorageDomainConfiguration(SimpleTestCase):
 
         self.assertEqual(prod.AWS_S3_CUSTOM_DOMAIN, "evalai.s3.amazonaws.com")
 
-    def test_empty_value_falls_back_instead_of_building_a_hostless_url(self):
+    def test_blank_values_fall_back_instead_of_building_a_hostless_url(self):
         # Rolling the CDN back means clearing the variable, and in an env
         # file that is written `AWS_S3_CUSTOM_DOMAIN=` -- an empty string,
-        # not an unset key. Treating that as a real domain would yield
-        # "https:///static/" and break every asset on the way back out.
-        prod = self._reload_prod(AWS_S3_CUSTOM_DOMAIN="")
+        # not an unset key. A stray space or tab left behind by an edit is
+        # the same mistake wearing a different hat. Treating any of them as
+        # a real domain yields "https:///static/" and breaks every asset on
+        # the way back out.
+        for blank in ("", "   ", "\t"):
+            with self.subTest(value=repr(blank)):
+                prod = self._reload_prod(AWS_S3_CUSTOM_DOMAIN=blank)
 
-        self.assertEqual(prod.AWS_S3_CUSTOM_DOMAIN, "evalai.s3.amazonaws.com")
-        self.assertEqual(
-            prod.STATIC_URL, "https://evalai.s3.amazonaws.com/static/"
-        )
-        self.assertEqual(
-            prod.MEDIA_URL, "https://evalai.s3.amazonaws.com/media/"
-        )
+                self.assertEqual(
+                    prod.AWS_S3_CUSTOM_DOMAIN, "evalai.s3.amazonaws.com"
+                )
+                self.assertEqual(
+                    prod.STATIC_URL, "https://evalai.s3.amazonaws.com/static/"
+                )
+                self.assertEqual(
+                    prod.MEDIA_URL, "https://evalai.s3.amazonaws.com/media/"
+                )
 
     def test_environment_variable_repoints_storage_at_a_cdn(self):
         prod = self._reload_prod(AWS_S3_CUSTOM_DOMAIN="d123.cloudfront.net")
