@@ -40,7 +40,12 @@ FUTURE_CHALLENGE_PERCENTAGE = 0.20  # 20%
 PAST_CHALLENGE_PERCENTAGE = 0.40  # 40%
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
-NUMBER_OF_SUBMISSIONS = 2000  # Number of submissions to create for testing
+# Submissions generated per challenge. The default suits load testing; the
+# dev container lowers it via the environment so a fresh database seeds in
+# seconds rather than tens of minutes.
+NUMBER_OF_SUBMISSIONS = int(
+    os.environ.get("SEED_SUBMISSIONS_PER_CHALLENGE", 2000)
+)
 CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
 CHALLENGE_CONFIG_DIRS = ["example1", "example2"]
