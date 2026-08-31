@@ -71,7 +71,11 @@ out/
 .idea_modules/
 
 # LLM Coding Agents
-.claude/
+.claude/*
+!.claude/hooks/
+!.claude/hooks/**
+!.claude/settings.json
+.claude/settings.local.json
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**

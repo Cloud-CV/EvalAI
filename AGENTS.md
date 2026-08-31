@@ -90,3 +90,50 @@ The daemon should use the `fuse-overlayfs` storage driver and `"cgroup-parent": 
 - Running `pytest` with `settings.test` flushes the database. Recreate users manually afterward if needed.
 - The `manage.py seed` command creates 500 challenges with 2000 submissions each and takes ~15+ minutes. For quick dev setup, manually create users instead (admin/host/participant with password "password").
 - The Django container's startup script (`docker/dev/django/container-start.sh`) runs migrations, collectstatic, and seed before starting uWSGI. To skip seed on restart, run uWSGI directly: `uwsgi --ini /code/docker/dev/django/uwsgi.ini`.
+
+## Claude Code on the web
+
+Web sessions run in a container with **no Docker daemon**, so the
+docker-compose workflow above does not apply and `./scripts/run-all-tests.sh`
+cannot be used there. `.claude/hooks/session-start.sh` (registered as a
+`SessionStart` hook in `.claude/settings.json`) provisions the stack natively
+instead:
+
+- A Python 3.9 virtualenv at `/opt/evalai-venv`, kept outside the repository so
+  it is never linted or collected by pytest, with `requirements/dev.txt`
+  installed.
+- `black`, `flake8`, `pylint` and `isort` pinned to the versions the
+  `code_quality` job in `.github/workflows/ci-cd.yml` installs.
+- A local PostgreSQL server on `localhost:5432` with an `evalai` database,
+  since `settings/test.py` expects one there.
+- Frontend Node dependencies via `npm install`.
+
+The hook exports `PATH` and the `POSTGRES_*` variables, so commands run
+directly rather than through `docker exec`:
+
+| Scope | Command |
+|-------|---------|
+| Backend tests | `pytest tests/unit/web/test_models.py` |
+| Backend lint | `black --check ./` · `isort --check-only --profile=black ./` · `flake8 --config=.flake8 ./` · `pylint --rcfile=.pylintrc ./` |
+| Frontend lint | `npx eslint frontend/src/js/app.js` |
+| Django | `DJANGO_SETTINGS_MODULE=settings.dev python manage.py check` |
+
+`DJANGO_SETTINGS_MODULE` is deliberately **not** exported: pytest-django gives
+the environment variable precedence over `pytest.ini`, so exporting
+`settings.dev` would silently run the suite with django-silk profiling active
+and break the query-count assertions. Leaving it unset lets `pytest.ini` select
+`settings.test`; management commands need it passed explicitly, as above.
+
+Full setup output is written to `/tmp/evalai-session-start.log`. The hook exits
+immediately when `CLAUDE_CODE_REMOTE` is not `true`, so local Docker workflows
+are unaffected.
+
+### Known limitation: no frontend build or karma tests
+
+`bower install` cannot run in a web session — the egress policy blocks
+`registry.bower.io` (and `codeload.github.com`, where bower fetches tarballs).
+Without `bower_components` the gulp vendor bundle is never produced, so
+`gulp dev` and the karma frontend tests cannot run there. Use CI or a local
+Docker checkout for those; backend tests and the ESLint frontend linter are
+unaffected. Allowlisting `registry.bower.io` and `codeload.github.com` for the
+environment would lift this restriction.
