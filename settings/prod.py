@@ -84,8 +84,13 @@ AWS_SES_MESSAGE_TAGS = {"environment": "production"}
 # touching the stored file paths. Leaving it unset keeps the bucket as the
 # origin, which makes rolling the CDN back a config change rather than a
 # deploy.
-AWS_S3_CUSTOM_DOMAIN = os.environ.get(
-    "AWS_S3_CUSTOM_DOMAIN", "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+# An empty value counts as unset: clearing the variable in an env file is
+# written `AWS_S3_CUSTOM_DOMAIN=`, which is an empty string rather than an
+# absent key, and that is exactly how the CDN gets rolled back. Taking it
+# literally would build "https:///static/" and break every asset.
+AWS_S3_CUSTOM_DOMAIN = (
+    os.environ.get("AWS_S3_CUSTOM_DOMAIN", "").strip()
+    or "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
 )
 
 # static files configuration on S3

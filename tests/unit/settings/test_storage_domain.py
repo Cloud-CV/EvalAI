@@ -25,6 +25,12 @@ class TestStorageDomainConfiguration(SimpleTestCase):
         }
         environment.update(overrides)
         with mock.patch.dict(os.environ, environment, clear=False):
+            # Without this, an ambient AWS_S3_CUSTOM_DOMAIN leaks into the
+            # no-override cases. That is not hypothetical: once the variable
+            # is set in a deployed environment file, running the suite inside
+            # that container would read it and fail.
+            if "AWS_S3_CUSTOM_DOMAIN" not in overrides:
+                os.environ.pop("AWS_S3_CUSTOM_DOMAIN", None)
             yield
 
     def _rebuild(self, *module_names):
@@ -65,6 +71,21 @@ class TestStorageDomainConfiguration(SimpleTestCase):
         prod = self._reload_prod()
 
         self.assertEqual(prod.AWS_S3_CUSTOM_DOMAIN, "evalai.s3.amazonaws.com")
+
+    def test_empty_value_falls_back_instead_of_building_a_hostless_url(self):
+        # Rolling the CDN back means clearing the variable, and in an env
+        # file that is written `AWS_S3_CUSTOM_DOMAIN=` -- an empty string,
+        # not an unset key. Treating that as a real domain would yield
+        # "https:///static/" and break every asset on the way back out.
+        prod = self._reload_prod(AWS_S3_CUSTOM_DOMAIN="")
+
+        self.assertEqual(prod.AWS_S3_CUSTOM_DOMAIN, "evalai.s3.amazonaws.com")
+        self.assertEqual(
+            prod.STATIC_URL, "https://evalai.s3.amazonaws.com/static/"
+        )
+        self.assertEqual(
+            prod.MEDIA_URL, "https://evalai.s3.amazonaws.com/media/"
+        )
 
     def test_environment_variable_repoints_storage_at_a_cdn(self):
         prod = self._reload_prod(AWS_S3_CUSTOM_DOMAIN="d123.cloudfront.net")
