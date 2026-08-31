@@ -79,7 +79,14 @@ AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET")
 AWS_SES_MESSAGE_TAGS = {"environment": "production"}
 
 # Amazon S3 Configurations
-AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+# django-storages builds every media and static URL from this, so setting it
+# to a CloudFront domain moves all asset traffic onto the CDN without
+# touching the stored file paths. Leaving it unset keeps the bucket as the
+# origin, which makes rolling the CDN back a config change rather than a
+# deploy.
+AWS_S3_CUSTOM_DOMAIN = os.environ.get(
+    "AWS_S3_CUSTOM_DOMAIN", "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+)
 
 # static files configuration on S3
 STATICFILES_LOCATION = "static"
@@ -87,11 +94,10 @@ STATICFILES_STORAGE = "settings.custom_storages.StaticStorage"
 STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 
 # Media files configuration on S3
+# Derived from the same domain as STATIC_URL so the two cannot drift apart
+# and serve half the assets from the CDN and half straight from S3.
 MEDIAFILES_LOCATION = "media"
-MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
-    AWS_STORAGE_BUCKET_NAME,
-    MEDIAFILES_LOCATION,
-)
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
