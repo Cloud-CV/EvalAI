@@ -33,7 +33,10 @@ from participants.models import Participant, ParticipantTeam
 
 fake = Factory.create()
 
-NUMBER_OF_CHALLENGES = 500
+# Only reached when run() is called without arguments; `manage.py seed`
+# always passes its own default. Kept in step with that default so the two
+# cannot disagree about what a seeded database looks like.
+NUMBER_OF_CHALLENGES = 10
 # Challenge distribution percentages (calculated dynamically from total)
 PRESENT_CHALLENGE_PERCENTAGE = 0.40  # 40%
 FUTURE_CHALLENGE_PERCENTAGE = 0.20  # 20%
