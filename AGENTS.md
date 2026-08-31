@@ -128,6 +128,12 @@ Full setup output is written to `/tmp/evalai-session-start.log`. The hook exits
 immediately when `CLAUDE_CODE_REMOTE` is not `true`, so local Docker workflows
 are unaffected.
 
+Anything backend tests depend on — the virtualenv, the Python dependencies and
+PostgreSQL — is a hard failure: the hook aborts rather than reporting a ready
+session that would leave every test failing on a connection error. It verifies
+the database by connecting the way Django does, over TCP with password auth.
+Only genuinely optional steps (bower, the gulp build) degrade to a warning.
+
 ### Known limitation: no frontend build or karma tests
 
 `bower install` cannot run in a web session — the egress policy blocks

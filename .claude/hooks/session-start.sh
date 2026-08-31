@@ -153,28 +153,52 @@ fi
 # ---------------------------------------------------------------------------
 # settings/test.py talks to localhost:5432; docker-compose's `db` service is
 # not reachable without a Docker daemon.
+# Running backend tests is the main thing this hook exists to enable, so every
+# step below is a hard failure. Warning and carrying on would report a ready
+# session and leave each test to fail later with a connection error.
 pg_cluster_version="$(ls /usr/lib/postgresql 2>/dev/null | sort -V | tail -1 || true)"
-if [ -n "$pg_cluster_version" ]; then
-  if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
-    run as_root pg_ctlcluster "$pg_cluster_version" main start || true
-    for _ in $(seq 1 30); do
-      pg_isready -h localhost -p 5432 >/dev/null 2>&1 && break
-      sleep 1
-    done
-  fi
-
-  if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
-    run as_postgres "psql -tAc \"ALTER USER ${POSTGRES_DB_USER} WITH PASSWORD '${POSTGRES_DB_PASSWORD}';\"" || true
-    if ! as_postgres "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB_NAME}'\"" 2>/dev/null | grep -q 1; then
-      run as_postgres "createdb ${POSTGRES_DB_NAME}" || true
-    fi
-    note "postgres: running on localhost:5432 (database '${POSTGRES_DB_NAME}')"
-  else
-    note "postgres: WARNING failed to start (see $LOG_FILE)"
-  fi
-else
-  note "postgres: WARNING no server found"
+if [ -z "$pg_cluster_version" ]; then
+  note "postgres: FAILED — no server found under /usr/lib/postgresql"
+  exit 1
 fi
+
+if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+  run as_root pg_ctlcluster "$pg_cluster_version" main start || true
+  for _ in $(seq 1 30); do
+    if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+fi
+
+if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+  note "postgres: FAILED to start (see $LOG_FILE)"
+  exit 1
+fi
+
+if ! run as_postgres "psql -tAc \"ALTER USER ${POSTGRES_DB_USER} WITH PASSWORD '${POSTGRES_DB_PASSWORD}';\""; then
+  note "postgres: FAILED to set the ${POSTGRES_DB_USER} password (see $LOG_FILE)"
+  exit 1
+fi
+
+if ! as_postgres "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB_NAME}'\"" 2>/dev/null | grep -q 1; then
+  if ! run as_postgres "createdb ${POSTGRES_DB_NAME}"; then
+    note "postgres: FAILED to create database '${POSTGRES_DB_NAME}' (see $LOG_FILE)"
+    exit 1
+  fi
+fi
+
+# Connect the way Django does — over TCP, with password auth, to the real
+# database — so a cluster that is up but unreachable is caught here and not by
+# a confusing test failure. Django also needs CREATEDB for the test database.
+if ! run env PGPASSWORD="$POSTGRES_DB_PASSWORD" psql -h localhost -p 5432 \
+    -U "$POSTGRES_DB_USER" -d "$POSTGRES_DB_NAME" -tAc "SELECT 1"; then
+  note "postgres: FAILED — cannot connect the way Django will (see $LOG_FILE)"
+  exit 1
+fi
+
+note "postgres: running on localhost:5432 (database '${POSTGRES_DB_NAME}')"
 
 # ---------------------------------------------------------------------------
 # 4. Frontend dependencies
