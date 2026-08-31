@@ -35,15 +35,13 @@ def test_handle_custom_nc(mock_call_command):
     )
 
 
-def test_add_arguments():
+def test_add_arguments_defaults_to_a_development_sized_count():
+    # 500 was a load-testing corpus: at 2000 submissions each it took over
+    # twenty minutes to generate before Django would serve a request. Anyone
+    # who wants that volume can still ask for it with `-nc 500`.
     parser_mock = MagicMock()
     command = Command()
+
     command.add_arguments(parser_mock)
 
-    parser_mock.add_argument.assert_called_with(
-        "-nc",
-        nargs="?",
-        default=500,
-        type=int,
-        help="Number of challenges. Default: 500 (40% present, 20% future, 40% past)",
-    )
+    assert parser_mock.add_argument.call_args.kwargs["default"] == 10

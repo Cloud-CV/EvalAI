@@ -22,6 +22,7 @@ from challenges.models import (
 from challenges.utils import get_file_content
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
@@ -33,14 +34,50 @@ from participants.models import Participant, ParticipantTeam
 
 fake = Factory.create()
 
-NUMBER_OF_CHALLENGES = 500
+# Only reached when run() is called without arguments; `manage.py seed`
+# always passes its own default. Kept in step with that default so the two
+# cannot disagree about what a seeded database looks like.
+NUMBER_OF_CHALLENGES = 10
 # Challenge distribution percentages (calculated dynamically from total)
 PRESENT_CHALLENGE_PERCENTAGE = 0.40  # 40%
 FUTURE_CHALLENGE_PERCENTAGE = 0.20  # 20%
 PAST_CHALLENGE_PERCENTAGE = 0.40  # 40%
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
-NUMBER_OF_SUBMISSIONS = 2000  # Number of submissions to create for testing
+DEFAULT_SUBMISSIONS_PER_CHALLENGE = 2000
+
+
+def resolve_submissions_per_challenge():
+    """Read SEED_SUBMISSIONS_PER_CHALLENGE, failing loudly on bad input.
+
+    A negative value is the reason this validates rather than calling int()
+    directly: it parses fine, then the seed loop iterates range() over a
+    negative count and the database comes up with no submissions at all and
+    nothing to explain why. A clear error beats a silently empty seed.
+    """
+    raw = os.environ.get(
+        "SEED_SUBMISSIONS_PER_CHALLENGE", DEFAULT_SUBMISSIONS_PER_CHALLENGE
+    )
+    try:
+        value = int(raw)
+    except (TypeError, ValueError) as error:
+        raise ImproperlyConfigured(
+            "SEED_SUBMISSIONS_PER_CHALLENGE must be an integer, "
+            "got {!r}".format(raw)
+        ) from error
+    if value < 0:
+        raise ImproperlyConfigured(
+            "SEED_SUBMISSIONS_PER_CHALLENGE must not be negative, got {}".format(
+                value
+            )
+        )
+    return value
+
+
+# Submissions generated per challenge. The default suits load testing; the
+# dev container lowers it via the environment so a fresh database seeds in
+# seconds rather than tens of minutes.
+NUMBER_OF_SUBMISSIONS = resolve_submissions_per_challenge()
 CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
 CHALLENGE_CONFIG_DIRS = ["example1", "example2"]

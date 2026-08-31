@@ -1,5 +1,11 @@
 from django.core.management import BaseCommand, call_command
 
+# Sized for development. Generating hundreds of challenges at
+# NUMBER_OF_SUBMISSIONS submissions each takes tens of minutes and blocks
+# Django from serving until it finishes, which made a first `docker compose
+# up` look like a hang. Pass `-nc 500` when a load-testing corpus is wanted.
+DEFAULT_NUMBER_OF_CHALLENGES = 10
+
 
 class Command(BaseCommand):
 
@@ -9,9 +15,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "-nc",
             nargs="?",
-            default=500,
+            default=DEFAULT_NUMBER_OF_CHALLENGES,
             type=int,
-            help="Number of challenges. Default: 500 (40% present, 20% future, 40% past)",
+            help=(
+                "Number of challenges. Default: {} "
+                "(40% present, 20% future, 40% past)."
+            ).format(DEFAULT_NUMBER_OF_CHALLENGES),
         )
 
     def handle(self, *args, **options):
