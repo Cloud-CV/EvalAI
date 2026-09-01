@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0006_changed_path_to_upload")]
 
     operations = [

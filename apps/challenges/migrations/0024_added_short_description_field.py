@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0023_upload_unique_random_filename")]
 
     operations = [

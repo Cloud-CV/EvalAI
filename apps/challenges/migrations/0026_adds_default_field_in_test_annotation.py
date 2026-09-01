@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0025_added_is_submission_pubblic_field")]
 
     operations = [

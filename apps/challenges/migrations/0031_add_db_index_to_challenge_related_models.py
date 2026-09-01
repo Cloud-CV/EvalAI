@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0030_add_boolean_field_in_star_model")]
 
     operations = [

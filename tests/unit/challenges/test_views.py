@@ -1155,9 +1155,7 @@ class DeleteParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-class MapChallengeAndParticipantTeam(
-    BaseAPITestClass
-):  # pylint: disable=too-many-instance-attributes
+class MapChallengeAndParticipantTeam(BaseAPITestClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
         self.url = reverse_lazy(
@@ -3778,7 +3776,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
 
 
 class ChallengePrizesTest(BaseAPITestClass):
-
     def setUp(self):
         super().setUp()
         self.challenge = Challenge.objects.create(
@@ -3842,7 +3839,6 @@ class ChallengePrizesTest(BaseAPITestClass):
 
 
 class ChallengeSponsorTest(BaseAPITestClass):
-
     def setUp(self):
         super().setUp()
         self.challenge = Challenge.objects.create(
@@ -4186,9 +4182,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class CreateChallengePhaseTest(
-    BaseChallengePhaseClass
-):  # pylint: disable=too-many-instance-attributes
+class CreateChallengePhaseTest(BaseChallengePhaseClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
         self.url = reverse_lazy(
@@ -4266,11 +4260,9 @@ class CreateChallengePhaseTest(
             content_type="application/zip",
         )
 
-        self.url = (
-            reverse_lazy(  # pylint: disable=attribute-defined-outside-init
-                "challenges:create_challenge_using_zip_file",
-                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-            )
+        self.url = reverse_lazy(  # pylint: disable=attribute-defined-outside-init
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
         )
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
@@ -4328,11 +4320,9 @@ class CreateChallengePhaseTest(
             content_type="application/zip",
         )
 
-        self.url = (
-            reverse_lazy(  # pylint: disable=attribute-defined-outside-init
-                "challenges:create_challenge_using_zip_file",
-                kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-            )
+        self.url = reverse_lazy(  # pylint: disable=attribute-defined-outside-init
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
         )
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
@@ -4487,9 +4477,7 @@ class CreateChallengePhaseTest(
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class GetParticularChallengePhase(
-    BaseChallengePhaseClass
-):  # pylint: disable=too-many-instance-attributes
+class GetParticularChallengePhase(BaseChallengePhaseClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
         self.url = reverse_lazy(
@@ -4684,9 +4672,7 @@ class GetParticularChallengePhase(
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class UpdateParticularChallengePhase(
-    BaseChallengePhaseClass
-):  # pylint: disable=too-many-instance-attributes
+class UpdateParticularChallengePhase(BaseChallengePhaseClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
         self.url = reverse_lazy(
@@ -4708,11 +4694,9 @@ class UpdateParticularChallengePhase(
         }
 
     def test_particular_challenge_phase_partial_update(self):
-        self.partial_update_data = (
-            {  # pylint: disable=attribute-defined-outside-init
-                "name": self.partial_update_challenge_phase_name
-            }
-        )
+        self.partial_update_data = {  # pylint: disable=attribute-defined-outside-init
+            "name": self.partial_update_challenge_phase_name
+        }
         expected = {
             "id": self.challenge_phase.id,
             "name": self.partial_update_challenge_phase_name,
@@ -4871,9 +4855,7 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class BaseChallengePhaseSplitClass(
-    BaseAPITestClass
-):  # pylint: disable=too-many-instance-attributes
+class BaseChallengePhaseSplitClass(BaseAPITestClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
         try:
@@ -5164,9 +5146,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         )
 
 
-class CreateChallengeUsingZipFile(
-    APITestCase
-):  # pylint: disable=too-many-instance-attributes
+class CreateChallengeUsingZipFile(APITestCase):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -5487,8 +5467,10 @@ class CreateChallengeUsingZipFile(
     ):
         challenge_phases = ChallengePhase.objects.all()
         for zipTestPhase in challenge_phases:
-            max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(  # pylint: disable=protected-access
-                "max_concurrent_submissions_allowed"
+            max_concurrent_submissions_allowed_field = (
+                zipTestPhase._meta.get_field(  # pylint: disable=protected-access
+                    "max_concurrent_submissions_allowed"
+                )
             )
             max_con = (
                 max_concurrent_submissions_allowed_field.value_from_object(
@@ -5595,9 +5577,7 @@ class CreateChallengeUsingZipFile(
         )
 
 
-class GetAllSubmissionsTest(
-    BaseAPITestClass
-):  # pylint: disable=too-many-instance-attributes
+class GetAllSubmissionsTest(BaseAPITestClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
 
@@ -6027,9 +6007,7 @@ class GetAllSubmissionsTest(
         self.assertEqual(response.data, expected_response)
 
 
-class DownloadAllSubmissionsFileTest(
-    BaseAPITestClass
-):  # pylint: disable=too-many-instance-attributes
+class DownloadAllSubmissionsFileTest(BaseAPITestClass):  # pylint: disable=too-many-instance-attributes
     def setUp(self):
         super().setUp()
 
@@ -6771,8 +6749,7 @@ class StarChallengeDuplicateDeduplicationTest(BaseAPITestClass):
             row = cursor.fetchone()
             if row:
                 cursor.execute(
-                    "ALTER TABLE starred_challenge "
-                    "DROP CONSTRAINT %s" % row[0]
+                    "ALTER TABLE starred_challenge DROP CONSTRAINT %s" % row[0]
                 )
             for _ in range(2):
                 cursor.execute(
@@ -7390,7 +7367,6 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
 
 class ChallengeSendApprovalRequestTest(BaseAPITestClass):
-
     @responses.activate
     def test_request_challenge_approval_when_challenge_has_finished_submissions(  # noqa: C0301
         self,
@@ -7832,9 +7808,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
         mock_send_email.assert_not_called()
 
 
-class CreateOrUpdateGithubChallengeTest(
-    APITestCase
-):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
+class CreateOrUpdateGithubChallengeTest(APITestCase):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -8160,9 +8134,7 @@ class CreateOrUpdateGithubChallengeTest(
         )
 
 
-class ValidateChallengeTest(
-    APITestCase
-):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
+class ValidateChallengeTest(APITestCase):  # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 

@@ -86,7 +86,6 @@ def challenge_host_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
-
         if request.method == "PATCH":
             serializer = ChallengeHostTeamSerializer(
                 challenge_host_team,

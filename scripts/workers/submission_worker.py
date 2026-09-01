@@ -473,9 +473,9 @@ def extract_challenge_data(challenge, phases):
             annotation_file_url
         )
         annotation_file_name = os.path.basename(phase.test_annotation.name)
-        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id][
-            phase.id
-        ] = annotation_file_name
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id][phase.id] = (
+            annotation_file_name
+        )
         annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
             challenge_id=challenge.id,
             phase_id=phase.id,
@@ -736,7 +736,6 @@ def run_submission(
                 error_bars_dict[split_code_name] = split_error[split_code_name]
 
         if "result" in submission_output:
-
             leaderboard_data_list = []
             for split_result in submission_output["result"]:
                 # get split_code_name that is the key of the result
@@ -945,9 +944,7 @@ def process_submission_message(message):
 
     challenge_id = challenge_phase.challenge_id
 
-    if (
-        submission_instance.challenge_phase.challenge.is_static_dataset_code_upload
-    ):
+    if submission_instance.challenge_phase.challenge.is_static_dataset_code_upload:
         input_file_name = submission_instance.submission_input_file.name
     else:
         input_file_name = submission_instance.input_file.name

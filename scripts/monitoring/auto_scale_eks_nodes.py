@@ -13,17 +13,13 @@ warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
 
-DEFAULT_AWS_EKS_KEYS = (
-    {  # NOTE: These are habitat challenge keys as most challenges are habitat
-        "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
-        "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
-        "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
-        "AWS_REGION": os.environ.get("EKS_AWS_REGION"),
-        "AWS_STORAGE_BUCKET_NAME": os.environ.get(
-            "EKS_AWS_STORAGE_BUCKET_NAME"
-        ),
-    }
-)
+DEFAULT_AWS_EKS_KEYS = {  # NOTE: These are habitat challenge keys as most challenges are habitat
+    "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
+    "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
+    "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
+    "AWS_REGION": os.environ.get("EKS_AWS_REGION"),
+    "AWS_STORAGE_BUCKET_NAME": os.environ.get("EKS_AWS_STORAGE_BUCKET_NAME"),
+}
 
 SCALE_UP_DESIRED_SIZE = 1
 
@@ -272,8 +268,10 @@ def start_job():
             assert (
                 challenge["is_docker_based"]
                 and not challenge["remote_evaluation"]
-            ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
-                challenge["id"], challenge["title"]
+            ), (
+                "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
+                    challenge["id"], challenge["title"]
+                )
             )
             scale_up_or_down_workers(
                 challenge,

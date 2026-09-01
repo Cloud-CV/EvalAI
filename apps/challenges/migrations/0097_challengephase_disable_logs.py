@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0096_challenge_meta_order_by_title"),
     ]

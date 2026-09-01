@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0080_add_code_upload_cluster_instance_config"),
     ]

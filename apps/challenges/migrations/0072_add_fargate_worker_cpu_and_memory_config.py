@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0071_add_challenge_template_mode")]
 
     operations = [

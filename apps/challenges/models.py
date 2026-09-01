@@ -56,8 +56,7 @@ class Challenge(TimeStampedModel):
         null=True,
         blank=True,
         help_text=(
-            "One or two line summary shown on challenge cards and in "
-            "listings."
+            "One or two line summary shown on challenge cards and in listings."
         ),
     )
     description = models.TextField(
@@ -81,8 +80,7 @@ class Challenge(TimeStampedModel):
         null=True,
         blank=True,
         help_text=(
-            "Explanation of how submissions are scored, shown to "
-            "participants."
+            "Explanation of how submissions are scored, shown to participants."
         ),
     )
     image = models.ImageField(
@@ -646,8 +644,7 @@ class Challenge(TimeStampedModel):
         max_length=200,
         default="",
         help_text=(
-            "CIDR block for the first subnet of the code upload challenge "
-            "VPC."
+            "CIDR block for the first subnet of the code upload challenge VPC."
         ),
     )
     subnet_2_cidr = models.CharField(
@@ -1108,7 +1105,6 @@ post_save_connect("test_annotation", ChallengePhase)
 
 
 class Leaderboard(TimeStampedModel):
-
     schema = JSONField()
     # Id in the challenge config file. Needed to map the object to the value
     # in the config file while updating through Github
@@ -1123,7 +1119,6 @@ class Leaderboard(TimeStampedModel):
 
 
 class ChallengePhaseSplit(TimeStampedModel):
-
     # visibility options
     HOST = 1
     OWNER_AND_HOST = 2
@@ -1202,7 +1197,6 @@ class ChallengeTemplate(TimeStampedModel):
 
 
 class LeaderboardData(TimeStampedModel):
-
     challenge_phase_split = models.ForeignKey(
         "ChallengePhaseSplit", on_delete=models.CASCADE
     )

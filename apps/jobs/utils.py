@@ -261,9 +261,7 @@ def handle_submission_rerun(submission, updated_status):
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
-            if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
-            ):
+            if submission.challenge_phase.challenge.is_static_dataset_code_upload:
                 message["is_static_dataset_code_upload_submission"] = True
 
     return message
@@ -303,9 +301,7 @@ def handle_submission_resume(submission, updated_status):
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
-            if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
-            ):
+            if submission.challenge_phase.challenge.is_static_dataset_code_upload:
                 message["is_static_dataset_code_upload_submission"] = True
 
     return message
@@ -409,9 +405,7 @@ def calculate_distinct_sorted_leaderboard_data(
     all_valid_submission_status = [Submission.FINISHED]
 
     # Handle the case for challenges with partial submission evaluation feature
-    if (
-        challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
-    ):
+    if challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled:
         all_valid_submission_status.append(Submission.PARTIALLY_EVALUATED)
 
     leaderboard_data = leaderboard_data.filter(

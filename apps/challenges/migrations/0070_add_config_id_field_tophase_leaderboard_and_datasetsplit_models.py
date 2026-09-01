@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0069_add_github_repository_field_to_challenge_model")
     ]

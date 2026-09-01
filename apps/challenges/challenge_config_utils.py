@@ -193,7 +193,7 @@ def download_and_write_file(url, stream, output_path, mode):
                 is_success = True
         except IOError:
             message = (
-                "Unable to process the uploaded zip file. " "Please try again!"
+                "Unable to process the uploaded zip file. Please try again!"
             )
     except requests.exceptions.RequestException:
         message = (

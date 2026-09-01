@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0073_add_inform_hosts_field")]
 
     operations = [

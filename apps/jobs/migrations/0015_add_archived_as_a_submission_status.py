@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jobs", "0014_rename_job_id_field_in_submission_model_to_job_name")
     ]

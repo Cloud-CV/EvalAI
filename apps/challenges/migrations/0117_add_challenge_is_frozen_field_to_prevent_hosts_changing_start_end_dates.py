@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0116_leaderboard_data_leaderboard_query_index"),
     ]

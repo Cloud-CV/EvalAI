@@ -8,7 +8,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jobs", "0001_squashed_0005_upload_unique_random_filename"),
         ("challenges", "0018_added_challenge_phase_split_table"),

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0095_challenge_queue_aws_region"),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0090_challenge_allow_resuming_submissions"),
     ]

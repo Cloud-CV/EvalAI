@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0001_initial"),
         ("participants", "0001_initial"),

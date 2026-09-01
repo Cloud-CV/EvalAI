@@ -550,14 +550,14 @@ def main():
         logger.log("*** Use --execute to actually delete files ***")
 
     # Phase 1: Collect all file paths from database (memory: ~200-300MB for refs)
-    logger.log(f"\n{'='*60}")
+    logger.log(f"\n{'=' * 60}")
     logger.log("PHASE 1: Collecting database references")
     logger.log("=" * 60)
     referenced_paths = collect_db_file_paths_optimized(logger)
     gc.collect()
 
     # Phase 2 & 3: Stream S3 files and identify orphans (write to temp file)
-    logger.log(f"\n{'='*60}")
+    logger.log(f"\n{'=' * 60}")
     logger.log("PHASE 2: Streaming S3 files and identifying orphans")
     logger.log("=" * 60)
 
@@ -598,7 +598,7 @@ def main():
             return
 
         # Phase 3: Verify no overlap (streaming verification)
-        logger.log(f"\n{'='*60}")
+        logger.log(f"\n{'=' * 60}")
         logger.log("PHASE 3: Verifying no overlap")
         logger.log("=" * 60)
 
@@ -618,7 +618,7 @@ def main():
         gc.collect()
 
         # Phase 4: Delete orphaned files (streaming from temp file)
-        logger.log(f"\n{'='*60}")
+        logger.log(f"\n{'=' * 60}")
         logger.log("PHASE 4: Deleting orphaned files")
         logger.log("=" * 60)
         logger.log(f"Files to delete: {orphan_count}")

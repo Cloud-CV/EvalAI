@@ -29,7 +29,6 @@ from .models import (
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
     domain_name = serializers.SerializerMethodField()
 
@@ -157,7 +156,6 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
 
     def __init__(self, *args, **kwargs):
@@ -452,7 +450,6 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
 
 class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
-
     is_active = serializers.ReadOnlyField()
 
     def __init__(self, *args, **kwargs):
@@ -526,7 +523,6 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
 
 
 class StarChallengeSerializer(serializers.ModelSerializer):
-
     count = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -673,7 +669,6 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
 
 
 class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
-
     challenge_id = serializers.SerializerMethodField()
     leaderboard = serializers.SerializerMethodField()
     leaderboard_decimal_precision = serializers.SerializerMethodField()
@@ -734,9 +729,9 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
         if context:
             challenge_phase_split = context.get("challenge_phase_split")
             if challenge_phase_split:
-                kwargs["data"][
-                    "challenge_phase_split"
-                ] = challenge_phase_split.pk
+                kwargs["data"]["challenge_phase_split"] = (
+                    challenge_phase_split.pk
+                )
             submission = context.get("submission")
             if submission:
                 kwargs["data"]["submission"] = submission.pk

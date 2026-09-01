@@ -6,7 +6,6 @@ from .models import ChallengeHost, ChallengeHostTeam
 
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
-
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
     )
@@ -24,7 +23,6 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
 
 class ChallengeHostSerializer(serializers.ModelSerializer):
-
     status = serializers.ChoiceField(choices=ChallengeHost.STATUS_OPTIONS)
     permissions = serializers.ChoiceField(
         choices=ChallengeHost.PERMISSION_OPTIONS
@@ -48,7 +46,6 @@ class ChallengeHostSerializer(serializers.ModelSerializer):
 
 
 class InviteHostToTeamSerializer(serializers.Serializer):
-
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
@@ -78,7 +75,6 @@ class InviteHostToTeamSerializer(serializers.Serializer):
 
 
 class HostTeamDetailSerializer(serializers.ModelSerializer):
-
     members = serializers.SerializerMethodField()
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()

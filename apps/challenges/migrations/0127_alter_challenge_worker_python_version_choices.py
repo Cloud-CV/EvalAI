@@ -12,7 +12,6 @@ def backfill_worker_python_version(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0126_alter_challenge_worker_python_version"),
     ]

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0048_add_fields_to_store_host_aws_keys")]
 
     operations = [

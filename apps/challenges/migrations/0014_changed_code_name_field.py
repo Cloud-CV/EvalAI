@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0013_added_code_name_field")]
 
     operations = [

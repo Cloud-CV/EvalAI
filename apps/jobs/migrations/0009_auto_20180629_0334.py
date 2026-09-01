@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("jobs", "0008_remove_indexing_submission")]
 
     operations = [

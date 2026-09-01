@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0017_added_leaderboard_table")]
 
     operations = [

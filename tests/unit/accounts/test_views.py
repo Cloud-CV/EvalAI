@@ -33,7 +33,6 @@ class BaseAPITestClass(APITestCase):
 
 
 class DisableUserTest(BaseAPITestClass):
-
     url = reverse_lazy("accounts:disable_user")
 
     def test_disable_user(self):
@@ -62,7 +61,6 @@ class TestUpdateUser(BaseAPITestClass):
 
 
 class GetAuthTokenTest(BaseAPITestClass):
-
     url = reverse_lazy("accounts:get_auth_token")
 
     def test_get_auth_token(self):
@@ -110,7 +108,6 @@ class ResendEmailVerificationTestClass(APITestCase):
 
 
 class UpdateEmailTest(BaseAPITestClass):
-
     url = reverse_lazy("accounts:update_email")
 
     @patch("accounts.views.send_email_confirmation")
@@ -209,7 +206,6 @@ class UpdateEmailTest(BaseAPITestClass):
 
 
 class RefreshAuthTokenTest(BaseAPITestClass):
-
     url = reverse_lazy("accounts:refresh_auth_token")
 
     def test_refresh_auth_token(self):
@@ -234,7 +230,6 @@ class RefreshAuthTokenTest(BaseAPITestClass):
 
 
 class SafeRegisterViewTest(APITestCase):
-
     url = reverse_lazy("rest_register")
 
     def setUp(self):

@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("jobs", "0013_add_job_id_field_in_submission_model")]
 
     operations = [

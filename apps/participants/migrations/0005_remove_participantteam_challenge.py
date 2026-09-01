@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("participants", "0004_add_created_by_participant_team")]
 
     operations = [

@@ -40,7 +40,6 @@ def save_file(sender, instance, created, **kwargs):
 
 
 class Submission(TimeStampedModel):
-
     SUBMITTED = "submitted"
     RUNNING = "running"
     FAILED = "failed"

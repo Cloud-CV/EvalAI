@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("participants", "0010_Add_blank_in_team_URL")]
 
     operations = [

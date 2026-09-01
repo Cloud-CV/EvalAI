@@ -59,7 +59,6 @@ class BaseAPITestClass(APITestCase):
 
 
 class GetParticipantTeamTest(BaseAPITestClass):
-
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
@@ -249,7 +248,6 @@ class GetParticipantTeamTest(BaseAPITestClass):
 
 
 class CreateParticipantTeamTest(BaseAPITestClass):
-
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):

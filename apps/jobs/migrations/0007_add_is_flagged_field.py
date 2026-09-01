@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("jobs", "0006_add_indexing_to_some_attributes")]
 
     operations = [

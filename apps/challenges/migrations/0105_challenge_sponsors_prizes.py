@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0104_challenge_evaluation_module_error"),
     ]

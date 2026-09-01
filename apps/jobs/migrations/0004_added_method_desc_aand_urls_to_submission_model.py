@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("jobs", "0003_added_method_name_field")]
 
     operations = [

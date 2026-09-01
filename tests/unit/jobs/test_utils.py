@@ -337,17 +337,13 @@ class TestUtils(unittest.TestCase):
         mock_leaderboard.schema = {"default_order_by": "score"}
         mock_challenge_phase_split.leaderboard = mock_leaderboard
         mock_challenge_phase_split.is_leaderboard_order_descending = False
-        mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = (
-            False
-        )
+        mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = False
         mock_challenge_phase_split.visibility = 1
         mock_challenge_phase_split.show_execution_time = False
         mock_challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
         )
-        mock_challenge_obj.creator.get_all_challenge_host_email.return_value = (
-            []
-        )
+        mock_challenge_obj.creator.get_all_challenge_host_email.return_value = []
         mock_challenge_obj.banned_email_ids = []
 
         response, status_code = calculate_distinct_sorted_leaderboard_data(
@@ -385,17 +381,13 @@ class TestUtils(unittest.TestCase):
         }
         mock_challenge_phase_split.leaderboard = mock_leaderboard
         mock_challenge_phase_split.is_leaderboard_order_descending = False
-        mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = (
-            False
-        )
+        mock_challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled = False
         mock_challenge_phase_split.visibility = 1
         mock_challenge_phase_split.show_execution_time = False
         mock_challenge_phase_split.show_leaderboard_by_latest_submission = (
             False
         )
-        mock_challenge_obj.creator.get_all_challenge_host_email.return_value = (
-            []
-        )
+        mock_challenge_obj.creator.get_all_challenge_host_email.return_value = []
         mock_challenge_obj.banned_email_ids = []
 
         (
@@ -421,9 +413,7 @@ class TestHandleSubmissionResume(unittest.TestCase):
         # Set up mock objects
         mock_submission = mock.Mock()
         mock_submission.challenge_phase.challenge.is_docker_based = True
-        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = (
-            False
-        )
+        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = False
         mock_submission.input_file.url = "http://example.com/input_file"
         mock_submission.pk = 1
         mock_submission.challenge_phase.pk = 2
@@ -472,9 +462,7 @@ class TestHandleSubmissionResume(unittest.TestCase):
             self.assertIsNone(message)
 
         # Test the line 276
-        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = (
-            True
-        )
+        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = True
         mock_requests_get.side_effect = None
         mock_requests_get.return_value.status_code = 200
         mock_requests_get.return_value.json.return_value = {
@@ -493,9 +481,7 @@ class TestHandleSubmissionResume(unittest.TestCase):
         # Set up mock objects
         mock_submission = mock.Mock()
         mock_submission.challenge_phase.challenge.is_docker_based = True
-        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = (
-            False
-        )
+        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = False
         mock_submission.input_file.url = "http://example.com/input_file"
         mock_submission.pk = 1
         mock_submission.challenge_phase.pk = 2
@@ -530,9 +516,7 @@ class TestHandleSubmissionResume(unittest.TestCase):
             self.assertIsNone(message)
 
         # Test the line 234
-        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = (
-            True
-        )
+        mock_submission.challenge_phase.challenge.is_static_dataset_code_upload = True
         mock_requests_get.side_effect = None
         mock_requests_get.return_value.status_code = 200
         mock_requests_get.return_value.json.return_value = {
