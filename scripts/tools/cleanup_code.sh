@@ -40,55 +40,32 @@ if [ -z "$FILTERED_FILES" ]; then
     exit 0
 fi
 
+if ! command -v ruff >/dev/null 2>&1; then
+    echo "ruff is not installed. Run: pip install -r requirements/dev.txt" >&2
+    exit 1
+fi
+
 echo "Processing changed files:"
 echo "$FILTERED_FILES" | sed 's/^/  /'
 
-# Clean unused imports (W0611, W0614) and variables (W0612)
+# Apply lint fixes: unused imports and variables (F401/F841, previously
+# autoflake) and import ordering (I001, previously isort). Only safe fixes
+# are applied -- ruff leaves anything it cannot rewrite without changing
+# behaviour for the author to resolve.
 echo ""
-echo "Removing unused imports and variables with autoflake..."
-for file in $FILTERED_FILES; do
-    autoflake --in-place \
-        --remove-duplicate-keys \
-        --remove-unused-variables \
-        --expand-star-imports \
-        --remove-all-unused-imports "$file"
-done
+echo "Applying ruff lint fixes..."
+# shellcheck disable=SC2086
+ruff check --fix --quiet $FILTERED_FILES || true
 
-# Fix long lines (C0301): max 79 characters
-# Use Black first as it's more aggressive about line wrapping
+# Format to the line-length configured in pyproject.toml (previously black
+# plus an autopep8 E501 pass plus a second black pass).
 echo ""
-echo "Running Black to fix line lengths (79 chars max)..."
-for file in $FILTERED_FILES; do
-    black --line-length 79 --quiet "$file" || true
-done
+echo "Formatting with ruff..."
+# shellcheck disable=SC2086
+ruff format --quiet $FILTERED_FILES || true
 
-# Then use autopep8 to fix any remaining line length issues
-echo ""
-echo "Running autopep8 to fix any remaining line length issues..."
-for file in $FILTERED_FILES; do
-    autopep8 --in-place \
-        --aggressive --aggressive \
-        --select=E501 \
-        --max-line-length=79 \
-        --ignore-local-config "$file" || true
-done
-
-# Run Black again to ensure consistency after autopep8
-echo ""
-echo "Running Black again for final formatting..."
-for file in $FILTERED_FILES; do
-    black --line-length 79 --quiet "$file" || true
-done
-
-# Fix import ordering with isort (using black-compatible profile)
-echo ""
-echo "Running isort to fix import ordering..."
-for file in $FILTERED_FILES; do
-    isort --profile=black --line-length=79 --quiet "$file" || true
-done
-
-# Stage the modified files so pylint/flake8 check the cleaned versions
-# Only stage files that were already staged
+# Stage the modified files so pylint checks the cleaned versions.
+# Only stage files that were already staged.
 echo ""
 echo "Staging cleaned files..."
 for file in $FILTERED_FILES; do

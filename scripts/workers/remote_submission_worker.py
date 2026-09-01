@@ -358,9 +358,12 @@ def make_request(url, method, data=None):
             response = requests.put(url=url, headers=headers, data=data)
             response.raise_for_status()
         except requests.exceptions.RequestException:
+            # `response` is unbound when requests.put() itself raises, and the
+            # message used `{}` with the `%` operator, so this handler raised
+            # TypeError/NameError and masked the original failure. Match the
+            # PATCH/POST branches: logger.exception already logs the traceback.
             logger.exception(
-                "The worker is not able to establish connection with EvalAI due to {}"
-                % (response.json())
+                "The worker is not able to establish connection with EvalAI"
             )
             raise
         except requests.exceptions.HTTPError:

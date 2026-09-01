@@ -1450,7 +1450,6 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                             "type": "text",
                         }
                     ],
-                    "max_submissions_per_month": 10,
                 }
             ]
         }

@@ -3,7 +3,7 @@
 # Cloud-CV/EvalAI — CodeRabbit config (repository root).
 # Tuned for an active OSS project: backend Python/Django, frontend AngularJS/JavaScript.
 # Goal: high-signal reviews (bugs, security, logic) without re-flagging formatting
-# that pre-commit (black/flake8/isort) and eslint already handle.
+# that pre-commit (ruff) and eslint already handle.
 #
 # This is a public repository. Merge this file to master so CodeRabbit uses it by default;
 # PR branches that include this file also apply it to that PR.
@@ -63,7 +63,7 @@ reviews:
     EvalAI is a public open-source repository. Treat all review output as public.
 
     This repository already enforces formatting and linting via pre-commit
-    (black, flake8, isort) for Python and eslint for JavaScript.
+    (ruff) for Python and eslint for JavaScript.
     Do NOT comment on code style, formatting, import ordering, line length,
     or naming conventions — those are handled automatically.
     Focus your review on: logic bugs, security issues (auth, injection,

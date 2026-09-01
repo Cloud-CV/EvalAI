@@ -1705,7 +1705,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         "project_url",
                         "publication_url",
                     ]
-                    if not attribute["name"] in valid_attributes:
+                    if attribute["name"] not in valid_attributes:
                         message = (
                             "Default meta attribute: {} in phase: {} does "
                             "not exist!".format(attribute["name"], data["id"])

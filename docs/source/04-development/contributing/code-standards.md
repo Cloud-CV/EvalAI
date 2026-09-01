@@ -4,8 +4,9 @@ EvalAI follows PEP 8 style with automated formatting and linting.
 
 ## Formatting
 
-- Use [Black](https://github.com/psf/black) for Python formatting.
-- Pre-commit hooks run Black and Flake8 — install once with `pre-commit install` from the repo root.
+- Use [Ruff](https://docs.astral.sh/ruff/) for Python formatting and linting. It replaces Black, isort, Flake8, autoflake and autopep8; its configuration lives in `pyproject.toml` under `[tool.ruff]`.
+- Format and fix with `ruff format .` and `ruff check --fix .`.
+- Pre-commit hooks run Ruff and Pylint — install once with `pre-commit install` from the repo root.
 
 ## Pull requests
 
