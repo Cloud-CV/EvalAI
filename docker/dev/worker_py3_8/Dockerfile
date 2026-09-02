@@ -3,7 +3,12 @@ FROM python:3.8-slim-bullseye AS builder
 
 # Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
 # the builder stage only and is never copied into the runtime image.
-COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /uv
+COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21c84b5e8c9193f7014ed71479ee795ff /uv /uv
+
+# uv reads its own env, not pip's: match the previous pip timeout and pin the
+# build backend so legacy sdists (e.g. django-allauth) build under modern uv.
+ENV UV_HTTP_TIMEOUT=100 \
+    UV_BUILD_CONSTRAINT=/code/requirements/uv-build-constraints.txt
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
