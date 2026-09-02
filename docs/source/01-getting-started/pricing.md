@@ -3,6 +3,8 @@
 Thank you for your interest in hosting your challenge on EvalAI. We’re excited to support your work.
 We offer 4 plans based on the compute needs of the challenge hosts. Each plan is a monthly subscription (managed via Stripe) with no long-term commitment—you can cancel anytime once your challenge concludes. Stripe accepts all major payment methods and provides monthly receipts.
 
+To manage or cancel your subscription, visit the [Stripe customer portal](https://billing.stripe.com/p/login/3cI8wO5Nh8a27cwgYXcEw00).
+
 Each plan is a monthly subscription that includes one always-on worker to handle submissions (except for the Remote Evaluation Plan, which relies on your own infrastructure). If you expect higher submission volume—especially near deadlines—we can scale easily by adding additional workers. These extra workers will be billed separately according to your selected plan.
 
 Below is a detailed comparison of the available plans:
