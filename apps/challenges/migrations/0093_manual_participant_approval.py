@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("participants", "0012_remove_docker_repository_uri_from_team"),
         ("challenges", "0092_challenge_allow_cancel_running_submissions"),

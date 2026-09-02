@@ -447,7 +447,6 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
 
 class CreateChallengeHostAndTeam(BaseAPITestClass):
-
     url = reverse_lazy("hosts:create_challenge_host_team")
 
     def setUp(self):
@@ -502,7 +501,6 @@ class RemoveChallengeHostFromTeamHimselfTest(BaseAPITestClass):
 
 
 class InviteHostToTeamTest(BaseAPITestClass):
-
     url = reverse_lazy("hosts:invite_host_to_team")
 
     def setUp(self):

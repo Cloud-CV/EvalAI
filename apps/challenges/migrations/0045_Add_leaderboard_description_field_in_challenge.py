@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0044_add_field_to_allow_email_ids_in_challenge_phase")
     ]

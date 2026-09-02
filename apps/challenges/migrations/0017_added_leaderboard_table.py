@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0016_added_dataset_split_as_m2m_field")]
 
     operations = [

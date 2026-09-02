@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0049_add_slug_field_in_challenge_phase")]
 
     operations = [

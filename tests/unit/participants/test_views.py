@@ -59,7 +59,6 @@ class BaseAPITestClass(APITestCase):
 
 
 class GetParticipantTeamTest(BaseAPITestClass):
-
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
@@ -249,7 +248,6 @@ class GetParticipantTeamTest(BaseAPITestClass):
 
 
 class CreateParticipantTeamTest(BaseAPITestClass):
-
     url = reverse_lazy("participants:get_participant_team_list")
 
     def setUp(self):
@@ -1096,7 +1094,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
         )
 
         expected = {
-            "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"  # noqa: ignore=E501
+            "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
         }
 
         response = self.client.delete(self.url, {})

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("hosts", "0002_added_unique_attribute_in_team_name")]
 
     operations = [

@@ -9,7 +9,6 @@ from .models import Submission
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
-
     participant_team_name = serializers.SerializerMethodField()
     execution_time = serializers.SerializerMethodField()
 
@@ -104,7 +103,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
 
 class LeaderboardDataSerializer(serializers.ModelSerializer):
-
     participant_team_name = serializers.SerializerMethodField()
     leaderboard_schema = serializers.SerializerMethodField()
 
@@ -130,7 +128,6 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
 
 
 class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
-
     participant_team = serializers.SerializerMethodField()
     challenge_phase = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
@@ -264,9 +261,9 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
             submission = context.get("submission").pk
             kwargs["data"]["submission"] = submission
 
-            kwargs["data"][
-                "leaderboard"
-            ] = challenge_phase_split.leaderboard.pk
+            kwargs["data"]["leaderboard"] = (
+                challenge_phase_split.leaderboard.pk
+            )
 
         super(CreateLeaderboardDataSerializer, self).__init__(*args, **kwargs)
 

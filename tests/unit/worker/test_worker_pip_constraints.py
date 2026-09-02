@@ -33,9 +33,9 @@ def test_worker_dockerfile_sets_pip_constraint(
             rf"(?m)^\s*(?:ENV\s+)?{variable}"
             rf"={re.escape(expected)}(?:\s|\\|$)"
         )
-        assert re.search(
-            pattern, runtime_stage
-        ), f"{dockerfile_path} must set {variable} to {expected}"
+        assert re.search(pattern, runtime_stage), (
+            f"{dockerfile_path} must set {variable} to {expected}"
+        )
 
 
 @pytest.mark.parametrize(
@@ -48,6 +48,6 @@ def test_pip_constraint_points_at_runtime_stage_requirements(
     # runtime stage so PIP_CONSTRAINT resolves at container runtime.
     content = (REPO_ROOT / dockerfile_path).read_text()
     runtime_stage = re.split(r"(?mi)^FROM\s+", content)[-1]
-    assert re.search(
-        r"(?m)^COPY\s+\.\s+/code/(?:\s|$)", runtime_stage
-    ), f"{dockerfile_path} must copy the app (incl. requirements/) into /code"
+    assert re.search(r"(?m)^COPY\s+\.\s+/code/(?:\s|$)", runtime_stage), (
+        f"{dockerfile_path} must copy the app (incl. requirements/) into /code"
+    )

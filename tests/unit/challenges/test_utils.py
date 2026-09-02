@@ -4,8 +4,7 @@ import random
 import string
 import unittest
 from datetime import timedelta
-from unittest.mock import MagicMock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from unittest.mock import patch as mockpatch
 
 import pytest
@@ -560,9 +559,7 @@ class SendSubscriptionPlansEmailTests(unittest.TestCase):
         mock_settings.SENDGRID_SETTINGS = {
             "TEMPLATES": {"SUBSCRIPTION_PLANS_EMAIL": "template-id"}
         }
-        self.mock_challenge.creator.get_all_challenge_host_email.return_value = (
-            []
-        )
+        self.mock_challenge.creator.get_all_challenge_host_email.return_value = []
 
         send_subscription_plans_email(self.mock_challenge)
 

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("web", "0004_change_team_model_field_type")]
 
     operations = [

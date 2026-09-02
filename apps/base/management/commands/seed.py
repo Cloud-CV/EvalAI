@@ -8,7 +8,6 @@ DEFAULT_NUMBER_OF_CHALLENGES = 10
 
 
 class Command(BaseCommand):
-
     help = "Seeds the database with random but sensible values."
 
     def add_arguments(self, parser):

@@ -215,7 +215,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return paginator.get_paginated_response(response_data)
 
     elif request.method == "POST":
-
         # check if the challenge is active or not
         if not challenge.is_active:
             response_data = {"error": "Challenge is not active"}
@@ -292,9 +291,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         all_participants_email = participant_team.get_all_participants_email()
         for participant_email in all_participants_email:
             if participant_email in challenge.banned_email_ids:
-                message = "You're a part of {} team and it has been banned from this challenge. \
+                message = (
+                    "You're a part of {} team and it has been banned from this challenge. \
                 Please contact the challenge host.".format(
-                    participant_team.team_name
+                        participant_team.team_name
+                    )
                 )
                 response_data = {"error": message}
                 return Response(
@@ -1868,9 +1869,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     ):
                         malformed_metrics.append((metric, type(value)))
 
-                is_partial_evaluation_phase = (
-                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
-                )
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
@@ -2088,9 +2087,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         malformed_metrics.append((metric, type(value)))
                     updated_result[metric] = value
 
-                is_partial_evaluation_phase = (
-                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
-                )
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
@@ -3002,9 +2999,11 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
+            message = (
+                "You're a part of {} team and it has been banned from this challenge. \
             Please contact the challenge host.".format(
-                participant_team.team_name
+                    participant_team.team_name
+                )
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
@@ -3189,9 +3188,11 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
+            message = (
+                "You're a part of {} team and it has been banned from this challenge. \
             Please contact the challenge host.".format(
-                participant_team.team_name
+                    participant_team.team_name
+                )
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
@@ -3329,9 +3330,11 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
+            message = (
+                "You're a part of {} team and it has been banned from this challenge. \
             Please contact the challenge host.".format(
-                participant_team.team_name
+                    participant_team.team_name
+                )
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("web", "0008_modify_description_field_to_be_blank")]
 
     operations = [

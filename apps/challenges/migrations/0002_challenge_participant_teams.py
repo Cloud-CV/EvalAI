@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("participants", "0005_remove_participantteam_challenge"),
         ("challenges", "0001_initial"),

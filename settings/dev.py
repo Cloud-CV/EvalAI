@@ -1,6 +1,7 @@
+import os
 import warnings
 
-from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
+from .common import *  # noqa: F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -12,17 +13,11 @@ ALLOWED_HOSTS = ["*"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_NAME", "evalai"),  # noqa: ignore=F405
-        "USER": os.environ.get(  # noqa: ignore=F405
-            "POSTGRES_USER", "postgres"
-        ),  # noqa: ignore=F405
-        "PASSWORD": os.environ.get(  # noqa: ignore=F405
-            "POSTGRES_PASSWORD", "postgres"
-        ),  # noqa: ignore=F405
-        "HOST": os.environ.get(  # noqa: ignore=F405
-            "POSTGRES_HOST", "localhost"
-        ),  # noqa: ignore=F405
-        "PORT": os.environ.get("POSTGRES_PORT", 5432),  # noqa: ignore=F405
+        "NAME": os.environ.get("POSTGRES_NAME", "evalai"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "PORT": os.environ.get("POSTGRES_PORT", 5432),
     }
 }
 
@@ -34,7 +29,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [  # noqa: ignore=F405
+INSTALLED_APPS += [  # noqa: F405
     "django_spaghetti",
     "debug_toolbar",
     "django_extensions",
@@ -63,7 +58,7 @@ CACHES = {
 
 MEDIA_URL = "/media/"
 
-MIDDLEWARE += [  # noqa: ignore=F405
+MIDDLEWARE += [  # noqa: F405
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "silk.middleware.SilkyMiddleware",
 ]

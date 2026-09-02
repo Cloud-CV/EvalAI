@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("challenges", "0059_add_blank_in_phase_environment_url")]
 
     operations = [

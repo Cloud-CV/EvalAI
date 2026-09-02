@@ -35,7 +35,6 @@ class ChallengeHostTeam(TimeStampedModel):
 
 
 class ChallengeHost(TimeStampedModel):
-
     # permission options
     ADMIN = "Admin"
     READ = "Read"

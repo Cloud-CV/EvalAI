@@ -1286,9 +1286,7 @@ class MainFunctionTest(BaseAPITestClass):
                 )
                 mock_queue.receive_messages.return_value = [mock_message]
                 mock_get_or_create_sqs_queue.return_value = mock_queue
-                mock_Submission.objects.filter.return_value.count.return_value = (
-                    0
-                )
+                mock_Submission.objects.filter.return_value.count.return_value = 0
 
                 main()
 

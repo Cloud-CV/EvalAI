@@ -2,34 +2,22 @@ repos:
   - repo: local
     hooks:
       - id: cleanup-code
-        name: Clean up code (autoflake, autopep8, black, isort)
+        name: Clean up code (ruff)
         entry: bash scripts/tools/cleanup_code.sh
         language: system
         types: [python]
         pass_filenames: true
         stages: [commit]
 
-  - repo: https://github.com/ambv/black
-    rev: 24.8.0
+  # ruff replaces black, isort, flake8, autoflake and autopep8. Its config
+  # lives in pyproject.toml under [tool.ruff], so no args are needed here.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.5
     hooks:
-      - id: black
-        language_version: python3.9
-        args: ['--line-length=79', '--check', '--diff', '--verbose']
-        verbose: true
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: ['--profile=black', '--line-length=79', '--check', '--diff', '--verbose']
-        verbose: true
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.2
-    hooks:
-      - id: flake8
-        args: ['--config=.flake8', '--verbose']
-        verbose: true
+      - id: ruff-check
+        args: ['--no-fix']
+      - id: ruff-format
+        args: ['--check', '--diff']
 
   - repo: https://github.com/pycqa/pylint
     rev: v3.3.6

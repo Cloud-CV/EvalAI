@@ -417,7 +417,6 @@ class TestGetSqsQueue(BaseAPITestClass):
 
 
 class TestSendEmail(unittest.TestCase):
-
     def setUp(self):
         self._profile_patcher = patch(
             "accounts.models.Profile.objects.filter",
@@ -464,9 +463,9 @@ class TestSendEmail(unittest.TestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 
@@ -508,9 +507,9 @@ class TestSendEmail(unittest.TestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 
@@ -629,7 +628,6 @@ class TestSendEmail(unittest.TestCase):
 
 
 class TestSendEmailRateLimit(unittest.TestCase):
-
     def setUp(self):
         self._profile_patcher = patch(
             "accounts.models.Profile.objects.filter",
@@ -672,9 +670,9 @@ class TestSendEmailRateLimit(unittest.TestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 
@@ -740,9 +738,9 @@ class TestSendEmailRateLimit(unittest.TestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 
@@ -776,9 +774,9 @@ class TestSendEmailRateLimit(unittest.TestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 
@@ -854,9 +852,9 @@ class TestSendEmailBounceGuard(DjangoTestCase):
         mock_get_env.return_value = "fake_api_key"
         mock_sg = MagicMock()
         mock_sendgrid_client.return_value = mock_sg
-        mock_sg.client.templates._("tid").get.return_value = (
-            self._mock_sendgrid_template_response()
-        )
+        mock_sg.client.templates._(
+            "tid"
+        ).get.return_value = self._mock_sendgrid_template_response()
         mock_msg = MagicMock()
         mock_email_cls.return_value = mock_msg
 

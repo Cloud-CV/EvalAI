@@ -8,7 +8,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("hosts", "Add_blank_in_host_team_URL"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

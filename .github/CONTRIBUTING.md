@@ -28,12 +28,13 @@ Our central development branch is development. Coding is done on feature branche
         git merge upstream/master
         git checkout -b your-branch-name
 
-    We highly encourage using [black](http://www.github.com/psf/black)
-    to format your code. It sticks to PEP8 for the most part and is in 
-    line with the rest of the repo. We have already set up [pre-commit 
+    We highly encourage using [ruff](https://docs.astral.sh/ruff/)
+    to format and lint your code. It sticks to PEP8 for the most part and is
+    in line with the rest of the repo, and it replaces black, isort, flake8,
+    autoflake and autopep8. We have already set up [pre-commit
     hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
-    to run black and flake8. To activate the hooks, you just need to run
-    the following comamnd once:
+    to run ruff and pylint. To activate the hooks, you just need to run
+    the following command once:
 
         pre-commit install
 
@@ -56,9 +57,10 @@ Our central development branch is development. Coding is done on feature branche
 
     - Please make sure your code is well-formatted and adheres to PEP8 conventions (for Python) and the airbnb style guide (for JavaScript). For others (Lua, prototxt etc.) please ensure that the code is well-formatted and the style consistent.
     - Please ensure that your code is well tested.
-    - We highly encourage to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
+    - We highly encourage to use `ruff` to follow the PEP8 styling. Run the following commands before creating the pull request:
 
-            autopep8 --in-place --exclude env,docs --recursive .     
+            ruff check --fix .
+            ruff format .
             git commit -a -m “{{commit_message}}”
             git push origin {{branch_name}}
     - Also, For Pretifying the Frontend Code Use ```HTML/JS/CSS Pretifier```.

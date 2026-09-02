@@ -587,7 +587,7 @@ def main():
 
     try:
         # Phase 1: Stream orphaned configs and write to temp files
-        logger.log(f"\n{'='*60}")
+        logger.log(f"\n{'=' * 60}")
         logger.log("PHASE 1: Collecting orphaned configuration files")
         logger.log("=" * 60)
         total_configs, total_files, stats = (
@@ -615,7 +615,7 @@ def main():
             )
 
         # Phase 2: Delete S3 files (streaming from temp file)
-        logger.log(f"\n{'='*60}")
+        logger.log(f"\n{'=' * 60}")
         logger.log("PHASE 2: Deleting S3 files")
         logger.log("=" * 60)
         deleted, failed, total_size = bulk_delete_s3_files_from_file(
@@ -624,7 +624,7 @@ def main():
 
         # Phase 3: Delete DB records (if requested, streaming from temp file)
         if args.delete_db_records and args.execute and total_configs > 0:
-            logger.log(f"\n{'='*60}")
+            logger.log(f"\n{'=' * 60}")
             logger.log("PHASE 3: Deleting database records")
             logger.log("=" * 60)
             db_deleted = delete_db_records_from_file(

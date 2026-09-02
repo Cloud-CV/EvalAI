@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("hosts", "0003_challengehostteam_team_url")]
 
     operations = [

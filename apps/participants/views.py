@@ -162,7 +162,6 @@ def participant_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
-
         if request.method == "PATCH":
             if not is_user_creator_of_participant_team(
                 request.user, participant_team
@@ -399,13 +398,12 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if participant_team.created_by == request.user:
-
         if (
             participant.user == request.user
         ):  # when the user tries to remove himself
             response_data = {
                 "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
-            }  # noqa: ignore=E501
+            }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )

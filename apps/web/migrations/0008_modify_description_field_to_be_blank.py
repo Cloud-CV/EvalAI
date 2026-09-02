@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("web", "0007_add_position_in_team_model")]
 
     operations = [

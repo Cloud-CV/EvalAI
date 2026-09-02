@@ -1470,7 +1470,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     zip_file.write(response.content)
         except IOError:
             message = (
-                "Unable to process the uploaded zip file. " "Please try again!"
+                "Unable to process the uploaded zip file. Please try again!"
             )
             response_data = {"error": message}
             logger.exception(message)
@@ -1705,7 +1705,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         "project_url",
                         "publication_url",
                     ]
-                    if not attribute["name"] in valid_attributes:
+                    if attribute["name"] not in valid_attributes:
                         message = (
                             "Default meta attribute: {} in phase: {} does "
                             "not exist!".format(attribute["name"], data["id"])
@@ -2391,7 +2391,6 @@ def get_all_submissions_of_challenge(
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
-
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         # Use helper function to get optimized submissions queryset
@@ -2413,7 +2412,6 @@ def get_all_submissions_of_challenge(
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
-
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
@@ -2692,7 +2690,6 @@ def download_all_submissions(
             elif has_user_participated_in_challenge(
                 user=request.user, challenge_id=challenge_pk
             ):
-
                 # get participant team object for the user for a particular
                 # challenge.
                 participant_team_pk = (
@@ -3638,8 +3635,7 @@ def get_challenge_phase_environment_url(request, slug):
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             "error": (
-                "Sorry, you are not authorized to access test environment "
-                "URL."
+                "Sorry, you are not authorized to access test environment URL."
             )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -4905,7 +4901,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phases_data,
                     files["challenge_test_annotation_files"],
                 ):
-
                     # Override the submission_meta_attributes when they are
                     # missing
                     submission_meta_attributes = data.get(
@@ -5269,8 +5264,9 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
     except ChallengePhase.DoesNotExist:
         response_data = {
             "error": (
-                "Challenge phase {} does not exist for challenge "
-                "{}".format(phase_pk, challenge.pk)
+                "Challenge phase {} does not exist for challenge {}".format(
+                    phase_pk, challenge.pk
+                )
             )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)

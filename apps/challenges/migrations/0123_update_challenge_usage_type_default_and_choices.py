@@ -9,7 +9,6 @@ def migrate_other_challenge_usage_type_to_paid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("challenges", "0122_add_challenge_usage_and_retention_policy"),
     ]

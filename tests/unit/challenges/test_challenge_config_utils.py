@@ -225,9 +225,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.unique_folder_name = "unique_folder"
         self.extracted_folder_name = "extracted_folder"
         self.zip_ref = Mock()
-        self.zip_ref.namelist.return_value = (
-            []
-        )  # Mock the namelist method to return an empty list
+        self.zip_ref.namelist.return_value = []  # Mock the namelist method to return an empty list
         self.current_challenge = Mock()
         self.error_message_dict = {
             "no_yaml_file": "No YAML file found in the zip.",
@@ -1450,7 +1448,6 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                             "type": "text",
                         }
                     ],
-                    "max_submissions_per_month": 10,
                 }
             ]
         }

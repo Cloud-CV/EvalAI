@@ -3,7 +3,6 @@ from django.utils import timezone
 
 
 class ChallengeFilter(SimpleListFilter):
-
     title = "Challenges"
     parameter_name = "challenge"
 

@@ -82,7 +82,7 @@ The daemon should use the `fuse-overlayfs` storage driver and `"cgroup-parent": 
 
 ### Linting
 
-- **Backend**: `docker exec workspace-django-1 bash -c 'cd /code && python -m black --check --line-length=79 apps/ && python -m isort --check --profile=black --line-length=79 apps/'`
+- **Backend**: `docker exec workspace-django-1 bash -c 'cd /code && python -m ruff check --no-fix apps/ && python -m ruff format --check apps/'` (config in `pyproject.toml`). To apply fixes instead of reporting them, swap `--no-fix` for `--fix` and drop `--check`. Dropping `--no-fix` on its own is not enough — ruff only rewrites files when `--fix` is passed.
 - **Frontend**: ESLint runs automatically as part of `gulp dev:runserver` (the nodejs container entrypoint). Check container logs for lint results.
 
 ### Key Gotchas
