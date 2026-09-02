@@ -1,6 +1,10 @@
 # Stage 1: Build stage with all build dependencies
 FROM python:3.9.21-slim-bullseye AS builder
 
+# Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
+# the builder stage only and is never copied into the runtime image.
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /uv
+
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -53,9 +57,9 @@ COPY requirements/ /code/requirements/
 # Install Python dependencies with BuildKit cache mount
 # Install prerequisite packages first (needed for compiling native extensions)
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 setuptools==57.5.0 && \
-    pip install --no-cache-dir --no-compile -r requirements/dev.txt && \
-    pip install --no-cache-dir --no-compile -r requirements/worker_py3_9.txt
+    /uv pip install --system --no-cache -U cffi service_identity cython==0.29.36 setuptools==57.5.0 && \
+    /uv pip install --system --no-cache -r requirements/dev.txt && \
+    /uv pip install --system --no-cache -r requirements/worker_py3_9.txt
 
 # Best-effort bytecode cleanup; keep separate so pip failures fail the build.
 RUN rm -rf /root/.cache/pip && \

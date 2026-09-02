@@ -1,6 +1,10 @@
 # Stage 1: Build stage with build dependencies
 FROM python:3.9.21-slim-bullseye AS builder
 
+# Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
+# the builder stage only and is never copied into the runtime image.
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /uv
+
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -29,7 +33,7 @@ COPY requirements/ /code/requirements/
 
 # Install Python dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -r requirements/dev.txt && \
+    /uv pip install --system --no-cache -r requirements/dev.txt && \
     # Clean up pip cache and Python bytecode (directories first, then files)
     rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
