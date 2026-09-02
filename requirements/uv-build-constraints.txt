@@ -1,0 +1,7 @@
+# Build-time constraints for uv's isolated PEP 517 source builds (UV_BUILD_CONSTRAINT).
+# Modern setuptools removed the top-level `convert_path` re-export, but legacy
+# sdists in the pinned stack (e.g. django-allauth 0.43.0) still import it at
+# build time. Cap setuptools to a release that keeps `convert_path` and still
+# supports Python 3.7-3.9. pip did not hit this because it seeds an older
+# setuptools into its build env; this makes uv builds behave the same.
+setuptools<68

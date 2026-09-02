@@ -1,6 +1,16 @@
 # Stage 1: Build stage with all build dependencies
 FROM python:3.7-slim-bullseye AS builder
 
+# Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
+# the builder stage only and is never copied into the runtime image.
+COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21c84b5e8c9193f7014ed71479ee795ff /uv /uv
+
+# uv reads its own env, not pip's: match the previous pip timeout and pin the
+# build backend so legacy sdists (e.g. django-allauth) build under modern uv.
+ENV UV_HTTP_TIMEOUT=100 \
+    UV_HTTP_CONNECT_TIMEOUT=100 \
+    UV_BUILD_CONSTRAINT=/code/requirements/uv-build-constraints.txt
+
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -73,9 +83,9 @@ RUN sed -i 's/^PyJWT==.*/PyJWT==2.8.0/' /code/requirements/common.txt && \
 
 # Install Python dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --no-compile -U cffi service_identity cython==0.29.36 numpy==1.18.1 && \
-    pip install --no-cache-dir --no-compile -r requirements/prod.txt && \
-    pip install --no-cache-dir --no-compile -r requirements/worker_py3_7.txt && \
+    /uv pip install --system --no-cache -U cffi service_identity cython==0.29.36 numpy==1.18.1 && \
+    /uv pip install --system --no-cache -r requirements/prod.txt && \
+    /uv pip install --system --no-cache -r requirements/worker_py3_7.txt && \
     # Clean up pip cache and Python bytecode (directories first, then files)
     rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.7/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
