@@ -480,19 +480,31 @@ class TestExtractSubmissionDataHappyPath(unittest.TestCase):
 
 
 class TestMakeRequestExceptions(unittest.TestCase):
+    # These two previously asserted UnboundLocalError, pinning a bug: the PUT
+    # handler referenced `response` (which is unbound when requests.put()
+    # itself raises) inside a log message that also used `{}` with the `%`
+    # operator. The handler destroyed the original exception before it could
+    # propagate. Now the caller sees the real error, matching the GET, PATCH
+    # and POST branches.
     @patch("scripts.workers.remote_submission_worker.logger")
     @patch("scripts.workers.remote_submission_worker.requests.put")
     def test_make_request_put_request_exception(self, mock_put, mock_logger):
         mock_put.side_effect = requests.exceptions.RequestException()
-        with self.assertRaises(UnboundLocalError):
+        with self.assertRaises(requests.exceptions.RequestException):
             make_request("http://test-url", "PUT", data={})
+        # The handler has to survive long enough to log; that is what broke.
+        mock_logger.exception.assert_called_once()
 
     @patch("scripts.workers.remote_submission_worker.logger")
     @patch("scripts.workers.remote_submission_worker.requests.put")
     def test_make_request_put_http_error(self, mock_put, mock_logger):
+        # HTTPError subclasses RequestException, so it is caught by the first
+        # handler and re-raised unchanged. The `except HTTPError` clause below
+        # it in make_request() is unreachable for that reason.
         mock_put.side_effect = requests.exceptions.HTTPError()
-        with self.assertRaises(UnboundLocalError):
+        with self.assertRaises(requests.exceptions.HTTPError):
             make_request("http://test-url", "PUT", data={})
+        mock_logger.exception.assert_called_once()
 
 
 class TestMakeRequestPatchHttpError(unittest.TestCase):
