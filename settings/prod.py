@@ -4,7 +4,7 @@ import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from .common import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from .common import *  # noqa: F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 _INSECURE_SECRET_KEYS = {"", "random_secret_key", "some-secret-key"}
 if (
@@ -117,7 +117,9 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 REST_FRAMEWORK_DOCS = {"HIDE_DOCS": True}
 
 # Port number for the python-memcached cache backend.
-CACHES["default"]["LOCATION"] = os.environ.get("MEMCACHED_LOCATION")
+CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: F405
+    "MEMCACHED_LOCATION"
+)
 
 # Initialize Sentry SDK
 sentry_sdk.init(

@@ -1,6 +1,7 @@
+import os
 import warnings
 
-from .common import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from .common import *  # noqa: F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -28,7 +29,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [
+INSTALLED_APPS += [  # noqa: F405
     "django_spaghetti",
     "debug_toolbar",
     "django_extensions",
@@ -57,7 +58,7 @@ CACHES = {
 
 MEDIA_URL = "/media/"
 
-MIDDLEWARE += [
+MIDDLEWARE += [  # noqa: F405
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "silk.middleware.SilkyMiddleware",
 ]

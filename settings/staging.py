@@ -1,4 +1,4 @@
-from .prod import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from .prod import *  # noqa: F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Sentry (including before_send write-error filter) is configured in prod.
 # Environment is set via ENVIRONMENT (e.g. docker_staging.env: ENVIRONMENT=staging).
