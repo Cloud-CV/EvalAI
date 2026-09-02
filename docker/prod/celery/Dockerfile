@@ -8,6 +8,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21
 # uv reads its own env, not pip's: match the previous pip timeout and pin the
 # build backend so legacy sdists (e.g. django-allauth) build under modern uv.
 ENV UV_HTTP_TIMEOUT=100 \
+    UV_HTTP_CONNECT_TIMEOUT=100 \
     UV_BUILD_CONSTRAINT=/code/requirements/uv-build-constraints.txt
 
 ENV PYTHONUNBUFFERED=1 \
