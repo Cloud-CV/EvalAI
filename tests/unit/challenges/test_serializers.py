@@ -19,6 +19,7 @@ from challenges.serializers import (
     ChallengePhaseCreateSerializer,
     ChallengePhaseSerializer,
     ChallengeSerializer,
+    LeaderboardDataSerializer,
     PWCChallengeLeaderboardSerializer,
     UserInvitationSerializer,
 )
@@ -631,6 +632,52 @@ class ChallengeLeaderboardSerializerTests(TestCase):
 
         result = self.serializer.get_leaderboard(self.obj)
         self.assertEqual(result, ["accuracy", "loss", "f1_score"])
+
+
+class LeaderboardDataSerializerTests(TestCase):
+    """Cover the context-injection branch of ``__init__``.
+
+    Note there are two ``LeaderboardDataSerializer`` classes in the codebase.
+    The one in ``jobs.serializers`` is covered by
+    ``tests/unit/jobs/test_serializer.py``; this is the ``challenges`` one,
+    whose ``__init__`` copies primary keys out of ``context`` into ``data``.
+
+    Deliberately no ``django_db`` marker, unlike its neighbours: this path
+    only reads ``.pk`` off the objects handed to it, so leaving the marker
+    off makes pytest-django fail the test if it ever starts touching the
+    database.
+    """
+
+    def test_init_copies_context_primary_keys_into_data(self):
+        data = {"result": [1, 2]}
+
+        LeaderboardDataSerializer(
+            data=data,
+            context={
+                "challenge_phase_split": Mock(pk=7),
+                "submission": Mock(pk=11),
+            },
+        )
+
+        # __init__ mutates the caller's dict in place.
+        self.assertEqual(data["challenge_phase_split"], 7)
+        self.assertEqual(data["submission"], 11)
+        self.assertEqual(data["result"], [1, 2])
+
+    def test_init_without_context_leaves_data_untouched(self):
+        data = {"result": [3]}
+
+        LeaderboardDataSerializer(data=data)
+
+        self.assertEqual(data, {"result": [3]})
+
+    def test_init_with_empty_context_leaves_data_untouched(self):
+        # An empty context is falsy, so neither inner branch may fire.
+        data = {"result": [4]}
+
+        LeaderboardDataSerializer(data=data, context={})
+
+        self.assertEqual(data, {"result": [4]})
 
 
 @pytest.mark.django_db
