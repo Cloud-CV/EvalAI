@@ -1,4 +1,19 @@
 <section ng-repeat="item in challenge.phases.results" class="ev-sm-container ev-view challenge-container">
+    <div ng-if="$first && challenge.isChallengeHost && challenge.page.max_allowed_phases" class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 l12">
+                <div class="w-300 fs-16">
+                    <strong>Note:</strong> This challenge is limited to
+                    <strong>{{challenge.page.max_allowed_phases}}</strong>
+                    phase(s). You currently have
+                    <strong>{{challenge.page.phase_count}}</strong>.
+                    Contact us at
+                    <a href="mailto:team@eval.ai" class="blue-text">team@eval.ai</a>
+                    if you need more phases.
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
         <div class="row">
             <div class="col s12 m11 l11">
