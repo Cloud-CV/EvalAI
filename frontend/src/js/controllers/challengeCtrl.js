@@ -71,6 +71,7 @@
         vm.isSubmissionUsingUrl = null;
         vm.isSubmissionUsingCli = null;
         vm.isSubmissionUsingFile = null;
+        vm.submissionType = null;
         vm.isRemoteChallenge = false;
         vm.allowResumingSubmisisons = false;
         vm.allowCancelRunningSubmissions = false;
@@ -739,6 +740,10 @@
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
                             vm.isPublicSubmission = null;
+                            vm.isSubmissionUsingCli = null;
+                            vm.isSubmissionUsingFile = null;
+                            vm.isSubmissionUsingUrl = null;
+                            vm.submissionType = null;
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
@@ -756,6 +761,10 @@
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
                             vm.isPublicSubmission = null;
+                            vm.isSubmissionUsingCli = null;
+                            vm.isSubmissionUsingFile = null;
+                            vm.isSubmissionUsingUrl = null;
+                            vm.submissionType = null;
                             if (status == 404) {
                                 vm.subErrors.msg = "Please select phase!";
                             } else {
