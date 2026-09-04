@@ -5,7 +5,7 @@ describe('Unit tests for dashboard controller', function () {
 
     var $controller, createController, $rootScope, $state, $scope, utilities, vm;
 
-    beforeEach(inject(function (_$controller_, _$state_, _$rootScope_,  _utilities_,) {
+    beforeEach(inject(function (_$controller_, _$state_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
@@ -13,7 +13,7 @@ describe('Unit tests for dashboard controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('DashCtrl', {$scope: $scope});
+            return $controller('DashCtrl', { $scope: $scope });
         };
         vm = $controller('DashCtrl', { $scope: $scope });
     }));
@@ -24,10 +24,14 @@ describe('Unit tests for dashboard controller', function () {
             spyOn(utilities, 'getData');
             vm = createController();
 
-            expect(vm.challengeCount).toEqual(0);
-            expect(vm.hostTeamCount).toEqual(0);
+            expect(vm.challengeCount).toBeNull();
+            expect(vm.hostTeamCount).toBeNull();
             expect(vm.hostTeamExist).toBeFalsy();
-            expect(vm.participatedTeamCount).toEqual(0);
+            expect(vm.participatedTeamCount).toBeNull();
+
+            expect(vm.challengeCountLoading).toBeTruthy();
+            expect(vm.hostTeamCountLoading).toBeTruthy();
+            expect(vm.participatedTeamCountLoading).toBeTruthy();
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
             expect(vm.redirectUrl).toEqual({});
         });
@@ -44,17 +48,17 @@ describe('Unit tests for dashboard controller', function () {
 
             utilities.sendRequest = function (parameters) {
                 if ((isUserDetails == true && parameters.url == 'auth/user/') ||
-                (isPresentChallenge == true && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isHostTeam == true && parameters.url == 'hosts/challenge_host_team/') ||
-                (isParticipantTeam == true && parameters.url == 'participants/participant_team')) {
+                    (isPresentChallenge == true && parameters.url == 'challenges/challenge/present/approved/public') ||
+                    (isHostTeam == true && parameters.url == 'hosts/challenge_host_team/') ||
+                    (isParticipantTeam == true && parameters.url == 'participants/participant_team')) {
                     parameters.callback.onSuccess({
                         data: successResponse,
                         status: 200
                     });
                 } else if ((isUserDetails == false && parameters.url == 'auth/user/') ||
-                (isPresentChallenge == false && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isHostTeam == false && parameters.url == 'hosts/challenge_host_team/') ||
-                (isParticipantTeam == false && parameters.url == 'participants/participant_team')){
+                    (isPresentChallenge == false && parameters.url == 'challenges/challenge/present/approved/public') ||
+                    (isHostTeam == false && parameters.url == 'hosts/challenge_host_team/') ||
+                    (isParticipantTeam == false && parameters.url == 'participants/participant_team')) {
                     parameters.callback.onError({
                         data: errorResponse,
                         status: status
@@ -130,6 +134,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.challengeCount).toEqual(successResponse.results.length);
+            expect(vm.challengeCountLoading).toBeFalsy();
             expect(vm.hostTeamExist).toBeFalsy();
         });
 
@@ -138,7 +143,7 @@ describe('Unit tests for dashboard controller', function () {
             isPresentChallenge = true;
             isHostTeam = null;
             isParticipantTeam = null;
-            // mock response with next property set to a non-null value
+
             successResponse = {
                 next: 'http://example.com/challenges/?page=2',
                 results: [
@@ -146,7 +151,7 @@ describe('Unit tests for dashboard controller', function () {
                         id: 1,
                         description: "the length of the ongoing challenge description is greater than or equal to 50",
                         creator: {
-                        id: 1
+                            id: 1
                         },
                         start_date: "Fri June 12 2018 22:41:51 GMT+0530",
                         end_date: "Fri June 12 2099 22:41:51 GMT+0530"
@@ -177,6 +182,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
+            expect(vm.challengeCountLoading).toBeFalsy();
             expect(vm.isPrivileged).toEqual(false);
         });
 
@@ -216,9 +222,10 @@ describe('Unit tests for dashboard controller', function () {
                         team_url: "https://team2.url"
                     },
                 ]
-        };
+            };
             vm = createController();
             expect(vm.hostTeamCount).toEqual(successResponse.results.length);
+            expect(vm.hostTeamCountLoading).toBeFalsy();
         });
 
         it('403 backend error on getting host team details `hosts/challenge_host_team/`', function () {
@@ -232,6 +239,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
+            expect(vm.hostTeamCountLoading).toBeFalsy();
             expect(vm.isPrivileged).toEqual(false);
         });
 
@@ -274,6 +282,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.participatedTeamCount).toEqual(successResponse.results.length);
+            expect(vm.participatedTeamCountLoading).toBeFalsy();
         });
 
         it('403 backend error on getting participated team details `participants/participant_team`', function () {
@@ -287,6 +296,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
+            expect(vm.participatedTeamCountLoading).toBeFalsy();
             expect(vm.isPrivileged).toEqual(false);
         });
 
