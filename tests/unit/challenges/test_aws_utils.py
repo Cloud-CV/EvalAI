@@ -56,6 +56,7 @@ from challenges.aws_utils import (
     scale_resources,
     scale_workers,
     schedule_challenge_cleanup,
+    schedule_challenge_cleanup_retry,
     service_manager,
     setup_auto_scaling_for_service,
     setup_ec2,
@@ -5799,10 +5800,9 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
         "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
         "arn:aws:lambda:us-east-1:123:function:cleanup",
     )
-    @patch("challenges.aws_utils.schedule_challenge_cleanup")
     @patch("challenges.aws_utils.get_boto3_client")
     def test_update_schedule_not_found_creates_new(
-        self, mock_get_boto3_client, mock_schedule_cleanup
+        self, mock_get_boto3_client
     ):
         """When the schedule doesn't exist (already fired and auto-deleted),
         create a new one."""
@@ -5825,7 +5825,10 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
 
         update_challenge_cleanup_schedule(challenge)
 
-        mock_schedule_cleanup.assert_called_once_with(challenge)
+        mock_scheduler.create_schedule.assert_called_once()
+        call_kwargs = mock_scheduler.create_schedule.call_args[1]
+        assert call_kwargs["ScheduleExpression"] == "at(2027-06-15T12:00:00)"
+        assert call_kwargs["ActionAfterCompletion"] == "DELETE"
 
     @patch(
         "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
@@ -5884,6 +5887,49 @@ class TestUpdateChallengeCleanupSchedule(unittest.TestCase):
         update_challenge_cleanup_schedule(challenge)
 
         mock_scheduler.update_schedule.assert_called_once()
+
+
+class TestScheduleChallengeCleanupRetry(unittest.TestCase):
+    @patch(
+        "challenges.aws_utils.EVENTBRIDGE_SCHEDULER_ROLE_ARN",
+        "arn:aws:iam::123:role/scheduler-role",
+    )
+    @patch(
+        "challenges.aws_utils.CHALLENGE_CLEANUP_LAMBDA_ARN",
+        "arn:aws:lambda:us-east-1:123:function:cleanup",
+    )
+    @patch("challenges.aws_utils.settings.ENVIRONMENT", "staging")
+    @patch("challenges.aws_utils.get_boto3_client")
+    def test_retry_schedules_relative_to_now_not_past_end_date(
+        self, mock_get_boto3_client
+    ):
+        """
+        When end_date is already past, retry must schedule a future at()
+        expression — EventBridge rejects past times, and pointing at
+        end_date would leave pending challenges without a drain re-check.
+        """
+        from datetime import datetime, timedelta
+
+        import pytz
+        from django.utils import timezone
+
+        mock_scheduler = MagicMock()
+        mock_get_boto3_client.return_value = mock_scheduler
+
+        now = datetime(2026, 8, 6, 12, 0, 0, tzinfo=pytz.UTC)
+        challenge = MagicMock()
+        challenge.pk = 42
+        challenge.queue = "test_queue"
+        challenge.end_date = now - timedelta(days=1)
+
+        with patch.object(timezone, "now", return_value=now):
+            schedule_challenge_cleanup_retry(challenge, delay_minutes=60)
+
+        mock_scheduler.update_schedule.assert_called_once()
+        call_kwargs = mock_scheduler.update_schedule.call_args[1]
+        assert call_kwargs["Name"] == "evalai-cleanup-challenge-staging-42"
+        assert call_kwargs["ScheduleExpression"] == "at(2026-08-06T13:00:00)"
+        assert call_kwargs["ActionAfterCompletion"] == "DELETE"
 
 
 class TestDeleteChallengeCleanupSchedule(unittest.TestCase):
@@ -5984,9 +6030,12 @@ class TestHandleEndDateChange(TestCase):
 
         mock_update_schedule.assert_called_once_with(challenge)
 
+    @patch("challenges.aws_utils.challenge_has_pending_submissions")
     @patch("challenges.aws_utils.delete_workers")
-    def test_end_date_set_to_past_triggers_cleanup(self, mock_delete_workers):
-        """When end_date is changed to the past, trigger cleanup."""
+    def test_end_date_set_to_past_triggers_cleanup(
+        self, mock_delete_workers, mock_has_pending
+    ):
+        """When end_date is changed to the past with no pending work, cleanup."""
         from datetime import timedelta
 
         from challenges.models import handle_end_date_change_for_challenge
@@ -6001,6 +6050,7 @@ class TestHandleEndDateChange(TestCase):
         challenge._original_end_date = timezone.now() + timedelta(days=30)
         challenge.end_date = timezone.now() - timedelta(days=1)
 
+        mock_has_pending.return_value = False
         mock_delete_workers.return_value = {"count": 1, "failures": []}
 
         handle_end_date_change_for_challenge(
@@ -6008,6 +6058,39 @@ class TestHandleEndDateChange(TestCase):
         )
 
         mock_delete_workers.assert_called_once_with([challenge])
+
+    @patch("challenges.aws_utils.schedule_challenge_cleanup_retry")
+    @patch("challenges.aws_utils.challenge_has_pending_submissions")
+    @patch("challenges.aws_utils.delete_workers")
+    def test_end_date_set_to_past_with_pending_skips_delete(
+        self, mock_delete_workers, mock_has_pending, mock_retry
+    ):
+        """
+        Moving end_date into the past must not delete workers while
+        submissions are still queued/running — same drain contract as #5179.
+        """
+        from datetime import timedelta
+
+        from challenges.models import handle_end_date_change_for_challenge
+        from django.utils import timezone
+
+        challenge = MagicMock()
+        challenge.is_docker_based = False
+        challenge.uses_ec2_worker = False
+        challenge.remote_evaluation = False
+        challenge.approved_by_admin = True
+        challenge.workers = 1
+        challenge._original_end_date = timezone.now() + timedelta(days=30)
+        challenge.end_date = timezone.now() - timedelta(days=1)
+
+        mock_has_pending.return_value = True
+
+        handle_end_date_change_for_challenge(
+            sender=None, instance=challenge, created=False
+        )
+
+        mock_delete_workers.assert_not_called()
+        mock_retry.assert_called_once_with(challenge)
 
     def test_end_date_change_skipped_for_docker_based(self):
         """Docker-based challenges should be skipped."""

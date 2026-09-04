@@ -807,6 +807,102 @@ def cleanup_auto_scaling_for_service(challenge):
     )
 
 
+def challenge_has_pending_submissions(challenge):
+    """
+    Return True when the challenge still has submissions that need workers.
+
+    Matches the pending set used by the cleanup Lambda / pending_submission_count
+    API: running, submitted, queued, resuming.
+    """
+    from jobs.models import Submission
+
+    return Submission.objects.filter(
+        challenge_phase__challenge=challenge,
+        status__in=[
+            Submission.RUNNING,
+            Submission.SUBMITTED,
+            Submission.QUEUED,
+            Submission.RESUMING,
+        ],
+    ).exists()
+
+
+def _challenge_cleanup_schedule_name(challenge):
+    return f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
+
+
+def _put_challenge_cleanup_schedule(challenge, run_at, *, create):
+    """
+    Create or update the one-time EventBridge cleanup schedule to fire at
+    ``run_at`` (UTC wall time via ``at()``).
+    """
+    if settings.DEBUG:
+        logger.info(
+            "Skipping EventBridge cleanup schedule for challenge %s in "
+            "development environment.",
+            challenge.pk,
+        )
+        return
+
+    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
+        logger.warning(
+            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN "
+            "not set. Skipping EventBridge schedule for challenge %s.",
+            challenge.pk,
+        )
+        return
+
+    schedule_name = _challenge_cleanup_schedule_name(challenge)
+    schedule_expression = "at({})".format(run_at.strftime("%Y-%m-%dT%H:%M:%S"))
+    target = {
+        "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
+        "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
+        "Input": json.dumps(
+            {
+                "challenge_pk": challenge.pk,
+                "queue_name": challenge.queue,
+            }
+        ),
+    }
+
+    try:
+        scheduler_client = get_boto3_client("scheduler", aws_keys)
+        kwargs = {
+            "Name": schedule_name,
+            "ScheduleExpression": schedule_expression,
+            "FlexibleTimeWindow": {"Mode": "OFF"},
+            "Target": target,
+            "ActionAfterCompletion": "DELETE",
+        }
+        if create:
+            scheduler_client.create_schedule(**kwargs)
+            logger.info(
+                "Scheduled cleanup for challenge %s at %s",
+                challenge.pk,
+                run_at,
+            )
+        else:
+            scheduler_client.update_schedule(**kwargs)
+            logger.info(
+                "Updated cleanup schedule for challenge %s to %s",
+                challenge.pk,
+                run_at,
+            )
+    except ClientError as e:
+        if not create:
+            error_code = e.response.get("Error", {}).get("Code")
+            if error_code == "ResourceNotFoundException":
+                # Schedule was already fired and auto-deleted; create a new one
+                _put_challenge_cleanup_schedule(challenge, run_at, create=True)
+                return
+        logger.exception(
+            "Failed to %s cleanup schedule for challenge %s: %s",
+            "create" if create else "update",
+            challenge.pk,
+            e,
+        )
+
+
 def schedule_challenge_cleanup(challenge):
     """
     Creates a one-time EventBridge Scheduler schedule that fires at the
@@ -818,58 +914,7 @@ def schedule_challenge_cleanup(challenge):
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge to schedule cleanup for.
     """
-    if settings.DEBUG:
-        logger.info(
-            "Skipping EventBridge cleanup schedule for challenge %s in development environment.",
-            challenge.pk,
-        )
-        return
-
-    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
-        logger.warning(
-            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
-            "Skipping EventBridge schedule for challenge %s.",
-            challenge.pk,
-        )
-        return
-
-    schedule_name = (
-        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
-    )
-    # EventBridge Scheduler uses the 'at()' expression for one-time schedules
-    schedule_expression = "at({})".format(
-        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
-    )
-
-    try:
-        scheduler_client = get_boto3_client("scheduler", aws_keys)
-        scheduler_client.create_schedule(
-            Name=schedule_name,
-            ScheduleExpression=schedule_expression,
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
-                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
-                "Input": json.dumps(
-                    {
-                        "challenge_pk": challenge.pk,
-                        "queue_name": challenge.queue,
-                    }
-                ),
-            },
-            ActionAfterCompletion="DELETE",
-        )
-        logger.info(
-            "Scheduled cleanup for challenge %s at %s",
-            challenge.pk,
-            challenge.end_date,
-        )
-    except ClientError as e:
-        logger.exception(
-            "Failed to schedule cleanup for challenge %s: %s",
-            challenge.pk,
-            e,
-        )
+    _put_challenge_cleanup_schedule(challenge, challenge.end_date, create=True)
 
 
 def update_challenge_cleanup_schedule(challenge):
@@ -881,62 +926,25 @@ def update_challenge_cleanup_schedule(challenge):
     Parameters:
     challenge (<class 'challenges.models.Challenge'>): The challenge whose schedule to update.
     """
-    if settings.DEBUG:
-        logger.info(
-            "Skipping EventBridge schedule update for challenge %s in development environment.",
-            challenge.pk,
-        )
-        return
-
-    if not CHALLENGE_CLEANUP_LAMBDA_ARN or not EVENTBRIDGE_SCHEDULER_ROLE_ARN:
-        logger.warning(
-            "CHALLENGE_CLEANUP_LAMBDA_ARN or EVENTBRIDGE_SCHEDULER_ROLE_ARN not set. "
-            "Skipping EventBridge schedule update for challenge %s.",
-            challenge.pk,
-        )
-        return
-
-    schedule_name = (
-        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
-    )
-    schedule_expression = "at({})".format(
-        challenge.end_date.strftime("%Y-%m-%dT%H:%M:%S")
+    _put_challenge_cleanup_schedule(
+        challenge, challenge.end_date, create=False
     )
 
-    try:
-        scheduler_client = get_boto3_client("scheduler", aws_keys)
-        scheduler_client.update_schedule(
-            Name=schedule_name,
-            ScheduleExpression=schedule_expression,
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": CHALLENGE_CLEANUP_LAMBDA_ARN,
-                "RoleArn": EVENTBRIDGE_SCHEDULER_ROLE_ARN,
-                "Input": json.dumps(
-                    {
-                        "challenge_pk": challenge.pk,
-                        "queue_name": challenge.queue,
-                    }
-                ),
-            },
-            ActionAfterCompletion="DELETE",
-        )
-        logger.info(
-            "Updated cleanup schedule for challenge %s to %s",
-            challenge.pk,
-            challenge.end_date,
-        )
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code")
-        if error_code == "ResourceNotFoundException":
-            # Schedule was already fired and auto-deleted; create a new one
-            schedule_challenge_cleanup(challenge)
-        else:
-            logger.exception(
-                "Failed to update cleanup schedule for challenge %s: %s",
-                challenge.pk,
-                e,
-            )
+
+def schedule_challenge_cleanup_retry(challenge, delay_minutes=60):
+    """
+    Schedule a cleanup re-check ``delay_minutes`` from now.
+
+    Used when end_date moves into the past while submissions are still
+    pending: workers must keep draining, and EventBridge cannot be pointed
+    at the (already past) end_date. Mirrors the cleanup Lambda's retry delay.
+    """
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    run_at = timezone.now() + timedelta(minutes=delay_minutes)
+    _put_challenge_cleanup_schedule(challenge, run_at, create=False)
 
 
 def delete_challenge_cleanup_schedule(challenge):
@@ -954,9 +962,7 @@ def delete_challenge_cleanup_schedule(challenge):
         )
         return
 
-    schedule_name = (
-        f"evalai-cleanup-challenge-{settings.ENVIRONMENT}-{challenge.pk}"
-    )
+    schedule_name = _challenge_cleanup_schedule_name(challenge)
     try:
         scheduler_client = get_boto3_client("scheduler", aws_keys)
         scheduler_client.delete_schedule(Name=schedule_name)
