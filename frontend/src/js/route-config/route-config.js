@@ -407,6 +407,17 @@
             authenticate: true
         };
 
+        var logout_confirm = {
+            name: "web.logout_confirm",
+            url: "/",
+            templateUrl: baseUrl + "/web/logout-confirm.html",
+            title: "Logout",
+            controller: 'MainCtrl',
+            controllerAs: 'main',
+            authenticate: true
+        };
+
+
         var auth_token = {
             name: "web.profile.AuthToken",
             parent: "web.profile",
@@ -655,6 +666,7 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
+        $stateProvider.state(logout_confirm);
         $stateProvider.state(auth_token);
         $stateProvider.state(update_profile);
         $stateProvider.state(permission_denied);
