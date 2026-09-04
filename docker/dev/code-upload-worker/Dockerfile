@@ -17,8 +17,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     build-essential \
     unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -46,8 +46,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: git is required for kubectl apply -k with github.com kustomize remote bases.
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     curl \
     unzip \
     git \

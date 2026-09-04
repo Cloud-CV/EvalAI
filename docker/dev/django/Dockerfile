@@ -17,8 +17,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies only
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     libcurl4-openssl-dev \
@@ -56,8 +56,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # git: for running git commit from container (pre-commit in Linux env, avoids macOS/ARM issues)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     libpq5 \
     libcurl4 \
     libjpeg62-turbo \

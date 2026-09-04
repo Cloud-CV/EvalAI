@@ -17,16 +17,17 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies
-# Add retry logic and --fix-missing to handle transient network issues
+# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
+# Acquire::Retries makes apt retry the fetch instead of failing the build.
 # Fix any broken dependencies first (from partial installs)
-RUN apt-get update && \
+RUN apt-get -o Acquire::Retries=5 update && \
     apt --fix-broken install -y || true && \
-    (apt-get install -y --no-install-recommends --fix-missing \
+    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     build-essential \
     unzip \
-    || (apt-get update && \
+    || (apt-get -o Acquire::Retries=5 update && \
         apt --fix-broken install -y || true && \
-        apt-get install -y --no-install-recommends --fix-missing \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
         build-essential \
         unzip)) && \
     rm -rf /var/lib/apt/lists/*
@@ -55,18 +56,19 @@ ENV PYTHONUNBUFFERED=1 \
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: curl and unzip are needed by install_dependencies.sh; git is required
 # for kubectl apply -k with github.com kustomize remote bases.
-# Add retry logic and --fix-missing to handle transient network issues
+# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
+# Acquire::Retries makes apt retry the fetch instead of failing the build.
 # Fix any broken dependencies first (from partial installs)
-RUN apt-get update && \
+RUN apt-get -o Acquire::Retries=5 update && \
     apt --fix-broken install -y || true && \
-    (apt-get install -y --no-install-recommends --fix-missing \
+    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     curl \
     unzip \
     git \
     ca-certificates \
-    || (apt-get update && \
+    || (apt-get -o Acquire::Retries=5 update && \
         apt --fix-broken install -y || true && \
-        apt-get install -y --no-install-recommends --fix-missing \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
         curl \
         unzip \
         git \

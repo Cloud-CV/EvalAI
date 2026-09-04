@@ -17,11 +17,12 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install all build dependencies
-# Add retry logic and --fix-missing to handle transient network issues
+# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
+# Acquire::Retries makes apt retry the fetch instead of failing the build.
 # Fix any broken dependencies first (from partial installs)
-RUN apt-get update && \
+RUN apt-get -o Acquire::Retries=5 update && \
     apt --fix-broken install -y || true && \
-    (apt-get install -y --no-install-recommends --fix-missing \
+    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
      build-essential \
      python3-dev \
      libpq-dev \
@@ -45,9 +46,9 @@ RUN apt-get update && \
      libcgal-qt5-dev \
      swig \
      curl \
-     || (apt-get update && \
+     || (apt-get -o Acquire::Retries=5 update && \
          apt --fix-broken install -y || true && \
-         apt-get install -y --no-install-recommends --fix-missing \
+         apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
          build-essential \
          python3-dev \
          libpq-dev \
@@ -115,11 +116,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: We copy OpenCV libs from builder to avoid python3-opencv dependency issues
-# Add retry logic and --fix-missing to handle transient network issues
+# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
+# Acquire::Retries makes apt retry the fetch instead of failing the build.
 # Fix any broken dependencies first (from partial installs)
-RUN apt-get update && \
+RUN apt-get -o Acquire::Retries=5 update && \
     apt --fix-broken install -y || true && \
-    (apt-get install -y --no-install-recommends --fix-missing \
+    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     default-jre-headless \
     libpq5 \
     libcurl4 \
@@ -133,9 +135,9 @@ RUN apt-get update && \
     libgmp10 \
     libgl1 \
     libglib2.0-0 \
-    || (apt-get update && \
+    || (apt-get -o Acquire::Retries=5 update && \
         apt --fix-broken install -y || true && \
-        apt-get install -y --no-install-recommends --fix-missing \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
         default-jre-headless \
         libpq5 \
         libcurl4 \

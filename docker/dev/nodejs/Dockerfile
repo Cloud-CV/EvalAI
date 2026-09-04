@@ -11,20 +11,21 @@ ENV NODE_ENV=development \
 
 # Install build dependencies only (for native module compilation and bower)
 # Note: ca-certificates is needed for git to verify SSL certificates when accessing GitHub
-# Add retry logic and --fix-missing to handle transient network issues
+# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
+# Acquire::Retries makes apt retry the fetch instead of failing the build.
 # Fix any broken dependencies first (from partial installs)
-RUN apt-get update && \
+RUN apt-get -o Acquire::Retries=5 update && \
     apt --fix-broken install -y || true && \
-    (apt-get install -y --no-install-recommends --fix-missing \
+    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     python2 \
     python-is-python2 \
     make \
     g++ \
     git \
     ca-certificates \
-    || (apt-get update && \
+    || (apt-get -o Acquire::Retries=5 update && \
         apt --fix-broken install -y || true && \
-        apt-get install -y --no-install-recommends --fix-missing \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
         python2 \
         python-is-python2 \
         make \
@@ -75,8 +76,8 @@ ENV NODE_ENV=development \
 
 # Install only essential runtime dependencies (no build tools, no git).
 # xvfb is installed with Chrome/Chromium in arch-specific stages so Mesa GL deps resolve together.
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 WORKDIR /code
@@ -89,20 +90,20 @@ COPY --from=builder /code/bower_components /code/bower_components
 
 # AMD64-specific stage for Chrome
 FROM base AS amd64
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget gnupg procps && \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends wget gnupg procps && \
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     google-chrome-stable libxss1 xvfb && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* && \
     find /opt/google/chrome/locales -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
 
 # ARM64-specific stage for Chromium
 FROM base AS arm64
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends chromium libxss1 procps xvfb && \
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y --no-install-recommends chromium libxss1 procps xvfb && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
