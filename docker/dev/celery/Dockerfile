@@ -17,20 +17,27 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies only (if any native extensions)
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libpng-dev \
-    libtiff-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libwebp-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+        libpng-dev \
+        libtiff-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libwebp-dev \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -54,17 +61,24 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    libpq5 \
-    libcurl4 \
-    libjpeg62-turbo \
-    zlib1g \
-    libpng16-16 \
-    libtiff5 \
-    libfreetype6 \
-    liblcms2-2 \
-    libwebp6 && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        libpq5 \
+        libcurl4 \
+        libjpeg62-turbo \
+        zlib1g \
+        libpng16-16 \
+        libtiff5 \
+        libfreetype6 \
+        liblcms2-2 \
+        libwebp6 \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 

@@ -17,43 +17,37 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install all build dependencies
-# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
-# Acquire::Retries makes apt retry the fetch instead of failing the build.
-# Fix any broken dependencies first (from partial installs)
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt --fix-broken install -y || true && \
-    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-     build-essential \
-     python3-dev \
-     libpq-dev \
-     libcurl4-openssl-dev \
-     libssl-dev \
-     libjpeg-dev \
-     zlib1g-dev \
-     libpng-dev \
-     libtiff-dev \
-     libfreetype6-dev \
-     liblcms2-dev \
-     libwebp-dev \
-     default-jre-headless \
-     curl \
-     || (apt-get -o Acquire::Retries=5 update && \
-         apt --fix-broken install -y || true && \
-         apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-         build-essential \
-         python3-dev \
-         libpq-dev \
-         libcurl4-openssl-dev \
-         libssl-dev \
-         libjpeg-dev \
-         zlib1g-dev \
-         libpng-dev \
-         libtiff-dev \
-         libfreetype6-dev \
-         liblcms2-dev \
-         libwebp-dev \
-         default-jre-headless \
-         curl)) && \
+# deb.debian.org (Fastly) intermittently resets connections, and sporadically
+# returns 404 for pool files that do exist -- the same URL serves fine minutes
+# later. Acquire::Retries handles the transport errors, but apt treats 404 as
+# fatal and will not retry it, so retry the whole update+install with a pause.
+# Bounded, so a genuinely missing package still fails the build.
+# Do not "fix" this by pointing at another mirror: security.debian.org and
+# cloudfront.debian.net were both measured to 404 bullseye-security pool files
+# that deb.debian.org serves correctly.
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        build-essential \
+        python3-dev \
+        libpq-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+        libpng-dev \
+        libtiff-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libwebp-dev \
+        default-jre-headless \
+        curl \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -85,20 +79,27 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    default-jre-headless \
-    libpq5 \
-    libcurl4 \
-    libjpeg62-turbo \
-    zlib1g \
-    libpng16-16 \
-    libtiff5 \
-    libfreetype6 \
-    liblcms2-2 \
-    libwebp6 \
-    libgl1 \
-    libglib2.0-0 && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        default-jre-headless \
+        libpq5 \
+        libcurl4 \
+        libjpeg62-turbo \
+        zlib1g \
+        libpng16-16 \
+        libtiff5 \
+        libfreetype6 \
+        liblcms2-2 \
+        libwebp6 \
+        libgl1 \
+        libglib2.0-0 \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 

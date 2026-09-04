@@ -11,27 +11,29 @@ ENV NODE_ENV=development \
 
 # Install build dependencies only (for native module compilation and bower)
 # Note: ca-certificates is needed for git to verify SSL certificates when accessing GitHub
-# deb.debian.org (Fastly) intermittently resets connections and 404s pool files;
-# Acquire::Retries makes apt retry the fetch instead of failing the build.
-# Fix any broken dependencies first (from partial installs)
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt --fix-broken install -y || true && \
-    (apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    python2 \
-    python-is-python2 \
-    make \
-    g++ \
-    git \
-    ca-certificates \
-    || (apt-get -o Acquire::Retries=5 update && \
-        apt --fix-broken install -y || true && \
+# deb.debian.org (Fastly) intermittently resets connections, and sporadically
+# returns 404 for pool files that do exist -- the same URL serves fine minutes
+# later. Acquire::Retries handles the transport errors, but apt treats 404 as
+# fatal and will not retry it, so retry the whole update+install with a pause.
+# Bounded, so a genuinely missing package still fails the build.
+# Do not "fix" this by pointing at another mirror: security.debian.org and
+# cloudfront.debian.net were both measured to 404 bullseye-security pool files
+# that deb.debian.org serves correctly.
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
         apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
         python2 \
         python-is-python2 \
         make \
         g++ \
         git \
-        ca-certificates)) && \
+        ca-certificates \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -76,8 +78,16 @@ ENV NODE_ENV=development \
 
 # Install only essential runtime dependencies (no build tools, no git).
 # xvfb is installed with Chrome/Chromium in arch-specific stages so Mesa GL deps resolve together.
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        ca-certificates \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 WORKDIR /code
@@ -90,20 +100,52 @@ COPY --from=builder /code/bower_components /code/bower_components
 
 # AMD64-specific stage for Chrome
 FROM base AS amd64
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends wget gnupg procps && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        wget \
+        gnupg \
+        procps \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
-    apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    google-chrome-stable libxss1 xvfb && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        google-chrome-stable \
+        libxss1 \
+        xvfb \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* && \
     find /opt/google/chrome/locales -name "*.pak" ! -name "en-US.pak" -delete 2>/dev/null || true
 
 # ARM64-specific stage for Chromium
 FROM base AS arm64
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends chromium libxss1 procps xvfb && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        chromium \
+        libxss1 \
+        procps \
+        xvfb \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     ln -sf /usr/bin/chromium /usr/bin/google-chrome && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 

@@ -17,11 +17,18 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Install build dependencies
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    build-essential \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        build-essential \
+        unzip \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -46,12 +53,19 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install runtime dependencies (apt-get handles multi-arch automatically)
 # Note: git is required for kubectl apply -k with github.com kustomize remote bases.
-RUN apt-get -o Acquire::Retries=5 update && \
-    apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
-    curl \
-    unzip \
-    git \
-    ca-certificates && \
+RUN n=0; until [ "$n" -ge 4 ]; do \
+        apt-get -o Acquire::Retries=5 update && \
+        apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+        curl \
+        unzip \
+        git \
+        ca-certificates \
+        && break; \
+        n=$((n+1)); \
+        echo "apt failed (attempt $n), retrying in 20s" >&2; \
+        sleep 20; \
+    done; \
+    [ "$n" -lt 4 ] && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
