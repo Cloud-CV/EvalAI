@@ -66,6 +66,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "job_name",
             "submission_metadata",
             "is_verified_by_host",
+            "from_cli",
         )
 
     # Cache for challenge_hosts_pk to avoid repeated queries within same
