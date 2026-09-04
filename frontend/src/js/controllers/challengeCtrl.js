@@ -339,10 +339,10 @@
                                         "minutes": vm.minutes,
                                         "seconds": vm.remainingSeconds
                                     };
-                                    if (vm.remainingTime === 0) {
+                                    if (vm.remainingTime <= 0) {
                                         vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
                                     } else {
-                                        vm.remainingSeconds--;
+                                        vm.eachPhase.limits.remaining_time--;
                                     }
                                 };
                                 setInterval(function () {
@@ -2082,10 +2082,10 @@
                                 if (vm.remainingSeconds < 10) {
                                     vm.remainingSeconds = "0" + vm.remainingSeconds;
                                 }
-                                if (vm.remainingTime === 0) {
+                                if (vm.remainingTime <= 0) {
                                     vm.showSubmissionNumbers = true;
                                 } else {
-                                    vm.remainingSeconds--;
+                                    vm.message.remaining_time--;
                                 }
                             };
                             setInterval(function() {
