@@ -376,8 +376,10 @@
                 parameters.callback = {
                     onSuccess: function() {
                         vm.user.error = false;
-                        $rootScope.notify("success", "Your password has been changed successfully!");
-                        $state.go('web.profile.AuthToken');
+                        $rootScope.notify("success", "Your password has been changed successfully! Please log in again.");
+                        utilities.resetStorage();
+                        $rootScope.isAuth = false;
+                        $state.go('auth.login');
                     },
                     onError: function(response) {
                         vm.user.error = "Failed";
