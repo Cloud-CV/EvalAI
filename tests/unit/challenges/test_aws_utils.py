@@ -5357,8 +5357,10 @@ class TestSetupAutoScalingForService(unittest.TestCase):
         ]
 
         # Verify scale-down alarm evaluates visible + in-flight queue depth
-        # via metric math, and scales down (rather than getting stuck) when
-        # SQS stops publishing data for a genuinely idle queue.
+        # via metric math with FILL so a gap in one SQS metric cannot make
+        # the expression missing (TreatMissingData=breaching would otherwise
+        # false-trigger ExactCapacity scale-to-zero mid-submission). Idle
+        # queues with both metrics absent still evaluate to 0 and scale down.
         scale_down_call = mock_cloudwatch.put_metric_alarm.call_args_list[1]
         assert (
             scale_down_call[1]["AlarmName"] == "test_queue_service_scale_down"
@@ -5389,7 +5391,9 @@ class TestSetupAutoScalingForService(unittest.TestCase):
                 {"Name": "QueueName", "Value": "test_queue"}
             ]
         total_depth_metric = metrics_by_id["total_depth"]
-        assert total_depth_metric["Expression"] == "visible + in_flight"
+        assert total_depth_metric["Expression"] == (
+            "FILL(visible, 0) + FILL(in_flight, 0)"
+        )
         assert total_depth_metric["ReturnData"] is True
 
     @patch("challenges.aws_utils.get_boto3_client")
