@@ -69,3 +69,17 @@ class Team(models.Model):
     class Meta:
         app_label = "web"
         db_table = "teams"
+
+
+class Organization(models.Model):
+    """Model representing Logo of Organisations using EvalAI"""
+    name = models.CharField(max_length=50)
+    logo = models.ImageField(upload_to="organizations")
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "{0} is Active? {1}".format(self.name, self.is_active)
+
+    class Meta:
+        app_label = "web"
+        db_table = "organizations"
