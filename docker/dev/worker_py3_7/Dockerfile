@@ -11,10 +11,12 @@ ENV PYTHONUNBUFFERED=1 \
 # returns 404 for pool files that do exist -- the same URL serves fine minutes
 # later. Acquire::Retries handles the transport errors, but apt treats 404 as
 # fatal and will not retry it, so retry the whole update+install with a pause.
-# Bounded, so a genuinely missing package still fails the build.
+# Bounded and guarded with 'exit 1', so a genuinely missing package still fails
+# the build rather than silently continuing without it.
 # Do not "fix" this by pointing at another mirror: security.debian.org and
-# cloudfront.debian.net were both measured to 404 bullseye-security pool files
-# that deb.debian.org serves correctly.
+# cloudfront.debian.net were each measured, at different times, to 404 on
+# bullseye-security pool files that deb.debian.org served correctly, and vice
+# versa -- there is no single mirror that is reliably the clean one.
 RUN n=0; until [ "$n" -ge 4 ]; do \
         apt-get -o Acquire::Retries=5 update && \
         apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
@@ -36,7 +38,7 @@ RUN n=0; until [ "$n" -ge 4 ]; do \
         echo "apt failed (attempt $n), retrying in 20s" >&2; \
         sleep 20; \
     done; \
-    [ "$n" -lt 4 ] && \
+    [ "$n" -lt 4 ] || exit 1; \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -88,7 +90,7 @@ RUN n=0; until [ "$n" -ge 4 ]; do \
         echo "apt failed (attempt $n), retrying in 20s" >&2; \
         sleep 20; \
     done; \
-    [ "$n" -lt 4 ] && \
+    [ "$n" -lt 4 ] || exit 1; \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 

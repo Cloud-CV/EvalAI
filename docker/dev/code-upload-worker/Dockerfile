@@ -27,7 +27,7 @@ RUN n=0; until [ "$n" -ge 4 ]; do \
         echo "apt failed (attempt $n), retrying in 20s" >&2; \
         sleep 20; \
     done; \
-    [ "$n" -lt 4 ] && \
+    [ "$n" -lt 4 ] || exit 1; \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -65,7 +65,7 @@ RUN n=0; until [ "$n" -ge 4 ]; do \
         echo "apt failed (attempt $n), retrying in 20s" >&2; \
         sleep 20; \
     done; \
-    [ "$n" -lt 4 ] && \
+    [ "$n" -lt 4 ] || exit 1; \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
