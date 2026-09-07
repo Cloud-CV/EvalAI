@@ -1,5 +1,5 @@
 # Stage 1: Build stage with all build dependencies
-FROM python:3.7-slim-bullseye AS builder
+FROM python:3.7-slim-bookworm AS builder
 
 # Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
 # the builder stage only and is never copied into the runtime image.
@@ -103,7 +103,7 @@ RUN mkdir -p /runtime-libs && \
     cp -P /usr/lib/*/libHalf* /runtime-libs/ 2>/dev/null || true
 
 # Stage 2: Minimal runtime stage (Python 3.7 not available in distroless, use optimized slim)
-FROM python:3.7-slim-bullseye
+FROM python:3.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -123,10 +123,10 @@ RUN apt-get update && \
     libjpeg62-turbo \
     zlib1g \
     libpng16-16 \
-    libtiff5 \
+    libtiff6 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 \
+    libwebp7 \
     libgmp10 \
     libgl1 \
     libglib2.0-0 \
@@ -139,10 +139,10 @@ RUN apt-get update && \
         libjpeg62-turbo \
         zlib1g \
         libpng16-16 \
-        libtiff5 \
+        libtiff6 \
         libfreetype6 \
         liblcms2-2 \
-        libwebp6 \
+        libwebp7 \
         libgmp10 \
         libgl1 \
         libglib2.0-0)) && \

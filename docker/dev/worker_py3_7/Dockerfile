@@ -1,5 +1,5 @@
 # Stage 1: Build stage with all build dependencies
-FROM python:3.7-slim-bullseye AS builder
+FROM python:3.7-slim-bookworm AS builder
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -64,7 +64,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     find /usr/local/lib/python3.7/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
 # Stage 2: Runtime stage - minimal dependencies only
-FROM python:3.7-slim-bullseye
+FROM python:3.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -80,10 +80,10 @@ RUN apt-get update && \
     libjpeg62-turbo \
     zlib1g \
     libpng16-16 \
-    libtiff5 \
+    libtiff6 \
     libfreetype6 \
     liblcms2-2 \
-    libwebp6 \
+    libwebp7 \
     libgl1 \
     libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/* && \

@@ -1,5 +1,5 @@
 # Stage 1: Build stage with build tools
-FROM node:20.18.0-bullseye-slim AS builder
+FROM node:20.18.0-bookworm-slim AS builder
 
 # Set environment variables for npm
 ENV NODE_ENV=development \
@@ -16,8 +16,8 @@ ENV NODE_ENV=development \
 RUN apt-get update && \
     apt --fix-broken install -y || true && \
     (apt-get install -y --no-install-recommends --fix-missing \
-    python2 \
-    python-is-python2 \
+    python3 \
+    python-is-python3 \
     make \
     g++ \
     git \
@@ -25,8 +25,8 @@ RUN apt-get update && \
     || (apt-get update && \
         apt --fix-broken install -y || true && \
         apt-get install -y --no-install-recommends --fix-missing \
-        python2 \
-        python-is-python2 \
+        python3 \
+        python-is-python3 \
         make \
         g++ \
         git \
@@ -66,7 +66,7 @@ RUN rm -rf /root/.npm && \
     rm -rf /tmp/*
 
 # Stage 2: Base runtime stage (no build tools, no git)
-FROM node:20.18.0-bullseye-slim AS base
+FROM node:20.18.0-bookworm-slim AS base
 
 ENV NODE_ENV=development \
     CHROME_BIN=/usr/bin/google-chrome \
