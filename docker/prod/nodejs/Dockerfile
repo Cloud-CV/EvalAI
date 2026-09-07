@@ -1,5 +1,5 @@
 # Stage 1: Build stage with build tools
-FROM node:20.18.0-bullseye-slim AS builder
+FROM node:20.18.0-bookworm-slim AS builder
 
 ARG NODE_ENV=production
 
@@ -17,8 +17,8 @@ ENV NODE_ENV=${NODE_ENV} \
 RUN apt-get update && \
     apt --fix-broken install -y || true && \
     (apt-get install -y --no-install-recommends --fix-missing \
-    python2 \
-    python-is-python2 \
+    python3 \
+    python-is-python3 \
     make \
     g++ \
     git \
@@ -29,8 +29,8 @@ RUN apt-get update && \
     || (apt-get update && \
         apt --fix-broken install -y || true && \
         apt-get install -y --no-install-recommends --fix-missing \
-        python2 \
-        python-is-python2 \
+        python3 \
+        python-is-python3 \
         make \
         g++ \
         git \

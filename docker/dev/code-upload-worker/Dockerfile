@@ -1,5 +1,5 @@
 # Stage 1: Build stage with build dependencies
-FROM python:3.9.21-slim-bullseye AS builder
+FROM python:3.9.21-slim-bookworm AS builder
 
 # Fast dependency installs via uv (drop-in for pip); the binary lives at /uv in
 # the builder stage only and is never copied into the runtime image.
@@ -37,7 +37,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     find /usr/local/lib/python3.9/site-packages \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
 
 # Stage 2: Runtime stage - minimal dependencies
-FROM python:3.9.21-slim-bullseye
+FROM python:3.9.21-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
