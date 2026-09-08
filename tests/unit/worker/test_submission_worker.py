@@ -42,6 +42,7 @@ from scripts.workers.submission_worker import (
     GracefulKiller,
     MultiOut,
     alarm_handler,
+    build_challenge_pip_constraint_lines,
     configure_challenge_pip_environment,
     create_dir,
     create_dir_as_python_package,
@@ -57,6 +58,7 @@ from scripts.workers.submission_worker import (
     main,
     process_add_challenge_message,
     process_submission_message,
+    read_challenge_constraint_overrides,
     return_file_url_per_environment,
     run_submission,
     serialize_submission_artifact,
@@ -1519,19 +1521,21 @@ class ConfigureChallengePipEnvironmentTest(APITestCase):
         "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
     )
     def test_sets_both_pip_constraint_env_vars(self, mock_constraints):
-        mock_constraints.return_value = "/code/requirements/worker_py3_9.txt"
+        # With no challenge directory to write a derived file into, the exact
+        # manifest is used as the fallback constraint and exported to both vars.
+        manifest = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False
+        )
+        manifest.write("numpy==1.26.4\ntqdm==4.67.1\n")
+        manifest.close()
+        self.addCleanup(os.remove, manifest.name)
+        mock_constraints.return_value = manifest.name
 
         returned = configure_challenge_pip_environment()
 
-        self.assertEqual(returned, "/code/requirements/worker_py3_9.txt")
-        self.assertEqual(
-            os.environ["PIP_CONSTRAINT"],
-            "/code/requirements/worker_py3_9.txt",
-        )
-        self.assertEqual(
-            os.environ["PIP_BUILD_CONSTRAINT"],
-            "/code/requirements/worker_py3_9.txt",
-        )
+        self.assertEqual(returned, manifest.name)
+        self.assertEqual(os.environ["PIP_CONSTRAINT"], manifest.name)
+        self.assertEqual(os.environ["PIP_BUILD_CONSTRAINT"], manifest.name)
 
     @patch(
         "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
@@ -1551,6 +1555,112 @@ class ConfigureChallengePipEnvironmentTest(APITestCase):
             os.environ["PIP_BUILD_CONSTRAINT"],
             "/existing/build-constraints.txt",
         )
+
+    @patch(
+        "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
+    )
+    def test_writes_derived_file_and_honors_overrides(self, mock_constraints):
+        # With a challenge directory, a derived constraints file is written
+        # there (numpy capped, others floored) honoring the override file, and
+        # both pip env vars point at the derived file rather than the manifest.
+        challenge_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, challenge_dir, ignore_errors=True)
+        manifest_path = join(challenge_dir, "manifest.txt")
+        with open(manifest_path, "w") as manifest:
+            manifest.write("numpy==1.26.4\nscipy==1.11.4\ntqdm==4.67.1\n")
+        mock_constraints.return_value = manifest_path
+        with open(
+            join(challenge_dir, "worker_constraint_overrides.txt"), "w"
+        ) as overrides:
+            overrides.write(
+                "# darts-devkit needs newer scipy/tqdm\nscipy\ntqdm\n"
+            )
+
+        returned = configure_challenge_pip_environment(challenge_dir)
+
+        self.assertTrue(returned.endswith("pip_constraints.effective.txt"))
+        self.assertEqual(os.environ["PIP_CONSTRAINT"], returned)
+        self.assertEqual(os.environ["PIP_BUILD_CONSTRAINT"], returned)
+        with open(returned) as handle:
+            body = handle.read()
+        # numpy stays capped; relaxed packages are dropped entirely.
+        self.assertIn("numpy>=1.26.4,<2", body)
+        self.assertNotIn("scipy", body)
+        self.assertNotIn("tqdm", body)
+
+
+class BuildChallengePipConstraintLinesTest(TestCase):
+    MANIFEST = (
+        "# header comment\n"
+        "matplotlib==3.8.4\n"
+        "numpy==1.26.4\n"
+        "\n"
+        "scipy==1.11.4\n"
+        "tqdm==4.67.1  # progress bars\n"
+    )
+
+    def _manifest(self):
+        handle = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False
+        )
+        handle.write(self.MANIFEST)
+        handle.close()
+        self.addCleanup(os.remove, handle.name)
+        return handle.name
+
+    def test_numpy_capped_and_others_floored(self):
+        lines = build_challenge_pip_constraint_lines(self._manifest(), set())
+
+        self.assertIn("numpy>=1.26.4,<2", lines)
+        self.assertIn("scipy>=1.11.4", lines)
+        self.assertIn("tqdm>=4.67.1", lines)
+        self.assertIn("matplotlib>=3.8.4", lines)
+        # A floor (not an exact pin) is what lets darts-devkit pull
+        # tqdm>=4.67.3 / scipy>=1.13.1 instead of failing to resolve.
+        self.assertFalse(any("==" in line for line in lines))
+
+    def test_relaxed_packages_are_dropped(self):
+        lines = build_challenge_pip_constraint_lines(
+            self._manifest(), {"scipy", "tqdm"}
+        )
+
+        joined = "\n".join(lines)
+        self.assertIn("numpy>=1.26.4,<2", joined)
+        self.assertNotIn("scipy", joined)
+        self.assertNotIn("tqdm", joined)
+
+    def test_comments_and_blank_lines_ignored(self):
+        lines = build_challenge_pip_constraint_lines(self._manifest(), set())
+
+        self.assertEqual(len(lines), 4)
+
+
+class ReadChallengeConstraintOverridesTest(TestCase):
+    def test_none_directory_returns_empty(self):
+        self.assertEqual(read_challenge_constraint_overrides(None), set())
+
+    def test_missing_file_returns_empty(self):
+        empty_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, empty_dir, ignore_errors=True)
+        self.assertEqual(read_challenge_constraint_overrides(empty_dir), set())
+
+    def test_parses_names_specifiers_and_comments(self):
+        challenge_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, challenge_dir, ignore_errors=True)
+        with open(
+            join(challenge_dir, "worker_constraint_overrides.txt"), "w"
+        ) as handle:
+            handle.write(
+                "# relax the ones darts-devkit needs\n"
+                "scipy\n"
+                "tqdm>=4.67.3\n"
+                "scikit_learn\n"
+                "\n"
+            )
+
+        relaxed = read_challenge_constraint_overrides(challenge_dir)
+
+        self.assertEqual(relaxed, {"scipy", "tqdm", "scikit-learn"})
 
 
 class ExtractChallengeDataConstraintEnvTest(APITestCase):
@@ -1577,7 +1687,9 @@ class ExtractChallengeDataConstraintEnvTest(APITestCase):
     ):
         # Fail if the challenge module is imported before the pip environment
         # is configured (the install() helper runs at import time).
-        mock_configure.side_effect = mock_import.assert_not_called
+        mock_configure.side_effect = lambda *args, **kwargs: (
+            mock_import.assert_not_called()
+        )
 
         challenge = MagicMock()
         challenge.id = 356
@@ -1589,7 +1701,11 @@ class ExtractChallengeDataConstraintEnvTest(APITestCase):
 
         extract_challenge_data(challenge, [phase])
 
-        mock_configure.assert_called_once_with()
+        # Now called with the extracted challenge directory so the derived
+        # constraints (and any per-challenge override file) can be built.
+        mock_configure.assert_called_once()
+        (constraint_arg,) = mock_configure.call_args[0]
+        self.assertTrue(constraint_arg.endswith("challenge_356"))
         mock_import.assert_called_once()
 
 

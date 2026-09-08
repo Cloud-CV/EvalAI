@@ -19,6 +19,7 @@ import time
 import traceback
 import zipfile
 from os.path import join
+from typing import List, Optional, Set
 
 import django
 import requests
@@ -362,26 +363,191 @@ def get_challenge_pip_constraints_file():
     return None
 
 
-def configure_challenge_pip_environment():
-    """Force every pip invocation in the worker to honor the core dependency
-    pins.
+# Only numpy is ABI-critical for the baked worker stack: moving it across a
+# major version breaks every C-extension compiled against it (scipy,
+# scikit-learn, pandas, pycocotools). numpy therefore keeps a hard ceiling
+# below the next major; every other worker pin is emitted as a ``>=`` floor a
+# challenge may upgrade past. Map of canonical package name -> exclusive major
+# ceiling.
+PIP_CONSTRAINT_ABI_CEILINGS = {"numpy": "2"}
 
-    Both challenge dependency paths run pip: the ``requirements.txt`` install in
+# A challenge may ship this file alongside ``requirements.txt`` in its
+# evaluation-script zip to drop the worker's pin for the listed packages,
+# taking full responsibility for those versions.
+CHALLENGE_CONSTRAINT_OVERRIDES_FILENAME = "worker_constraint_overrides.txt"
+
+# Derived, challenge-facing constraints written into the challenge data dir.
+EFFECTIVE_PIP_CONSTRAINTS_FILENAME = "pip_constraints.effective.txt"
+
+# Characters that begin a version specifier / marker in a requirement line.
+_REQUIREMENT_NAME_SEPARATORS = ("<", ">", "=", "!", "~", ";", "[", " ", "\t")
+
+
+def _canonical_package_name(name):
+    """Normalize a distribution name for case/separator-insensitive matching."""
+    return name.strip().lower().replace("_", "-")
+
+
+def _requirement_project_name(specifier):
+    """Return the bare project name from a requirement specifier.
+
+    ``scipy`` -> ``scipy``; ``scipy>=1.13`` -> ``scipy``; ``PyYaml==5.4.1`` ->
+    ``PyYaml`` (case preserved for display, callers canonicalize as needed).
+    """
+    name = specifier
+    for separator in _REQUIREMENT_NAME_SEPARATORS:
+        name = name.split(separator, 1)[0]
+    return name.strip()
+
+
+def build_challenge_pip_constraint_lines(
+    manifest_path: str, relaxed_packages: Set[str]
+) -> List[str]:
+    """Derive challenge-facing pip constraint lines from the worker manifest.
+
+    The worker image bakes an exact-pinned scientific stack (``manifest_path``)
+    for reproducible builds. Forcing those exact pins onto challenge installs is
+    too strict — it blocks a challenge from *upgrading* a pure-Python or
+    forward-compatible package (e.g. ``darts-devkit`` needs ``tqdm>=4.67.3`` and
+    ``scipy>=1.13.1``; an exact pin makes pip resolution impossible).
+
+    Only numpy is ABI-critical (see ``PIP_CONSTRAINT_ABI_CEILINGS``): moving it
+    across a major version breaks every C-extension compiled against the baked
+    numpy. So capped packages keep a floor plus a hard ceiling, and every other
+    manifest pin becomes a ``>=`` floor that permits upgrades — a challenge dep
+    that in turn needs a newer numpy then fails cleanly at resolve time rather
+    than breaking silently at import. Packages named in ``relaxed_packages`` are
+    dropped entirely, leaving the challenge fully in control of them.
+    """
+    lines: List[str] = []
+    with open(manifest_path, "r") as manifest:
+        for raw_line in manifest:
+            stripped = raw_line.split("#", 1)[0].strip()
+            if not stripped or "==" not in stripped:
+                continue
+            display_name, _, version = stripped.partition("==")
+            display_name = display_name.strip()
+            version = version.strip()
+            canonical = _canonical_package_name(display_name)
+            if canonical in relaxed_packages:
+                continue
+            ceiling = PIP_CONSTRAINT_ABI_CEILINGS.get(canonical)
+            if ceiling:
+                lines.append(
+                    "{0}>={1},<{2}".format(display_name, version, ceiling)
+                )
+            else:
+                lines.append("{0}>={1}".format(display_name, version))
+    return lines
+
+
+def read_challenge_constraint_overrides(
+    challenge_data_directory: Optional[str],
+) -> Set[str]:
+    """Return canonical names a challenge asked to drop from the worker pins.
+
+    Reads ``worker_constraint_overrides.txt`` from the challenge's extracted
+    evaluation-script directory if present. One package per line; ``#`` comments
+    and blank lines are ignored. A line may be a bare name (``scipy``) or a full
+    specifier (``scipy>=1.13``) — only the project name is used for matching.
+    """
+    if not challenge_data_directory:
+        return set()
+    overrides_path = join(
+        challenge_data_directory, CHALLENGE_CONSTRAINT_OVERRIDES_FILENAME
+    )
+    if not os.path.isfile(overrides_path):
+        return set()
+    relaxed: Set[str] = set()
+    try:
+        with open(overrides_path, "r") as handle:
+            for raw_line in handle:
+                token = raw_line.split("#", 1)[0].strip()
+                if not token:
+                    continue
+                name = _requirement_project_name(token)
+                if name:
+                    relaxed.add(_canonical_package_name(name))
+    except OSError as exc:
+        logger.warning(
+            "{0} Could not read challenge pip constraint overrides at {1} "
+            "({2}); enforcing the full worker pin set.".format(
+                WORKER_LOGS_PREFIX, overrides_path, exc
+            )
+        )
+        return set()
+    return relaxed
+
+
+def configure_challenge_pip_environment(
+    challenge_data_directory: Optional[str] = None,
+) -> Optional[str]:
+    """Build the effective challenge pip constraints and export them.
+
+    Derives a permissive constraints file from the worker's pinned manifest
+    (see ``build_challenge_pip_constraint_lines``) so a challenge may upgrade
+    non-ABI-critical packages while numpy stays capped, honoring any
+    per-challenge override file (``worker_constraint_overrides.txt``). Both
+    challenge dependency paths run pip: the ``requirements.txt`` install in
     ``extract_challenge_data`` and the ``install()`` helper shipped inside a
     challenge's ``evaluation_script/__init__.py`` (which runs
     ``sys.executable -m pip install`` at import time). Exporting
-    ``PIP_CONSTRAINT``/``PIP_BUILD_CONSTRAINT`` into the process environment
-    makes *both* subprocesses inherit the constraint, so a challenge cannot move
-    numpy/scipy/etc. off the worker's already-compiled core stack.
+    ``PIP_CONSTRAINT``/``PIP_BUILD_CONSTRAINT`` makes *both* subprocesses
+    inherit the derived constraints.
 
-    Returns the constraints file path applied, or ``None`` if no per-version
-    constraints file was found (environment left untouched).
+    Returns the effective constraints file path applied, or ``None`` when no
+    manifest is found (environment left untouched, preserving prior behavior).
     """
-    constraints_file = get_challenge_pip_constraints_file()
-    if constraints_file:
-        os.environ["PIP_CONSTRAINT"] = constraints_file
-        os.environ["PIP_BUILD_CONSTRAINT"] = constraints_file
-    return constraints_file
+    manifest_path = get_challenge_pip_constraints_file()
+    if not manifest_path:
+        return None
+
+    relaxed_packages = read_challenge_constraint_overrides(
+        challenge_data_directory
+    )
+    constraint_lines = build_challenge_pip_constraint_lines(
+        manifest_path, relaxed_packages
+    )
+
+    # Fall back to the exact manifest so installs stay constrained even when the
+    # derived file cannot be written (e.g. no challenge dir available).
+    effective_path = manifest_path
+    if challenge_data_directory:
+        candidate = join(
+            challenge_data_directory, EFFECTIVE_PIP_CONSTRAINTS_FILENAME
+        )
+        try:
+            with open(candidate, "w") as handle:
+                handle.write(
+                    "# Auto-generated challenge pip constraints derived from "
+                    "{0}.\n# numpy is capped for ABI safety; other worker "
+                    "packages are floors\n# a challenge may upgrade past.\n".format(
+                        os.path.basename(manifest_path)
+                    )
+                )
+                handle.write("\n".join(constraint_lines))
+                handle.write("\n")
+            effective_path = candidate
+        except OSError as exc:
+            logger.warning(
+                "{0} Could not write derived pip constraints to {1} ({2}); "
+                "falling back to the exact worker manifest.".format(
+                    WORKER_LOGS_PREFIX, candidate, exc
+                )
+            )
+
+    if relaxed_packages:
+        logger.warning(
+            "{0} Challenge relaxed worker pip constraints for: {1}. The "
+            "challenge owns those versions; relaxing numpy can break the "
+            "worker's compiled C extensions.".format(
+                WORKER_LOGS_PREFIX, ", ".join(sorted(relaxed_packages))
+            )
+        )
+
+    os.environ["PIP_CONSTRAINT"] = effective_path
+    os.environ["PIP_BUILD_CONSTRAINT"] = effective_path
+    return effective_path
 
 
 def extract_challenge_data(challenge, phases):
@@ -390,11 +556,6 @@ def extract_challenge_data(challenge, phases):
     * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
 
     """
-
-    # Pin the core dependency stack for every pip path (requirements.txt and the
-    # challenge __init__.py install() helper) before any challenge dependency is
-    # installed or the challenge module is imported.
-    configure_challenge_pip_environment()
 
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.id
@@ -417,6 +578,16 @@ def extract_challenge_data(challenge, phases):
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
+    # Derive the challenge-facing pip constraints from the worker's pinned
+    # manifest (numpy capped for ABI safety, other packages floored so a
+    # challenge may upgrade them), honoring any per-challenge override file, and
+    # export them. Runs after the zip is extracted so the override file is
+    # visible, and before both pip paths: the requirements.txt install below and
+    # the challenge __init__.py install() helper that runs at import time.
+    constraints_file = configure_challenge_pip_environment(
+        challenge_data_directory
+    )
+
     requirements_location = join(challenge_data_directory, "requirements.txt")
     if os.path.isfile(requirements_location):
         pip_install_command = [
@@ -427,9 +598,6 @@ def extract_challenge_data(challenge, phases):
             "-r",
             requirements_location,
         ]
-        # Pin the worker's core dependency stack so a challenge cannot
-        # upgrade numpy/scipy/etc. and break already-compiled C extensions.
-        constraints_file = get_challenge_pip_constraints_file()
         if constraints_file:
             pip_install_command += ["-c", constraints_file]
         try:
