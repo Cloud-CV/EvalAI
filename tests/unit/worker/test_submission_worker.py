@@ -1627,7 +1627,8 @@ class ConfigureChallengePipEnvironmentTest(APITestCase):
         warnings = " ".join(
             str(call.args[0]) for call in mock_warning.call_args_list
         )
-        self.assertIn("still", warnings)
+        self.assertIn("exact worker manifest is in force", warnings)
+        self.assertIn("those pins are still enforced", warnings)
         self.assertNotIn("owns those versions", warnings)
 
 
