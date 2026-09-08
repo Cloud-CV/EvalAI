@@ -105,10 +105,13 @@ applies a derived pip constraint to every challenge install:
 ### Relaxing a pin (`worker_constraint_overrides.txt`)
 
 If you need a version the derived constraint still blocks, add a
-`worker_constraint_overrides.txt` file to your evaluation-script zip listing the
-package names to drop from the worker pins — one per line, `#` comments allowed:
+`worker_constraint_overrides.txt` file to the **root** of your evaluation-script
+zip (next to `__init__.py`, the same place as `requirements.txt`) listing the
+package names to drop from the worker pins — one per line, `#` comments allowed.
+The worker only reads this file from the zip root; a copy in a subdirectory is
+ignored and every pin stays in force:
 
-```
+```text
 # take full control of these versions for this challenge
 scipy
 tqdm

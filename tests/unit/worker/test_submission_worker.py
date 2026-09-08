@@ -1588,6 +1588,48 @@ class ConfigureChallengePipEnvironmentTest(APITestCase):
         self.assertNotIn("scipy", body)
         self.assertNotIn("tqdm", body)
 
+    @patch("scripts.workers.submission_worker.logger.warning")
+    @patch(
+        "scripts.workers.submission_worker.get_challenge_pip_constraints_file"
+    )
+    def test_write_failure_falls_back_to_exact_manifest(
+        self, mock_constraints, mock_warning
+    ):
+        # If the derived constraints file cannot be written, installs must fall
+        # back to the exact-pinned manifest (the strictest, safe outcome) and
+        # the log must NOT claim the constraints were relaxed.
+        challenge_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, challenge_dir, ignore_errors=True)
+        manifest_path = join(challenge_dir, "manifest.txt")
+        with open(manifest_path, "w") as manifest:
+            manifest.write("numpy==1.26.4\nscipy==1.11.4\n")
+        mock_constraints.return_value = manifest_path
+        with open(
+            join(challenge_dir, "worker_constraint_overrides.txt"), "w"
+        ) as overrides:
+            overrides.write("scipy\n")
+
+        real_open = open
+
+        def fail_on_effective_write(path, *args, **kwargs):
+            if str(path).endswith("pip_constraints.effective.txt"):
+                raise OSError("read-only file system")
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=fail_on_effective_write):
+            returned = configure_challenge_pip_environment(challenge_dir)
+
+        # Fell back to the exact manifest, and both env vars point at it.
+        self.assertEqual(returned, manifest_path)
+        self.assertEqual(os.environ["PIP_CONSTRAINT"], manifest_path)
+        self.assertEqual(os.environ["PIP_BUILD_CONSTRAINT"], manifest_path)
+        # The relaxation warning must reflect that pins are still enforced.
+        warnings = " ".join(
+            str(call.args[0]) for call in mock_warning.call_args_list
+        )
+        self.assertIn("still", warnings)
+        self.assertNotIn("owns those versions", warnings)
+
 
 class BuildChallengePipConstraintLinesTest(TestCase):
     MANIFEST = (

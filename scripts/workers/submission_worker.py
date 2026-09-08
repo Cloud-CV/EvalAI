@@ -537,13 +537,26 @@ def configure_challenge_pip_environment(
             )
 
     if relaxed_packages:
-        logger.warning(
-            "{0} Challenge relaxed worker pip constraints for: {1}. The "
-            "challenge owns those versions; relaxing numpy can break the "
-            "worker's compiled C extensions.".format(
-                WORKER_LOGS_PREFIX, ", ".join(sorted(relaxed_packages))
+        relaxed_names = ", ".join(sorted(relaxed_packages))
+        if effective_path != manifest_path:
+            logger.warning(
+                "{0} Challenge relaxed worker pip constraints for: {1}. The "
+                "challenge owns those versions; relaxing numpy can break the "
+                "worker's compiled C extensions.".format(
+                    WORKER_LOGS_PREFIX, relaxed_names
+                )
             )
-        )
+        else:
+            # The derived file could not be written, so the exact manifest is in
+            # force and still pins every package. Do not claim the constraints
+            # were relaxed — that would mislead anyone debugging a resolution
+            # failure.
+            logger.warning(
+                "{0} Challenge requested relaxing pip constraints for {1}, but "
+                "the derived constraints file could not be written; the exact "
+                "worker manifest is in force and those pins are still "
+                "enforced.".format(WORKER_LOGS_PREFIX, relaxed_names)
+            )
 
     os.environ["PIP_CONSTRAINT"] = effective_path
     os.environ["PIP_BUILD_CONSTRAINT"] = effective_path
