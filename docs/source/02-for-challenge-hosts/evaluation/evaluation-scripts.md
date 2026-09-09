@@ -84,6 +84,44 @@ Let's break down what is happening in the above code snippet.
 2. Each entry in the list should be a dict that has a key with the corresponding dataset split codename (`train_split` and `test_split` for this example).
 3. Each of these dataset split dict contains various keys (`Metric1`, `Metric2`, `Metric3`, `Total` in this example), which are then displayed as columns in the leaderboard.
 
+## Custom Python Dependencies
+
+If your evaluation script needs extra Python packages, ship a `requirements.txt`
+in the root of your evaluation-script zip (next to `__init__.py`). The worker
+installs it before importing your script. Packages your `__init__.py` installs
+at import time (via a helper such as `pip install ...`) are handled the same way.
+
+The worker image bakes a shared scientific stack (numpy, scipy, pandas,
+scikit-learn, matplotlib, tqdm, ...). To keep those installs safe, the worker
+applies a derived pip constraint to every challenge install:
+
+- **numpy is capped** below its next major version. Its C-ABI is the foundation
+  the baked scipy/scikit-learn/pandas/pycocotools are compiled against, so
+  moving numpy across a major version breaks them.
+- **Every other baked package is a floor, not a lock.** You may install a
+  *newer* version (e.g. a dependency that needs `scipy>=1.13.1` or
+  `tqdm>=4.67.3` resolves fine); you just cannot go below the baked version.
+
+### Relaxing a pin (`worker_constraint_overrides.txt`)
+
+If you need a version the derived constraint still blocks, add a
+`worker_constraint_overrides.txt` file to the **root** of your evaluation-script
+zip (next to `__init__.py`, the same place as `requirements.txt`) listing the
+package names to drop from the worker pins — one per line, `#` comments allowed.
+The worker only reads this file from the zip root; a copy in a subdirectory is
+ignored and every pin stays in force:
+
+```text
+# take full control of these versions for this challenge
+scipy
+tqdm
+```
+
+Listed packages are left entirely to your `requirements.txt` / installer to
+resolve. **Relaxing `numpy` is risky**: unless your script reinstalls the rest
+of the compiled stack too, a numpy major bump will break the baked C
+extensions. Relax it only if you know your dependencies need it.
+
 ## Editing Evaluation Script
 
 Each prediction upload challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating a submission is customizable and varies from challenge to challenge.
