@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from accounts.throttles import (
     PasswordResetEmailThrottle,
     PasswordResetIPThrottle,
+    RegistrationIPThrottle,
     ResendEmailThrottle,
 )
 from django.test import TestCase
@@ -65,3 +66,15 @@ class TestPasswordResetIPThrottle(TestCase):
 
         self.assertIn("throttle_password_reset_ip", cache_key)
         self.assertIn("10.0.0.1", cache_key)
+
+
+class TestRegistrationIPThrottle(TestCase):
+    def test_get_cache_key_uses_client_ip(self):
+        throttle = RegistrationIPThrottle()
+        request = MagicMock()
+        request.META = {"REMOTE_ADDR": "203.0.113.5"}
+
+        cache_key = throttle.get_cache_key(request, MagicMock())
+
+        self.assertIn("throttle_registration_ip", cache_key)
+        self.assertIn("203.0.113.5", cache_key)
