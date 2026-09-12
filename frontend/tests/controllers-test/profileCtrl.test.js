@@ -572,14 +572,17 @@ describe('Unit tests for profile controller', function () {
             $state.params = { user_id: 1 };
         });
 
-        it('should call notify and go to AuthToken on success', function () {
+        it('should log out and redirect to login on success', function () {
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
                 params.callback.onSuccess();
             });
+            spyOn(utilities, 'resetStorage');
             vm.changePassword(true);
             expect(vm.user.error).toBe(false);
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your password has been changed successfully!");
-            expect($state.go).toHaveBeenCalledWith('web.profile.AuthToken');
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your password has been changed successfully! Please log in again.");
+            expect(utilities.resetStorage).toHaveBeenCalled();
+            expect($rootScope.isAuth).toBe(false);
+            expect($state.go).toHaveBeenCalledWith('auth.login');
         });
 
         it('should handle old_password error', function () {
