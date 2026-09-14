@@ -966,3 +966,22 @@ class TestDataEncoding(unittest.TestCase):
     def test_decode_data_empty_list(self):
         data = []
         self.assertEqual(decode_data(data), [])
+
+    def test_encode_data_returns_unpadded_base64_strings(self):
+        self.assertEqual(encode_data(["hello"]), ["aGVsbG8"])
+
+    def test_decode_data_restores_the_original_values(self):
+        self.assertEqual(decode_data(["aGVsbG8"]), ["hello"])
+
+    def test_encode_data_round_trips_through_decode_data(self):
+        data = ["evalai", "challenge", "submission"]
+        self.assertEqual(decode_data(encode_data(data)), data)
+
+    def test_encode_data_handles_multiple_values(self):
+        self.assertEqual(encode_data(["ab", "cd"]), ["YWI", "Y2Q"])
+
+    def test_round_trip_survives_input_longer_than_one_base64_line(self):
+        # encodebytes() wraps its output every 76 characters; decodebytes()
+        # ignores those newlines, so long values must still round-trip.
+        data = ["x" * 200]
+        self.assertEqual(decode_data(encode_data(data)), data)
