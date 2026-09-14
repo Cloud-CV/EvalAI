@@ -3430,3 +3430,40 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parts", response.data["error"])
+
+    def test_finish_submission_file_upload_with_deeply_nested_parts(self):
+        """Deeply nested `parts` JSON raises RecursionError, not ValueError."""
+        self.challenge.approved_by_admin = True
+        self.challenge.published = True
+        self.challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+
+        submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status=Submission.SUBMITTED,
+            input_file=SimpleUploadedFile(
+                "nested.txt", b"x", content_type="text/plain"
+            ),
+        )
+
+        url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission.pk,
+            },
+        )
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.post(
+            url,
+            data={
+                "parts": "[" * 100000 + "]" * 100000,
+                "upload_id": "test-upload-id",
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("parts", response.data["error"])

@@ -4339,7 +4339,8 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
 
     try:
         file_parts = json.loads(request.data["parts"])
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, RecursionError) as exc:
+        # RecursionError: deeply nested JSON exhausts the decoder's stack.
         response_data = {
             "error": "`parts` key contains invalid data with error {}."
             "Please try again with correct format.".format(str(exc))
