@@ -1470,6 +1470,65 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             },
         )
 
+    def test_change_visibility_stamps_when_made_public_for_form_request(self):
+        """Form-encoded "true" is a string, so `is True` never matched it."""
+        self.submission.is_public = False
+        self.submission.when_made_public = None
+        self.submission.save()
+
+        response = self.client.patch(
+            self.url, {"is_public": "true"}, format="multipart"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.submission.refresh_from_db()
+        self.assertTrue(self.submission.is_public)
+        self.assertIsNotNone(self.submission.when_made_public)
+
+    def test_change_visibility_demotes_existing_public_for_form_request(self):
+        """The restrict-one-public branch must run for form clients too."""
+        phase = self.challenge_phase_restricted_to_one_submission
+        already_public = self.submission_restricted_to_one_for_leaderboard
+
+        new_submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            is_public=False,
+        )
+
+        url = reverse_lazy(
+            "jobs:change_submission_data_and_visibility",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": phase.pk,
+                "submission_pk": new_submission.pk,
+            },
+        )
+
+        response = self.client.patch(
+            url, {"is_public": "true"}, format="multipart"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        already_public.refresh_from_db()
+        new_submission.refresh_from_db()
+        self.assertTrue(new_submission.is_public)
+        # Only one submission may stay public in a restricted phase.
+        self.assertFalse(already_public.is_public)
+
+    def test_change_visibility_rejects_non_boolean_is_public(self):
+        response = self.client.patch(
+            self.url, {"is_public": "banana"}, format="multipart"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is_public", response.data["error"])
+
     def test_change_submission_data_and_visibility_when_challenge_does_not_exist(
         self,
     ):
