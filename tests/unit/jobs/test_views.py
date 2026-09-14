@@ -1472,6 +1472,10 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
     def test_when_made_public_is_timezone_aware(self):
         """USE_TZ is on, so the stamp must not be a naive datetime."""
+        # Inherited setUp adds only host_participant_team to the challenge,
+        # so without this the view 403s before reaching the timestamp.
+        self.challenge.participant_teams.add(self.participant_team)
+
         self.submission.is_public = False
         self.submission.when_made_public = None
         self.submission.save()
