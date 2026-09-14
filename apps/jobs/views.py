@@ -60,6 +60,7 @@ from rest_framework.decorators import (
     permission_classes,
     throttle_classes,
 )
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -90,6 +91,7 @@ from .utils import (
     handle_submission_rerun,
     handle_submission_resume,
     is_url_valid,
+    parse_submission_visibility,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
     response_if_submissions_paused,
@@ -362,7 +364,17 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 True if challenge_phase.is_submission_public else False
             )
         else:
-            request.data["is_public"] = json.loads(request.data["is_public"])
+            try:
+                request.data["is_public"] = parse_submission_visibility(
+                    request.data["is_public"]
+                )
+            except ValidationError:
+                response_data = {
+                    "error": "`is_public` must be a boolean value."
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
             if (
                 request.data.get("is_public")
                 and challenge_phase.is_restricted_to_select_one_submission
@@ -3047,7 +3059,13 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
             True if challenge_phase.is_submission_public else False
         )
     else:
-        submission_data["is_public"] = json.loads(request.data["is_public"])
+        try:
+            submission_data["is_public"] = parse_submission_visibility(
+                request.data["is_public"]
+            )
+        except ValidationError:
+            response_data = {"error": "`is_public` must be a boolean value."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Override submission visibility if leaderboard_public = False for a
     # challenge phase

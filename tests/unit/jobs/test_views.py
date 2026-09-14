@@ -221,6 +221,53 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_challenge_submission_accepts_python_style_is_public(self):
+        """`is_public=True` is a valid boolean spelling, not a 500."""
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "input_file": self.input_file,
+                "is_public": "True",
+            },
+            format="multipart",
+        )
+
+        self.assertNotEqual(
+            response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    def test_challenge_submission_rejects_non_boolean_is_public(self):
+        """A non-boolean `is_public` is a client error, not a server fault."""
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "input_file": self.input_file,
+                "is_public": "banana",
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is_public", response.data["error"])
+
     def test_challenge_submission_when_challenge_is_not_active(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",

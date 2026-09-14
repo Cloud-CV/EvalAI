@@ -16,7 +16,7 @@ from django.utils import timezone
 from hosts.utils import is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
 
 from .constants import submission_status_to_exclude
@@ -213,6 +213,23 @@ def get_file_from_url(url):
     file_obj["name"] = file_name
     file_obj["temp_dir_path"] = BASE_TEMP_DIR
     return file_obj
+
+
+def parse_submission_visibility(value):
+    """Parse a request-supplied ``is_public`` flag into a bool.
+
+    Form-encoded requests deliver booleans as strings, and clients spell them
+    in several ways ("True" from Python, "on" from an HTML checkbox, "1",
+    "true"). Delegate to DRF's ``BooleanField`` so this accepts exactly what
+    the ``Submission`` serializer accepts for the same field.
+
+    Raises:
+        rest_framework.serializers.ValidationError -- if the value is not a
+            recognised boolean, so callers surface HTTP 400 rather than 500.
+    """
+    if isinstance(value, bool):
+        return value
+    return serializers.BooleanField().to_internal_value(value)
 
 
 def handle_submission_rerun(submission, updated_status):
