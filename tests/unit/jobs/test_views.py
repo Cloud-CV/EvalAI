@@ -3396,3 +3396,37 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             {"error": "Submission does not belong to this challenge phase"},
         )
         mock_publish.assert_not_called()
+
+    def test_finish_submission_file_upload_with_malformed_parts(self):
+        """Malformed `parts` JSON must be a 400, not an unhandled 500."""
+        self.challenge.approved_by_admin = True
+        self.challenge.published = True
+        self.challenge.save()
+        self.challenge.participant_teams.add(self.participant_team)
+
+        submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status=Submission.SUBMITTED,
+            input_file=SimpleUploadedFile(
+                "parts.txt", b"x", content_type="text/plain"
+            ),
+        )
+
+        url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": submission.pk,
+            },
+        )
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.post(
+            url,
+            data={"parts": "not-valid-json", "upload_id": "test-upload-id"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("parts", response.data["error"])

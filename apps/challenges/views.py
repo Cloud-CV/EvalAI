@@ -4337,7 +4337,15 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
         response_data = {"error": "Uploaded file upload Id is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    file_parts = json.loads(request.data["parts"])
+    try:
+        file_parts = json.loads(request.data["parts"])
+    except (ValueError, TypeError) as exc:
+        response_data = {
+            "error": "`parts` key contains invalid data with error {}."
+            "Please try again with correct format.".format(str(exc))
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     upload_id = request.data["upload_id"]
     file_key_on_s3 = "{}/{}".format(
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
