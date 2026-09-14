@@ -507,7 +507,7 @@ def change_submission_data_and_visibility(
     try:
         is_public = request.data["is_public"]
         if is_public is True:
-            when_made_public = datetime.datetime.now()
+            when_made_public = timezone.now()
             request.data["when_made_public"] = when_made_public
 
             submissions_already_public = Submission.objects.filter(

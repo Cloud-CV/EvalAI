@@ -1470,6 +1470,23 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             },
         )
 
+    def test_when_made_public_is_timezone_aware(self):
+        """USE_TZ is on, so the stamp must not be a naive datetime."""
+        self.submission.is_public = False
+        self.submission.when_made_public = None
+        self.submission.save()
+
+        response = self.client.patch(self.url, {"is_public": True})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.submission.refresh_from_db()
+        self.assertIsNotNone(self.submission.when_made_public)
+        self.assertTrue(timezone.is_aware(self.submission.when_made_public))
+        # A naive local timestamp read as UTC lands in the future on any
+        # server ahead of UTC. This assertion only bites off-UTC, so the
+        # is_aware() check above is what catches the bug everywhere.
+        self.assertLessEqual(self.submission.when_made_public, timezone.now())
+
     def test_change_submission_data_and_visibility_when_challenge_does_not_exist(
         self,
     ):
