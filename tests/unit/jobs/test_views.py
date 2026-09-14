@@ -1472,6 +1472,10 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
     def test_change_visibility_stamps_when_made_public_for_form_request(self):
         """Form-encoded "true" is a string, so `is True` never matched it."""
+        # Inherited setUp adds only host_participant_team to the challenge,
+        # so without this the view 403s before reaching the visibility logic.
+        self.challenge.participant_teams.add(self.participant_team)
+
         self.submission.is_public = False
         self.submission.when_made_public = None
         self.submission.save()
@@ -1487,6 +1491,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
     def test_change_visibility_demotes_existing_public_for_form_request(self):
         """The restrict-one-public branch must run for form clients too."""
+        self.challenge.participant_teams.add(self.participant_team)
+
         phase = self.challenge_phase_restricted_to_one_submission
         already_public = self.submission_restricted_to_one_for_leaderboard
 
@@ -1522,6 +1528,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertFalse(already_public.is_public)
 
     def test_change_visibility_rejects_non_boolean_is_public(self):
+        self.challenge.participant_teams.add(self.participant_team)
+
         response = self.client.patch(
             self.url, {"is_public": "banana"}, format="multipart"
         )
