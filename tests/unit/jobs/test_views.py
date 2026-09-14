@@ -231,6 +231,9 @@ class BaseAPITestClass(APITestCase):
             },
         )
 
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
         response = self.client.post(
             self.url,
             {
@@ -241,8 +244,9 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
 
-        self.assertNotEqual(
-            response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            Submission.objects.get(pk=response.data["id"]).is_public
         )
 
     def test_challenge_submission_rejects_non_boolean_is_public(self):
@@ -254,6 +258,9 @@ class BaseAPITestClass(APITestCase):
                 "challenge_phase_id": self.challenge_phase.pk,
             },
         )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
 
         response = self.client.post(
             self.url,
