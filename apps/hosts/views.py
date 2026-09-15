@@ -26,7 +26,7 @@ from .serializers import (
     HostTeamDetailSerializer,
     InviteHostToTeamSerializer,
 )
-from .utils import is_user_part_of_host_team
+from .utils import get_challenge_host_teams_for_user, is_user_part_of_host_team
 
 get_challenge_host_model = get_model_object(ChallengeHost)
 
@@ -42,9 +42,9 @@ get_challenge_host_model = get_model_object(ChallengeHost)
 )
 def challenge_host_team_list(request):
     if request.method == "GET":
-        challenge_host_team_ids = ChallengeHost.objects.filter(
-            user=request.user
-        ).values_list("team_name", flat=True)
+        challenge_host_team_ids = get_challenge_host_teams_for_user(
+            request.user
+        )
         challenge_host_teams = ChallengeHostTeam.objects.filter(
             id__in=challenge_host_team_ids
         ).order_by("-id")
