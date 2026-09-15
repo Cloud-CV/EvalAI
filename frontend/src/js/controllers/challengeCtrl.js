@@ -733,6 +733,12 @@
 
                             // Reset the value of fields related to a submission
                             vm.phaseId = null;
+                            vm.submissionType = null;
+                            vm.submissionVisibility = null;
+                            vm.isSubmissionUsingCli = false;
+                            vm.isSubmissionUsingFile = false;
+                            vm.isSubmissionUsingUrl = false;
+                            vm.isPublicSubmission = false;
                             vm.fileUrl = "";
                             vm.methodName = "";
                             vm.methodDesc = "";
