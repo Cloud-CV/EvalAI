@@ -29,7 +29,6 @@ Environment variables required:
 import json
 import logging
 import os
-from datetime import datetime
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -115,24 +114,17 @@ def _should_force_scale_down(challenge_meta):
     Return True when the challenge should hold zero nodes regardless of its
     pending submission count.
 
-    A disabled challenge is treated like an ended one. Excluding disabled
-    challenges from the sweep entirely would be worse: one disabled while its
-    nodegroup is scaled up would keep those nodes running with nothing left to
-    reconcile it back down.
+    Only ``is_disabled`` forces an unconditional scale-down. An ended
+    challenge (``end_date`` in the past) must still keep nodes up while
+    submissions are queued/running/resuming so the queue can drain — the same
+    pending-aware contract as the cleanup Lambda (#5179) and monitoring cron
+    fix (#5185). Once ``pending_submissions`` hits 0, the normal scale-down
+    path zeros the nodegroup. Excluding disabled challenges from the sweep
+    entirely would be worse: one disabled while its nodegroup is scaled up
+    would keep those nodes running with nothing left to reconcile it back
+    down.
     """
-    if challenge_meta.get("is_disabled"):
-        return True
-
-    end_date = challenge_meta.get("end_date")
-    if not end_date:
-        return False
-    try:
-        # ISO 8601 from DRF can end with "Z"
-        challenge_end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-    except ValueError:
-        logger.warning("Invalid end_date format: %s", end_date)
-        return False
-    return challenge_end <= datetime.now(challenge_end.tzinfo)
+    return bool(challenge_meta.get("is_disabled"))
 
 
 def _build_eks_client(aws_region, challenge_meta):
