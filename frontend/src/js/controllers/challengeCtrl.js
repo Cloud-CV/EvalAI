@@ -1093,14 +1093,14 @@
                             break;
                         }
                     }
+                    // Show the column only if at least one entry actually carries meta
+                    // attributes. Checking inside the loop below would leave the flag
+                    // reflecting the last entry alone.
+                    vm.showSubmissionMetaAttributesOnLeaderboard = Array.isArray(vm.leaderboard) &&
+                        vm.leaderboard.some(function(entry) {
+                            return vm.hasSubmissionMetaAttributes(entry.submission__submission_metadata);
+                        });
                     for (var i=0; i<vm.leaderboard.length; i++) {
-                        if (vm.leaderboard[i].submission__submission_metadata == null){
-                            vm.showSubmissionMetaAttributesOnLeaderboard = false;
-                        }
-                        else {
-                            vm.showSubmissionMetaAttributesOnLeaderboard = true;
-                        }
-
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var defaultOrderBy = vm.leaderboard[i].leaderboard__schema.default_order_by;
                         if (leaderboardLabels.indexOf(vm.orderLeaderboardBy) === -1 && defaultOrderBy) {
@@ -1186,29 +1186,39 @@
             utilities.sendRequest(parameters);
         };
         
-        vm.showMetaAttributesDialog = function(ev, attributes){
-            if (attributes != false){
-                vm.metaAttributesData = [];
-                attributes.forEach(function(attribute){
-                    if (attribute.type != "checkbox") {
-                        vm.metaAttributesData.push({"name": attribute.name, "value": attribute.value});
-                    }
-                    else {
-                        vm.metaAttributesData.push({"name": attribute.name, "values": attribute.values});
-                    }
-                });
+        /**
+         * A submission has meta attributes only when the list is present and non-empty.
+         * Phases without configured meta attributes store an empty array, which must not
+         * be mistaken for real data.
+         */
+        vm.hasSubmissionMetaAttributes = function(attributes) {
+            return Array.isArray(attributes) && attributes.length > 0;
+        };
 
-                $mdDialog.show({
-                    scope: $scope,
-                    preserveScope: true,
-                    targetEvent: ev,
-                    templateUrl: 'src/views/web/challenge/submission-meta-attributes-dialog.html',
-                    clickOutsideToClose: true
-                });
-            }
-            else {
+        vm.showMetaAttributesDialog = function(ev, attributes){
+            // Also covers the `false` sentinel sent by the dialog's Close button.
+            if (!vm.hasSubmissionMetaAttributes(attributes)) {
                 $mdDialog.hide();
+                return;
             }
+
+            vm.metaAttributesData = [];
+            attributes.forEach(function(attribute){
+                if (attribute.type != "checkbox") {
+                    vm.metaAttributesData.push({"name": attribute.name, "value": attribute.value});
+                }
+                else {
+                    vm.metaAttributesData.push({"name": attribute.name, "values": attribute.values});
+                }
+            });
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'src/views/web/challenge/submission-meta-attributes-dialog.html',
+                clickOutsideToClose: true
+            });
         };
 
         vm.getResults = function(phaseId) {

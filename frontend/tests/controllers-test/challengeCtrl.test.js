@@ -3131,6 +3131,125 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for leaderboard submission meta attributes visibility', function () {
+        var $controller, $rootScope, $scope, utilities, $mdDialog, vm;
+
+        var POPULATED_METADATA = [{ name: 'Model size', type: 'text', value: '7B' }];
+
+        function leaderboardEntry(id, metadata) {
+            return {
+                id: id,
+                leaderboard__schema: { labels: ['accuracy'] },
+                submission__submission_metadata: metadata,
+                submission__submitted_at: new Date(Date.now() - 60 * 1000).toISOString()
+            };
+        }
+
+        function respondWithLeaderboard(entries) {
+            spyOn(utilities, 'sendRequest').and.callFake(function (params) {
+                if (params.url && params.url.includes('/leaderboard/')) {
+                    params.callback.onSuccess({ data: { results: entries } });
+                } else if (params.url && params.url.includes('/challenge_phase_split/')) {
+                    params.callback.onSuccess({ data: {} });
+                }
+            });
+        }
+
+        beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$mdDialog_) {
+            $controller = _$controller_;
+            $rootScope = _$rootScope_;
+            utilities = _utilities_;
+            $mdDialog = _$mdDialog_;
+            $scope = $rootScope.$new();
+            vm = $controller('ChallengeCtrl', { $scope: $scope });
+        }));
+
+        describe('hasSubmissionMetaAttributes', function () {
+            it('should treat an empty array as having no meta attributes', function () {
+                expect(vm.hasSubmissionMetaAttributes([])).toBe(false);
+            });
+
+            it('should treat null and undefined as having no meta attributes', function () {
+                expect(vm.hasSubmissionMetaAttributes(null)).toBe(false);
+                expect(vm.hasSubmissionMetaAttributes(undefined)).toBe(false);
+            });
+
+            it('should treat a populated array as having meta attributes', function () {
+                expect(vm.hasSubmissionMetaAttributes(POPULATED_METADATA)).toBe(true);
+            });
+        });
+
+        describe('showSubmissionMetaAttributesOnLeaderboard', function () {
+            it('should stay hidden when every entry has an empty metadata array', function () {
+                respondWithLeaderboard([
+                    leaderboardEntry(1, []),
+                    leaderboardEntry(2, [])
+                ]);
+
+                vm.getLeaderboard(123);
+
+                expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
+            });
+
+            it('should be shown when any entry has meta attributes, not just the last one', function () {
+                respondWithLeaderboard([
+                    leaderboardEntry(1, POPULATED_METADATA),
+                    leaderboardEntry(2, null)
+                ]);
+
+                vm.getLeaderboard(123);
+
+                expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(true);
+            });
+        });
+
+        describe('showMetaAttributesDialog', function () {
+            it('should not open a dialog for an empty metadata array', function () {
+                spyOn($mdDialog, 'show');
+
+                vm.showMetaAttributesDialog(null, []);
+
+                expect($mdDialog.show).not.toHaveBeenCalled();
+            });
+
+            it('should close the dialog when the Close button passes false', function () {
+                spyOn($mdDialog, 'hide');
+
+                vm.showMetaAttributesDialog(null, false);
+
+                expect($mdDialog.hide).toHaveBeenCalled();
+            });
+
+            it('should not throw when metadata is null or undefined', function () {
+                expect(function () {
+                    vm.showMetaAttributesDialog(null, null);
+                }).not.toThrow();
+                expect(function () {
+                    vm.showMetaAttributesDialog(null, undefined);
+                }).not.toThrow();
+            });
+
+            it('should open a dialog and expose the attributes when metadata is populated', function () {
+                spyOn($mdDialog, 'show');
+
+                vm.showMetaAttributesDialog(null, POPULATED_METADATA);
+
+                expect($mdDialog.show).toHaveBeenCalled();
+                expect(vm.metaAttributesData).toEqual([{ name: 'Model size', value: '7B' }]);
+            });
+
+            it('should expose checkbox attributes using their values list', function () {
+                spyOn($mdDialog, 'show');
+
+                vm.showMetaAttributesDialog(null, [
+                    { name: 'Tracks', type: 'checkbox', values: ['a', 'b'] }
+                ]);
+
+                expect(vm.metaAttributesData).toEqual([{ name: 'Tracks', values: ['a', 'b'] }]);
+            });
+        });
+    });
+
     describe('Unit tests for re-run submission logic', function () {
         var submissionObject, parameters, userKey;
 
