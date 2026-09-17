@@ -1093,13 +1093,7 @@
                             break;
                         }
                     }
-                    // Show the column only if at least one entry actually carries meta
-                    // attributes. Checking inside the loop below would leave the flag
-                    // reflecting the last entry alone.
-                    vm.showSubmissionMetaAttributesOnLeaderboard = Array.isArray(vm.leaderboard) &&
-                        vm.leaderboard.some(function(entry) {
-                            return vm.hasSubmissionMetaAttributes(entry.submission__submission_metadata);
-                        });
+                    vm.updateSubmissionMetaAttributesVisibility();
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var defaultOrderBy = vm.leaderboard[i].leaderboard__schema.default_order_by;
@@ -1193,6 +1187,18 @@
          */
         vm.hasSubmissionMetaAttributes = function(attributes) {
             return Array.isArray(attributes) && attributes.length > 0;
+        };
+
+        /**
+         * Recomputes whether the leaderboard's Meta Attributes column should be shown.
+         * Must be called after every assignment to vm.leaderboard, otherwise the flag
+         * keeps describing a previous set of entries.
+         */
+        vm.updateSubmissionMetaAttributesVisibility = function() {
+            vm.showSubmissionMetaAttributesOnLeaderboard = Array.isArray(vm.leaderboard) &&
+                vm.leaderboard.some(function(entry) {
+                    return vm.hasSubmissionMetaAttributes(entry.submission__submission_metadata);
+                });
         };
 
         vm.showMetaAttributesDialog = function(ev, attributes){
@@ -1538,6 +1544,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    vm.updateSubmissionMetaAttributesVisibility();
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -1598,6 +1605,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    vm.updateSubmissionMetaAttributesVisibility();
 
                     // setting last_submission time
                     for (var i = 0; i < vm.leaderboard.length; i++) {

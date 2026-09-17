@@ -3147,7 +3147,8 @@ describe('Unit tests for challenge controller', function () {
 
         function respondWithLeaderboard(entries) {
             spyOn(utilities, 'sendRequest').and.callFake(function (params) {
-                if (params.url && params.url.includes('/leaderboard/')) {
+                if (params.url && (params.url.includes('/leaderboard/') ||
+                        params.url.includes('public_leaderboard_all_entries'))) {
                     params.callback.onSuccess({ data: { results: entries } });
                 } else if (params.url && params.url.includes('/challenge_phase_split/')) {
                     params.callback.onSuccess({ data: {} });
@@ -3200,6 +3201,31 @@ describe('Unit tests for challenge controller', function () {
                 vm.getLeaderboard(123);
 
                 expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(true);
+            });
+
+            it('should be recomputed when refreshLeaderboard replaces the entries', function () {
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                spyOn(vm, 'startLeaderboard');
+                vm.showSubmissionMetaAttributesOnLeaderboard = true;
+                respondWithLeaderboard([leaderboardEntry(1, [])]);
+
+                vm.refreshLeaderboard();
+
+                expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
+            });
+
+            it('should be recomputed when toggling to all entries on the public leaderboard', function () {
+                spyOn(vm, 'startLoader');
+                spyOn(vm, 'stopLoader');
+                spyOn(vm, 'startLeaderboard');
+                spyOn(vm, 'scrollToEntryAfterLeaderboardLoads');
+                vm.showSubmissionMetaAttributesOnLeaderboard = true;
+                respondWithLeaderboard([leaderboardEntry(1, [])]);
+
+                vm.getAllEntriesOnPublicLeaderboard(123);
+
+                expect(vm.showSubmissionMetaAttributesOnLeaderboard).toBe(false);
             });
         });
 
