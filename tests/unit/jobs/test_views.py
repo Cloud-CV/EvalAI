@@ -17,11 +17,14 @@ from challenges.models import (
     LeaderboardData,
 )
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse_lazy
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
+from jobs.utils import calculate_distinct_sorted_leaderboard_data
 from moto import mock_s3
 from participants.models import Participant, ParticipantTeam
 from rest_framework import status
@@ -2548,6 +2551,103 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             self.assertNotIn("filtering_score", entry)
             self.assertNotIn("filtering_error", entry)
             self.assertIn("submission__participant_team__team_name", entry)
+
+    @override_settings(
+        CACHES={
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "leaderboard-cache-test-1",
+            }
+        }
+    )
+    def test_get_leaderboard_uses_cache_on_subsequent_request(self):
+        cache.clear()
+        url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+        )
+        with mock.patch(
+            "jobs.views.calculate_distinct_sorted_leaderboard_data",
+            wraps=calculate_distinct_sorted_leaderboard_data,
+        ) as wrapped:
+            first = self.client.get(url, {})
+            second = self.client.get(url, {})
+        self.assertEqual(first.status_code, status.HTTP_200_OK)
+        self.assertEqual(second.status_code, status.HTTP_200_OK)
+        self.assertEqual(wrapped.call_count, 1)
+        self.assertEqual(first.data["results"], second.data["results"])
+
+    @override_settings(
+        CACHES={
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "leaderboard-cache-test-2",
+            }
+        }
+    )
+    def test_get_leaderboard_caches_separately_for_host_vs_non_host(self):
+        cache.clear()
+        url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+        )
+        with mock.patch(
+            "jobs.views.calculate_distinct_sorted_leaderboard_data",
+            wraps=calculate_distinct_sorted_leaderboard_data,
+        ) as wrapped:
+            self.client.force_authenticate(user=self.user1)
+            self.client.get(url, {})
+            self.client.force_authenticate(user=self.user)
+            self.client.get(url, {})
+        self.assertEqual(wrapped.call_count, 2)
+
+    @override_settings(
+        CACHES={
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "leaderboard-cache-test-3",
+            }
+        }
+    )
+    def test_get_leaderboard_caches_separately_for_different_order_by(self):
+        cache.clear()
+        url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={"challenge_phase_split_id": self.challenge_phase_split.id},
+        )
+        with mock.patch(
+            "jobs.views.calculate_distinct_sorted_leaderboard_data",
+            wraps=calculate_distinct_sorted_leaderboard_data,
+        ) as wrapped:
+            self.client.get(url, {})
+            self.client.get(url, {"order_by": "test-score"})
+        self.assertEqual(wrapped.call_count, 2)
+
+    @override_settings(
+        CACHES={
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "leaderboard-cache-test-4",
+            }
+        }
+    )
+    def test_get_leaderboard_does_not_cache_400_response(self):
+        cache.clear()
+        url = reverse_lazy(
+            "jobs:leaderboard",
+            kwargs={
+                "challenge_phase_split_id": self.private_challenge_phase_split.id
+            },
+        )
+        with mock.patch(
+            "jobs.views.calculate_distinct_sorted_leaderboard_data",
+            wraps=calculate_distinct_sorted_leaderboard_data,
+        ) as wrapped:
+            first = self.client.get(url, {})
+            second = self.client.get(url, {})
+        self.assertEqual(first.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(second.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(wrapped.call_count, 2)
 
 
 class UpdateSubmissionTest(BaseAPITestClass):
