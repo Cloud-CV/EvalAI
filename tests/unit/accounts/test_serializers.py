@@ -3,11 +3,14 @@ from unittest.mock import patch
 
 from accounts.models import Profile
 from accounts.serializers import (
+    BoundedAuthTokenSerializer,
     CustomPasswordResetSerializer,
+    CustomRegisterSerializer,
     ProfileSerializer,
 )
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
@@ -402,3 +405,48 @@ class TestProfileSerializer(TestCase):
         Profile.objects.filter(user=self.user).delete()
         serializer = ProfileSerializer(self.user)
         self.assertFalse(serializer.data["is_profile_complete"])
+
+
+class TestBoundedAuthTokenSerializer(TestCase):
+    def setUp(self):
+        self.user_model = get_user_model()
+        self.user = self.user_model.objects.create_user(
+            username="bounded_login",
+            email="bounded@example.com",
+            password=" spacedpass ",
+        )
+
+    def test_rejects_password_over_max_length(self):
+        serializer = BoundedAuthTokenSerializer(
+            data={
+                "username": "bounded_login",
+                "password": "a" * (settings.PASSWORD_MAX_LENGTH + 1),
+            }
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
+
+    def test_accepts_password_with_leading_and_trailing_whitespace(self):
+        serializer = BoundedAuthTokenSerializer(
+            data={
+                "username": "bounded_login",
+                "password": " spacedpass ",
+            }
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data["user"], self.user)
+
+
+class TestCustomRegisterSerializer(TestCase):
+    def test_rejects_password_over_max_length(self):
+        long_password = "a" * (settings.PASSWORD_MAX_LENGTH + 1)
+        serializer = CustomRegisterSerializer(
+            data={
+                "username": "registeruser",
+                "email": "register@example.com",
+                "password1": long_password,
+                "password2": long_password,
+            }
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password1", serializer.errors)
