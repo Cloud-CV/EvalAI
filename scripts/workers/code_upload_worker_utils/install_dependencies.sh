@@ -169,16 +169,9 @@ if ! helm upgrade --install cilium cilium/cilium --version "$CILIUM_TARGET_VERSI
   exit 1
 fi
 
-if ! kubectl -n kube-system rollout status daemonset/cilium --timeout=120s; then
-  echo "### Cilium daemonset failed to roll out" >&2
-  exit 1
-fi
-
-# ipam.mode=cluster-pool means agent pods wait on cilium-operator to
-# allocate their node's PodCIDR, so the DaemonSet rolling out successfully
-# doesn't guarantee the cluster is actually functional without this too.
-if ! kubectl -n kube-system rollout status deployment/cilium-operator --timeout=120s; then
-  echo "### Cilium operator failed to roll out" >&2
+# Waiting for the rollout is skipped when the nodegroup is scaled to zero,
+# where it could never succeed. See wait_for_cilium_rollout.sh for why.
+if ! bash /code/scripts/workers/code_upload_worker_utils/wait_for_cilium_rollout.sh; then
   exit 1
 fi
 
