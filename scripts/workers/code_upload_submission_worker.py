@@ -669,6 +669,27 @@ def update_failed_jobs_and_send_logs(
     is_remote,
     disable_logs,
 ):
+    """Function to inspect a running submission's Job and fail it if it is done.
+
+    Reads the Job's pods, collects the logs of any terminated agent, submission
+    or environment container, and hands off to cleanup_submission when the
+    submission can no longer make progress: the Job is missing, the Job owns no
+    pod, or a container has terminated. Pods that exist but are still pending a
+    node are left alone so the next poll can pick them up.
+
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for reading the job
+        core_v1_api_instance {[AWS EKS CoreV1 API object]} -- API object for reading pods and their logs
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to inspect
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        message {[dict]} -- Submission message from AWS SQS queue
+        queue_name {[string]} -- Submission SQS queue name
+        is_remote {[int]} -- Whether the challenge is remote evaluation
+        disable_logs {[bool]} -- Whether the challenge phase suppresses submission logs
+    """
     clean_submission = False
     code_upload_environment_error = "Submission Job Failed."
     submission_error = "Submission Job Failed."
@@ -793,6 +814,16 @@ def install_gpu_drivers(api_instance):
 
 
 def main():
+    """Entry point for the code upload submission worker.
+
+    Sets up the EKS API clients for the challenge this worker serves, then
+    polls the submission SQS queue until terminated. Each message is dispatched
+    on the submission's current status: finished, failed and cancelled
+    submissions have their job deleted and their message dropped; queued
+    submissions are promoted to running once their pod reports container
+    statuses; running submissions are inspected for completion; anything else
+    is a new submission and gets a job created for it.
+    """
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
         AUTH_TOKEN=AUTH_TOKEN,

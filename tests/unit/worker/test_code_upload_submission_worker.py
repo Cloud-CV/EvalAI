@@ -1730,6 +1730,11 @@ class TestMainQueuedSubmissionWithoutPods(unittest.TestCase):
     """
 
     def _evalai_instance(self, mock_evalai):
+        """Configure the mocked EvalAI interface for a queued submission.
+
+        cpu_only_jobs is True so main() skips the GPU driver install, which
+        reads a path that only exists inside the container.
+        """
         mock_evalai_instance = mock_evalai.return_value
         mock_evalai_instance.get_challenge_by_queue_name.return_value = {
             "title": "Test Challenge",
@@ -1781,6 +1786,11 @@ class TestMainQueuedSubmissionWithoutPods(unittest.TestCase):
         mock_install_gpu_drivers,
         MockLogger,
     ):
+        """A queued submission whose Job owns no Pod is left queued.
+
+        This is the reported production crash: main() raised IndexError here
+        and the worker process exited.
+        """
         mock_evalai_instance = self._evalai_instance(mock_evalai)
         mock_killer.return_value.kill_now = True
 
