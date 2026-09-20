@@ -669,6 +669,27 @@ def update_failed_jobs_and_send_logs(
     is_remote,
     disable_logs,
 ):
+    """Function to inspect a running submission's Job and fail it if it is done.
+
+    Reads the Job's pods, collects the logs of any terminated agent, submission
+    or environment container, and hands off to cleanup_submission when the
+    submission can no longer make progress: the Job is missing, the Job owns no
+    pod, or a container has terminated. Pods that exist but are still pending a
+    node are left alone so the next poll can pick them up.
+
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for reading the job
+        core_v1_api_instance {[AWS EKS CoreV1 API object]} -- API object for reading pods and their logs
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to inspect
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        message {[dict]} -- Submission message from AWS SQS queue
+        queue_name {[string]} -- Submission SQS queue name
+        is_remote {[int]} -- Whether the challenge is remote evaluation
+        disable_logs {[bool]} -- Whether the challenge phase suppresses submission logs
+    """
     clean_submission = False
     code_upload_environment_error = "Submission Job Failed."
     submission_error = "Submission Job Failed."
@@ -676,7 +697,19 @@ def update_failed_jobs_and_send_logs(
         pods_list = get_pods_from_job(
             api_instance, core_v1_api_instance, job_name
         )
-        if pods_list:
+        if pods_list and not pods_list.items:
+            # The Job exists but owns no Pod. Kubernetes deletes the active
+            # Pods when activeDeadlineSeconds expires, and Pods are garbage
+            # collected when their node is removed. A running submission whose
+            # Pods are gone cannot make progress, so fail it rather than poll
+            # a Job that will never report again.
+            logger.info(
+                "No pods found for job {}, submission {}. The job exists but "
+                "its pods were deleted or never created. Marking submission "
+                "failed.".format(job_name, submission_pk)
+            )
+            clean_submission = True
+        elif pods_list:
             if disable_logs:
                 code_upload_environment_error = None
                 submission_error = None
@@ -781,6 +814,16 @@ def install_gpu_drivers(api_instance):
 
 
 def main():
+    """Entry point for the code upload submission worker.
+
+    Sets up the EKS API clients for the challenge this worker serves, then
+    polls the submission SQS queue until terminated. Each message is dispatched
+    on the submission's current status: finished, failed and cancelled
+    submissions have their job deleted and their message dropped; queued
+    submissions are promoted to running once their pod reports container
+    statuses; running submissions are inspected for completion; anything else
+    is a new submission and gets a job created for it.
+    """
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
         AUTH_TOKEN=AUTH_TOKEN,
@@ -878,22 +921,39 @@ def main():
                             message_receipt_handle
                         )
                 elif submission.get("status") == "queued":
-                    job_name = submission.get("job_name")[-1]
-                    pods_list = get_pods_from_job(
-                        api_instance, core_v1_api_instance, job_name
-                    )
-                    if (
-                        pods_list
-                        and pods_list.items[0].status.container_statuses
-                    ):
-                        # Update submission to running
-                        submission_data = {
-                            "submission_status": "running",
-                            "submission": submission_pk,
-                            "job_name": job_name,
-                        }
-                        evalai.update_submission_status(
-                            submission_data, challenge_pk
+                    try:
+                        job_name = submission.get("job_name")[-1]
+                        pods_list = get_pods_from_job(
+                            api_instance, core_v1_api_instance, job_name
+                        )
+                        # A V1PodList defines neither __bool__ nor __len__, so
+                        # it is truthy even with no items. Check items before
+                        # indexing: the Job controller may not have created the
+                        # Pod yet, and Pods are deleted when the Job exceeds
+                        # activeDeadlineSeconds or loses its node.
+                        if (
+                            pods_list
+                            and pods_list.items
+                            and pods_list.items[0].status.container_statuses
+                        ):
+                            # Update submission to running
+                            submission_data = {
+                                "submission_status": "running",
+                                "submission": submission_pk,
+                                "job_name": job_name,
+                            }
+                            evalai.update_submission_status(
+                                submission_data, challenge_pk
+                            )
+                    except Exception as e:
+                        # Keep the worker alive: an unhandled error here used
+                        # to kill the process, and the undeleted SQS message
+                        # then redelivered the same submission into the same
+                        # crash, stalling every submission on the challenge.
+                        logger.exception(
+                            "Failed to update queued submission {}: {}".format(
+                                submission_pk, e
+                            )
                         )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
