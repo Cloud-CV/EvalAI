@@ -676,7 +676,19 @@ def update_failed_jobs_and_send_logs(
         pods_list = get_pods_from_job(
             api_instance, core_v1_api_instance, job_name
         )
-        if pods_list:
+        if pods_list and not pods_list.items:
+            # The Job exists but owns no Pod. Kubernetes deletes the active
+            # Pods when activeDeadlineSeconds expires, and Pods are garbage
+            # collected when their node is removed. A running submission whose
+            # Pods are gone cannot make progress, so fail it rather than poll
+            # a Job that will never report again.
+            logger.info(
+                "No pods found for job {}, submission {}. The job exists but "
+                "its pods were deleted or never created. Marking submission "
+                "failed.".format(job_name, submission_pk)
+            )
+            clean_submission = True
+        elif pods_list:
             if disable_logs:
                 code_upload_environment_error = None
                 submission_error = None
@@ -878,22 +890,39 @@ def main():
                             message_receipt_handle
                         )
                 elif submission.get("status") == "queued":
-                    job_name = submission.get("job_name")[-1]
-                    pods_list = get_pods_from_job(
-                        api_instance, core_v1_api_instance, job_name
-                    )
-                    if (
-                        pods_list
-                        and pods_list.items[0].status.container_statuses
-                    ):
-                        # Update submission to running
-                        submission_data = {
-                            "submission_status": "running",
-                            "submission": submission_pk,
-                            "job_name": job_name,
-                        }
-                        evalai.update_submission_status(
-                            submission_data, challenge_pk
+                    try:
+                        job_name = submission.get("job_name")[-1]
+                        pods_list = get_pods_from_job(
+                            api_instance, core_v1_api_instance, job_name
+                        )
+                        # A V1PodList defines neither __bool__ nor __len__, so
+                        # it is truthy even with no items. Check items before
+                        # indexing: the Job controller may not have created the
+                        # Pod yet, and Pods are deleted when the Job exceeds
+                        # activeDeadlineSeconds or loses its node.
+                        if (
+                            pods_list
+                            and pods_list.items
+                            and pods_list.items[0].status.container_statuses
+                        ):
+                            # Update submission to running
+                            submission_data = {
+                                "submission_status": "running",
+                                "submission": submission_pk,
+                                "job_name": job_name,
+                            }
+                            evalai.update_submission_status(
+                                submission_data, challenge_pk
+                            )
+                    except Exception as e:
+                        # Keep the worker alive: an unhandled error here used
+                        # to kill the process, and the undeleted SQS message
+                        # then redelivered the same submission into the same
+                        # crash, stalling every submission on the challenge.
+                        logger.exception(
+                            "Failed to update queued submission {}: {}".format(
+                                submission_pk, e
+                            )
                         )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]

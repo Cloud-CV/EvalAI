@@ -1716,6 +1716,154 @@ class TestMainQueuedSubmission(unittest.TestCase):
         )
 
 
+class TestMainQueuedSubmissionWithoutPods(unittest.TestCase):
+    """A Job can exist while its PodList is empty.
+
+    This happens when the Job controller has not created the Pod yet, when
+    activeDeadlineSeconds expired and Kubernetes deleted the active Pods, or
+    when the node was removed and its Pods were garbage collected. A
+    ``V1PodList`` defines neither ``__bool__`` nor ``__len__``, so it is truthy
+    even with no items and an ``items[0]`` lookup raises IndexError.
+
+    These tests build real ``V1PodList`` objects on purpose: a ``MagicMock``
+    stand-in supports ``items[0]`` and would hide the failure entirely.
+    """
+
+    def _evalai_instance(self, mock_evalai):
+        mock_evalai_instance = mock_evalai.return_value
+        mock_evalai_instance.get_challenge_by_queue_name.return_value = {
+            "title": "Test Challenge",
+            "remote_evaluation": 0,
+            "cpu_only_jobs": True,
+            "is_static_dataset_code_upload": False,
+            "id": 1,
+            "submission_time_limit": 100,
+        }
+        mock_evalai_instance.get_aws_eks_cluster_details.return_value = {
+            "name": "test-cluster",
+            "cluster_endpoint": "https://cluster-endpoint",
+        }
+        mock_evalai_instance.get_challenge_phase_by_pk.return_value = {
+            "disable_logs": False
+        }
+        mock_evalai_instance.get_message_from_sqs_queue.return_value = {
+            "body": {
+                "submission_pk": 1,
+                "challenge_pk": 1,
+                "phase_pk": 1,
+            },
+            "receipt_handle": "abc",
+        }
+        mock_evalai_instance.get_submission_by_pk.return_value = {
+            "status": "queued",
+            "job_name": ["job-123"],
+        }
+        return mock_evalai_instance
+
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    @patch("scripts.workers.code_upload_submission_worker.install_gpu_drivers")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
+    @patch("scripts.workers.code_upload_submission_worker.EvalAI_Interface")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_client")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_object")
+    @patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
+    def test_main_queued_submission_with_empty_pod_list_does_not_crash(
+        self,
+        mock_get_core_v1_api_object,
+        mock_get_api_object,
+        mock_get_api_client,
+        mock_evalai,
+        mock_killer,
+        mock_get_pods_from_job,
+        mock_install_gpu_drivers,
+        MockLogger,
+    ):
+        mock_evalai_instance = self._evalai_instance(mock_evalai)
+        mock_killer.return_value.kill_now = True
+
+        # A real V1PodList with no items: truthy, but items[0] raises.
+        mock_get_pods_from_job.return_value = client.V1PodList(items=[])
+
+        main()
+
+        # The Pod does not exist yet, so the submission stays queued.
+        mock_evalai_instance.update_submission_status.assert_not_called()
+        # Asserting no exception was logged is what pins the items guard in
+        # place. Without it the IndexError is merely caught by the enclosing
+        # handler, which leaves update_submission_status uncalled too -- so
+        # that assertion alone cannot tell a handled state from a crash.
+        MockLogger.exception.assert_not_called()
+
+    @patch("scripts.workers.code_upload_submission_worker.install_gpu_drivers")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    @patch("scripts.workers.code_upload_submission_worker.GracefulKiller")
+    @patch("scripts.workers.code_upload_submission_worker.EvalAI_Interface")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_client")
+    @patch("scripts.workers.code_upload_submission_worker.get_api_object")
+    @patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
+    def test_main_queued_submission_survives_unexpected_error(
+        self,
+        mock_get_core_v1_api_object,
+        mock_get_api_object,
+        mock_get_api_client,
+        mock_evalai,
+        mock_killer,
+        mock_get_pods_from_job,
+        mock_install_gpu_drivers,
+    ):
+        """One bad submission must not take the worker down.
+
+        The finished/failed/cancelled branch already contains its errors; the
+        queued branch did not, so an exception there escaped main() and killed
+        the process for every submission on the challenge.
+        """
+        self._evalai_instance(mock_evalai)
+        mock_killer.return_value.kill_now = True
+        mock_get_pods_from_job.side_effect = Exception("Kubernetes API down")
+
+        main()
+
+    @patch("scripts.workers.code_upload_submission_worker.cleanup_submission")
+    @patch("scripts.workers.code_upload_submission_worker.get_pods_from_job")
+    @patch("scripts.workers.code_upload_submission_worker.logger")
+    def test_update_failed_jobs_reports_empty_pod_list_clearly(
+        self, MockLogger, mock_get_pods_from_job, mock_cleanup_submission
+    ):
+        """A running Job whose Pods are gone is dead and must be cleaned up.
+
+        Before the fix this path raised IndexError, which the outer handler
+        caught and logged as "Exception while reading Job list index out of
+        range" -- the right outcome reached by accident, with a diagnostic that
+        pointed at nothing.
+        """
+        mock_get_pods_from_job.return_value = client.V1PodList(items=[])
+
+        update_failed_jobs_and_send_logs(
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            "test-job",
+            1,
+            1,
+            1,
+            "Test message",
+            "test-queue",
+            False,
+            False,
+        )
+
+        MockLogger.info.assert_any_call(
+            "No pods found for job test-job, submission 1. The job exists but "
+            "its pods were deleted or never created. Marking submission failed."
+        )
+        mock_cleanup_submission.assert_called_once()
+
+
 class TestMainJobDeleteBlock(unittest.TestCase):
     @patch("scripts.workers.code_upload_submission_worker.logger")
     @patch("scripts.workers.code_upload_submission_worker.delete_job")
