@@ -1,6 +1,7 @@
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_user_by_email, team_paginated_queryset
 from challenges.models import Challenge, ChallengePhase
+from challenges.phase_limit_utils import with_challenge_phase_count
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
     get_challenge_model,
@@ -125,8 +126,8 @@ def get_participant_team_challenge_list(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
-        challenge = Challenge.objects.filter(
-            participant_teams=participant_team
+        challenge = with_challenge_phase_count(
+            Challenge.objects.filter(participant_teams=participant_team)
         ).order_by("-id")
         paginator, result_page = team_paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
@@ -449,7 +450,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     participant_team_ids = [t.id for t in participant_teams]
     # Batch fetch: single query for all challenges across all participant teams
     # to avoid N+1 (COUNT + SELECT per participant team)
-    all_challenges = (
+    all_challenges = with_challenge_phase_count(
         Challenge.objects.filter(participant_teams__in=participant_teams)
         .select_related("creator", "creator__created_by")
         .prefetch_related(
