@@ -15,7 +15,10 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.throttling import UserRateThrottle
+from rest_framework_expiring_authtoken.models import ExpiringToken
+from rest_framework_expiring_authtoken.views import ObtainExpiringAuthToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
@@ -24,10 +27,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .authentication import ExpiringTokenAuthentication
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
-from .serializers import JwtTokenSerializer, UpdateEmailSerializer
+from .serializers import (
+    BoundedAuthTokenSerializer,
+    JwtTokenSerializer,
+    UpdateEmailSerializer,
+)
 from .throttles import (
     PasswordResetEmailThrottle,
     PasswordResetIPThrottle,
+    RegistrationIPThrottle,
     ResendEmailThrottle,
 )
 
@@ -38,6 +46,31 @@ PASSWORD_RESET_GENERIC_MESSAGE = (
     "If your email exists in our database, you'll receive a password "
     "reset link."
 )
+
+
+class SafeObtainExpiringAuthToken(ObtainExpiringAuthToken):
+    """Login view with bounded password field length."""
+
+    def post(self, request):
+        serializer = BoundedAuthTokenSerializer(data=request.data)
+
+        if serializer.is_valid():
+            token, _ = ExpiringToken.objects.get_or_create(
+                user=serializer.validated_data["user"]
+            )
+
+            if token.expired():
+                token.delete()
+                token = ExpiringToken.objects.create(
+                    user=serializer.validated_data["user"]
+                )
+
+            return Response({"token": token.key})
+
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+safe_obtain_expiring_auth_token = SafeObtainExpiringAuthToken.as_view()
 
 
 class SafePasswordResetView(PasswordResetView):
@@ -64,6 +97,8 @@ class SafeRegisterView(RegisterView):
     but a race condition (two concurrent requests with the same email) can
     slip past the check. This view acts as a safety net for that case.
     """
+
+    throttle_classes = (RegistrationIPThrottle,)
 
     def create(self, request, *args, **kwargs):
         try:
