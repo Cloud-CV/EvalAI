@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import signals
 from django.db.models.signals import pre_save
@@ -816,9 +817,25 @@ class Challenge(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.start_date < timezone.now() and self.end_date > timezone.now():
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date < timezone.now()
+            and self.end_date > timezone.now()
+        ):
             return True
         return False
+
+    def save(self, *args, **kwargs):
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date >= self.end_date
+        ):
+            raise ValidationError(
+                "Challenge start date must be before end date."
+            )
+        super(Challenge, self).save(*args, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
@@ -1066,11 +1083,58 @@ class ChallengePhase(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.start_date < timezone.now() and self.end_date > timezone.now():
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date < timezone.now()
+            and self.end_date > timezone.now()
+        ):
             return True
         return False
 
     def save(self, *args, **kwargs):
+        challenge = self.challenge
+        if challenge:
+            if (
+                self.start_date
+                and challenge.start_date
+                and self.start_date < challenge.start_date
+            ):
+                raise ValidationError(
+                    "Phase start date must be on or after challenge start date."
+                )
+            if (
+                self.start_date
+                and challenge.end_date
+                and self.start_date >= challenge.end_date
+            ):
+                raise ValidationError(
+                    "Phase start date must be before challenge end date."
+                )
+            if (
+                self.end_date
+                and challenge.start_date
+                and self.end_date <= challenge.start_date
+            ):
+                raise ValidationError(
+                    "Phase end date must be after challenge start date."
+                )
+            if (
+                self.end_date
+                and challenge.end_date
+                and self.end_date > challenge.end_date
+            ):
+                raise ValidationError(
+                    "Phase end date must be on or before challenge end date."
+                )
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date >= self.end_date
+        ):
+            raise ValidationError(
+                "Phase start date must be before end date."
+            )
 
         # If the max_submissions_per_day is less than the
         # max_concurrent_submissions_allowed.
