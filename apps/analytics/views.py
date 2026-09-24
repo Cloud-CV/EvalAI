@@ -163,15 +163,11 @@ def get_challenge_phase_submission_count_by_team(
     challenge_phase_submission_count = ChallengePhaseSubmissionCount(
         participant_team_submissions, challenge_phase.pk
     )
-    try:
-        serializer = ChallengePhaseSubmissionCountSerializer(
-            challenge_phase_submission_count
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    except:  # noqa: E722
-        response_data = {"error": "Bad request. Please try again later!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengePhaseSubmissionCountSerializer(
+        challenge_phase_submission_count
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -231,28 +227,27 @@ def get_last_submission_datetime_analysis(
         challenge_phase__challenge=challenge
     )
 
-    if not submissions:
+    if not submissions.exists():
         response_data = {
             "message": "You dont have any submissions in this challenge!"
         }
-        return Response(response_data, status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_200_OK)
 
-    last_submission_timestamp_in_challenge = submissions.order_by(
-        "-submitted_at"
-    )[0].created_at
+    last_submission_timestamp_in_challenge = (
+        submissions.order_by("-submitted_at").first().created_at
+    )
 
     submissions_in_a_phase = submissions.filter(
         challenge_phase=challenge_phase
     )
 
-    if not submissions_in_a_phase:
-        last_submission_timestamp_in_challenge_phase = (
-            "You dont have any submissions in this challenge phase!"
-        )
-    else:
-        last_submission_timestamp_in_challenge_phase = (
-            submissions_in_a_phase.order_by("-submitted_at")[0].created_at
-        )
+    last_in_phase = submissions_in_a_phase.order_by("-submitted_at").first()
+
+    last_submission_timestamp_in_challenge_phase = (
+        "You dont have any submissions in this challenge phase!"
+        if last_in_phase is None
+        else last_in_phase.created_at
+    )
 
     last_submission_timestamp = LastSubmissionTimestamp(
         last_submission_timestamp_in_challenge,
@@ -260,15 +255,8 @@ def get_last_submission_datetime_analysis(
         challenge_phase.pk,
     )
 
-    try:
-        serializer = LastSubmissionTimestampSerializer(
-            last_submission_timestamp
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    except:  # noqa: E722
-        response_data = {"error": "Bad request. Please try again later!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = LastSubmissionTimestampSerializer(last_submission_timestamp)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
