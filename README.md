@@ -55,6 +55,17 @@ The steps are:
     ```
     docker-compose up --build
     ```
+    > **Note (Windows users):** If you see errors like `/usr/bin/env: 'bash\r': No such file or directory` while running Docker,
+    > it is likely due to CRLF line endings on shell scripts. Convert `.sh` files to LF and rebuild:
+    >
+    > ```bash
+    > # Run in Git Bash from the project root
+    > find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} \;
+    > ```
+    >
+    > ```bash
+    > docker-compose up --build
+    > ```
 
     By default, this starts only the required services (`db`, `sqs`, and `django`).  
     If you need **worker** services, start them using:
