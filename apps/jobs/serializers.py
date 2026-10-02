@@ -82,9 +82,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
         # submissions in a request
         cache_key = challenge_host_team.id if challenge_host_team else None
         if cache_key not in SubmissionSerializer._challenge_hosts_cache:
+            from hosts.utils import ACTIVE_HOST_STATUSES
+
             SubmissionSerializer._challenge_hosts_cache[cache_key] = list(
                 ChallengeHost.objects.filter(
-                    team_name=challenge_host_team
+                    team_name=challenge_host_team,
+                    status__in=ACTIVE_HOST_STATUSES,
                 ).values_list("user__pk", flat=True)
             )
 
