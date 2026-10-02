@@ -43,6 +43,17 @@ class TestAutoScaleEksNodesLambda(unittest.TestCase):
     def tearDown(self):
         self.env_patcher.stop()
 
+    def test_should_force_scale_down_only_when_disabled(self):
+        """end_date alone must not force zero nodes while work may still drain."""
+        force = self.module._should_force_scale_down
+        self.assertTrue(force({"is_disabled": True}))
+        self.assertFalse(force({"is_disabled": False}))
+        self.assertFalse(force({}))
+        self.assertFalse(
+            force({"is_disabled": False, "end_date": "2000-01-01T00:00:00Z"})
+        )
+        self.assertFalse(force({"end_date": "2000-01-01T00:00:00Z"}))
+
     @patch("boto3.client")
     @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
     def test_missing_challenge_pk(
@@ -516,9 +527,17 @@ class TestAutoScaleEksNodesLambda(unittest.TestCase):
 
     @patch("boto3.client")
     @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
-    def test_scale_down_when_challenge_has_ended(
+    def test_ended_challenge_with_pending_keeps_capacity_to_drain(
         self, mock_call_evalai_api, mock_boto_client
     ):
+        """
+        After end_date, pending work must keep draining.
+
+        Previously ``_should_force_scale_down`` treated end_date as an
+        unconditional zero-nodes signal, which killed in-flight code-upload
+        pods and left queued submissions without capacity — undoing the
+        pending-aware drain policy from #5179/#5185.
+        """
         mock_call_evalai_api.side_effect = [
             {
                 "is_docker_based": True,
@@ -537,11 +556,75 @@ class TestAutoScaleEksNodesLambda(unittest.TestCase):
             }
         }
         mock_eks.update_nodegroup_config.return_value = {
-            "update": {"id": "upd-end"}
+            "update": {"id": "upd-end-drain"}
         }
         mock_boto_client.return_value = mock_eks
 
         response = self.module.handler({"challenge_pk": 99}, None)
+        self.assertEqual(response["statusCode"], 200)
+        kwargs = mock_eks.update_nodegroup_config.call_args.kwargs
+        # Pending exceeds current desired, so scale up to drain — never to 0.
+        self.assertEqual(kwargs["scalingConfig"]["desiredSize"], 10)
+
+    @patch("boto3.client")
+    @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
+    def test_ended_challenge_with_pending_below_desired_leaves_nodes(
+        self, mock_call_evalai_api, mock_boto_client
+    ):
+        """Ended + pending but already enough nodes: leave capacity draining."""
+        mock_call_evalai_api.side_effect = [
+            {
+                "is_docker_based": True,
+                "remote_evaluation": False,
+                "cluster_name": "cluster-1",
+                "scale_up_cap": 10,
+                "end_date": "2000-01-01T00:00:00Z",
+            },
+            {"pending_submissions": 2},
+        ]
+        mock_eks = MagicMock()
+        mock_eks.list_nodegroups.return_value = {"nodegroups": ["ng-1"]}
+        mock_eks.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "scalingConfig": {"minSize": 1, "desiredSize": 5, "maxSize": 5}
+            }
+        }
+        mock_boto_client.return_value = mock_eks
+
+        response = self.module.handler({"challenge_pk": 98}, None)
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(response["body"], "No change")
+        mock_eks.update_nodegroup_config.assert_not_called()
+
+    @patch("boto3.client")
+    @patch("auto_scale_eks_nodes_lambda._call_evalai_api")
+    def test_ended_challenge_with_no_pending_scales_down(
+        self, mock_call_evalai_api, mock_boto_client
+    ):
+        """Once the queue is drained after end_date, scale nodes to zero."""
+        mock_call_evalai_api.side_effect = [
+            {
+                "is_docker_based": True,
+                "remote_evaluation": False,
+                "cluster_name": "cluster-1",
+                "scale_up_cap": 10,
+                "end_date": "2000-01-01T00:00:00Z",
+            },
+            {"pending_submissions": 0},
+        ]
+        mock_eks = MagicMock()
+        mock_eks.list_nodegroups.return_value = {"nodegroups": ["ng-1"]}
+        mock_eks.describe_nodegroup.return_value = {
+            "nodegroup": {
+                "scalingConfig": {"minSize": 1, "desiredSize": 5, "maxSize": 5}
+            }
+        }
+        mock_eks.update_nodegroup_config.return_value = {
+            "update": {"id": "upd-end-idle"}
+        }
+        mock_boto_client.return_value = mock_eks
+
+        response = self.module.handler({"challenge_pk": 97}, None)
         self.assertEqual(response["statusCode"], 200)
         kwargs = mock_eks.update_nodegroup_config.call_args.kwargs
         self.assertEqual(kwargs["scalingConfig"]["desiredSize"], 0)
