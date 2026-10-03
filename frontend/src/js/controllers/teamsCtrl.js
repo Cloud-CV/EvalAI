@@ -392,7 +392,8 @@
             if (updateParticipantTeamDataForm) {
             var parameters = {};
             parameters.url = 'participants/participant_team/' + vm.participantTeamId;
-            parameters.method = 'PATCH';
+            // parameters.method = 'PATCH';
+            parameters.method = 'PUT';
             parameters.data = {
                 "team_name": vm.team.teamName,
                 "team_url": vm.team.teamUrl
@@ -433,6 +434,11 @@
             };
 
             utilities.sendRequest(parameters);
+            }
+            else if(updateParticipantTeamDataForm == false){
+                // frontend validation if updateParticipantTeamDataForm is false
+                $rootScope.notify("error", "Update failed! Invalid team name");
+                $mdDialog.hide();
             }
             else {
                 $mdDialog.hide();
