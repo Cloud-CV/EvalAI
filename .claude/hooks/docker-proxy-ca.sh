@@ -27,6 +27,10 @@ awk -v dir="$OUT/proxy-ca/system-certs" '
   n { print > f }
   /END CERTIFICATE/ { close(f) }
 ' "$CA_BUNDLE"
+if ! compgen -G "$OUT/proxy-ca/system-certs/*.crt" >/dev/null; then
+  echo "No certificates found in $CA_BUNDLE" >&2
+  exit 1
+fi
 
 python3 - "$REPO" "$OUT" <<'PY'
 import re
