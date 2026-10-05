@@ -504,13 +504,20 @@ describe('Unit tests for profile controller', function () {
         it('should refresh token and handle success', function () {
             vm.jsonResponse = {};
             vm.token = '';
+            vm.expiresAt = '';
+            vm.expiresAtTimezone = '';
+            vm.gmtZone = '';
             vm.refreshToken();
-            // Simulate backend success
-            var response = { data: { token: 'newtoken' } };
+            // Simulate backend success with expires_at
+            var response = { data: { token: 'newtoken', expires_at: '2026-01-25T12:00:00Z' } };
             utilities._refreshParams.callback.onSuccess(response);
 
             expect(vm.jsonResponse).toEqual(response.data);
             expect(vm.token).toEqual('newtoken');
+            expect(vm.expiresAt).toBeDefined();
+            expect(vm.expiresAt).not.toEqual('');
+            expect(vm.expiresAtTimezone).toBeDefined();
+            expect(vm.gmtZone).toBeDefined();
             expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'newtoken');
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Token generated successfully.");
         });
