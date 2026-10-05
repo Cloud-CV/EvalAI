@@ -227,6 +227,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.zip_ref = Mock()
         self.zip_ref.namelist.return_value = []  # Mock the namelist method to return an empty list
         self.current_challenge = Mock()
+        self.current_challenge.max_allowed_phases = None
         self.error_message_dict = {
             "no_yaml_file": "No YAML file found in the zip.",
             "multiple_yaml_files": "Multiple YAML files found: {}.",
@@ -945,6 +946,7 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.zip_ref = Mock()
         self.zip_ref.namelist.return_value = []
         self.current_challenge = Mock()
+        self.current_challenge.max_allowed_phases = None
         self.util = ValidateChallengeConfigUtil(
             self.request,
             self.challenge_host_team,
@@ -964,6 +966,10 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             "leaderboard_schema_error": "Leaderboard schema error for leaderboard with ID: {}",
             "leaderboard_deletion_after_creation": "Cannot delete leaderboard after challenge creation.",
             "missing_challenge_phases": "Missing challenge phases.",
+            "challenge_phase_limit_exceeded": (
+                "This challenge is limited to {} phase(s). Contact us at "
+                "team@eval.ai if you need more phases."
+            ),
             "no_codename_for_challenge_phase": "Codename is missing for challenge phase.",
             "duplicate_codename_for_phase": "Duplicate codename '{}' for phase '{}'.",
             "no_test_annotation_file_found": "No test annotation file found for phase '{}'.",
@@ -1185,6 +1191,52 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.validate_challenge_phases([])
         self.assertEqual(
             self.util.error_messages[0], "Missing challenge phases."
+        )
+
+    def test_challenge_phase_limit_exceeded_for_new_challenge(self):
+        self.util.current_challenge = None
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {"id": 1, "codename": "phase1", "name": "Phase 1"},
+                {"id": 2, "codename": "phase2", "name": "Phase 2"},
+                {"id": 3, "codename": "phase3", "name": "Phase 3"},
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertEqual(
+            self.util.error_messages[0],
+            self.util.error_messages_dict[
+                "challenge_phase_limit_exceeded"
+            ].format(2),
+        )
+
+    def test_challenge_phase_limit_allows_exactly_the_limit(self):
+        self.util.current_challenge = None
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {"id": 1, "codename": "phase1", "name": "Phase 1"},
+                {"id": 2, "codename": "phase2", "name": "Phase 2"},
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertFalse(
+            any("limited to" in msg for msg in self.util.error_messages)
+        )
+
+    def test_challenge_phase_limit_skipped_for_grandfathered_challenge(self):
+        # Legacy challenges carry max_allowed_phases=None (unlimited), so the
+        # cap must never fire regardless of how many phases the config lists.
+        self.util.current_challenge = Mock(max_allowed_phases=None)
+        self.util.yaml_file_data = {
+            "challenge_phases": [
+                {"id": 1, "codename": "phase1", "name": "Phase 1"},
+                {"id": 2, "codename": "phase2", "name": "Phase 2"},
+                {"id": 3, "codename": "phase3", "name": "Phase 3"},
+            ]
+        }
+        self.util.validate_challenge_phases([])
+        self.assertFalse(
+            any("limited to" in msg for msg in self.util.error_messages)
         )
 
     def test_no_codename_for_challenge_phase(self):
