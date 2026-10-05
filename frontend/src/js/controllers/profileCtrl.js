@@ -21,6 +21,7 @@
         vm.status = 'Show';
         vm.token = '';
         vm.expiresAt = '';
+        const urlFields = ["github_url", "google_scholar_url", "linkedin_url"];
 
         // default parameters
         $rootScope.canShowOldPassword = false;
@@ -252,10 +253,12 @@
                 vm.user.address_country = vm.user.address_country === null ? "" : vm.user.address_country;
                 vm.user.university = vm.user.university === null ? "" : vm.user.university;
 
-                if (!vm.isURLValid(vm.user[editid])) {
-                    vm.isFormError = true;
-                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
-                    return;
+                if(urlFields.includes(editid)){
+                    if (!vm.isURLValid(vm.user[editid])) {
+                        vm.isFormError = true;
+                        $rootScope.notify("error", "URL must be valid and should not exceed 200 characters.");
+                        return;
+                    }
                 }
 
                 var parameters = {};
