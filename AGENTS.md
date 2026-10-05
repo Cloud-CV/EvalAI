@@ -16,6 +16,12 @@ Before marking any coding task complete:
 
 `run-all-tests.sh` resolves containers from `COMPOSE_PROJECT_NAME` (defaults to `workspace` on Cloud Agent VMs; set `COMPOSE_PROJECT_NAME=evalai` for local dev).
 
+## Claude Code cloud sessions
+
+`.claude/hooks/session-start.sh` runs at session start: it starts Docker, builds the images (trusting the session's egress proxy CA via a generated compose override, see `.claude/hooks/docker-proxy-ca.sh`), and brings up `db sqs django nodejs`. It sets `COMPOSE_FILE` and `COMPOSE_PROJECT_NAME=evalai`, so containers are `evalai-*` and plain `docker compose` picks up the override. Setup log: `/tmp/evalai-session-start.log`.
+
+Run backend tests in a one-off container as CI does (`docker compose run --rm --no-deps -e DJANGO_SETTINGS_MODULE=settings.test django bash -c 'python manage.py flush --noinput && pytest -q'`). Running them with `docker exec` in the live `django` container fails `test_process_submission_message_succesfully`, because the test's real request to `http://django:8000` reaches the running dev server.
+
 ## Cursor Cloud-specific instructions
 
 ### Overview
