@@ -15,9 +15,17 @@ from evalai.celery import app
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
+from .stale_submission_alerts import (
+    notify_remote_challenge_hosts_of_stale_submissions,
+)
 from .utils import get_file_from_url
 
 logger = logging.getLogger(__name__)
+
+
+@app.task
+def notify_remote_challenge_hosts_of_stale_submissions_task():
+    return notify_remote_challenge_hosts_of_stale_submissions()
 
 
 @app.task
