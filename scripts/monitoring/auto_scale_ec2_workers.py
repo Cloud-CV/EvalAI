@@ -104,10 +104,21 @@ def start_or_stop_workers(challenge, evalai_interface):
         )
     )
 
-    if pending_submissions == 0 or parse(
-        challenge["end_date"]
-    ) < pytz.UTC.localize(datetime.utcnow()):
+    challenge_ended = parse(challenge["end_date"]) < pytz.UTC.localize(
+        datetime.utcnow()
+    )
+
+    # Never stop the EC2 worker while submissions are still pending —
+    # including after end_date — so in-flight/queued evaluations can drain.
+    if pending_submissions == 0:
         stop_instance(challenge, evalai_interface)
+    elif challenge_ended:
+        print(
+            "Challenge ID: {}, Title: {} has ended but still has {} "
+            "pending submission(s); leaving EC2 worker running to drain.".format(
+                challenge["id"], challenge["title"], pending_submissions
+            )
+        )
     else:
         start_instance(challenge, evalai_interface)
 

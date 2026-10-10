@@ -148,10 +148,24 @@ def scale_up_or_down_workers(challenge, challenge_metrics):
         )
     )
 
-    if pending_submissions == 0 or parse(
-        challenge["end_date"]
-    ) < pytz.UTC.localize(datetime.utcnow()):
+    challenge_ended = parse(challenge["end_date"]) < pytz.UTC.localize(
+        datetime.utcnow()
+    )
+
+    # Never stop workers while submissions are still pending — including
+    # after end_date. The challenge-cleanup Lambda (#5179) keeps the ECS
+    # stack up until pending_submission_count is 0 so the queue can drain;
+    # stopping here would kill in-flight eval and leave queued work without
+    # consumers (ensure_workers_for_submission only runs on new submits).
+    if pending_submissions == 0:
         scale_down_workers(challenge, num_workers)
+    elif challenge_ended:
+        print(
+            "Challenge ID: {}, Title: {} has ended but still has {} "
+            "pending submission(s); leaving workers running to drain.".format(
+                challenge["id"], challenge["title"], pending_submissions
+            )
+        )
     else:
         scale_up_workers(challenge, num_workers)
 
