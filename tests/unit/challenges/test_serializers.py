@@ -193,7 +193,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 leaderboard_public=False,
                 is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                end_date=self.challenge.end_date,
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -332,8 +332,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "description": "Internal phase",
                 "leaderboard_public": False,
                 "is_public": False,
-                "start_date": timezone.now() - timedelta(days=1),
-                "end_date": timezone.now() + timedelta(days=1),
+                "start_date": self.challenge.start_date,
+                "end_date": self.challenge.end_date,
                 "max_submissions_per_day": 100000,
                 "max_submissions": 100000,
                 "max_submissions_per_month": 100000,
@@ -345,6 +345,12 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         challenge_phase = serializer.save()
 
+        self.assertLessEqual(
+            challenge_phase.start_date, self.challenge.end_date
+        )
+        self.assertLessEqual(
+            challenge_phase.end_date, self.challenge.end_date
+        )
         self.assertEqual(
             ChallengePhase.DAYS_14,
             challenge_phase.submission_artifact_retention_policy,
