@@ -12,11 +12,13 @@ from jobs.utils import (
     handle_submission_rerun,
     handle_submission_resume,
     is_url_valid,
+    parse_submission_visibility,
     reorder_submissions_comparator_to_key,
     response_if_submissions_paused,
 )
 from jobs.views import _compute_remaining_limits
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 
 
 class TestUtils(unittest.TestCase):
@@ -1356,6 +1358,35 @@ class TestResponseIfSubmissionsPaused(unittest.TestCase):
         phase.is_submission_paused = True
         resp = response_if_submissions_paused(challenge, phase)
         self.assertIn("challenge", resp.data["error"])
+
+
+class TestParseSubmissionVisibility(unittest.TestCase):
+    """`is_public` arrives form-encoded, so several spellings must work."""
+
+    def test_json_style_booleans(self):
+        self.assertIs(parse_submission_visibility("true"), True)
+        self.assertIs(parse_submission_visibility("false"), False)
+
+    def test_python_style_booleans(self):
+        # "True"/"False" previously raised JSONDecodeError -> HTTP 500.
+        self.assertIs(parse_submission_visibility("True"), True)
+        self.assertIs(parse_submission_visibility("False"), False)
+
+    def test_html_checkbox_and_numeric_values(self):
+        for truthy in ("on", "1", "yes"):
+            self.assertIs(parse_submission_visibility(truthy), True)
+        for falsy in ("off", "0", "no"):
+            self.assertIs(parse_submission_visibility(falsy), False)
+
+    def test_actual_booleans_pass_through(self):
+        self.assertIs(parse_submission_visibility(True), True)
+        self.assertIs(parse_submission_visibility(False), False)
+
+    def test_invalid_values_raise_validation_error(self):
+        # A ValidationError is rendered as HTTP 400, not an unhandled 500.
+        for invalid in ("banana", "", None):
+            with self.assertRaises(ValidationError):
+                parse_submission_visibility(invalid)
 
 
 class Submission:

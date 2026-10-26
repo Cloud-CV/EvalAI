@@ -221,6 +221,60 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_challenge_submission_accepts_python_style_is_public(self):
+        """`is_public=True` is a valid boolean spelling, not a 500."""
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "input_file": self.input_file,
+                "is_public": "True",
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            Submission.objects.get(pk=response.data["id"]).is_public
+        )
+
+    def test_challenge_submission_rejects_non_boolean_is_public(self):
+        """A non-boolean `is_public` is a client error, not a server fault."""
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "input_file": self.input_file,
+                "is_public": "banana",
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is_public", response.data["error"])
+
     def test_challenge_submission_when_challenge_is_not_active(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
@@ -2889,6 +2943,79 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             len(expected["presigned_urls"]),
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_presigned_url_accepts_python_style_is_public(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        """`is_public=True` must be parsed, not rejected, on this endpoint."""
+        # leaderboard_public=False would overwrite is_public after parsing,
+        # so enable it to observe the value the parser produced.
+        self.challenge_phase.leaderboard_public = True
+        self.challenge_phase.save()
+
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+                "is_public": "True",
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            Submission.objects.get(pk=response.data["submission_pk"]).is_public
+        )
+
+    @mock.patch("jobs.views.ensure_workers_for_submission")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_presigned_url_rejects_non_boolean_is_public(
+        self, mock_get_aws_creds, mock_ensure_workers
+    ):
+        """A non-boolean `is_public` is a 400 from the ValidationError guard."""
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        boto3.client("s3").create_bucket(Bucket="test-bucket")
+
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": 1,
+                "file_name": "media/submissions/dummy.txt",
+                "is_public": "banana",
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is_public", response.data["error"])
 
     @mock.patch("jobs.views.ensure_workers_for_submission")
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
