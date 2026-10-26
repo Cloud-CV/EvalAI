@@ -966,3 +966,34 @@ class TestDataEncoding(unittest.TestCase):
     def test_decode_data_empty_list(self):
         data = []
         self.assertEqual(decode_data(data), [])
+
+    def test_encode_data_returns_unpadded_base64_strings(self):
+        self.assertEqual(encode_data(["hello"]), ["aGVsbG8"])
+
+    def test_decode_data_restores_the_original_values(self):
+        self.assertEqual(decode_data(["aGVsbG8"]), ["hello"])
+
+    def test_encode_data_round_trips_through_decode_data(self):
+        data = ["evalai", "challenge", "submission"]
+        self.assertEqual(decode_data(encode_data(data)), data)
+
+    def test_encode_data_handles_multiple_values(self):
+        self.assertEqual(encode_data(["ab", "cd"]), ["YWI", "Y2Q"])
+
+    def test_encode_data_without_base64_padding(self):
+        # An input whose length is a multiple of 3 encodes with no "="
+        # padding at all, so nothing may be left dangling on the end.
+        self.assertEqual(encode_data(["abc"]), ["YWJj"])
+        self.assertEqual(decode_data(encode_data(["abc"])), ["abc"])
+
+    def test_encode_data_never_emits_whitespace(self):
+        # b64encode() emits a single unbroken line, unlike encodebytes(),
+        # which wraps every 76 characters and appends a trailing newline.
+        for value in ("abc", "hello", "x" * 200):
+            encoded = encode_data([value])[0]
+            self.assertNotIn("\n", encoded)
+            self.assertNotIn("=", encoded)
+
+    def test_round_trip_survives_input_longer_than_one_base64_line(self):
+        data = ["x" * 200]
+        self.assertEqual(decode_data(encode_data(data)), data)
