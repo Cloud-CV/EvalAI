@@ -7,3 +7,4 @@ hosting-guide/index
 configuration/index
 evaluation/index
 templates/index
+baseline-submissions
