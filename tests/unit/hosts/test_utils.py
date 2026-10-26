@@ -91,6 +91,30 @@ class TestChallengeHost(BaseTestClass):
         output = is_user_a_host_of_challenge(self.user, self.challenge.pk)
         self.assertEqual(output, expected)
 
+    def test_denied_host_is_not_treated_as_challenge_host(self):
+        ChallengeHost.objects.filter(user=self.host_user).update(
+            status=ChallengeHost.DENIED
+        )
+        self.assertFalse(
+            is_user_a_host_of_challenge(self.host_user, self.challenge.pk)
+        )
+
+    def test_pending_host_is_not_treated_as_challenge_host(self):
+        ChallengeHost.objects.filter(user=self.host_user).update(
+            status=ChallengeHost.PENDING
+        )
+        self.assertFalse(
+            is_user_a_host_of_challenge(self.host_user, self.challenge.pk)
+        )
+
+    def test_self_host_status_is_treated_as_challenge_host(self):
+        ChallengeHost.objects.filter(user=self.host_user).update(
+            status=ChallengeHost.SELF
+        )
+        self.assertTrue(
+            is_user_a_host_of_challenge(self.host_user, self.challenge.pk)
+        )
+
 
 class TestUserisStafforHost(BaseTestClass):
     def setUp(self):
