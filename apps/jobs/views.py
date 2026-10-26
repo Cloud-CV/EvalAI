@@ -53,13 +53,14 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
-from rest_framework import permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
     permission_classes,
     throttle_classes,
 )
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -505,8 +506,12 @@ def change_submission_data_and_visibility(
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     try:
-        is_public = request.data["is_public"]
-        if is_public is True:
+        # Form-encoded requests deliver booleans as strings, so compare the
+        # coerced value rather than checking identity against True.
+        is_public = serializers.BooleanField(required=False).to_internal_value(
+            request.data["is_public"]
+        )
+        if is_public:
             when_made_public = datetime.datetime.now()
             request.data["when_made_public"] = when_made_public
 
@@ -519,7 +524,6 @@ def change_submission_data_and_visibility(
             # submission public
             if (
                 challenge_phase.is_restricted_to_select_one_submission
-                and is_public
                 and submissions_already_public.count() == 1
             ):
                 # Case when the phase is restricted to make only one submission
@@ -538,6 +542,9 @@ def change_submission_data_and_visibility(
                     submission_serializer.save()
     except KeyError:
         pass
+    except ValidationError:
+        response_data = {"error": "`is_public` must be a boolean value."}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = SubmissionSerializer(
         submission,
