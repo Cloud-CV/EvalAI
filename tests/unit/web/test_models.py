@@ -1,4 +1,5 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from django.test import TestCase
 from web.models import Contact, Subscribers, Team
 
@@ -55,3 +56,8 @@ class SubscribersTestCase(TestCase):
 
     def test__str__(self):
         self.assertEqual(str(self.subscriber), "subscriber@domain.com")
+
+    def test_email_unique_constraint(self):
+        """Test that duplicate email addresses raise IntegrityError"""
+        with self.assertRaises(IntegrityError):
+            Subscribers.objects.create(email="subscriber@domain.com")
