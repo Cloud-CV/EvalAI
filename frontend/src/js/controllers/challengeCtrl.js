@@ -2188,6 +2188,12 @@
             'id': 'submission_meta_attributes'
         }];
 
+        /**
+         * Downloads the selected phase's submissions as a CSV: a GET for all fields,
+         * or a POST when vm.fieldsToGet narrows the columns. On failure it notifies
+         * the API's `error`, then DRF's `detail`, then the HTTP status, so the
+         * banner is never empty.
+         */
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 // Generate dynamic filename based on challenge and phase info
