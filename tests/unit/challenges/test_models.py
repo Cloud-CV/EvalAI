@@ -13,6 +13,7 @@ from challenges.models import (
     LeaderboardData,
 )
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
@@ -34,6 +35,8 @@ class BaseTestCase(TestCase):
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
+        now = timezone.now()
+
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
@@ -42,8 +45,8 @@ class BaseTestCase(TestCase):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=now - timedelta(days=2),
+            end_date=now + timedelta(days=1),
             anonymous_leaderboard=False,
         )
 
@@ -58,8 +61,8 @@ class BaseTestCase(TestCase):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=now - timedelta(days=1),
+                end_date=now + timedelta(hours=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -190,6 +193,7 @@ class ChallengeTestCase(BaseTestCase):
         self.challenge.save()
 
         mock_trigger_eks_node_autoscale.reset_mock()
+        self.challenge.start_date = timezone.now() - timedelta(days=5)
         self.challenge.end_date = timezone.now() - timedelta(days=3)
         self.challenge.save()
 
@@ -197,6 +201,26 @@ class ChallengeTestCase(BaseTestCase):
             self.challenge.pk,
             trigger_source="challenge_end_date_changed",
         )
+
+    def test_save_raises_error_when_start_date_after_end_date(self):
+        self.challenge.start_date = timezone.now() + timedelta(days=1)
+        self.challenge.end_date = timezone.now() - timedelta(days=1)
+        with self.assertRaises(ValidationError):
+            self.challenge.save()
+
+    def test_save_raises_error_when_start_date_equals_end_date(self):
+        now = timezone.now()
+        self.challenge.start_date = now
+        self.challenge.end_date = now
+        with self.assertRaises(ValidationError):
+            self.challenge.save()
+
+    def test_save_succeeds_when_dates_are_valid(self):
+        self.challenge.start_date = timezone.now() - timedelta(days=2)
+        self.challenge.end_date = timezone.now() + timedelta(days=2)
+        self.challenge.save()
+        self.challenge.refresh_from_db()
+        self.assertTrue(self.challenge.is_active)
 
 
 class DatasetSplitTestCase(BaseTestCase):
@@ -273,6 +297,71 @@ class ChallengePhaseTestCase(BaseTestCase):
             ],
             retention_policies,
         )
+
+    def test_save_raises_error_when_phase_start_before_challenge_start(self):
+        self.challenge_phase.start_date = self.challenge.start_date - timedelta(
+            days=1
+        )
+        with self.assertRaises(ValidationError):
+            self.challenge_phase.save()
+
+    def test_save_raises_error_when_phase_start_on_or_after_challenge_end(self):
+        self.challenge_phase.start_date = self.challenge.end_date
+        with self.assertRaises(ValidationError):
+            self.challenge_phase.save()
+
+    def test_save_raises_error_when_phase_end_on_or_before_challenge_start(self):
+        self.challenge_phase.end_date = self.challenge.start_date
+        with self.assertRaises(ValidationError):
+            self.challenge_phase.save()
+
+    def test_save_raises_error_when_phase_end_after_challenge_end(self):
+        self.challenge_phase.end_date = self.challenge.end_date + timedelta(days=1)
+        with self.assertRaises(ValidationError):
+            self.challenge_phase.save()
+
+    def test_save_raises_error_when_phase_start_after_phase_end(self):
+        self.challenge_phase.start_date = self.challenge.start_date + timedelta(
+            hours=5
+        )
+        self.challenge_phase.end_date = self.challenge.start_date + timedelta(hours=1)
+        with self.assertRaises(ValidationError):
+            self.challenge_phase.save()
+
+    def test_save_succeeds_when_phase_dates_are_within_challenge_dates(self):
+        self.challenge_phase.start_date = self.challenge.start_date + timedelta(
+            hours=1
+        )
+        self.challenge_phase.end_date = self.challenge.end_date - timedelta(hours=1)
+        self.challenge_phase.save()
+        self.challenge_phase.refresh_from_db()
+        self.assertEqual(
+            self.challenge_phase.start_date,
+            self.challenge.start_date + timedelta(hours=1),
+        )
+        self.assertEqual(
+            self.challenge_phase.end_date,
+            self.challenge.end_date - timedelta(hours=1),
+        )
+
+    def test_save_succeeds_when_challenge_dates_are_null(self):
+        self.challenge.start_date = None
+        self.challenge.end_date = None
+        self.challenge.save()
+        now = timezone.now()
+        self.challenge_phase.start_date = now - timedelta(days=1)
+        self.challenge_phase.end_date = now + timedelta(days=1)
+        self.challenge_phase.save()
+        self.challenge_phase.refresh_from_db()
+        self.assertTrue(self.challenge_phase.is_active)
+
+    def test_save_succeeds_when_phase_dates_are_null(self):
+        self.challenge_phase.start_date = None
+        self.challenge_phase.end_date = None
+        self.challenge_phase.save()
+        self.challenge_phase.refresh_from_db()
+        self.assertIsNone(self.challenge_phase.start_date)
+        self.assertIsNone(self.challenge_phase.end_date)
 
 
 class LeaderboardTestCase(BaseTestCase):
