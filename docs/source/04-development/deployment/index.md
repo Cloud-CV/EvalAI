@@ -6,4 +6,5 @@
 production-deployment
 worker-setup
 scaling-guidelines
+auto-scaling
 
