@@ -6,7 +6,7 @@ cfn-lint==0.48.3
 commonmark==0.9.1
 disposable-email-domains>=0.0.167
 django-allauth==0.43.0
-dnspython==2.6.1
+dnspython==2.9.0
 django-cors-headers==3.5.0
 django-filter==2.4.0
 django-import-export==2.4.0
