@@ -2188,6 +2188,12 @@
             'id': 'submission_meta_attributes'
         }];
 
+        /**
+         * Downloads the selected phase's submissions as a CSV: a GET for all fields,
+         * or a POST when vm.fieldsToGet narrows the columns. On failure it notifies
+         * the API's `error`, then DRF's `detail`, then the HTTP status, so the
+         * banner is never empty.
+         */
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 // Generate dynamic filename based on challenge and phase info
@@ -2200,24 +2206,34 @@
                     }
                 }
                 var filename = 'all_submissions_' + challengeName + '_' + vm.challengeId + '_' + phaseName + '_' + vm.phaseId + '.csv';
-                
+                var downloadCallback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        var anchor = angular.element('<a/>');
+                        anchor.attr({
+                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                            download: filename
+                        })[0].click();
+                    },
+                    onError: function(response) {
+                        // A gateway timeout returns an HTML page and DRF errors
+                        // (throttling, auth) use `detail`, so `error` alone is
+                        // often missing and the banner would render empty.
+                        var details = response.data;
+                        var message = details && (details.error || details.detail);
+                        if (!message) {
+                            message = response.status > 0 ?
+                                "Download failed (HTTP " + response.status + "). Please try again later." :
+                                "Download failed: could not reach the server. Please try again later.";
+                        }
+                        $rootScope.notify('error', message);
+                    }
+                };
+
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var details = response.data;
-                            var anchor = angular.element('<a/>');
-                            anchor.attr({
-                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: filename
-                            })[0].click();
-                        },
-                        onError: function(response) {
-                            var details = response.data;
-                            $rootScope.notify('error', details.error);
-                        }
-                    };
+                    parameters.callback = downloadCallback;
                     utilities.sendRequest(parameters);
                 }
                 else {
@@ -2229,20 +2245,7 @@
                         }
                     }
                     parameters.data = fieldsExport;
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var details = response.data;
-                            var anchor = angular.element('<a/>');
-                            anchor.attr({
-                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                                download: filename
-                            })[0].click();
-                        },
-                        onError: function(response) {
-                            var details = response.data;
-                            $rootScope.notify('error', details.error);
-                        }
-                    };
+                    parameters.callback = downloadCallback;
                     utilities.sendRequest(parameters);
                 }
 

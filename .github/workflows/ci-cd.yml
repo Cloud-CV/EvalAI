@@ -30,6 +30,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # Jobs pin ubuntu-24.04: actions/setup-python publishes no 3.9 builds for
+  # Ubuntu 26.04, which ubuntu-latest now resolves to.
   PYTHON_RUNTIME_VERSION: "3.9.21"
   AWS_COMMAND_LINE_INTERFACE_VERSION: "1.18.66"
   DISPLAY_SERVER_ADDRESS: ":99.0"
@@ -42,7 +44,7 @@ jobs:
   # is roughly max(quality, backend tests, frontend tests) instead of the sum.
   code_quality:
     name: Code quality and migrations
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       actions: write # BuildKit GHA cache (type=gha) export
@@ -95,7 +97,7 @@ jobs:
 
   test_backend:
     name: Tests (backend)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       actions: write # artifacts + BuildKit GHA cache export
@@ -136,7 +138,7 @@ jobs:
 
   test_frontend:
     name: Tests (frontend)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       actions: write # artifacts + BuildKit GHA cache export
@@ -221,7 +223,7 @@ jobs:
 
   package_and_deploy_services:
     name: Package and Deploy Services
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - code_quality
       - test_backend

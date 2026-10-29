@@ -3777,6 +3777,48 @@ describe('Unit tests for challenge controller', function () {
 
             expect($rootScope.notify).toHaveBeenCalledWith("error", "Download failed");
         });
+
+        it('should show the HTTP status when a GET error body has no error key', function () {
+            vm.fieldsToGet = undefined;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ status: 504, data: "<html><body>504 Gateway Time-out</body></html>" });
+            });
+
+            vm.downloadChallengeSubmissions();
+
+            expect($rootScope.notify).toHaveBeenCalledWith(
+                "error", "Download failed (HTTP 504). Please try again later."
+            );
+        });
+
+        it('should show the DRF detail message when a GET error has no error key', function () {
+            vm.fieldsToGet = undefined;
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({
+                    status: 429,
+                    data: { detail: "Request was throttled. Expected available in 12 seconds." }
+                });
+            });
+
+            vm.downloadChallengeSubmissions();
+
+            expect($rootScope.notify).toHaveBeenCalledWith(
+                "error", "Request was throttled. Expected available in 12 seconds."
+            );
+        });
+
+        it('should show a connection message when a POST error has no response body', function () {
+            vm.fieldsToGet = ['participant_team'];
+            utilities.sendRequest.and.callFake(function (params) {
+                params.callback.onError({ status: -1, data: null });
+            });
+
+            vm.downloadChallengeSubmissions();
+
+            expect($rootScope.notify).toHaveBeenCalledWith(
+                "error", "Download failed: could not reach the server. Please try again later."
+            );
+        });
     });
 
     describe('Unit tests for showVisibilityDialog function', function () {
