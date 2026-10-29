@@ -598,6 +598,47 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             set(serializer.errors), set(["test_annotation", "slug"])
         )
 
+    def test_challenge_phase_create_serializer_respects_phase_limit(self):
+        ChallengePhase.objects.create(
+            name="Second Challenge Phase",
+            description="Description for second challenge phase",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+            test_annotation=SimpleUploadedFile(
+                "second_test_file.txt",
+                b"Second dummy file content",
+                content_type="text/plain",
+            ),
+            max_submissions_per_day=100000,
+            max_submissions=100000,
+            max_submissions_per_month=100000,
+            codename="Second Phase Code Name",
+            is_restricted_to_select_one_submission=True,
+            is_partial_submission_evaluation_enabled=False,
+        )
+        serializer = ChallengePhaseCreateSerializer(
+            data={
+                "name": "Third Challenge Phase",
+                "description": "Description for third challenge phase",
+                "leaderboard_public": False,
+                "is_public": True,
+                "start_date": timezone.now() - timedelta(days=2),
+                "end_date": timezone.now() + timedelta(days=1),
+                "max_submissions_per_day": 100000,
+                "max_submissions": 100000,
+                "max_submissions_per_month": 100000,
+                "codename": "Third Phase Code Name",
+                "is_restricted_to_select_one_submission": True,
+                "is_partial_submission_evaluation_enabled": False,
+            },
+            context={"challenge": self.challenge},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("limited to 2 phase(s)", str(serializer.errors))
+
 
 class ChallengeLeaderboardSerializerTests(TestCase):
     def setUp(self):

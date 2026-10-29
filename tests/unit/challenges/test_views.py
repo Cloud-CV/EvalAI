@@ -182,6 +182,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge.require_complete_profile,
                 "max_team_members": self.challenge.max_team_members,
+                "max_allowed_phases": self.challenge.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -614,6 +616,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
             "max_team_members": self.challenge.max_team_members,
+            "max_allowed_phases": self.challenge.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -728,6 +732,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
             "max_team_members": self.challenge.max_team_members,
+            "max_allowed_phases": self.challenge.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -867,6 +873,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
             "max_team_members": self.challenge.max_team_members,
+            "max_allowed_phases": self.challenge.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -955,6 +963,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge.require_complete_profile,
             "max_team_members": self.challenge.max_team_members,
+            "max_allowed_phases": self.challenge.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -2180,6 +2190,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
                 "max_team_members": self.challenge3.max_team_members,
+                "max_allowed_phases": self.challenge3.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2276,6 +2288,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2372,6 +2386,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge4.require_complete_profile,
                 "max_team_members": self.challenge4.max_team_members,
+                "max_allowed_phases": self.challenge4.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2468,6 +2484,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge4.require_complete_profile,
                 "max_team_members": self.challenge4.max_team_members,
+                "max_allowed_phases": self.challenge4.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2545,6 +2563,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
                 "max_team_members": self.challenge3.max_team_members,
+                "max_allowed_phases": self.challenge3.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2622,6 +2642,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2804,6 +2826,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge3.require_complete_profile,
                 "max_team_members": self.challenge3.max_team_members,
+                "max_allowed_phases": self.challenge3.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -3057,6 +3081,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "manual_participant_approval": self.challenge3.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge3.require_complete_profile,
             "max_team_members": self.challenge3.max_team_members,
+            "max_allowed_phases": self.challenge3.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -3167,6 +3193,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "manual_participant_approval": self.challenge4.manual_participant_approval,  # noqa: C0301
             "require_complete_profile": self.challenge4.require_complete_profile,
             "max_team_members": self.challenge4.max_team_members,
+            "max_allowed_phases": self.challenge4.max_allowed_phases,
+            "phase_count": 0,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -3338,6 +3366,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3432,6 +3462,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3526,6 +3558,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3618,6 +3652,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "manual_participant_approval": self.challenge.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge.require_complete_profile,
                 "max_team_members": self.challenge.max_team_members,
+                "max_allowed_phases": self.challenge.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -3695,6 +3731,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "manual_participant_approval": self.challenge2.manual_participant_approval,  # noqa: C0301
                 "require_complete_profile": self.challenge2.require_complete_profile,
                 "max_team_members": self.challenge2.max_team_members,
+                "max_allowed_phases": self.challenge2.max_allowed_phases,
+                "phase_count": 0,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -4201,7 +4239,21 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):  # pylint: disable=too-
         }
 
     @override_settings(MEDIA_ROOT="/tmp/evalai")
-    def test_create_challenge_phase_with_all_data(self):
+    def test_create_challenge_phase_when_phase_limit_reached(self):
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        response = self.client.post(self.url, self.data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("limited to 2 phase(s)", str(response.data))
+
+    @override_settings(MEDIA_ROOT="/tmp/evalai")
+    def test_create_challenge_phase_when_grandfathered(self):
+        self.challenge.max_allowed_phases = None
+        self.challenge.save()
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
