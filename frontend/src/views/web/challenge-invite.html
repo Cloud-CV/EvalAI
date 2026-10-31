@@ -70,7 +70,7 @@
                                     <div class="col s12 m12">
                                         <div class="input-field align-left">
                                             <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password"
-                                            ng-model="challenge_invitation.password" ng-minlength="8" required>
+                                            ng-model="challenge_invitation.password" ng-minlength="8" ng-maxlength="128" required>
                                             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
                                             <label for="password">
                                                 <strong>Password-minlength:8 required*</strong>
@@ -79,6 +79,7 @@
                                             <div class="wrn-msg text-highlight" ng-messages="registerChallengeParticipantForm.password.$error"
                                             ng-if="registerChallengeParticipantForm.password.$touched || registerChallengeParticipantForm.$submitted">
                                                 <p ng-message="minlength">Password is less than 8 characters.</p>
+                                                <p ng-message="maxlength">Password must be at most 128 characters.</p>
                                                 <p ng-message="required">Password is required.</p>
                                             </div>
                                         </div>
@@ -88,13 +89,14 @@
                                     <div class="col s12 m12">
                                         <div class="input-field align-left">
                                             <input type="password" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password"
-                                                ng-model="challenge_invitation.confirm_password" ng-minlength="8" compare-to="challenge_invitation.password" required>
+                                                ng-model="challenge_invitation.confirm_password" ng-minlength="8" ng-maxlength="128" compare-to="challenge_invitation.password" required>
                                             <span class="form-icon form-icon-dark"><i class="fa fa-check-circle"></i></span>
                                             <label for="confirm_password">Confirm Password *</label>
                                             <div class="wrn-msg text-highlight" ng-messages="registerChallengeParticipantForm.confirm_password.$error"
                                                 ng-if="registerChallengeParticipantForm.confirm_password.$touched || registerChallengeParticipantForm.$submitted">
                                                 <p ng-message="compareTo">Passwords do not match</p>
                                                 <p ng-message="minlength">Password is less than 8 characters.</p>
+                                                <p ng-message="maxlength">Password must be at most 128 characters.</p>
                                                 <p ng-message="required">Password confirmation is required.</p>
                                             </div>
                                         </div>

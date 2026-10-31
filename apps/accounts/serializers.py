@@ -1,15 +1,20 @@
 from allauth.account.models import EmailAddress
 from base.utils import get_user_by_email
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
 )
+from rest_auth.registration.serializers import RegisterSerializer
 from rest_auth.serializers import PasswordResetSerializer
 from rest_framework import serializers
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import ValidationError
 
 from .models import JwtToken, Profile
+
+PASSWORD_MAX_LENGTH = getattr(settings, "PASSWORD_MAX_LENGTH", 128)
 
 LOCKED_PROFILE_FIELDS = [
     "first_name",
@@ -335,6 +340,29 @@ class UpdateEmailSerializer(serializers.Serializer):
             user=user, email=new_email, primary=False, verified=False
         )
         return email_address
+
+
+class CustomRegisterSerializer(RegisterSerializer):
+    """Registration serializer with bounded password field lengths."""
+
+    password1 = serializers.CharField(
+        write_only=True, max_length=PASSWORD_MAX_LENGTH
+    )
+    password2 = serializers.CharField(
+        write_only=True, max_length=PASSWORD_MAX_LENGTH
+    )
+
+
+class BoundedAuthTokenSerializer(AuthTokenSerializer):
+    """Login serializer with bounded password field length."""
+
+    password = serializers.CharField(
+        label="Password",
+        style={"input_type": "password"},
+        write_only=True,
+        trim_whitespace=False,
+        max_length=PASSWORD_MAX_LENGTH,
+    )
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):

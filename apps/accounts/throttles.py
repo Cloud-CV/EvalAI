@@ -41,6 +41,23 @@ class PasswordResetEmailThrottle(_ThrottlingCacheMixin, SimpleRateThrottle):
         return self.cache_format % {"scope": self.scope, "ident": email}
 
 
+class RegistrationIPThrottle(_ThrottlingCacheMixin, SimpleRateThrottle):
+    """
+    Limit registration requests to 10/hour per client IP address.
+
+    Requires REST_FRAMEWORK["NUM_PROXIES"] to be set when deployed behind
+    trusted reverse proxies so client IPs are derived correctly.
+    """
+
+    scope = "registration_ip"
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": self.get_ident(request),
+        }
+
+
 class PasswordResetIPThrottle(_ThrottlingCacheMixin, SimpleRateThrottle):
     """
     Limit password reset requests to 10/hour per client IP address.
