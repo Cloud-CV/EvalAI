@@ -5,11 +5,16 @@ from django.contrib.auth.models import User
 from participants.utils import (
     has_participated_in_require_complete_profile_challenge,
 )
-from rest_auth.serializers import PasswordResetSerializer
+from rest_auth.serializers import (
+    PasswordChangeSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetSerializer,
+)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import JwtToken, Profile
+from .token_revocation import revoke_all_user_tokens
 
 LOCKED_PROFILE_FIELDS = [
     "first_name",
@@ -335,6 +340,26 @@ class UpdateEmailSerializer(serializers.Serializer):
             user=user, email=new_email, primary=False, verified=False
         )
         return email_address
+
+
+class CustomPasswordChangeSerializer(PasswordChangeSerializer):
+    """
+    Change password and revoke all existing API/JWT credentials.
+    """
+
+    def save(self):
+        self.set_password_form.save()
+        revoke_all_user_tokens(self.user)
+
+
+class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
+    """
+    Reset password from email link and revoke all existing credentials.
+    """
+
+    def save(self):
+        self.set_password_form.save()
+        revoke_all_user_tokens(self.user)
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
