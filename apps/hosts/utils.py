@@ -3,12 +3,16 @@ from challenges.models import Challenge
 
 from .models import ChallengeHost, ChallengeHostTeam
 
+# Only Accepted/Self membership confers host privileges. Pending/Denied/etc.
+# rows must not unlock host APIs (kubeconfig, EKS tokens, submission updates).
+ACTIVE_HOST_STATUSES = (ChallengeHost.ACCEPTED, ChallengeHost.SELF)
+
 
 def get_challenge_host_teams_for_user(user):
     """Returns challenge host team ids for a particular user"""
-    return ChallengeHost.objects.filter(user=user).values_list(
-        "team_name", flat=True
-    )
+    return ChallengeHost.objects.filter(
+        user=user, status__in=ACTIVE_HOST_STATUSES
+    ).values_list("team_name", flat=True)
 
 
 def is_user_a_host_of_challenge(user, challenge_pk):
@@ -24,7 +28,9 @@ def is_user_a_host_of_challenge(user, challenge_pk):
 def is_user_part_of_host_team(user, host_team):
     """Returns boolean if the user belongs to the host team or not"""
     return ChallengeHost.objects.filter(
-        user=user, team_name=host_team
+        user=user,
+        team_name=host_team,
+        status__in=ACTIVE_HOST_STATUSES,
     ).exists()
 
 
