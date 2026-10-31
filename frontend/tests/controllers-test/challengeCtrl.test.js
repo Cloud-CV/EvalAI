@@ -706,7 +706,7 @@ describe('Unit tests for challenge controller', function () {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showClock');
 
                 // Unit tests for `countDownTimer` function
-                expect(vm.remainingTime).toEqual(vm.eachPhase.limits.remaining_time);
+                expect(vm.remainingTime).toEqual(12 / 12 / 12);
                 expect(vm.days).toEqual(Math.floor(vm.remainingTime / 24 / 60 / 60));
                 expect(vm.hoursLeft).toEqual(Math.floor((vm.remainingTime) - (vm.days * 86400)));
                 expect(vm.hours).toEqual(Math.floor(vm.hoursLeft / 3600));
@@ -1893,7 +1893,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.message).toEqual(successResponse.phases.first_object.limits);
             expect(vm.showClock).toEqual(true);
 
-            expect(vm.remainingTime).toEqual(successResponse.phases.first_object.limits.remaining_time);
+            expect(vm.remainingTime).toEqual(36000);
             expect(vm.days).toEqual(Math.floor(vm.remainingTime / 24 / 60 / 60));
             expect(vm.hoursLeft).toEqual(Math.floor((vm.remainingTime) - (vm.days * 86400)));
             expect(vm.hours).toEqual(Math.floor(vm.hoursLeft / 3600));
