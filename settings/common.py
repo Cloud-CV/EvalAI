@@ -262,6 +262,12 @@ CELERY_BEAT_SCHEDULE = {
         # to "America/Los_Angeles" if year-round 10:30 Pacific is required.
         "schedule": crontab(hour=18, minute=30),
     },
+    "notify-remote-stuck-submissions": {
+        "task": (
+            "jobs.tasks.notify_remote_challenge_hosts_of_stale_submissions_task"
+        ),
+        "schedule": datetime.timedelta(minutes=30),
+    },
 }
 
 # CORS Settings
@@ -417,6 +423,14 @@ OUTREACH_FROM_EMAIL = os.environ.get(
     "EvalAI Team <team@eval.ai>",
 )
 
+# Remote challenges: alert hosts when submissions stay in ``submitted``.
+REMOTE_STUCK_SUBMISSION_THRESHOLD_MINUTES = int(
+    os.environ.get("REMOTE_STUCK_SUBMISSION_THRESHOLD_MINUTES", "120")
+)
+REMOTE_STUCK_SUBMISSION_ALERT_COOLDOWN_HOURS = int(
+    os.environ.get("REMOTE_STUCK_SUBMISSION_ALERT_COOLDOWN_HOURS", "6")
+)
+
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
         "CHALLENGE_INVITATION": os.environ.get(
@@ -439,6 +453,9 @@ SENDGRID_SETTINGS = {
         ),
         "OUTREACH_BENCHMARK_HOSTING": os.environ.get(
             "SENDGRID_OUTREACH_BENCHMARK_HOSTING_TEMPLATE_ID"
+        ),
+        "STUCK_REMOTE_SUBMISSIONS_EMAIL": os.environ.get(
+            "SENDGRID_STUCK_REMOTE_SUBMISSIONS_TEMPLATE_ID"
         ),
     }
 }
