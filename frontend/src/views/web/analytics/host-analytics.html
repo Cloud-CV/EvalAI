@@ -15,6 +15,7 @@
                     {{analytics.challengeListCount}}
                 </span>
             </div>
+            <div class="scrollable-div" style="max-height: 200px; overflow-y: auto;position: relative;">
             <ul>
                 <li class="analytics-list analytics-team-input" ng-repeat="(key, value) in analytics.challengeList">
                     <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="analytics.challengeId">
@@ -24,6 +25,7 @@
                     </label>
                 </li>
             </ul>
+            </div>
             <div class="mt-30 btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn" ng-disabled="analytics.challengeListCount === 0" ng-click="analytics.showChallengeAnalysis()">Show Analysis &nbsp;<i class="fa fa-chevron-right"></i> </div>
         </div>
         <div class="col s12 m7">
