@@ -627,6 +627,73 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_challenge_submission_rejects_disallowed_upload_file_type(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        invalid_input_file = SimpleUploadedFile(
+            "submission.png", b"file_content", content_type="image/png"
+        )
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "input_file": invalid_input_file},
+            format="multipart",
+        )
+
+        expected = {
+            "error": "Invalid submission file type. Allowed file types are: {}.".format(
+                self.challenge_phase.allowed_submission_file_types
+            )
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @mock.patch(
+        "jobs.views.download_file_and_publish_submission_message.delay"
+    )
+    @mock.patch("jobs.views.is_url_valid", return_value=True)
+    def test_challenge_submission_rejects_disallowed_file_url_type(
+        self, mock_is_url_valid, mock_delay
+    ):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {
+                "status": "submitting",
+                "file_url": "http://example.com/submission.png",
+            },
+        )
+
+        expected = {
+            "error": "Invalid submission file type. Allowed file types are: {}.".format(
+                self.challenge_phase.allowed_submission_file_types
+            )
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        mock_is_url_valid.assert_called_once_with(
+            "http://example.com/submission.png"
+        )
+        mock_delay.assert_not_called()
+
     @mock.patch("jobs.views.ensure_workers_for_submission")
     def test_challenge_submission_calls_ensure_workers_for_participant(
         self, mock_ensure_workers
